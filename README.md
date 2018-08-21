@@ -15,6 +15,8 @@ nais environment variables
 
 ### Code/project related questions can be sent to
 Kevin Sillerud, `kevin.sillerud@nav.no`
+Joakim Kartveit `joakim.kartveit@nav.no`
+Anders Østby, `anders.ostby@nav.no`
 
 ### For NAV employees
 We are available at the Slack channel #barken

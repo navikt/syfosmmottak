@@ -11,8 +11,8 @@ data class Environment(
     val mqChannelName: String = getEnvVar("#APP_NAME#"),
     val srvappserverUsername: String = getEnvVar("SRVAPPSERVER_USERNAME", "srvappserver"),
     val srvappserverPassword: String = getEnvVar("SRVAPPSERVER_PASSWORD", ""),
-    val sampleQueueQueuename: String = getEnvVar("SAMPLE_QUEUE_QUEUENAME"),
-    val kafkaBootstrapServers: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS_URL")
+    val kafkaBootstrapServers: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS_URL"),
+    val syfomottakinputQueueName: String = getEnvVar("SYFOMOTTAK_INPUT_QUEUENAME")
 )
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =
