@@ -123,12 +123,14 @@ fun listen(
                         *defaultKeyValues)
             }
 
-            val syfoSykemeldingeeglerClientReponse = syfoSykemeldingeeglerClient.executeRuleValidation("sting")
+            val validationResult = syfoSykemeldingeeglerClient.executeRuleValidation("sting")
             // TODO syfoSykemeldingeeglerClientReponse valite if its manuelle or not
-            if (true) {
+            if (validationResult.status == Status.OK) {
                 kafkaproducer.send(ProducerRecord("aapen-sykemelding-2013-automatisk-topic", "test value"))
-            } else {
+            } else if (validationResult.status == Status.MANUAL_PROCESSING) {
                 kafkaproducer.send(ProducerRecord("aapen-sykemelding-2013-manuell-topic", "test value"))
+            } else if (validationResult.status == Status.INVALID) {
+                // send back apprec avist
             }
         } catch (e: Exception) {
             log.error("Exception caught while handling message, sending to backout $defaultKeyFormat",

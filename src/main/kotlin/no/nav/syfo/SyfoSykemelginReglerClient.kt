@@ -15,7 +15,7 @@ private val log = LoggerFactory.getLogger(SyfoSykemelginReglerClient::class.java
 class SyfoSykemelginReglerClient(private val url: String, private val username: String, private val password: String) {
     private val client: OkHttpClient = OkHttpClient()
 
-    fun executeRuleValidation(data: String): List<Samhandler> {
+    fun executeRuleValidation(data: String): ValidationResult {
         val request = Request.Builder()
                 .post(RequestBody.create(MediaType.parse("application/json"), data))
                 .header("Authorization", Credentials.basic(username, password))
@@ -29,8 +29,7 @@ class SyfoSykemelginReglerClient(private val url: String, private val username: 
         val response = client.newCall(request)
                 .execute()
         if (response.isSuccessful) {
-            // TODO
-            return objectMapper.readValue(response.body()?.byteStream(), Array<Samhandler>::class.java).toList()
+            return objectMapper.readValue(response.body()?.byteStream(), ValidationResult::class.java)
         } else {
             log.error("Received an error while contacting SyfoSykemelingRegler {}", StructuredArguments.keyValue("errorBody", response.body()?.string()))
             throw IOException("Unable to contact SyfoSykemelingRegler, got status code ${response.code()}")
@@ -38,7 +37,17 @@ class SyfoSykemelginReglerClient(private val url: String, private val username: 
     }
 }
 
-data class Samhandler(
-    val samh_id: String
-
+data class ValidationResult(
+    val status: Status,
+    val ruleHits: List<RuleInfo>
 )
+
+data class RuleInfo(
+    val ruleMessage: String
+)
+
+enum class Status {
+    OK,
+    MANUAL_PROCESSING,
+    INVALID
+}
