@@ -1,6 +1,7 @@
 package no.nav.syfo
 
 import no.nav.common.KafkaEnvironment
+import no.nav.syfo.util.readProducerConfig
 import org.amshove.kluent.shouldEqual
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer

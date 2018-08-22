@@ -1,6 +1,7 @@
-package no.nav.syfo
+package no.nav.syfo.api
 
 import net.logstash.logback.argument.StructuredArguments
+import no.nav.syfo.objectMapper
 import okhttp3.Credentials
 import okhttp3.HttpUrl
 import okhttp3.MediaType

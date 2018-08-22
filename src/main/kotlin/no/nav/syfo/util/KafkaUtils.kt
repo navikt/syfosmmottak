@@ -1,5 +1,6 @@
-package no.nav.syfo
+package no.nav.syfo.util
 
+import no.nav.syfo.Environment
 import org.apache.kafka.common.serialization.Serializer
 import java.util.Properties
 import kotlin.reflect.KClass

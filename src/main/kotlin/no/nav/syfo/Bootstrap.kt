@@ -12,9 +12,19 @@ import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.runBlocking
 import net.logstash.logback.argument.StructuredArgument
 import net.logstash.logback.argument.StructuredArguments.keyValue
+import no.kith.xmlstds.apprec._2004_11_21.XMLAppRec
+import no.kith.xmlstds.apprec._2004_11_21.XMLCV as AppRecCV
 import no.kith.xmlstds.msghead._2006_05_24.XMLIdent
 import no.kith.xmlstds.msghead._2006_05_24.XMLMsgHead
+import no.nav.syfo.api.Status
+import no.nav.syfo.api.SyfoSykemelginReglerClient
 import no.nav.syfo.api.registerNaisApi
+import no.nav.syfo.apprec.ApprecError
+import no.nav.syfo.apprec.ApprecStatus
+import no.nav.syfo.apprec.createApprec
+import no.nav.syfo.metrics.REQUEST_TIME
+import no.nav.syfo.util.connectionFactory
+import no.nav.syfo.util.readProducerConfig
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.LoggerFactory
@@ -27,8 +37,12 @@ import no.nav.xml.eiff._2.XMLEIFellesformat
 import no.nav.xml.eiff._2.XMLMottakenhetBlokk
 import org.apache.kafka.clients.producer.ProducerRecord
 import java.io.StringReader
+import java.io.StringWriter
+import javax.jms.MessageProducer
 import javax.xml.bind.JAXBContext
+import javax.xml.bind.Marshaller
 import javax.xml.bind.Unmarshaller
+import javax.xml.datatype.DatatypeFactory
 
 fun doReadynessCheck(): Boolean {
     // Do validation
@@ -42,6 +56,11 @@ val objectMapper: ObjectMapper = ObjectMapper()
 
 val fellesformatJaxBContext: JAXBContext = JAXBContext.newInstance(XMLEIFellesformat::class.java)
 val fellesformatUnmarshaller: Unmarshaller = fellesformatJaxBContext.createUnmarshaller()
+
+val apprecJaxBContext: JAXBContext = JAXBContext.newInstance(XMLAppRec::class.java)
+val apprecMarshaller: Marshaller = apprecJaxBContext.createMarshaller()
+
+val newInstance: DatatypeFactory = DatatypeFactory.newInstance()
 
 data class ApplicationState(var running: Boolean = true)
 
@@ -61,6 +80,7 @@ fun main(args: Array<String>) = runBlocking {
 
         val session = connection.createSession()
         val inputQueue = session.createQueue(env.syfomottakinputQueueName)
+        val receiptQueue = session.createQueue(env.apprecQueue)
         session.close()
 
         val producerProperties = readProducerConfig(env, valueSerializer = StringSerializer::class)
@@ -70,7 +90,7 @@ fun main(args: Array<String>) = runBlocking {
                 env.srvSyfoMottakUsername,
                 env.srvSyfoMottakPassword)
 
-        listen(inputQueue, connection, kafkaproducer, syfoSykemeldingeeglerClient).join()
+        listen(inputQueue, receiptQueue, connection, kafkaproducer, syfoSykemeldingeeglerClient).join()
     }
 
     Runtime.getRuntime().addShutdownHook(Thread {
@@ -86,12 +106,14 @@ fun Application.initRouting(applicationState: ApplicationState) {
 
 fun listen(
     inputQueue: Queue,
+    receiptQueue: Queue,
     connection: Connection,
     kafkaproducer: KafkaProducer<String, String>,
     syfoSykemeldingeeglerClient: SyfoSykemelginReglerClient
 ) = launch {
     val session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)
     val consumer = session.createConsumer(inputQueue)
+    val receiptProducer = session.createProducer(receiptQueue)
 
     consumer.setMessageListener {
         var defaultKeyValues = arrayOf(keyValue("noMessageIdentifier", true))
@@ -101,6 +123,7 @@ fun listen(
                 is TextMessage -> it.text
                 else -> throw RuntimeException("Incoming message needs to be a byte message or text message")
             }
+            val requestLatency = REQUEST_TIME.startTimer()
             val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(inputMessageText)) as XMLEIFellesformat
             val ediLoggId = fellesformat.get<XMLMottakenhetBlokk>().ediLoggId
 
@@ -126,11 +149,22 @@ fun listen(
             val validationResult = syfoSykemeldingeeglerClient.executeRuleValidation("sting")
             // TODO syfoSykemeldingeeglerClientReponse valite if its manuelle or not
             if (validationResult.status == Status.OK) {
-                kafkaproducer.send(ProducerRecord("aapen-sykemelding-2013-automatisk-topic", "test value"))
+                sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
+                val currentRequestLatency = requestLatency.observeDuration()
+                log.info("Message $defaultKeyFormat has been sent in return, processing took {}s",
+                        *defaultKeyValues, currentRequestLatency)
+                kafkaproducer.send(ProducerRecord("aapen-sykemelding-2013-automatisk-topic", "test automatisk value"))
             } else if (validationResult.status == Status.MANUAL_PROCESSING) {
-                kafkaproducer.send(ProducerRecord("aapen-sykemelding-2013-manuell-topic", "test value"))
+                sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
+                val currentRequestLatency = requestLatency.observeDuration()
+                log.info("Message $defaultKeyFormat has been sent in return, processing took {}s",
+                        *defaultKeyValues, currentRequestLatency)
+                kafkaproducer.send(ProducerRecord("aapen-sykemelding-2013-manuell-topic", "test manuell value"))
             } else if (validationResult.status == Status.INVALID) {
-                // send back apprec avist
+                sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist)
+                val currentRequestLatency = requestLatency.observeDuration()
+                log.info("Message $defaultKeyFormat has been sent in return, processing took {}s",
+                        *defaultKeyValues, currentRequestLatency)
             }
         } catch (e: Exception) {
             log.error("Exception caught while handling message, sending to backout $defaultKeyFormat",
@@ -148,3 +182,28 @@ fun extractOrganisationNumberFromSender(fellesformat: XMLEIFellesformat): XMLIde
         fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.find {
             it.typeId.v == "ENH"
         }
+
+fun sendReceipt(
+    session: Session,
+    receiptProducer: MessageProducer,
+    fellesformat: XMLEIFellesformat,
+    apprecStatus: ApprecStatus,
+    vararg apprecErrors: ApprecError
+) {
+    receiptProducer.send(session.createTextMessage().apply {
+        val fellesformat = createApprec(fellesformat, apprecStatus)
+        fellesformat.get<XMLAppRec>().error.addAll(apprecErrors.map { mapApprecErrorToAppRecCV(it) })
+        text = apprecMarshaller.toString(fellesformat)
+    })
+}
+
+fun mapApprecErrorToAppRecCV(apprecError: ApprecError): AppRecCV = AppRecCV().apply {
+    dn = apprecError.dn
+    v = apprecError.v
+    s = apprecError.s
+}
+
+fun Marshaller.toString(input: Any): String = StringWriter().use {
+    marshal(input, it)
+    it.toString()
+}

@@ -16,6 +16,7 @@ buildscript {
     ext.spek_version = '2.0.0-alpha.1'
     ext.fellesformat_version = '1.2'
     ext.kith_hodemelding_version = '1.1'
+    ext.kith_apprec_version = '1.1'
 }
 
 plugins {
@@ -80,6 +81,7 @@ dependencies {
 
     implementation "no.nav.syfo.tjenester:fellesformat:$fellesformat_version"
     implementation "no.nav.syfo.tjenester:kith-hodemelding:$kith_hodemelding_version"
+    implementation "no.nav.syfo.tjenester:kith-apprec:$kith_apprec_version"
 
     implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
 
