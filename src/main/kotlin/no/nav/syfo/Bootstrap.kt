@@ -123,7 +123,8 @@ fun listen(
                         *defaultKeyValues)
             }
 
-            val syfoSykemeldingeeglerClientReponse = syfoSykemeldingeeglerClient.getSamhandler("sting")
+            val syfoSykemeldingeeglerClientReponse = syfoSykemeldingeeglerClient.executeRuleValidation("sting")
+            // TODO syfoSykemeldingeeglerClientReponse valite if its manuelle or not
             if (true) {
                 kafkaproducer.send(ProducerRecord("aapen-sykemelding-2013-automatisk-topic", "test value"))
             } else {
