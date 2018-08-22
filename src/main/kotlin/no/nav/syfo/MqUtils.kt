@@ -14,6 +14,3 @@ fun connectionFactory(env: Environment) = MQConnectionFactory().apply {
     setIntProperty(WMQConstants.JMS_IBM_ENCODING, MQC.MQENC_NATIVE)
     setIntProperty(WMQConstants.JMS_IBM_CHARACTER_SET, 1208)
 }
-
-
-

@@ -12,11 +12,14 @@ buildscript {
     ext.jaxb_basic_ant_version = '1.11.1'
     ext.jaxb_version = '2.3.0.1'
     ext.jackson_version = '2.9.6'
-
-    ext.jaxb2SourceDir = file("$buildDir/generated-sources/jaxb2")
+    ext.okhttp_version = '3.11.0'
+    ext.spek_version = '2.0.0-alpha.1'
+    ext.fellesformat_version = '1.2'
+    ext.kith_hodemelding_version = '1.1'
 }
 
 plugins {
+    id 'org.jmailen.kotlinter' version '1.14.0'
     id 'org.jetbrains.kotlin.jvm' version '1.2.51'
     id("com.diffplug.gradle.spotless") version "3.14.0"
     id 'application'
@@ -47,63 +50,6 @@ test {
     }
 }
 
-configurations {
-    generateJaxb2
-}
-
-class Jaxb2Task extends DefaultTask {
-    @OutputDirectory
-    File outputDir
-    @InputDirectory
-    File sourceDir
-    @InputDirectory
-    File xjbDir
-
-
-    @TaskAction
-    def generateFiles() {
-        outputDir.deleteDir()
-        outputDir.mkdirs()
-        ant.taskdef(
-                'classpath': project.configurations.generateJaxb2.asPath,
-                'name': 'xjc',
-                'classname': 'org.jvnet.jaxb2_commons.xjc.XJC2Task'
-        )
-
-        ant.xjc(
-                'destdir': outputDir,
-                'package': 'no.nav.model.syfomottak',
-                'schema': "$sourceDir/HelseOpplysningerArbeidsuforhet_2013-10-01.xsd",
-                'encoding': 'UTF-8',
-                'fork': 'true'
-        )
-
-        ant.xjc(
-                'destdir': outputDir,
-                'schema': "$sourceDir/Fellesformat_1.0.xsd",
-                'encoding': 'UTF-8',
-                'fork': 'true'
-        )
-                {
-                    binding(dir: xjbDir, includes: "fellesformat_apprec.xjb")
-                }
-
-    }
-}
-
-task generateJaxb2(type: Jaxb2Task) {
-    outputDir = jaxb2SourceDir
-    sourceDir = file("$projectDir/src/main/resources/xsd")
-    xjbDir = file("$projectDir/src/main/resources/xjb")
-}
-
-sourceSets {
-    main {
-        java {
-            srcDir jaxb2SourceDir
-        }
-    }
-}
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
@@ -132,14 +78,14 @@ dependencies {
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jackson_version"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jackson_version"
 
-    generateJaxb2 "com.sun.xml.bind:jaxb-xjc:$jaxb_version"
-    generateJaxb2 "com.sun.xml.bind:jaxb-impl:$jaxb_version"
-    generateJaxb2 "com.sun.xml.bind:jaxb-core:$jaxb_version"
-    generateJaxb2 "org.jvnet.jaxb2_commons:jaxb2-basics-ant:$jaxb_basic_ant_version"
+    implementation "no.nav.syfo.tjenester:fellesformat:$fellesformat_version"
+    implementation "no.nav.syfo.tjenester:kith-hodemelding:$kith_hodemelding_version"
+
+    implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
+
 }
 
 compileKotlin {
-    dependsOn generateJaxb2
     kotlinOptions.jvmTarget = "1.8"
 }
 
