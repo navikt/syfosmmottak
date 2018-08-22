@@ -1,0 +1,44 @@
+<jxb:bindings
+        xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        xmlns:jxb="http://java.sun.com/xml/ns/jaxb"
+        version="2.1">
+    <jxb:bindings schemaLocation="../xsd/Fellesformat_1.0.xsd">
+        <jxb:schemaBindings>
+            <jxb:package name="no.nav.model.fellesformat" />
+        </jxb:schemaBindings>
+    </jxb:bindings>
+    <jxb:bindings schemaLocation="../xsd/MsgHead-v1_2.xsd" node="//xs:schema">
+        <jxb:schemaBindings>
+            <jxb:package name="no.nav.model.msghead" />
+        </jxb:schemaBindings>
+        <jxb:bindings node="//xs:complexType[@name='CS']">
+            <jxb:class name="MsgHeadCS" />
+        </jxb:bindings>
+        <jxb:bindings node="//xs:complexType[@name='CV']">
+            <jxb:class name="MsgHeadCV" />
+        </jxb:bindings>
+        <jxb:bindings node="//xs:complexType[@name='Address']">
+            <jxb:class name="MsgHeadAddress" />
+        </jxb:bindings>
+        <jxb:bindings node="//xs:complexType[@name='URL']">
+            <jxb:class name="MsgHeadURL" />
+        </jxb:bindings>
+    </jxb:bindings>
+    <jxb:bindings schemaLocation="../xsd/AppRec-v1-2004-11-21.xsd">
+        <jxb:schemaBindings>
+            <jxb:package name="no.nav.model.apprec" />
+        </jxb:schemaBindings>
+        <jxb:bindings node="//xs:complexType[@name='CS']">
+            <jxb:class name="AppRecCS" />
+        </jxb:bindings>
+        <jxb:bindings node="//xs:complexType[@name='CV']">
+            <jxb:class name="AppRecCV" />
+        </jxb:bindings>
+        <jxb:bindings node="//xs:element[@name='Address']">
+            <jxb:class name="AppRecAddress" />
+        </jxb:bindings>
+        <jxb:bindings node="//xs:complexType[@name='URL']">
+            <jxb:class name="AppRecURL" />
+        </jxb:bindings>
+    </jxb:bindings>
+</jxb:bindings>

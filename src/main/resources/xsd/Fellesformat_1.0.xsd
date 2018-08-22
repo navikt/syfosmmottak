@@ -1,21 +1,17 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<!-- edited with XMLSpy v2010 rel. 3 sp1 (x64) (http://www.altova.com) by XMLSpy 2009 Enterprise Ed., Installed for 30 users (with SMP from 2009-06-19 to 2010-06-20) (NAV ØKONOMITJENESTER) -->
 <!-- edited with XMLSPY v5 rel. 3 U (http://www.xmlspy.com) by Trygdeetaten (Rikstrygdeverket) -->
-<schema xmlns:nd="http://www.nav.no/xml/NavDokument/1/" xmlns="http://www.w3.org/2001/XMLSchema" xmlns:ff="http://www.nav.no/xml/eiff/2/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:mh="http://www.kith.no/xmlstds/msghead/2006-05-24" xmlns:app="http://www.kith.no/xmlstds/apprec/2004-11-21" targetNamespace="http://www.nav.no/xml/eiff/2/" elementFormDefault="qualified" attributeFormDefault="unqualified">
+<schema targetNamespace="http://www.trygdeetaten.no/xml/eiff/1/" xmlns="http://www.w3.org/2001/XMLSchema" xmlns:ff="http://www.trygdeetaten.no/xml/eiff/1/" xmlns:xsd="http://www.w3.org/2001/XMLSchema.xsd" xmlns:aln="http://www.nav.no/altinn/2007-02-02" xmlns:mh="http://www.kith.no/xmlstds/msghead/2006-05-24" xmlns:rtv="http://www.kith.no/xmlstds/sykmelding/2004-05-03" xmlns:pom="http://www.rtv.no/NamespacePOM" xmlns:lom="http://www.kith.no/xmlstds/lom/2003-12-01" xmlns:app="http://www.kith.no/xmlstds/apprec/2004-11-21" xmlns:asv="http://www.kith.no/xmlstds/rtv/appsvar/1/" elementFormDefault="qualified" attributeFormDefault="unqualified">
 	<import namespace="http://www.kith.no/xmlstds/apprec/2004-11-21" schemaLocation="./AppRec-v1-2004-11-21.xsd"/>
 	<import namespace="http://www.kith.no/xmlstds/msghead/2006-05-24" schemaLocation="./MsgHead-v1_2.xsd"/>
-	<import namespace="http://www.nav.no/xml/NavDokument/1/" schemaLocation="./NavDokument V.02.xsd"/>
-	<import namespace="http://www.kith.no/xmlstds/dialog/2006-10-11" schemaLocation="./dialogmelding.xsd"/>
-	<import namespace="http://www.kith.no/xmlstds/base64container" schemaLocation="./kith-base64.xsd"/>
 	<element name="EI_fellesformat">
 		<annotation>
 			<documentation>Dette er rotnoden i fellesformatet som inneholder nyttedata, mottaksblokk, sporingsinfo og eventuelt apprec </documentation>
 		</annotation>
 		<complexType>
-			<choice minOccurs="0" maxOccurs="unbounded">
+			<sequence>
 				<choice minOccurs="0">
-					<element ref="mh:MsgHead"/>
-					<element name="Content">
+					<element ref="mh:MsgHead" minOccurs="0"/>
+					<element name="Content" minOccurs="0">
 						<complexType>
 							<complexContent>
 								<restriction base="anyType">
@@ -26,10 +22,7 @@
 							</complexContent>
 						</complexType>
 					</element>
-					<element ref="nd:NavInnDokument"/>
-					<element ref="app:AppRec"/>
 				</choice>
-				<element ref="nd:NavArkivDokument" minOccurs="0"/>
 				<element name="MottakenhetBlokk" minOccurs="0">
 					<annotation>
 						<documentation>Dette elementet innholder den informasjon og de data som genereres i mottaket og som sendes med for videre behandling innnover i systemet.</documentation>
@@ -40,18 +33,8 @@
 						</complexContent>
 					</complexType>
 				</element>
-				<element name="Prosessdata" minOccurs="0">
-					<annotation>
-						<documentation>Dette elementet innholder prosessdata, som ikke mottas av eller sendes fra EIA.</documentation>
-					</annotation>
-					<complexType>
-						<complexContent>
-							<extension base="ff:Prosessdata_type">
-							</extension>
-						</complexContent>
-					</complexType>
-				</element>
-			</choice>
+				<element ref="app:AppRec" minOccurs="0"/>
+			</sequence>
 		</complexType>
 	</element>
 	<complexType name="MottakenhetBlokk_type">
@@ -177,14 +160,5 @@
 				</restriction>
 			</simpleType>
 		</attribute>
-	</complexType>
-	<complexType name="Prosessdata_type">
-		<annotation>
-			<documentation>Inneholder EIA internt produserte data, som ikke skal sendes videre.</documentation>
-		</annotation>
-		<sequence>
-			<any minOccurs="0" maxOccurs="unbounded"/>
-		</sequence>
-		<anyAttribute/>
 	</complexType>
 </schema>

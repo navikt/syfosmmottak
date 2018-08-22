@@ -8,6 +8,8 @@ import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.runBlocking
 import net.logstash.logback.argument.StructuredArgument
 import net.logstash.logback.argument.StructuredArguments.keyValue
+import no.nav.model.fellesformat.EIFellesformat
+import no.nav.model.syfomottak.HelseOpplysningerArbeidsuforhet
 import no.nav.syfo.api.registerNaisApi
 import org.slf4j.LoggerFactory
 import java.io.StringReader
@@ -23,8 +25,9 @@ fun doReadynessCheck(): Boolean {
     // Do validation
     return true
 }
-//val fellesformatJaxBContext: JAXBContext = JAXBContext.newInstance(EIFellesformat::class.java, Legeerklaring::class.java)
-//val fellesformatUnmarshaller: Unmarshaller = fellesformatJaxBContext.createUnmarshaller()
+
+val fellesformatJaxBContext: JAXBContext = JAXBContext.newInstance(EIFellesformat::class.java, HelseOpplysningerArbeidsuforhet::class.java)
+val fellesformatUnmarshaller: Unmarshaller = fellesformatJaxBContext.createUnmarshaller()
 
 data class ApplicationState(var running: Boolean = true)
 
@@ -75,9 +78,9 @@ fun listen(
                 is TextMessage -> it.text
                 else -> throw RuntimeException("Incoming message needs to be a byte message or text message")
             }
-           // val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(inputMessageText)) as EIFellesformat
+            val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(inputMessageText)) as EIFellesformat
+            val ediLoggId = fellesformat.mottakenhetBlokk.ediLoggId
 
-           // val ediLoggId = fellesformat.mottakenhetBlokk.ediLoggId
         }
         catch (e: Exception) {
             log.error("Exception caught while handling message, sending to backout $defaultKeyFormat",

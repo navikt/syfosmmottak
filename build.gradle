@@ -27,6 +27,8 @@ plugins {
 group 'no.nav.syfo'
 version '1.0-SNAPSHOT'
 
+mainClassName = 'no.nav.pale.BootstrapKt'
+
 repositories {
     mavenCentral()
     jcenter()
@@ -57,6 +59,7 @@ class Jaxb2Task extends DefaultTask {
     @InputDirectory
     File xjbDir
 
+
     @TaskAction
     def generateFiles() {
         outputDir.deleteDir()
@@ -77,10 +80,13 @@ class Jaxb2Task extends DefaultTask {
 
         ant.xjc(
                 'destdir': outputDir,
-                'schema': "$sourceDir/Fellesformat_2.0.xsd",
+                'schema': "$sourceDir/Fellesformat_1.0.xsd",
                 'encoding': 'UTF-8',
                 'fork': 'true'
         )
+                {
+                    binding(dir: xjbDir, includes: "fellesformat_apprec.xjb")
+                }
 
     }
 }
@@ -88,7 +94,7 @@ class Jaxb2Task extends DefaultTask {
 task generateJaxb2(type: Jaxb2Task) {
     outputDir = jaxb2SourceDir
     sourceDir = file("$projectDir/src/main/resources/xsd")
-    xjbDir = file("$projectDir/src/main/xjb")
+    xjbDir = file("$projectDir/src/main/resources/xjb")
 }
 
 sourceSets {
