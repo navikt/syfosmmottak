@@ -44,7 +44,6 @@ import javax.xml.bind.Marshaller
 import javax.xml.bind.Unmarshaller
 
 fun doReadynessCheck(): Boolean {
-    // Do validation
     return true
 }
 
@@ -146,7 +145,6 @@ fun listen(
             }
 
             val validationResult = syfoSykemeldingeeglerClient.executeRuleValidation("sting")
-            // TODO syfoSykemeldingeeglerClientReponse valite if its manuelle or not
             if (validationResult.status == Status.OK) {
                 sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
                 val currentRequestLatency = requestLatency.observeDuration()
