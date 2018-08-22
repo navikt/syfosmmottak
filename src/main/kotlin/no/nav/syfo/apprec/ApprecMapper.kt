@@ -94,8 +94,8 @@ fun XMLIdent.intoInst(): XMLInst {
 fun MsgHeadCV.intoCS(): XMLCS {
     val msgHeadCV = this
     return XMLCS().apply {
-        dn = msgHeadCV.intoCS().dn
-        v = msgHeadCV.intoCS().v
+        dn = msgHeadCV.dn
+        v = msgHeadCV.v
     }
 }
 

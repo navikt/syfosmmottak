@@ -13,7 +13,6 @@ import kotlinx.coroutines.experimental.runBlocking
 import net.logstash.logback.argument.StructuredArgument
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.kith.xmlstds.apprec._2004_11_21.XMLAppRec
-import no.kith.xmlstds.apprec._2004_11_21.XMLCV as AppRecCV
 import no.kith.xmlstds.msghead._2006_05_24.XMLIdent
 import no.kith.xmlstds.msghead._2006_05_24.XMLMsgHead
 import no.nav.syfo.api.Status
@@ -22,6 +21,7 @@ import no.nav.syfo.api.registerNaisApi
 import no.nav.syfo.apprec.ApprecError
 import no.nav.syfo.apprec.ApprecStatus
 import no.nav.syfo.apprec.createApprec
+import no.nav.syfo.apprec.mapApprecErrorToAppRecCV
 import no.nav.syfo.metrics.REQUEST_TIME
 import no.nav.syfo.util.connectionFactory
 import no.nav.syfo.util.readProducerConfig
@@ -42,7 +42,6 @@ import javax.jms.MessageProducer
 import javax.xml.bind.JAXBContext
 import javax.xml.bind.Marshaller
 import javax.xml.bind.Unmarshaller
-import javax.xml.datatype.DatatypeFactory
 
 fun doReadynessCheck(): Boolean {
     // Do validation
@@ -59,8 +58,6 @@ val fellesformatUnmarshaller: Unmarshaller = fellesformatJaxBContext.createUnmar
 
 val apprecJaxBContext: JAXBContext = JAXBContext.newInstance(XMLAppRec::class.java)
 val apprecMarshaller: Marshaller = apprecJaxBContext.createMarshaller()
-
-val newInstance: DatatypeFactory = DatatypeFactory.newInstance()
 
 data class ApplicationState(var running: Boolean = true)
 
@@ -81,6 +78,7 @@ fun main(args: Array<String>) = runBlocking {
         val session = connection.createSession()
         val inputQueue = session.createQueue(env.syfomottakinputQueueName)
         val receiptQueue = session.createQueue(env.apprecQueue)
+        val backoutQueue = session.createQueue(env.syfomottakinputBackoutQueueName)
         session.close()
 
         val producerProperties = readProducerConfig(env, valueSerializer = StringSerializer::class)
@@ -90,7 +88,7 @@ fun main(args: Array<String>) = runBlocking {
                 env.srvSyfoMottakUsername,
                 env.srvSyfoMottakPassword)
 
-        listen(inputQueue, receiptQueue, connection, kafkaproducer, syfoSykemeldingeeglerClient).join()
+        listen(inputQueue, receiptQueue, backoutQueue, connection, kafkaproducer, syfoSykemeldingeeglerClient).join()
     }
 
     Runtime.getRuntime().addShutdownHook(Thread {
@@ -107,6 +105,7 @@ fun Application.initRouting(applicationState: ApplicationState) {
 fun listen(
     inputQueue: Queue,
     receiptQueue: Queue,
+    backoutQueue: Queue,
     connection: Connection,
     kafkaproducer: KafkaProducer<String, String>,
     syfoSykemeldingeeglerClient: SyfoSykemelginReglerClient
@@ -114,6 +113,7 @@ fun listen(
     val session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)
     val consumer = session.createConsumer(inputQueue)
     val receiptProducer = session.createProducer(receiptQueue)
+    val backoutProducer = session.createProducer(backoutQueue)
 
     consumer.setMessageListener {
         var defaultKeyValues = arrayOf(keyValue("noMessageIdentifier", true))
@@ -125,9 +125,7 @@ fun listen(
             }
             val requestLatency = REQUEST_TIME.startTimer()
             val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(inputMessageText)) as XMLEIFellesformat
-            val ediLoggId = fellesformat.get<XMLMottakenhetBlokk>().ediLoggId
 
-            // TODO: Do we want to use markers for this instead?
             defaultKeyValues = arrayOf(
                     keyValue("organisationNumber", extractOrganisationNumberFromSender(fellesformat)?.id),
                     keyValue("ediLoggId", fellesformat.get<XMLMottakenhetBlokk>().ediLoggId),
@@ -169,6 +167,7 @@ fun listen(
         } catch (e: Exception) {
             log.error("Exception caught while handling message, sending to backout $defaultKeyFormat",
                     *defaultKeyValues, e)
+            backoutProducer.send(it)
         }
     }
 }
@@ -195,12 +194,6 @@ fun sendReceipt(
         fellesformat.get<XMLAppRec>().error.addAll(apprecErrors.map { mapApprecErrorToAppRecCV(it) })
         text = apprecMarshaller.toString(fellesformat)
     })
-}
-
-fun mapApprecErrorToAppRecCV(apprecError: ApprecError): AppRecCV = AppRecCV().apply {
-    dn = apprecError.dn
-    v = apprecError.v
-    s = apprecError.s
 }
 
 fun Marshaller.toString(input: Any): String = StringWriter().use {

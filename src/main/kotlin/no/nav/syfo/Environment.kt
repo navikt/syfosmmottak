@@ -14,7 +14,8 @@ data class Environment(
     val kafkaBootstrapServers: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS_URL"),
     val syfomottakinputQueueName: String = getEnvVar("SYFOMOTTAK_INPUT_QUEUENAME"),
     val syfoSykemeldingRegelerApiURL: String = getEnvVar("SYFO_SYKEMELDINGREGLER_API_URL", "http://syfosykemeldingregler:8080"),
-    val apprecQueue: String = getEnvVar("MOTTAK_QUEUE_UTSENDING_QUEUENAME")
+    val apprecQueue: String = getEnvVar("MOTTAK_QUEUE_UTSENDING_QUEUENAME"),
+    val syfomottakinputBackoutQueueName: String = getEnvVar("SYFOMOTTAK_BACKOUT_QUEUENAME")
 )
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =

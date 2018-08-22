@@ -29,7 +29,16 @@ resources:
 fasitResources:
   exposed:
 used:
-  - alias: srvappname
+  - alias: srvsyfomottak
     resourceType: Credential
-  - alias: sample_queue
+  - alias: mqGateway04
+    resourceType: QueueManager
+  - alias: syfomottak_backout_queue
     resourceType: queue
+  - alias: syfomottak_input_queue
+    resourceType: Queue
+  - alias: mottak_queue_utsending
+    resourceType: Queue
+    propertyMap:
+      queueName: MOTTAK_QUEUE_UTSENDING_QUEUENAME
+
