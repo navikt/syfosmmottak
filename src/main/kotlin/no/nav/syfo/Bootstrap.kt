@@ -152,14 +152,12 @@ fun listen(
                 val currentRequestLatency = requestLatency.observeDuration()
                 log.info("Message $defaultKeyFormat has been sent in return, processing took {}s",
                         *defaultKeyValues, currentRequestLatency)
-                kafkaproducer.send(ProducerRecord("aapen-sykemelding-2013-automatisk-topic", "test automatisk value"))
                 kafkaproducer.send(ProducerRecord(env.kafkaSM2013JournalfoeringTopic, inputMessageText))
             } else if (validationResult.status == Status.MANUAL_PROCESSING) {
                 sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
                 val currentRequestLatency = requestLatency.observeDuration()
                 log.info("Message $defaultKeyFormat has been sent in return, processing took {}s",
                         *defaultKeyValues, currentRequestLatency)
-                kafkaproducer.send(ProducerRecord("aapen-sykemelding-2013-manuell-topic", "test manuell value"))
                 kafkaproducer.send(ProducerRecord(env.kafkaSM2013JournalfoeringTopic, inputMessageText))
             } else if (validationResult.status == Status.INVALID) {
                 sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist)
