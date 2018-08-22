@@ -88,7 +88,7 @@ fun main(args: Array<String>) = runBlocking {
                 env.srvSyfoMottakUsername,
                 env.srvSyfoMottakPassword)
 
-        listen(inputQueue, receiptQueue, backoutQueue, connection, kafkaproducer, syfoSykemeldingeeglerClient).join()
+        listen(inputQueue, receiptQueue, backoutQueue, connection, kafkaproducer, syfoSykemeldingeeglerClient, env).join()
     }
 
     Runtime.getRuntime().addShutdownHook(Thread {
@@ -108,7 +108,8 @@ fun listen(
     backoutQueue: Queue,
     connection: Connection,
     kafkaproducer: KafkaProducer<String, String>,
-    syfoSykemeldingeeglerClient: SyfoSykemelginReglerClient
+    syfoSykemeldingeeglerClient: SyfoSykemelginReglerClient,
+    env: Environment
 ) = launch {
     val session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)
     val consumer = session.createConsumer(inputQueue)
@@ -152,12 +153,14 @@ fun listen(
                 log.info("Message $defaultKeyFormat has been sent in return, processing took {}s",
                         *defaultKeyValues, currentRequestLatency)
                 kafkaproducer.send(ProducerRecord("aapen-sykemelding-2013-automatisk-topic", "test automatisk value"))
+                kafkaproducer.send(ProducerRecord(env.kafkaSM2013JournalfoeringTopic, inputMessageText))
             } else if (validationResult.status == Status.MANUAL_PROCESSING) {
                 sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
                 val currentRequestLatency = requestLatency.observeDuration()
                 log.info("Message $defaultKeyFormat has been sent in return, processing took {}s",
                         *defaultKeyValues, currentRequestLatency)
                 kafkaproducer.send(ProducerRecord("aapen-sykemelding-2013-manuell-topic", "test manuell value"))
+                kafkaproducer.send(ProducerRecord(env.kafkaSM2013JournalfoeringTopic, inputMessageText))
             } else if (validationResult.status == Status.INVALID) {
                 sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist)
                 val currentRequestLatency = requestLatency.observeDuration()
