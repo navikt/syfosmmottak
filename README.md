@@ -1,22 +1,29 @@
-# SYFO kotlin ktor kickstarter
-A simple starter project for creating a kotlin + ktor based webapplication for the NAIS platform. 
+# SYFO mottak
+This project contains just the receving a sykmelding2013 message
+
+## Technologies used
+* Kotlin
+* Ktor
+* Gradle
+* Spek
+* Jackson
 
 ## Getting started
-1. Checkout the code from git
-2. Update the application name (the entries with the value syfomottak) in Dockerfile, nais.yaml and settings.gradle and
-change the entrypoint in Dockerfile to mirror this name
-3. When using the other branches to cherry pick you probably need to do some changes in Environment.kt to reflect your
-nais environment variables
-4. You should now be able to build the application using `./gradlew clean installDist`
-5. Build and verify that the docker image works by running `docker build -t app_name .` and
-`docker run -p 8080:8080 syfomottak`
+## Running locally
+
+### Building the application
+#### Compile and package application
+To build locally and run the integration tests you can simply run `./gradlew installDist` or  on windows 
+`gradlew.bat installDist`
+
+#### Creating a docker image
+Creating a docker image should be as simple as `docker build -t syfomottak .`
 
 ## Contact us
-
 ### Code/project related questions can be sent to
-Kevin Sillerud, `kevin.sillerud@nav.no`
-Joakim Kartveit `joakim.kartveit@nav.no`
-Anders Østby, `anders.ostby@nav.no`
+* Joakim Kartveit, `joakim.kartveit@nav.no`
+* Kevin Sillerud, `kevin.sillerud@nav.no`
+* Anders Østby, `anders.ostby@nav.no`
 
 ### For NAV employees
 We are available at the Slack channel #barken
