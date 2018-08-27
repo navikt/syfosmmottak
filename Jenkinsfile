@@ -13,27 +13,30 @@ pipeline {
     }
 
     stages {
-        stage('initialize') {
-            steps {
-                init action: 'gradle'
+            stage('initialize') {
+                steps {
+                    script {
+                        sh './gradlew clean'
+                        applicationVersion = sh(script: './gradlew -q printVersion', returnStdout: true).trim()
+                    }
+                }
             }
-        }
-        stage('build') {
-            steps {
-                sh './gradlew build -x test'
+            stage('build') {
+                steps {
+                    sh './gradlew build -x test'
+                }
             }
-        }
-        stage('run tests (unit & intergration)') {
-            steps {
-                sh './gradlew test'
-                slackStatus status: 'passed'
+            stage('run tests (unit & intergration)') {
+                steps {
+                    sh './gradlew test'
+                }
             }
-        }
-        stage('extract application files') {
-            steps {
-                sh './gradlew installDist'
+            stage('extract application files') {
+                steps {
+                    sh './gradlew installDist'
+                }
             }
-        }
+
         stage('push docker image') {
             steps {
                 dockerUtils action: 'createPushImage'
