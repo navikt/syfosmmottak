@@ -57,19 +57,4 @@ pipeline {
             }
         }
     }
-    post {
-        always {
-            postProcess action: 'always'
-            junit '**/build/test-results/test/*.xml'
-            archiveArtifacts artifacts: 'build/reports/rules.csv', allowEmptyArchive: true
-            archiveArtifacts artifacts: '**/build/libs/*', allowEmptyArchive: true
-            archiveArtifacts artifacts: '**/build/install/*', allowEmptyArchive: true
-        }
-        success {
-            postProcess action: 'success'
-        }
-        failure {
-            postProcess action: 'failure'
-        }
-    }
 }
