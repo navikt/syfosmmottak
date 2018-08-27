@@ -19,6 +19,10 @@ buildscript {
     ext.kith_apprec_version = '1.1'
     ext.artemis_version = '2.6.2'
     ext.jedis_version = '2.9.0'
+    ext.jaxb_basic_ant_version = '1.11.1'
+    ext.jaxb_version = '2.3.0.1'
+
+    ext.jaxb2SourceDir = file("$buildDir/generated-sources/jaxb2")
 }
 
 plugins {
@@ -54,7 +58,63 @@ test {
 }
 
 
+
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+configurations {
+    generateJaxb2
+}
+
+task printVersion() {
+    doLast {
+        println(version)
+    }
+}
+class Jaxb2Task extends DefaultTask {
+    @OutputDirectory
+    File outputDir
+    @InputDirectory
+    File sourceDir
+
+    @TaskAction
+    def generateFiles() {
+        outputDir.deleteDir()
+        outputDir.mkdirs()
+        ant.taskdef(
+                'classpath': project.configurations.generateJaxb2.asPath,
+                'name': 'xjc',
+                'classname': 'org.jvnet.jaxb2_commons.xjc.XJC2Task'
+        )
+
+        ant.xjc(
+                'destdir': outputDir,
+                'package': 'no.nav.model.syfomottak',
+                'schema': "$sourceDir/HelseOpplysningerArbeidsuforhet_2013-10-01.xsd",
+                'encoding': 'UTF-8',
+                'fork': 'true'
+        )
+
+    }
+}
+
+task generateJaxb2(type: Jaxb2Task) {
+    outputDir = jaxb2SourceDir
+    sourceDir = file("$projectDir/src/main/resources/xsd")
+}
+
+compileKotlin {
+    dependsOn generateJaxb2
+    kotlinOptions.jvmTarget = "1.8"
+}
+
 dependencies {
+    generateJaxb2 "com.sun.xml.bind:jaxb-xjc:$jaxb_version"
+    generateJaxb2 "com.sun.xml.bind:jaxb-impl:$jaxb_version"
+    generateJaxb2 "com.sun.xml.bind:jaxb-core:$jaxb_version"
+    generateJaxb2 "org.jvnet.jaxb2_commons:jaxb2-basics-ant:$jaxb_basic_ant_version"
+
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
@@ -94,16 +154,4 @@ dependencies {
 
 }
 
-compileKotlin {
-    kotlinOptions.jvmTarget = "1.8"
-}
 
-compileTestKotlin {
-    kotlinOptions.jvmTarget = "1.8"
-}
-
-task printVersion() {
-    doLast {
-        println(version)
-    }
-}
