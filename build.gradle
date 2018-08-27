@@ -37,7 +37,7 @@ plugins {
 group 'no.nav.syfo'
 version '1.0-SNAPSHOT'
 
-mainClassName = 'no.nav.pale.BootstrapKt'
+mainClassName = 'no.nav.syfo.BootstrapKt'
 
 repositories {
     mavenCentral()
