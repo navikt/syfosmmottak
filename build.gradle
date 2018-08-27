@@ -14,9 +14,11 @@ buildscript {
     ext.jackson_version = '2.9.6'
     ext.okhttp_version = '3.11.0'
     ext.spek_version = '2.0.0-alpha.1'
-    ext.fellesformat_version = '1.2'
+    ext.fellesformat_version = '1.0'
     ext.kith_hodemelding_version = '1.1'
     ext.kith_apprec_version = '1.1'
+    ext.artemis_version = '2.6.2'
+    ext.jedis_version = '2.9.0'
 }
 
 plugins {
@@ -84,6 +86,11 @@ dependencies {
     implementation "no.nav.syfo.tjenester:kith-apprec:$kith_apprec_version"
 
     implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
+
+    testImplementation "org.apache.activemq:artemis-server:$artemis_version"
+    testImplementation "org.apache.activemq:artemis-jms-client:$artemis_version"
+
+    implementation "redis.clients:jedis:$jedis_version"
 
 }
 

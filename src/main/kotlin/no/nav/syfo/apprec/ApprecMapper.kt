@@ -12,12 +12,11 @@ import no.kith.xmlstds.msghead._2006_05_24.XMLCV as MsgHeadCV
 import no.kith.xmlstds.msghead._2006_05_24.XMLHealthcareProfessional
 import no.kith.xmlstds.msghead._2006_05_24.XMLIdent
 import no.kith.xmlstds.msghead._2006_05_24.XMLMsgHead
-import no.kith.xmlstds.msghead._2006_05_24.XMLMsgInfo
 import no.kith.xmlstds.msghead._2006_05_24.XMLOrganisation
 import no.nav.syfo.SyfoMottakConstant
 import no.nav.syfo.get
-import no.nav.xml.eiff._2.XMLEIFellesformat
-import no.nav.xml.eiff._2.XMLMottakenhetBlokk
+import no.trygdeetaten.xml.eiff._1.XMLEIFellesformat
+import no.trygdeetaten.xml.eiff._1.XMLMottakenhetBlokk
 import java.time.LocalDateTime
 
 fun createApprec(fellesformat: XMLEIFellesformat, apprecStatus: ApprecStatus): XMLEIFellesformat {
@@ -38,7 +37,7 @@ fun createApprec(fellesformat: XMLEIFellesformat, apprecStatus: ApprecStatus): X
             id = fellesformat.get<XMLMottakenhetBlokk>().ediLoggId
 
             sender = XMLAppRec.Sender().apply {
-                hcp = fellesformat.get<XMLMsgInfo>().receiver.organisation.intoHCP()
+                hcp = fellesformat.get<XMLMsgHead>().msgInfo.receiver.organisation.intoHCP()
             }
 
             receiver = XMLAppRec.Receiver().apply {

@@ -25,6 +25,8 @@ import no.nav.syfo.apprec.mapApprecErrorToAppRecCV
 import no.nav.syfo.metrics.REQUEST_TIME
 import no.nav.syfo.util.connectionFactory
 import no.nav.syfo.util.readProducerConfig
+import no.trygdeetaten.xml.eiff._1.XMLEIFellesformat
+import no.trygdeetaten.xml.eiff._1.XMLMottakenhetBlokk
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.LoggerFactory
@@ -33,11 +35,13 @@ import javax.jms.Connection
 import javax.jms.Queue
 import javax.jms.Session
 import javax.jms.TextMessage
-import no.nav.xml.eiff._2.XMLEIFellesformat
-import no.nav.xml.eiff._2.XMLMottakenhetBlokk
 import org.apache.kafka.clients.producer.ProducerRecord
+import redis.clients.jedis.Jedis
+import redis.clients.jedis.JedisSentinelPool
+import redis.clients.jedis.exceptions.JedisConnectionException
 import java.io.StringReader
 import java.io.StringWriter
+import java.security.MessageDigest
 import javax.jms.MessageProducer
 import javax.xml.bind.JAXBContext
 import javax.xml.bind.Marshaller
@@ -52,11 +56,13 @@ val objectMapper: ObjectMapper = ObjectMapper()
         .registerKotlinModule()
         .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
 
-val fellesformatJaxBContext: JAXBContext = JAXBContext.newInstance(XMLEIFellesformat::class.java)
+val fellesformatJaxBContext: JAXBContext = JAXBContext.newInstance(XMLEIFellesformat::class.java, XMLMsgHead::class.java)
 val fellesformatUnmarshaller: Unmarshaller = fellesformatJaxBContext.createUnmarshaller()
 
 val apprecJaxBContext: JAXBContext = JAXBContext.newInstance(XMLAppRec::class.java)
 val apprecMarshaller: Marshaller = apprecJaxBContext.createMarshaller()
+
+val redisMasterName = "mymaster"
 
 data class ApplicationState(var running: Boolean = true)
 
@@ -70,24 +76,25 @@ fun main(args: Array<String>) = runBlocking {
         initRouting(applicationState)
     }.start(wait = true)
 
-    connectionFactory(env).createConnection(env.srvappserverUsername, env.srvappserverPassword).use {
-        connection ->
+    connectionFactory(env).createConnection(env.srvappserverUsername, env.srvappserverPassword).use { connection ->
         connection.start()
+        JedisSentinelPool(redisMasterName, setOf("${env.redisHost}:26379")).resource.use {
+            jedis ->
+            val session = connection.createSession()
+            val inputQueue = session.createQueue(env.syfomottakinputQueueName)
+            val receiptQueue = session.createQueue(env.apprecQueue)
+            val backoutQueue = session.createQueue(env.syfomottakinputBackoutQueueName)
+            session.close()
 
-        val session = connection.createSession()
-        val inputQueue = session.createQueue(env.syfomottakinputQueueName)
-        val receiptQueue = session.createQueue(env.apprecQueue)
-        val backoutQueue = session.createQueue(env.syfomottakinputBackoutQueueName)
-        session.close()
+            val producerProperties = readProducerConfig(env, valueSerializer = StringSerializer::class)
+            val kafkaproducer = KafkaProducer<String, String>(producerProperties)
 
-        val producerProperties = readProducerConfig(env, valueSerializer = StringSerializer::class)
-        val kafkaproducer = KafkaProducer<String, String>(producerProperties)
+            val syfoSykemeldingeeglerClient = SyfoSykemelginReglerClient(env.syfoSykemeldingRegelerApiURL,
+                    env.srvSyfoMottakUsername,
+                    env.srvSyfoMottakPassword)
 
-        val syfoSykemeldingeeglerClient = SyfoSykemelginReglerClient(env.syfoSykemeldingRegelerApiURL,
-                env.srvSyfoMottakUsername,
-                env.srvSyfoMottakPassword)
-
-        listen(inputQueue, receiptQueue, backoutQueue, connection, kafkaproducer, syfoSykemeldingeeglerClient, env).join()
+            listen(inputQueue, receiptQueue, backoutQueue, connection, kafkaproducer, syfoSykemeldingeeglerClient, env, jedis).join()
+        }
     }
 
     Runtime.getRuntime().addShutdownHook(Thread {
@@ -108,7 +115,8 @@ fun listen(
     connection: Connection,
     kafkaproducer: KafkaProducer<String, String>,
     syfoSykemeldingeeglerClient: SyfoSykemelginReglerClient,
-    env: Environment
+    env: Environment,
+    jedis: Jedis
 ) = launch {
     val session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)
     val consumer = session.createConsumer(inputQueue)
@@ -126,6 +134,10 @@ fun listen(
             val requestLatency = REQUEST_TIME.startTimer()
             val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(inputMessageText)) as XMLEIFellesformat
 
+            val ediLoggId = fellesformat.get<XMLMottakenhetBlokk>().ediLoggId
+            // TODO exctract Sykemelding2013 (HelseOpplysningerArbeidsuforhet)'
+            val sha256String = sha256hashstring("fellesformat")
+
             defaultKeyValues = arrayOf(
                     keyValue("organisationNumber", extractOrganisationNumberFromSender(fellesformat)?.id),
                     keyValue("ediLoggId", fellesformat.get<XMLMottakenhetBlokk>().ediLoggId),
@@ -142,6 +154,21 @@ fun listen(
                 log.debug("Incoming message {}, $defaultKeyFormat",
                         keyValue("xmlMessage", inputMessageText),
                         *defaultKeyValues)
+            }
+
+            try {
+                val redisEdiLoggId = jedis.get(sha256String)
+                val duplicate = redisEdiLoggId != null
+
+                if (duplicate) {
+                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, ApprecError.DUPLICATE)
+                    log.warn("Message marked as duplicate $defaultKeyFormat", redisEdiLoggId, *defaultKeyValues)
+                    return@setMessageListener
+                } else if (ediLoggId != null) {
+                    jedis.setex(sha256String, TimeUnit.DAYS.toSeconds(7).toInt(), ediLoggId)
+                }
+            } catch (connectionException: JedisConnectionException) {
+                log.warn("Unable to contact redis, will allow possible duplicates.", connectionException)
             }
 
             val validationResult = syfoSykemeldingeeglerClient.executeRuleValidation("sting")
@@ -199,3 +226,8 @@ fun Marshaller.toString(input: Any): String = StringWriter().use {
     marshal(input, it)
     it.toString()
 }
+
+fun sha256hashstring(sykemelding: String): String =
+        MessageDigest.getInstance("SHA-256")
+                .digest(objectMapper.writeValueAsBytes(sykemelding))
+                .fold("") { str, it -> str + "%02x".format(it) }
