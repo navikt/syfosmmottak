@@ -5,8 +5,8 @@ pipeline {
 
     environment {
         APPLICATION_NAME = 'syfomottak'
-        APPLICATION_SERVICE = ''
-        APPLICATION_COMPONENT = ''
+        APPLICATION_SERVICE = 'TODO'
+        APPLICATION_COMPONENT = 'TODO'
         FASIT_ENVIRONMENT = 'q1'
         ZONE = 'fss'
         DOCKER_SLUG = 'integrasjon'
@@ -45,7 +45,6 @@ pipeline {
                 nais action: 'upload'
             }
         }
-        /*
         stage('deploy to preprod') {
             steps {
                 deploy action: 'jiraPreprod'
@@ -57,7 +56,6 @@ pipeline {
                 deploy action: 'jiraProd'
             }
         }
-        */
     }
     post {
         always {
