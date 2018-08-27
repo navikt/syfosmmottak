@@ -15,6 +15,7 @@ import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.kith.xmlstds.apprec._2004_11_21.XMLAppRec
 import no.kith.xmlstds.msghead._2006_05_24.XMLIdent
 import no.kith.xmlstds.msghead._2006_05_24.XMLMsgHead
+import no.nav.model.sykemelding2013.HelseOpplysningerArbeidsuforhet
 import no.nav.syfo.api.Status
 import no.nav.syfo.api.SyfoSykemelginReglerClient
 import no.nav.syfo.api.registerNaisApi
@@ -56,7 +57,7 @@ val objectMapper: ObjectMapper = ObjectMapper()
         .registerKotlinModule()
         .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
 
-val fellesformatJaxBContext: JAXBContext = JAXBContext.newInstance(XMLEIFellesformat::class.java, XMLMsgHead::class.java)
+val fellesformatJaxBContext: JAXBContext = JAXBContext.newInstance(XMLEIFellesformat::class.java, XMLMsgHead::class.java, HelseOpplysningerArbeidsuforhet::class.java)
 val fellesformatUnmarshaller: Unmarshaller = fellesformatJaxBContext.createUnmarshaller()
 
 val apprecJaxBContext: JAXBContext = JAXBContext.newInstance(XMLAppRec::class.java)
@@ -135,8 +136,7 @@ fun listen(
             val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(inputMessageText)) as XMLEIFellesformat
 
             val ediLoggId = fellesformat.get<XMLMottakenhetBlokk>().ediLoggId
-            // TODO exctract Sykemelding2013 (HelseOpplysningerArbeidsuforhet)'
-            val sha256String = sha256hashstring("fellesformat")
+            val sha256String = sha256hashstring(extractHelseOpplysningerArbeidsuforhet(fellesformat))
 
             defaultKeyValues = arrayOf(
                     keyValue("organisationNumber", extractOrganisationNumberFromSender(fellesformat)?.id),
@@ -227,7 +227,10 @@ fun Marshaller.toString(input: Any): String = StringWriter().use {
     it.toString()
 }
 
-fun sha256hashstring(sykemelding: String): String =
+fun sha256hashstring(helseOpplysningerArbeidsuforhet: HelseOpplysningerArbeidsuforhet): String =
         MessageDigest.getInstance("SHA-256")
-                .digest(objectMapper.writeValueAsBytes(sykemelding))
+                .digest(objectMapper.writeValueAsBytes(helseOpplysningerArbeidsuforhet))
                 .fold("") { str, it -> str + "%02x".format(it) }
+
+fun extractHelseOpplysningerArbeidsuforhet(fellesformat: XMLEIFellesformat): HelseOpplysningerArbeidsuforhet =
+        fellesformat.get<XMLMsgHead>().document[0].refDoc.content.any[0] as HelseOpplysningerArbeidsuforhet

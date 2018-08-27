@@ -90,8 +90,22 @@ class Jaxb2Task extends DefaultTask {
 
         ant.xjc(
                 'destdir': outputDir,
-                'package': 'no.nav.model.syfomottak',
+                'package': 'no.nav.model.sykemelding2013',
                 'schema': "$sourceDir/HelseOpplysningerArbeidsuforhet_2013-10-01.xsd",
+                'encoding': 'UTF-8',
+                'fork': 'true'
+        )
+        ant.xjc(
+                'destdir': outputDir,
+                'package': 'no.nav.model.kith',
+                'schema': "$sourceDir/kith.xsd",
+                'encoding': 'UTF-8',
+                'fork': 'true'
+        )
+        ant.xjc(
+                'destdir': outputDir,
+                'package': 'no.nav.model.felleskomponent1',
+                'schema': "$sourceDir/felleskomponent1.xsd",
                 'encoding': 'UTF-8',
                 'fork': 'true'
         )
@@ -102,6 +116,14 @@ class Jaxb2Task extends DefaultTask {
 task generateJaxb2(type: Jaxb2Task) {
     outputDir = jaxb2SourceDir
     sourceDir = file("$projectDir/src/main/resources/xsd")
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir jaxb2SourceDir
+        }
+    }
 }
 
 compileKotlin {
@@ -151,7 +173,4 @@ dependencies {
     testImplementation "org.apache.activemq:artemis-jms-client:$artemis_version"
 
     implementation "redis.clients:jedis:$jedis_version"
-
 }
-
-

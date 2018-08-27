@@ -137,5 +137,4 @@ object ApprecMapperSpek : Spek({
             ff.get<XMLAppRec>().error.first().s shouldEqual ApprecError.BEHANDLER_PERSON_NUMBER_NOT_VALID.s
         }
     }
-
 })
