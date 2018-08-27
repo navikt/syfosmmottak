@@ -19,8 +19,7 @@ buildscript {
     ext.kith_apprec_version = '1.1'
     ext.artemis_version = '2.6.2'
     ext.jedis_version = '2.9.0'
-    ext.jaxb_basic_ant_version = '1.11.1'
-    ext.jaxb_version = '2.3.0.1'
+    ext.jaxb_api_version = '2.3.0'
 
     ext.jaxb2SourceDir = file("$buildDir/generated-sources/jaxb2")
 }
@@ -173,4 +172,5 @@ dependencies {
     testImplementation "org.apache.activemq:artemis-jms-client:$artemis_version"
 
     implementation "redis.clients:jedis:$jedis_version"
+    implementation "javax.xml.bind:jaxb-api:$jaxb_api_version"
 }
