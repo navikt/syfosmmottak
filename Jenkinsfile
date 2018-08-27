@@ -36,28 +36,5 @@ pipeline {
                     sh './gradlew installDist'
                 }
             }
-
-        stage('push docker image') {
-            steps {
-                dockerUtils action: 'createPushImage'
-            }
-        }
-        stage('validate & upload nais.yaml to nexus m2internal') {
-            steps {
-                nais action: 'validate'
-                nais action: 'upload'
-            }
-        }
-        stage('deploy to preprod') {
-            steps {
-                deploy action: 'jiraPreprod'
-            }
-        }
-        stage('deploy to production') {
-            when { environment name: 'DEPLOY_TO', value: 'production' }
-            steps {
-                deploy action: 'jiraProd'
-            }
-        }
     }
 }
