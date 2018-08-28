@@ -75,7 +75,11 @@ fun main(args: Array<String>) = runBlocking {
 
     val applicationServer = embeddedServer(Netty, env.applicationPort) {
         initRouting(applicationState)
-    }.start(wait = true)
+    }.start(wait = false)
+
+    Runtime.getRuntime().addShutdownHook(Thread {
+        applicationServer.stop(10, 10, TimeUnit.SECONDS)
+    })
 
     connectionFactory(env).createConnection(env.srvappserverUsername, env.srvappserverPassword).use { connection ->
         connection.start()
@@ -97,10 +101,6 @@ fun main(args: Array<String>) = runBlocking {
             listen(inputQueue, receiptQueue, backoutQueue, connection, kafkaproducer, syfoSykemeldingeeglerClient, env, jedis).join()
         }
     }
-
-    Runtime.getRuntime().addShutdownHook(Thread {
-        applicationServer.stop(10, 10, TimeUnit.SECONDS)
-    })
 }
 
 fun Application.initRouting(applicationState: ApplicationState) {
