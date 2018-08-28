@@ -19,7 +19,7 @@ buildscript {
     ext.kith_apprec_version = '1.1'
     ext.artemis_version = '2.6.2'
     ext.jedis_version = '2.9.0'
-    ext.jaxb_api_version = '2.1.0'
+    ext.jaxb_api_version = '2.1'
 
     ext.jaxb2SourceDir = file("$buildDir/generated-sources/jaxb2")
 }
@@ -134,6 +134,7 @@ dependencies {
     generateJaxb2 "com.sun.xml.bind:jaxb-xjc:$jaxb_version"
     generateJaxb2 "com.sun.xml.bind:jaxb-impl:$jaxb_version"
     generateJaxb2 "com.sun.xml.bind:jaxb-core:$jaxb_version"
+    generateJaxb2 "javax.xml.bind:jaxb-api:$jaxb_api_version"
     generateJaxb2 "org.jvnet.jaxb2_commons:jaxb2-basics-ant:$jaxb_basic_ant_version"
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
@@ -172,5 +173,8 @@ dependencies {
     testImplementation "org.apache.activemq:artemis-jms-client:$artemis_version"
 
     implementation "redis.clients:jedis:$jedis_version"
-    compile "javax.xml.bind:jaxb-api:$jaxb_api_version"
+
+    implementation "javax.xml.bind:jaxb-api:$jaxb_api_version"
+    implementation "com.sun.xml.bind:jaxb-impl:$jaxb_version"
+    implementation "com.sun.xml.bind:jaxb-core:$jaxb_version"
 }
