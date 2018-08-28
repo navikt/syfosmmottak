@@ -8,6 +8,7 @@ import io.ktor.application.Application
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.runBlocking
 import net.logstash.logback.argument.StructuredArgument
@@ -98,7 +99,7 @@ fun main(args: Array<String>) = runBlocking {
                     env.srvSyfoMottakUsername,
                     env.srvSyfoMottakPassword)
 
-            listen(inputQueue, receiptQueue, backoutQueue, connection, kafkaproducer, syfoSykemeldingeeglerClient, env, jedis).join()
+            listen(inputQueue, receiptQueue, backoutQueue, connection, kafkaproducer, syfoSykemeldingeeglerClient, env, applicationState, jedis).join()
         }
     }
 }
@@ -117,6 +118,7 @@ fun listen(
     kafkaproducer: KafkaProducer<String, String>,
     syfoSykemeldingeeglerClient: SyfoSykemelginReglerClient,
     env: Environment,
+    applicationState: ApplicationState,
     jedis: Jedis
 ) = launch {
     val session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)
@@ -124,12 +126,17 @@ fun listen(
     val receiptProducer = session.createProducer(receiptQueue)
     val backoutProducer = session.createProducer(backoutQueue)
 
-    consumer.setMessageListener {
+    while (applicationState.running) {
+        val message = consumer.receiveNoWait()
+        if (message == null) {
+            delay(100)
+            continue
+        }
         var defaultKeyValues = arrayOf(keyValue("noMessageIdentifier", true))
         var defaultKeyFormat = defaultLogInfo(defaultKeyValues)
         try {
-            val inputMessageText = when (it) {
-                is TextMessage -> it.text
+            val inputMessageText = when (message) {
+                is TextMessage -> message.text
                 else -> throw RuntimeException("Incoming message needs to be a byte message or text message")
             }
             val requestLatency = REQUEST_TIME.startTimer()
@@ -163,7 +170,7 @@ fun listen(
                 if (duplicate) {
                     sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, ApprecError.DUPLICATE)
                     log.warn("Message marked as duplicate $defaultKeyFormat", redisEdiLoggId, *defaultKeyValues)
-                    return@setMessageListener
+                    continue
                 } else if (ediLoggId != null) {
                     jedis.setex(sha256String, TimeUnit.DAYS.toSeconds(7).toInt(), ediLoggId)
                 }
@@ -193,7 +200,7 @@ fun listen(
         } catch (e: Exception) {
             log.error("Exception caught while handling message, sending to backout $defaultKeyFormat",
                     *defaultKeyValues, e)
-            backoutProducer.send(it)
+            backoutProducer.send(message)
         }
     }
 }
