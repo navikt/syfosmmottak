@@ -61,7 +61,7 @@ val objectMapper: ObjectMapper = ObjectMapper()
 val fellesformatJaxBContext: JAXBContext = JAXBContext.newInstance(XMLEIFellesformat::class.java, XMLMsgHead::class.java, HelseOpplysningerArbeidsuforhet::class.java)
 val fellesformatUnmarshaller: Unmarshaller = fellesformatJaxBContext.createUnmarshaller()
 
-val apprecJaxBContext: JAXBContext = JAXBContext.newInstance(XMLAppRec::class.java)
+val apprecJaxBContext: JAXBContext = JAXBContext.newInstance(XMLEIFellesformat::class.java, XMLAppRec::class.java)
 val apprecMarshaller: Marshaller = apprecJaxBContext.createMarshaller()
 
 val redisMasterName = "mymaster"
