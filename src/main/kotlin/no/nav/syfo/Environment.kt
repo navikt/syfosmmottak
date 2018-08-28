@@ -2,12 +2,11 @@ package no.nav.syfo
 
 data class Environment(
     val applicationPort: Int = getEnvVar("APPLICATION_PORT", "8080").toInt(),
-    val srvSyfoMottakUsername: String = getEnvVar("SRVAPPNAME_USERNAME"),
-    val srvSyfoMottakPassword: String = getEnvVar("SRVAPPNAME_PASSWORD"),
-    val mqQueueManagerName: String = getEnvVar("MQGATEWAY04_NAME"),
+    val srvSyfoMottakUsername: String = getEnvVar("SRVSYFOMOTTAK_USERNAME"),
+    val srvSyfoMottakPassword: String = getEnvVar("SRVSYFOMOTTAK_PASSWORD"),
     val mqHostname: String = getEnvVar("MQGATEWAY04_HOSTNAME"),
     val mqPort: Int = getEnvVar("MQGATEWAY04_PORT").toInt(),
-    val mqGatewayName: String = getEnvVar("MQGATEWAY03_NAME"),
+    val mqGatewayName: String = getEnvVar("MQGATEWAY04_NAME"),
     val mqChannelName: String = getEnvVar("SYFOMOTTAK_CHANNEL_NAME"),
     val srvappserverUsername: String = getEnvVar("SRVAPPSERVER_USERNAME", "srvappserver"),
     val srvappserverPassword: String = getEnvVar("SRVAPPSERVER_PASSWORD", ""),

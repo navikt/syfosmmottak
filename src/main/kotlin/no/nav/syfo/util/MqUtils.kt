@@ -8,7 +8,7 @@ import no.nav.syfo.Environment
 fun connectionFactory(env: Environment) = MQConnectionFactory().apply {
     hostName = env.mqHostname
     port = env.mqPort
-    queueManager = env.mqQueueManagerName
+    queueManager = env.mqGatewayName
     transportType = WMQConstants.WMQ_CM_CLIENT
     channel = env.mqChannelName
     ccsid = 1208
