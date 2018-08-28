@@ -12,7 +12,7 @@ data class Environment(
     val srvappserverPassword: String = getEnvVar("SRVAPPSERVER_PASSWORD", ""),
     val kafkaBootstrapServers: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS_URL"),
     val syfomottakinputQueueName: String = getEnvVar("SYFOMOTTAK_INPUT_QUEUE_QUEUENAME"),
-    val syfoSykemeldingRegelerApiURL: String = getEnvVar("SYFO_SYKEMELDINGREGLER_API_URL", "http://syfosykemeldingregler:8080"),
+    val syfoSykemeldingRegelerApiURL: String = getEnvVar("SYFO_SYKEMELDINGREGLER_API_URL", "http://syfosykemeldingregler"),
     val apprecQueue: String = getEnvVar("MOTTAK_QUEUE_UTSENDING_QUEUENAME"),
     val kafkaSM2013JournalfoeringTopic: String = getEnvVar("KAFKA_SM2013_JOURNALING_TOPIC", "privat-syfomottak-sm2013-journalfoerJoark"),
     val kafkaSM2013LagOppgaveTopic: String = getEnvVar("KAFKA_SM2013_LAGOPPGAVE_TOPIC", "privat-syfomottak-lageoppgave"),
