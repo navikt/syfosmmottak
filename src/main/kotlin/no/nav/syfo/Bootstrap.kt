@@ -168,8 +168,9 @@ fun listen(
                 val duplicate = redisEdiLoggId != null
 
                 if (duplicate) {
-                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, ApprecError.DUPLICATE)
                     log.warn("Message marked as duplicate $defaultKeyFormat", redisEdiLoggId, *defaultKeyValues)
+                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, ApprecError.DUPLICATE)
+                    log.info("Apprec Receipt sent to {} $defaultKeyFormat", env.apprecQueue, *defaultKeyValues)
                     continue
                 } else if (ediLoggId != null) {
                     jedis.setex(sha256String, TimeUnit.DAYS.toSeconds(7).toInt(), ediLoggId)
