@@ -178,4 +178,5 @@ dependencies {
     implementation "javax.xml.bind:jaxb-api:$jaxb_api_version"
     implementation "org.glassfish.jaxb:jaxb-runtime:$jaxb_version"
     implementation "org.glassfish.jaxb:jaxb-runtime:$jaxb_version"
+    implementation "javax.activation:activation:$javax_activation_version"
 }
