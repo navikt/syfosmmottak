@@ -178,29 +178,29 @@ fun listen(
                 log.warn("Unable to contact redis, will allow possible duplicates.", connectionException)
             }
 
-            val validationResult = syfoSykemeldingeeglerClient.executeRuleValidation("sting")
+            val validationResult = syfoSykemeldingeeglerClient.executeRuleValidation(inputMessageText)
             when {
                 validationResult.status == Status.OK -> {
                     sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
-                    log.info("Apprec send to emottak {}($defaultKeyFormat)", env.apprecQueue, *defaultKeyValues)
+                    log.info("Apprec Receipt sent to {} $defaultKeyFormat", env.apprecQueue, *defaultKeyValues)
                     kafkaproducer.send(ProducerRecord(env.kafkaSM2013JournalfoeringTopic, inputMessageText))
-                    log.info("Message send to kafka {}($defaultKeyFormat)", env.kafkaSM2013JournalfoeringTopic, *defaultKeyValues)
+                    log.info("Message send to kafka {} $defaultKeyFormat", env.kafkaSM2013JournalfoeringTopic, *defaultKeyValues)
                     val currentRequestLatency = requestLatency.observeDuration()
                     log.info("Message $defaultKeyFormat has outcome automatic, processing took {}s",
                             *defaultKeyValues, currentRequestLatency)
                 }
                 validationResult.status == Status.MANUAL_PROCESSING -> {
                     sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
-                    log.info("Apprec send to emottak {}($defaultKeyFormat)", env.apprecQueue, *defaultKeyValues)
+                    log.info("Apprec Receipt sent to {} $defaultKeyFormat", env.apprecQueue, *defaultKeyValues)
                     kafkaproducer.send(ProducerRecord(env.kafkaSM2013LagOppgaveTopic, inputMessageText))
-                    log.info("Message send to kafka {}($defaultKeyFormat)", env.kafkaSM2013LagOppgaveTopic, *defaultKeyValues)
+                    log.info("Message send to kafka {} $defaultKeyFormat", env.kafkaSM2013LagOppgaveTopic, *defaultKeyValues)
                     val currentRequestLatency = requestLatency.observeDuration()
                     log.info("Message $defaultKeyFormat has outcome manual processing, processing took {}s",
                             *defaultKeyValues, currentRequestLatency)
                 }
                 validationResult.status == Status.INVALID -> {
                     sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist)
-                    log.info("Apprec send to emottak {}($defaultKeyFormat)", env.apprecQueue, *defaultKeyValues)
+                    log.info("Apprec Receipt sent to {} $defaultKeyFormat", env.apprecQueue, *defaultKeyValues)
                     val currentRequestLatency = requestLatency.observeDuration()
                     log.info("Message $defaultKeyFormat has outcome return, processing took {}s",
                             *defaultKeyValues, currentRequestLatency)
