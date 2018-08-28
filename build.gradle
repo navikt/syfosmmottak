@@ -20,6 +20,7 @@ buildscript {
     ext.artemis_version = '2.6.2'
     ext.jedis_version = '2.9.0'
     ext.jaxb_api_version = '2.1'
+    ext.javax_activation_version = '1.1.1'
 
     ext.jaxb2SourceDir = file("$buildDir/generated-sources/jaxb2")
 }
@@ -132,10 +133,10 @@ compileKotlin {
 
 dependencies {
     generateJaxb2 "com.sun.xml.bind:jaxb-xjc:$jaxb_version"
-    generateJaxb2 "com.sun.xml.bind:jaxb-impl:$jaxb_version"
-    generateJaxb2 "com.sun.xml.bind:jaxb-core:$jaxb_version"
+    generateJaxb2 "org.glassfish.jaxb:jaxb-runtime:$jaxb_version"
     generateJaxb2 "javax.xml.bind:jaxb-api:$jaxb_api_version"
     generateJaxb2 "org.jvnet.jaxb2_commons:jaxb2-basics-ant:$jaxb_basic_ant_version"
+    generateJaxb2 "javax.activation:activation:$javax_activation_version"
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
@@ -175,6 +176,6 @@ dependencies {
     implementation "redis.clients:jedis:$jedis_version"
 
     implementation "javax.xml.bind:jaxb-api:$jaxb_api_version"
-    implementation "com.sun.xml.bind:jaxb-impl:$jaxb_version"
-    implementation "com.sun.xml.bind:jaxb-core:$jaxb_version"
+    implementation "org.glassfish.jaxb:jaxb-runtime:$jaxb_version"
+    implementation "org.glassfish.jaxb:jaxb-runtime:$jaxb_version"
 }
