@@ -179,23 +179,29 @@ fun listen(
             }
 
             val validationResult = syfoSykemeldingeeglerClient.executeRuleValidation("sting")
-            if (validationResult.status == Status.OK) {
-                sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
-                val currentRequestLatency = requestLatency.observeDuration()
-                log.info("Message $defaultKeyFormat has outcome automatic, processing took {}s",
-                        *defaultKeyValues, currentRequestLatency)
-                kafkaproducer.send(ProducerRecord(env.kafkaSM2013JournalfoeringTopic, inputMessageText))
-            } else if (validationResult.status == Status.MANUAL_PROCESSING) {
-                sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
-                val currentRequestLatency = requestLatency.observeDuration()
-                log.info("Message $defaultKeyFormat has outcome manual processing, processing took {}s",
-                        *defaultKeyValues, currentRequestLatency)
-                kafkaproducer.send(ProducerRecord(env.kafkaSM2013LagOppgaveTopic, inputMessageText))
-            } else if (validationResult.status == Status.INVALID) {
-                sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist)
-                val currentRequestLatency = requestLatency.observeDuration()
-                log.info("Message $defaultKeyFormat has outcome return, processing took {}s",
-                        *defaultKeyValues, currentRequestLatency)
+            when {
+                validationResult.status == Status.OK -> {
+                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
+                    val currentRequestLatency = requestLatency.observeDuration()
+                    log.info("Message $defaultKeyFormat has outcome automatic, processing took {}s",
+                            *defaultKeyValues, currentRequestLatency)
+                    kafkaproducer.send(ProducerRecord(env.kafkaSM2013JournalfoeringTopic, inputMessageText))
+                    log.info("Message send to kafka {}($defaultKeyFormat)", env.kafkaSM2013JournalfoeringTopic, *defaultKeyValues)
+                }
+                validationResult.status == Status.MANUAL_PROCESSING -> {
+                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
+                    val currentRequestLatency = requestLatency.observeDuration()
+                    log.info("Message $defaultKeyFormat has outcome manual processing, processing took {}s",
+                            *defaultKeyValues, currentRequestLatency)
+                    kafkaproducer.send(ProducerRecord(env.kafkaSM2013LagOppgaveTopic, inputMessageText))
+                    log.info("Message send to kafka {}($defaultKeyFormat)", env.kafkaSM2013LagOppgaveTopic, *defaultKeyValues)
+                }
+                validationResult.status == Status.INVALID -> {
+                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist)
+                    val currentRequestLatency = requestLatency.observeDuration()
+                    log.info("Message $defaultKeyFormat has outcome return, processing took {}s",
+                            *defaultKeyValues, currentRequestLatency)
+                }
             }
         } catch (e: Exception) {
             log.error("Exception caught while handling message, sending to backout $defaultKeyFormat",
