@@ -46,3 +46,5 @@ fasitResources:
       resourceType: Queue
       propertyMap:
         queueName: MOTTAK_QUEUE_UTSENDING_QUEUENAME
+    - alias: kafka_bootstrap_servers
+      resourceType: baseurl
