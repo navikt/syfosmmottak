@@ -183,7 +183,7 @@ fun listen(
                 val currentRequestLatency = requestLatency.observeDuration()
                 log.info("Message $defaultKeyFormat has outcome manual processing, processing took {}s",
                         *defaultKeyValues, currentRequestLatency)
-                kafkaproducer.send(ProducerRecord(env.kafkaSM2013JournalfoeringTopic, inputMessageText))
+                kafkaproducer.send(ProducerRecord(env.kafkaSM2013LagOppgaveTopic, inputMessageText))
             } else if (validationResult.status == Status.INVALID) {
                 sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist)
                 val currentRequestLatency = requestLatency.observeDuration()
