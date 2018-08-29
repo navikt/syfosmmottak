@@ -4,13 +4,14 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.engine.config
 import io.ktor.client.features.auth.basic.BasicAuth
+import io.ktor.client.features.json.GsonSerializer
+import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.request.post
 import io.ktor.util.url
 import no.nav.syfo.Environment
 import org.slf4j.LoggerFactory
 
 private val log = LoggerFactory.getLogger("no.nav.syfo.http")
-
 
 fun createHttpClient(env: Environment) = HttpClient(CIO.config {
     maxConnectionsCount = 1000 // Maximum number of socket connections.
@@ -25,11 +26,13 @@ fun createHttpClient(env: Environment) = HttpClient(CIO.config {
             port = 80
         }
     }
-
 }) {
     install(BasicAuth) {
         username = env.srvSyfoMottakUsername
         password = env.srvSyfoMottakPassword
+    }
+    install(JsonFeature) {
+        serializer = GsonSerializer()
     }
 }
 
