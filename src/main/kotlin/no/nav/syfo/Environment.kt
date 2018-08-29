@@ -15,7 +15,7 @@ data class Environment(
     val syfoSykemeldingRegelerApiURL: String = getEnvVar("SYFO_SYKEMELDINGREGLER_API_URL", "http://syfosykemeldingregler"),
     val apprecQueue: String = getEnvVar("MOTTAK_QUEUE_UTSENDING_QUEUENAME"),
     val kafkaSM2013JournalfoeringTopic: String = getEnvVar("KAFKA_SM2013_JOURNALING_TOPIC", "privat-syfomottak-sm2013-journalfoerJoark"),
-    val kafkaSM2013LagOppgaveTopic: String = getEnvVar("KAFKA_SM2013_LAGOPPGAVE_TOPIC", "privat-syfomottak-lageoppgave"),
+    val kafkaSM2013OppgaveGsakTopic: String = getEnvVar("KAFKA_SM2013_OPPGAVE_TOPIC", "privat-syfomottak-sm2013-oppgaveGsak"),
     val syfomottakinputBackoutQueueName: String = getEnvVar("SYFOMOTTAK_BACKOUT_QUEUE_QUEUENAME"),
     val redisHost: String = getEnvVar("REDIS_HOST")
 )
