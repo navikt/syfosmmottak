@@ -22,7 +22,7 @@ fun createHttpClient(env: Environment) = HttpClient(CIO.config {
         connectTimeout = 5000
         connectRetryAttempts = 5
         url {
-            host = "syfosykemeldingrules"
+            host = env.syfoSykemeldingRegelerApiURL
             port = 80
         }
     }
