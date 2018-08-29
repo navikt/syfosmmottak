@@ -7,7 +7,6 @@ import io.ktor.client.features.auth.basic.BasicAuth
 import io.ktor.client.features.json.GsonSerializer
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.request.post
-import io.ktor.util.url
 import no.nav.syfo.Environment
 import org.slf4j.LoggerFactory
 
@@ -21,10 +20,6 @@ fun createHttpClient(env: Environment) = HttpClient(CIO.config {
         keepAliveTime = 5000
         connectTimeout = 5000
         connectRetryAttempts = 5
-        url {
-            host = env.syfoSykemeldingRegelerApiURL
-            path("v1", "rules", "validate")
-        }
     }
 }) {
     install(BasicAuth) {
@@ -36,8 +31,13 @@ fun createHttpClient(env: Environment) = HttpClient(CIO.config {
     }
 }
 
-suspend fun HttpClient.executeRuleValidation(payload: String): ValidationResult = post {
+suspend fun HttpClient.executeRuleValidation(env: Environment, payload: String): ValidationResult = post {
     body = payload
+
+    url {
+        host = env.syfoSykemeldingRegelerApiURL
+        path("v1", "rules", "validate")
+    }
 }
 
 data class ValidationResult(

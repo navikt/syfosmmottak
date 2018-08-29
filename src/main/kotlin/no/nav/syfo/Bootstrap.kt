@@ -179,7 +179,7 @@ fun listen(
                 log.warn("Unable to contact redis, will allow possible duplicates.", connectionException)
             }
 
-            val validationResult = httpClient.executeRuleValidation(inputMessageText)
+            val validationResult = httpClient.executeRuleValidation(env, inputMessageText)
             when {
                 validationResult.status == Status.OK -> {
                     sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
