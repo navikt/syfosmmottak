@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.application.Application
+import io.ktor.client.HttpClient
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
@@ -18,7 +19,8 @@ import no.kith.xmlstds.msghead._2006_05_24.XMLIdent
 import no.kith.xmlstds.msghead._2006_05_24.XMLMsgHead
 import no.nav.model.sykemelding2013.HelseOpplysningerArbeidsuforhet
 import no.nav.syfo.api.Status
-import no.nav.syfo.api.SyfoSykemelginReglerClient
+import no.nav.syfo.api.createHttpClient
+import no.nav.syfo.api.executeRuleValidation
 import no.nav.syfo.api.registerNaisApi
 import no.nav.syfo.apprec.ApprecError
 import no.nav.syfo.apprec.ApprecStatus
@@ -95,11 +97,9 @@ fun main(args: Array<String>) = runBlocking {
             val producerProperties = readProducerConfig(env, valueSerializer = StringSerializer::class)
             val kafkaproducer = KafkaProducer<String, String>(producerProperties)
 
-            val syfoSykemeldingeeglerClient = SyfoSykemelginReglerClient(env.syfoSykemeldingRegelerApiURL,
-                    env.srvSyfoMottakUsername,
-                    env.srvSyfoMottakPassword)
+            val httpClient = createHttpClient(env)
 
-            listen(inputQueue, receiptQueue, backoutQueue, connection, kafkaproducer, syfoSykemeldingeeglerClient, env, applicationState, jedis).join()
+            listen(inputQueue, receiptQueue, backoutQueue, connection, kafkaproducer, httpClient, env, applicationState, jedis).join()
         }
     }
 }
@@ -116,7 +116,7 @@ fun listen(
     backoutQueue: Queue,
     connection: Connection,
     kafkaproducer: KafkaProducer<String, String>,
-    syfoSykemeldingeeglerClient: SyfoSykemelginReglerClient,
+    httpClient: HttpClient,
     env: Environment,
     applicationState: ApplicationState,
     jedis: Jedis
@@ -179,7 +179,7 @@ fun listen(
                 log.warn("Unable to contact redis, will allow possible duplicates.", connectionException)
             }
 
-            val validationResult = syfoSykemeldingeeglerClient.executeRuleValidation(inputMessageText)
+            val validationResult = httpClient.executeRuleValidation(inputMessageText)
             when {
                 validationResult.status == Status.OK -> {
                     sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)

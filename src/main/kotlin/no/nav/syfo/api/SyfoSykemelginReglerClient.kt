@@ -1,41 +1,41 @@
 package no.nav.syfo.api
 
-import net.logstash.logback.argument.StructuredArguments
-import no.nav.syfo.objectMapper
-import okhttp3.Credentials
-import okhttp3.HttpUrl
-import okhttp3.MediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.engine.config
+import io.ktor.client.features.auth.basic.BasicAuth
+import io.ktor.client.request.post
+import io.ktor.util.url
+import no.nav.syfo.Environment
 import org.slf4j.LoggerFactory
-import java.io.IOException
 
-private val log = LoggerFactory.getLogger(SyfoSykemelginReglerClient::class.java)
+private val log = LoggerFactory.getLogger("no.nav.syfo.http")
 
-class SyfoSykemelginReglerClient(private val url: String, private val username: String, private val password: String) {
-    private val client: OkHttpClient = OkHttpClient()
 
-    fun executeRuleValidation(data: String): ValidationResult {
-        val request = Request.Builder()
-                .post(RequestBody.create(MediaType.parse("application/json"), data))
-                .header("Authorization", Credentials.basic(username, password))
-                .url(HttpUrl.parse(url)!!
-                        .newBuilder()
-                        .addPathSegments("/v1/rules/validate")
-                        .build()
-                )
-                .build()
-
-        val response = client.newCall(request)
-                .execute()
-        if (response.isSuccessful) {
-            return objectMapper.readValue(response.body()?.byteStream(), ValidationResult::class.java)
-        } else {
-            log.error("Received an error while contacting SyfoSykemelingRegler {}", StructuredArguments.keyValue("errorBody", response.body()?.string()))
-            throw IOException("Unable to contact SyfoSykemelingRegler, got status code ${response.code()}")
+fun createHttpClient(env: Environment) = HttpClient(CIO.config {
+    maxConnectionsCount = 1000 // Maximum number of socket connections.
+    endpoint.apply {
+        maxConnectionsPerRoute = 100
+        pipelineMaxSize = 20
+        keepAliveTime = 5000
+        connectTimeout = 5000
+        connectRetryAttempts = 5
+        url {
+            host = "syfosykemeldingrules"
+            port = 80
         }
     }
+
+}) {
+    install(BasicAuth) {
+        username = env.srvSyfoMottakUsername
+        password = env.srvSyfoMottakPassword
+    }
+}
+
+suspend fun HttpClient.executeRuleValidation(payload: String): ValidationResult = post {
+    url { path("v1", "rules", "validate") }
+    body = payload
 }
 
 data class ValidationResult(
