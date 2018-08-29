@@ -23,7 +23,7 @@ fun createHttpClient(env: Environment) = HttpClient(CIO.config {
         connectRetryAttempts = 5
         url {
             host = env.syfoSykemeldingRegelerApiURL
-            port = 80
+            path("v1", "rules", "validate")
         }
     }
 }) {
@@ -37,7 +37,6 @@ fun createHttpClient(env: Environment) = HttpClient(CIO.config {
 }
 
 suspend fun HttpClient.executeRuleValidation(payload: String): ValidationResult = post {
-    url { path("v1", "rules", "validate") }
     body = payload
 }
 
