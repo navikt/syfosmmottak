@@ -184,8 +184,8 @@ fun listen(
                 validationResult.status == Status.OK -> {
                     sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
                     log.info("Apprec Receipt sent to {} $defaultKeyFormat", env.apprecQueue, *defaultKeyValues)
-                    kafkaproducer.send(ProducerRecord(env.kafkaSM2013JournalfoeringTopic, inputMessageText))
-                    log.info("Message send to kafka {} $defaultKeyFormat", env.kafkaSM2013JournalfoeringTopic, *defaultKeyValues)
+                    kafkaproducer.send(ProducerRecord(env.sm2013AutomaticHandlingTopic, inputMessageText))
+                    log.info("Message send to kafka {} $defaultKeyFormat", env.sm2013AutomaticHandlingTopic, *defaultKeyValues)
                     val currentRequestLatency = requestLatency.observeDuration()
                     log.info("Message $defaultKeyFormat has outcome automatic, processing took {}s",
                             *defaultKeyValues, currentRequestLatency)
@@ -193,8 +193,8 @@ fun listen(
                 validationResult.status == Status.MANUAL_PROCESSING -> {
                     sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
                     log.info("Apprec Receipt sent to {} $defaultKeyFormat", env.apprecQueue, *defaultKeyValues)
-                    kafkaproducer.send(ProducerRecord(env.kafkaSM2013OppgaveGsakTopic, inputMessageText))
-                    log.info("Message send to kafka {} $defaultKeyFormat", env.kafkaSM2013OppgaveGsakTopic, *defaultKeyValues)
+                    kafkaproducer.send(ProducerRecord(env.sm2013ManualHandlingTopic, inputMessageText))
+                    log.info("Message send to kafka {} $defaultKeyFormat", env.sm2013ManualHandlingTopic, *defaultKeyValues)
                     val currentRequestLatency = requestLatency.observeDuration()
                     log.info("Message $defaultKeyFormat has outcome manual processing, processing took {}s",
                             *defaultKeyValues, currentRequestLatency)

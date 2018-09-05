@@ -1,0 +1,21 @@
+{
+  "topics": [
+    {
+      "topicName": "privat-syfo-sm2013-automatiskBehandling",
+      "members": [
+        {"member":"srvsyfosmjoark", "role":"CONSUMER"},
+        {"member":"srvsyfosminfotrygd", "role":"CONSUMER"},
+        {"member":"srvsyfomottak", "role":"PRODUCER"}
+      ],
+      "numPartitions": 3
+    },
+    {
+      "topicName": "privat-syfo-sm2013-manuellBehandling",
+      "members": [
+        {"member":"srvsyfosmgsak", "role":"CONSUMER"},
+        {"member":"srvsyfomottak", "role":"PRODUCER"}
+      ],
+      "numPartitions": 3
+    }
+  ]
+}
