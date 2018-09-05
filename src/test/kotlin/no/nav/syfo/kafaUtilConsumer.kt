@@ -11,7 +11,7 @@ fun readConsumerConfig(
 ) = Properties().apply {
     load(Properties::class.java.getResourceAsStream("/kafka_consumer.properties"))
     this["sasl.jaas.config"] = "org.apache.kafka.common.security.plain.PlainLoginModule required " +
-            "username=\"${env.srvSyfoMottakUsername}\" password=\"${env.srvSyfoMottakPassword}\";"
+            "username=\"${env.srvSyfoSmMottakUsername}\" password=\"${env.srvSyfoSMMottakPassword}\";"
     this["key.deserializer"] = keyDeserializer.qualifiedName
     this["value.deserializer"] = valueDeserializer.qualifiedName
     this["bootstrap.servers"] = env.kafkaBootstrapServers

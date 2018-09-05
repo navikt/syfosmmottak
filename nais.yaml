@@ -1,5 +1,5 @@
-name: "syfomottak"
-image: "repo.adeo.no:5443/syfo/syfomottak"
+name: "syfosmmottak"
+image: "repo.adeo.no:5443/syfo/syfosmmottak"
 replicas:
   min: 1
   max: 4
@@ -32,7 +32,7 @@ resources:
 redis: true
 fasitResources:
   used:
-    - alias: srvsyfomottak
+    - alias: srvsyfosmmottak
       resourceType: Credential
     - alias: mqGateway03
       resourceType: QueueManager

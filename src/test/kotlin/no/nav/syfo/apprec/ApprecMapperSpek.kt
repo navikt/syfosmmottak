@@ -2,7 +2,7 @@ package no.nav.syfo.apprec
 
 import no.kith.xmlstds.apprec._2004_11_21.XMLAppRec
 import no.kith.xmlstds.msghead._2006_05_24.XMLMsgHead
-import no.nav.syfo.SyfoMottakConstant
+import no.nav.syfo.SyfoSmMottakConstant
 import no.nav.syfo.fellesformatUnmarshaller
 import no.nav.syfo.get
 import no.nav.syfo.utils.getFileAsString
@@ -41,19 +41,19 @@ object ApprecMapperSpek : Spek({
     describe("OK AppRec") {
         val ff = createApprec(fellesformat, ApprecStatus.ok)
         it("Sets ebRole to ebRoleNav") {
-            ff.get<XMLMottakenhetBlokk>().ebRole shouldEqual SyfoMottakConstant.ebRoleNav.string
+            ff.get<XMLMottakenhetBlokk>().ebRole shouldEqual SyfoSmMottakConstant.ebRoleNav.string
         }
         it("Sets ebService") {
-            ff.get<XMLMottakenhetBlokk>().ebService shouldEqual SyfoMottakConstant.ebServiceLegemelding.string
+            ff.get<XMLMottakenhetBlokk>().ebService shouldEqual SyfoSmMottakConstant.ebServiceLegemelding.string
         }
         it("Sets ebAction") {
-            ff.get<XMLMottakenhetBlokk>().ebAction shouldEqual SyfoMottakConstant.ebActionSvarmelding.string
+            ff.get<XMLMottakenhetBlokk>().ebAction shouldEqual SyfoSmMottakConstant.ebActionSvarmelding.string
         }
         it("Sets appRec message type") {
-            ff.get<XMLAppRec>().msgType.v shouldEqual SyfoMottakConstant.APPREC.string
+            ff.get<XMLAppRec>().msgType.v shouldEqual SyfoSmMottakConstant.apprec.string
         }
         it("Sets appRec miGversion") {
-            ff.get<XMLAppRec>().miGversion shouldEqual SyfoMottakConstant.APPRECVersionV1_0.string
+            ff.get<XMLAppRec>().miGversion shouldEqual SyfoSmMottakConstant.apprecVersionV1_0.string
         }
         it("Sets genDate to current date") {
             val now = LocalDateTime.now()

@@ -1,4 +1,4 @@
-# SYFO mottak
+# SYFO sm mottak
 This project contains just the receving a sykmelding2013 message
 
 ## Technologies used
@@ -17,7 +17,7 @@ To build locally and run the integration tests you can simply run `./gradlew ins
 `gradlew.bat installDist`
 
 #### Creating a docker image
-Creating a docker image should be as simple as `docker build -t syfomottak .`
+Creating a docker image should be as simple as `docker build -t syfosmmottak .`
 
 ## Contact us
 ### Code/project related questions can be sent to

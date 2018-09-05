@@ -13,7 +13,7 @@ import no.kith.xmlstds.msghead._2006_05_24.XMLHealthcareProfessional
 import no.kith.xmlstds.msghead._2006_05_24.XMLIdent
 import no.kith.xmlstds.msghead._2006_05_24.XMLMsgHead
 import no.kith.xmlstds.msghead._2006_05_24.XMLOrganisation
-import no.nav.syfo.SyfoMottakConstant
+import no.nav.syfo.SyfoSmMottakConstant
 import no.nav.syfo.get
 import no.trygdeetaten.xml.eiff._1.XMLEIFellesformat
 import no.trygdeetaten.xml.eiff._1.XMLMottakenhetBlokk
@@ -23,16 +23,16 @@ fun createApprec(fellesformat: XMLEIFellesformat, apprecStatus: ApprecStatus): X
     val fellesformatApprec = XMLEIFellesformat().apply {
         any.add(XMLMottakenhetBlokk().apply {
             ediLoggId = fellesformat.get<XMLMottakenhetBlokk>().ediLoggId
-            ebRole = SyfoMottakConstant.ebRoleNav.string
-            ebService = SyfoMottakConstant.ebServiceLegemelding.string
-            ebAction = SyfoMottakConstant.ebActionSvarmelding.string
+            ebRole = SyfoSmMottakConstant.ebRoleNav.string
+            ebService = SyfoSmMottakConstant.ebServiceLegemelding.string
+            ebAction = SyfoSmMottakConstant.ebActionSvarmelding.string
         }
         )
         any.add(XMLAppRec().apply {
             msgType = XMLCS().apply {
-                v = SyfoMottakConstant.APPREC.string
+                v = SyfoSmMottakConstant.apprec.string
             }
-            miGversion = SyfoMottakConstant.APPRECVersionV1_0.string
+            miGversion = SyfoSmMottakConstant.apprecVersionV1_0.string
             genDate = LocalDateTime.now()
             id = fellesformat.get<XMLMottakenhetBlokk>().ediLoggId
 

@@ -17,6 +17,4 @@ enum class ApprecError(val v: String, val dn: String, val s: String) {
     DUPLICATE("54", "Duplikat! - Denne legeerklæringen meldingen er mottatt tidligere. Skal ikke sendes på nytt.",
             "2.16.578.1.12.4.1.1.8222"),
     MISSING_PATIENT_INFO("55", "Pasientopplysninger er utilstrekkelige", "2.16.578.1.12.4.1.1.8222"),
-    // All available apprecs for legeerklæring(OID=8222): https://volven.no/produkt.asp?id=335023&catID=3&subID=8
-    // ALL available apprecs general OID=8221: https://volven.no/produkt.asp?id=340320&catID=3&subID=8
 }

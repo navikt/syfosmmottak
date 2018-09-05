@@ -2,7 +2,7 @@ package no.nav.syfo.metrics
 
 import io.prometheus.client.Summary
 
-const val METRICS_NS = "syfomottak"
+const val METRICS_NS = "syfosmmottak"
 
 val REQUEST_TIME: Summary = Summary.build()
         .namespace(METRICS_NS)

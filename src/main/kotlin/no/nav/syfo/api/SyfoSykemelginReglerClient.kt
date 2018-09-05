@@ -23,8 +23,8 @@ fun createHttpClient(env: Environment) = HttpClient(CIO.config {
     }
 }) {
     install(BasicAuth) {
-        username = env.srvSyfoMottakUsername
-        password = env.srvSyfoMottakPassword
+        username = env.srvSyfoSmMottakUsername
+        password = env.srvSyfoSMMottakPassword
     }
     install(JsonFeature) {
         serializer = GsonSerializer()

@@ -12,7 +12,7 @@ fun readProducerConfig(
 ) = Properties().apply {
     load(Environment::class.java.getResourceAsStream("/kafka_producer.properties"))
     this["sasl.jaas.config"] = "org.apache.kafka.common.security.plain.PlainLoginModule required " +
-            "username=\"${env.srvSyfoMottakUsername}\" password=\"${env.srvSyfoMottakPassword}\";"
+            "username=\"${env.srvSyfoSmMottakUsername}\" password=\"${env.srvSyfoSMMottakPassword}\";"
     this["key.serializer"] = keySerializer.qualifiedName
     this["value.serializer"] = valueSerializer.qualifiedName
     this["bootstrap.servers"] = env.kafkaBootstrapServers
