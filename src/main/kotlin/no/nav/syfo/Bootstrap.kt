@@ -70,7 +70,7 @@ val redisMasterName = "mymaster"
 
 data class ApplicationState(var running: Boolean = true)
 
-private val log = LoggerFactory.getLogger("nav.syfomottak-application")
+private val log = LoggerFactory.getLogger("nav.syfosmmottak-application")
 
 fun main(args: Array<String>) = runBlocking {
     val env = Environment()
