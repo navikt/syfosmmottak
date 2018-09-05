@@ -5,7 +5,7 @@
       "members": [
         {"member":"srvsyfosmjoark", "role":"CONSUMER"},
         {"member":"srvsyfosminfotrygd", "role":"CONSUMER"},
-        {"member":"syfosmmottak", "role":"PRODUCER"}
+        {"member":"srvsyfosmmottak", "role":"PRODUCER"}
       ],
       "numPartitions": 3
     },
@@ -13,7 +13,7 @@
       "topicName": "privat-syfo-sm2013-manuellBehandling",
       "members": [
         {"member":"srvsyfosmgsak", "role":"CONSUMER"},
-        {"member":"syfosmmottak", "role":"PRODUCER"}
+        {"member":"srvsyfosmmottak", "role":"PRODUCER"}
       ],
       "numPartitions": 3
     }
