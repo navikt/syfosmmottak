@@ -147,7 +147,7 @@ fun listen(
 
             defaultKeyValues = arrayOf(
                     keyValue("organisationNumber", extractOrganisationNumberFromSender(fellesformat)?.id),
-                    keyValue("ediLoggId", fellesformat.get<XMLMottakenhetBlokk>().ediLoggId),
+                    keyValue("smId", fellesformat.get<XMLMottakenhetBlokk>().ediLoggId),
                     keyValue("msgId", fellesformat.get<XMLMsgHead>().msgInfo.msgId)
             )
 
