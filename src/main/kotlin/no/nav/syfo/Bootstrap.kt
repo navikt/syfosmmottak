@@ -12,7 +12,6 @@ import io.ktor.server.netty.Netty
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.runBlocking
-import net.logstash.logback.argument.StructuredArgument
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.kith.xmlstds.apprec._2004_11_21.XMLAppRec
 import no.kith.xmlstds.msghead._2006_05_24.XMLIdent
@@ -132,8 +131,17 @@ fun listen(
             delay(100)
             continue
         }
-        var defaultKeyValues = arrayOf(keyValue("noMessageIdentifier", true))
-        var defaultKeyFormat = defaultLogInfo(defaultKeyValues)
+
+        var logValues = arrayOf(
+                keyValue("smId", "missing"),
+                keyValue("organizationNumber", "missing"),
+                keyValue("msgId", "missing")
+        )
+
+        val logKeys = logValues.joinToString(prefix = "(", postfix = ")", separator = ",") {
+            "{}"
+        }
+
         try {
             val inputMessageText = when (message) {
                 is TextMessage -> message.text
@@ -141,26 +149,19 @@ fun listen(
             }
             val requestLatency = REQUEST_TIME.startTimer()
             val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(inputMessageText)) as XMLEIFellesformat
-
             val ediLoggId = fellesformat.get<XMLMottakenhetBlokk>().ediLoggId
             val sha256String = sha256hashstring(extractHelseOpplysningerArbeidsuforhet(fellesformat))
 
-            defaultKeyValues = arrayOf(
-                    keyValue("organisationNumber", extractOrganisationNumberFromSender(fellesformat)?.id),
+            logValues = arrayOf(
                     keyValue("smId", fellesformat.get<XMLMottakenhetBlokk>().ediLoggId),
+                    keyValue("organizationNumber", extractOrganisationNumberFromSender(fellesformat)?.id),
                     keyValue("msgId", fellesformat.get<XMLMsgHead>().msgInfo.msgId)
             )
 
-            defaultKeyFormat = defaultLogInfo(defaultKeyValues)
-
-            log.info("Received message from {}, $defaultKeyFormat",
-                    keyValue("size", inputMessageText.length),
-                    *defaultKeyValues)
+            log.info("Received a SM2013, $logKeys", *logValues)
 
             if (log.isDebugEnabled) {
-                log.debug("Incoming message {}, $defaultKeyFormat",
-                        keyValue("xmlMessage", inputMessageText),
-                        *defaultKeyValues)
+                log.debug("Incoming message {}, $logKeys", inputMessageText, *logValues)
             }
 
             try {
@@ -168,9 +169,9 @@ fun listen(
                 val duplicate = redisEdiLoggId != null
 
                 if (duplicate) {
-                    log.warn("Message marked as duplicate $defaultKeyFormat", redisEdiLoggId, *defaultKeyValues)
+                    log.warn("Message marked as duplicate $logKeys", redisEdiLoggId, *logValues)
                     sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, ApprecError.DUPLICATE)
-                    log.info("Apprec Receipt sent to {} $defaultKeyFormat", env.apprecQueue, *defaultKeyValues)
+                    log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueue, *logValues)
                     continue
                 } else if (ediLoggId != null) {
                     jedis.setex(sha256String, TimeUnit.DAYS.toSeconds(7).toInt(), ediLoggId)
@@ -183,42 +184,38 @@ fun listen(
             when {
                 validationResult.status == Status.OK -> {
                     sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
-                    log.info("Apprec Receipt sent to {} $defaultKeyFormat", env.apprecQueue, *defaultKeyValues)
+                    log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueue, *logValues)
                     kafkaproducer.send(ProducerRecord(env.sm2013AutomaticHandlingTopic, inputMessageText))
-                    log.info("Message send to kafka {} $defaultKeyFormat", env.sm2013AutomaticHandlingTopic, *defaultKeyValues)
+                    log.info("Message send to kafka {} $logKeys", env.sm2013AutomaticHandlingTopic, *logValues)
                     val currentRequestLatency = requestLatency.observeDuration()
-                    log.info("Message $defaultKeyFormat has outcome automatic, processing took {}s",
-                            *defaultKeyValues, currentRequestLatency)
+                    log.info("Message $logKeys has outcome automatic, processing took {}s",
+                            currentRequestLatency, *logValues)
                 }
                 validationResult.status == Status.MANUAL_PROCESSING -> {
                     sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
-                    log.info("Apprec Receipt sent to {} $defaultKeyFormat", env.apprecQueue, *defaultKeyValues)
+                    log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueue, *logValues)
                     kafkaproducer.send(ProducerRecord(env.sm2013ManualHandlingTopic, inputMessageText))
-                    log.info("Message send to kafka {} $defaultKeyFormat", env.sm2013ManualHandlingTopic, *defaultKeyValues)
+                    log.info("Message send to kafka {} $logKeys", env.sm2013ManualHandlingTopic, *logValues)
                     val currentRequestLatency = requestLatency.observeDuration()
-                    log.info("Message $defaultKeyFormat has outcome manual processing, processing took {}s",
-                            *defaultKeyValues, currentRequestLatency)
+                    log.info("Message $logKeys has outcome manual processing, processing took {}s",
+                            currentRequestLatency, *logValues)
                 }
                 validationResult.status == Status.INVALID -> {
                     sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist)
-                    log.info("Apprec Receipt sent to {} $defaultKeyFormat", env.apprecQueue, *defaultKeyValues)
+                    log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueue, *logValues)
                     val currentRequestLatency = requestLatency.observeDuration()
-                    log.info("Message $defaultKeyFormat has outcome return, processing took {}s",
-                            *defaultKeyValues, currentRequestLatency)
+                    log.info("Message $logKeys has outcome return, processing took {}s",
+                            currentRequestLatency, *logValues)
                 }
             }
         } catch (e: Exception) {
-            log.error("Exception caught while handling message, sending to backout $defaultKeyFormat",
-                    *defaultKeyValues, e)
+            log.error("Exception caught while handling message, sending to backout $logKeys", e, *logValues)
             backoutProducer.send(message)
         }
     }
 }
 
 inline fun <reified T> XMLEIFellesformat.get() = this.any.find { it is T } as T
-
-fun defaultLogInfo(keyValues: Array<StructuredArgument>): String =
-        (0..(keyValues.size - 1)).joinToString(", ", "(", ")") { "{}" }
 
 fun extractOrganisationNumberFromSender(fellesformat: XMLEIFellesformat): XMLIdent? =
         fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.find {
