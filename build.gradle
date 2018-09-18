@@ -144,6 +144,9 @@ compileKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
 
+// suppress warning for experimental coroutines
+kotlin { experimental { coroutines "enable"} }
+
 dependencies {
     generateJaxb2 "com.sun.xml.bind:jaxb-xjc:$jaxb_version"
     generateJaxb2 "org.glassfish.jaxb:jaxb-runtime:$jaxb_version"
