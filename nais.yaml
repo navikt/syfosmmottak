@@ -41,11 +41,15 @@ fasitResources:
       resourceType: Channel
     - alias: syfomottak_backout_queue
       resourceType: queue
-    - alias: syfomottak_input_queue
-      resourceType: Queue
-    - alias: mottak_queue_utsending
+#    - alias: syfomottak_input_queue
+#      resourceType: Queue
+    - alias: syfosmmottak_tmp_routed_input
       resourceType: Queue
       propertyMap:
         queueName: MOTTAK_QUEUE_UTSENDING_QUEUENAME
+#    - alias: mottak_queue_utsending
+#      resourceType: Queue
+#      propertyMap:
+#        queueName: MOTTAK_QUEUE_UTSENDING_QUEUENAME
     - alias: kafka_bootstrap_servers
       resourceType: baseurl
