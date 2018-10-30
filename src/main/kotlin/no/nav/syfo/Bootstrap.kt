@@ -88,9 +88,9 @@ fun main(args: Array<String>) = runBlocking {
         JedisSentinelPool(redisMasterName, setOf("${env.redisHost}:26379")).resource.use {
             jedis ->
             val session = connection.createSession()
-            val inputQueue = session.createQueue(env.syfomottakinputQueueName)
+            val inputQueue = session.createQueue(env.syfosmmottakinputQueueName)
             val receiptQueue = session.createQueue(env.apprecQueue)
-            val backoutQueue = session.createQueue(env.syfomottakinputBackoutQueueName)
+            val backoutQueue = session.createQueue("${env.syfosmmottakinputQueueName}.BOQ")
             session.close()
 
             val producerProperties = readProducerConfig(env, valueSerializer = StringSerializer::class)

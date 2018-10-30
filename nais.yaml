@@ -35,15 +35,13 @@ fasitResources:
   used:
     - alias: srvsyfosmmottak
       resourceType: Credential
-    - alias: mqGateway03
+    - alias: mqGateway04
       resourceType: QueueManager
     - alias: syfomottak_channel
       resourceType: Channel
-    - alias: syfomottak_backout_queue
-      resourceType: queue
 #    - alias: syfomottak_input_queue
 #      resourceType: Queue
-    - alias: syfosmmottak_tmp_routed_input
+    - alias: syfosmmottak_temp_routed_input
       resourceType: Queue
       propertyMap:
         queueName: SYFOMOTTAK_INPUT_QUEUE_QUEUENAME
