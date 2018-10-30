@@ -37,7 +37,7 @@ fasitResources:
       resourceType: Credential
     - alias: mqGateway04
       resourceType: QueueManager
-    - alias: syfomottak_channel
+    - alias: syfosmmottak_channel
       resourceType: Channel
 #    - alias: syfosmmottak_input_queue
 #      resourceType: Queue

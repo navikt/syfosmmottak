@@ -7,7 +7,7 @@ data class Environment(
     val mqHostname: String = getEnvVar("MQGATEWAY04_HOSTNAME"),
     val mqPort: Int = getEnvVar("MQGATEWAY04_PORT").toInt(),
     val mqGatewayName: String = getEnvVar("MQGATEWAY04_NAME"),
-    val mqChannelName: String = getEnvVar("SYFOMOTTAK_CHANNEL_NAME"),
+    val mqChannelName: String = getEnvVar("SYFOSMMOTTAK_CHANNEL_NAME"),
     val srvappserverUsername: String = getEnvVar("SRVAPPSERVER_USERNAME", "srvappserver"),
     val srvappserverPassword: String = getEnvVar("SRVAPPSERVER_PASSWORD", ""),
     val kafkaBootstrapServers: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS_URL"),
