@@ -39,12 +39,12 @@ fasitResources:
       resourceType: QueueManager
     - alias: syfomottak_channel
       resourceType: Channel
-#    - alias: syfomottak_input_queue
+#    - alias: syfosmmottak_input_queue
 #      resourceType: Queue
     - alias: syfosmmottak_temp_routed_input
       resourceType: Queue
       propertyMap:
-        queueName: SYFOMOTTAK_INPUT_QUEUE_QUEUENAME
+        queueName: SYFOSMMOTTAK_INPUT_QUEUE_QUEUENAME
     - alias: mottak_queue_utsending
       resourceType: Queue
       propertyMap:
