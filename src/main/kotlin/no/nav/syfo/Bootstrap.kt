@@ -90,7 +90,7 @@ fun main(args: Array<String>) = runBlocking {
             val session = connection.createSession()
             val inputQueue = session.createQueue(env.syfosmmottakinputQueueName)
             val receiptQueue = session.createQueue(env.apprecQueue)
-            val backoutQueue = session.createQueue("${env.syfosmmottakinputQueueName}.BOQ")
+            val backoutQueue = session.createQueue("QA.Q1_SYFOSMMOTTAK.INPUT.BOQ") // TODO: Resolve differently when finished
             session.close()
 
             val producerProperties = readProducerConfig(env, valueSerializer = StringSerializer::class)
