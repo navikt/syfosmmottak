@@ -6,7 +6,9 @@ import io.ktor.client.engine.config
 import io.ktor.client.features.auth.basic.BasicAuth
 import io.ktor.client.features.json.GsonSerializer
 import io.ktor.client.features.json.JsonFeature
+import io.ktor.client.request.accept
 import io.ktor.client.request.post
+import io.ktor.http.ContentType
 import no.nav.syfo.Environment
 import org.slf4j.LoggerFactory
 
@@ -33,6 +35,7 @@ fun createHttpClient(env: Environment) = HttpClient(CIO.config {
 
 suspend fun HttpClient.executeRuleValidation(env: Environment, payload: String): ValidationResult = post {
     body = payload
+    accept(ContentType.Application.Json)
 
     url {
         host = env.syfoSmRegelerApiURL
