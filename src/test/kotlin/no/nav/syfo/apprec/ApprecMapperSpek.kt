@@ -20,7 +20,7 @@ object ApprecMapperSpek : Spek({
 
     describe("Duplicate AppRec") {
         val ff = createApprec(fellesformat, ApprecStatus.avvist)
-        ff.get<XMLAppRec>().error.add(mapApprecErrorToAppRecCV(ApprecError.DUPLICATE))
+        ff.get<XMLAppRec>().error.add(ApprecError.DUPLICATE.toApprecCV())
         it("Has the same ediLoggId as the source") {
             ff.get<XMLMottakenhetBlokk>().ediLoggId shouldEqual fellesformat.get<XMLMottakenhetBlokk>().ediLoggId
         }
@@ -126,15 +126,15 @@ object ApprecMapperSpek : Spek({
     }
     describe("Error AppRec") {
         val ff = createApprec(fellesformat, ApprecStatus.avvist)
-        ff.get<XMLAppRec>().error.add(mapApprecErrorToAppRecCV(ApprecError.BEHANDLER_PERSON_NUMBER_NOT_VALID))
+        ff.get<XMLAppRec>().error.add(ApprecError.INVALID_FNR_SIZE.toApprecCV())
         it("Sets appRec error dn to duplicate") {
-            ff.get<XMLAppRec>().error.first().dn shouldEqual ApprecError.BEHANDLER_PERSON_NUMBER_NOT_VALID.dn
+            ff.get<XMLAppRec>().error.first().dn shouldEqual ApprecError.INVALID_FNR_SIZE.dn
         }
         it("Sets appRec error v to duplicate") {
-            ff.get<XMLAppRec>().error.first().v shouldEqual ApprecError.BEHANDLER_PERSON_NUMBER_NOT_VALID.v
+            ff.get<XMLAppRec>().error.first().v shouldEqual ApprecError.INVALID_FNR_SIZE.v
         }
         it("Sets appRec error s to duplicate") {
-            ff.get<XMLAppRec>().error.first().s shouldEqual ApprecError.BEHANDLER_PERSON_NUMBER_NOT_VALID.s
+            ff.get<XMLAppRec>().error.first().s shouldEqual ApprecError.INVALID_FNR_SIZE.s
         }
     }
 })

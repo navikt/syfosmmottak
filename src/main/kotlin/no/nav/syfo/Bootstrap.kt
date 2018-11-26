@@ -24,7 +24,8 @@ import no.nav.syfo.api.registerNaisApi
 import no.nav.syfo.apprec.ApprecError
 import no.nav.syfo.apprec.ApprecStatus
 import no.nav.syfo.apprec.createApprec
-import no.nav.syfo.apprec.mapApprecErrorToAppRecCV
+import no.nav.syfo.apprec.findApprecError
+import no.nav.syfo.apprec.toApprecCV
 import no.nav.syfo.metrics.REQUEST_TIME
 import no.nav.syfo.util.connectionFactory
 import no.nav.syfo.util.readProducerConfig
@@ -170,7 +171,7 @@ fun listen(
 
                 if (duplicate) {
                     log.warn("Message marked as duplicate $logKeys", redisEdiLoggId, *logValues)
-                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, ApprecError.DUPLICATE)
+                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(ApprecError.DUPLICATE))
                     log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueue, *logValues)
                     continue
                 } else if (ediLoggId != null) {
@@ -202,7 +203,8 @@ fun listen(
                     log.info("Message $logKeys Rules hits {}", validationResult.ruleHits, *logValues)
                 }
                 validationResult.status == Status.INVALID -> {
-                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist)
+                    val apprecErrors = findApprecError(validationResult.ruleHits)
+                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, apprecErrors)
                     log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueue, *logValues)
                     val currentRequestLatency = requestLatency.observeDuration()
                     log.info("Message $logKeys has outcome return, processing took {}s",
@@ -229,11 +231,11 @@ fun sendReceipt(
     receiptProducer: MessageProducer,
     fellesformat: XMLEIFellesformat,
     apprecStatus: ApprecStatus,
-    vararg apprecErrors: ApprecError
+    apprecErrors: List<ApprecError> = listOf()
 ) {
     receiptProducer.send(session.createTextMessage().apply {
         val fellesformat = createApprec(fellesformat, apprecStatus)
-        fellesformat.get<XMLAppRec>().error.addAll(apprecErrors.map { mapApprecErrorToAppRecCV(it) })
+        fellesformat.get<XMLAppRec>().error.addAll(apprecErrors.map { it.toApprecCV() })
         text = apprecMarshaller.toString(fellesformat)
     })
 }

@@ -1,20 +1,11 @@
 package no.nav.syfo.apprec
 
-enum class ApprecError(val v: String, val dn: String, val s: String) {
-    GEN_DATE_ERROR("X99", "Meldingens dato datert(gendate) er nyere enn dagens dato", "2.16.578.1.12.4.1.1.8221"),
-    BEHANDLER_PERSON_NUMBER_NOT_VALID("21", "Behandlers fødselsnummer er ikke et gyldig fødselsnummer.",
-            "2.16.578.1.12.4.1.1.8222"),
-    PATIENT_PERSON_NUMBER_NOT_FOUND_IN_SCHEMA("30", "Pasientens fødselsnummer finnes ikke i skjemaet.",
-            "2.16.578.1.12.4.1.1.8222"),
-    PATIENT_PERSON_NUMBER_IS_WRONG("31", "Pasientens fødselsnummer er feil.", "2.16.578.1.12.4.1.1.8222"),
-    PATIENT_NAME_IS_NOT_IN_SCHEMA("32", "Pasientens navn finnes ikke på skjemaet.",
-            "2.16.578.1.12.4.1.1.8222"),
-    PATIENT_LASTNAME_IS_NOT_IN_SCHEMA("33", "Pasientens etternavn finnes ikke på skjemaet.",
-            "2.16.578.1.12.4.1.1.8222"),
-    PATIENT_PERSON_NUMBER_OR_DNUMBER_MISSING_IN_POPULATION_REGISTER("53",
-            "Pasientens fødselsnummer eller D-nummer finnes ikke registrert i Folkeregisteret.",
-            "2.16.578.1.12.4.1.1.8222"),
+import no.nav.syfo.api.RuleInfo
+
+enum class ApprecError(val v: String, val dn: String, val s: String, val ruleinfo: RuleInfo) {
+    INVALID_FNR_SIZE("X99", "Pasienten sitt fødselsnummer eller D-nummer er ikke 11 tegn.", "2.16.578.1.12.4.1.1.8221", RuleInfo("INVALID_FNR_SIZE")),
     DUPLICATE("54", "Duplikat! - Denne legeerklæringen meldingen er mottatt tidligere. Skal ikke sendes på nytt.",
-            "2.16.578.1.12.4.1.1.8222"),
-    MISSING_PATIENT_INFO("55", "Pasientopplysninger er utilstrekkelige", "2.16.578.1.12.4.1.1.8222"),
+            "2.16.578.1.12.4.1.1.8222", RuleInfo("DUPLICATE")),
 }
+
+fun findApprecError(listRuleinfo: List<RuleInfo>): List<ApprecError> = ApprecError.values().filter { listRuleinfo.contains(it.ruleinfo) }

@@ -113,8 +113,11 @@ fun XMLIdent.intoAdditionalId(): XMLAdditionalId {
     }
 }
 
-fun mapApprecErrorToAppRecCV(apprecError: ApprecError): AppRecCV = AppRecCV().apply {
-    dn = apprecError.dn
-    v = apprecError.v
-    s = apprecError.s
+fun ApprecError.toApprecCV(): AppRecCV {
+    val error = this
+    return AppRecCV().apply {
+        dn = error.dn
+        v = error.v
+        s = error.s
+    }
 }
