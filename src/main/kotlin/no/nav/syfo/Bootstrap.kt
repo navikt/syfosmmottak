@@ -247,7 +247,7 @@ fun CoroutineScope.listen(
                 }
             }
         } catch (e: Exception) {
-            log.error("Exception caught while handling message, sending to backout $logKeys", e, *logValues)
+            log.error("Exception caught while handling message, sending to backout $logKeys", *logValues, e)
             backoutProducer.send(message)
         }
     }
