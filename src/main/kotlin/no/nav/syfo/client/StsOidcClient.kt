@@ -5,10 +5,8 @@ import io.ktor.client.engine.cio.CIO
 import io.ktor.client.features.auth.basic.BasicAuth
 import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
-import io.ktor.client.request.accept
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
-import io.ktor.http.ContentType
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.model.OidcToken
 
