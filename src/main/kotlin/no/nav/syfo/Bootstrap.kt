@@ -203,7 +203,9 @@ fun CoroutineScope.listen(
             val receivedSykmelding = ReceivedSykmelding(
                     sykmelding = healthInformation,
                     aktoerIdPasient = aktoerIds[personNumberPatient]!!.identer!!.first().ident,
+                    personNrPasient = personNumberPatient,
                     aktoerIdLege = aktoerIds[personNumberDoctor]!!.identer!!.first().ident,
+                    personNrLege = personNumberDoctor,
                     navLogId = ediLoggId,
                     msgId = msgId,
                     legekontorOrgNr = legekontorOrgNr,
