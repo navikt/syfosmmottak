@@ -1,15 +1,18 @@
 package no.nav.syfo.api
 
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.engine.config
 import io.ktor.client.features.auth.basic.BasicAuth
-import io.ktor.client.features.json.GsonSerializer
+import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.request.accept
 import io.ktor.client.request.post
 import io.ktor.http.ContentType
 import no.nav.syfo.Environment
+import no.nav.syfo.model.ReceivedSykmelding
 import org.slf4j.LoggerFactory
 
 private val log = LoggerFactory.getLogger("no.nav.syfo.http")
@@ -29,11 +32,14 @@ fun createHttpClient(env: Environment) = HttpClient(CIO.config {
         password = env.srvSyfoSMMottakPassword
     }
     install(JsonFeature) {
-        serializer = GsonSerializer()
+        serializer = JacksonSerializer {
+            registerKotlinModule()
+            registerModule(JavaTimeModule())
+        }
     }
 }
 
-suspend fun HttpClient.executeRuleValidation(env: Environment, payload: String): ValidationResult = post {
+suspend fun HttpClient.executeRuleValidation(env: Environment, payload: ReceivedSykmelding): ValidationResult = post {
     body = payload
     accept(ContentType.Application.Json)
 

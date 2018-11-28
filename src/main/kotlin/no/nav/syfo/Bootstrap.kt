@@ -9,9 +9,11 @@ import io.ktor.client.HttpClient
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import kotlinx.coroutines.experimental.delay
-import kotlinx.coroutines.experimental.launch
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.kith.xmlstds.apprec._2004_11_21.XMLAppRec
 import no.kith.xmlstds.msghead._2006_05_24.XMLIdent
@@ -26,13 +28,15 @@ import no.nav.syfo.apprec.ApprecStatus
 import no.nav.syfo.apprec.createApprec
 import no.nav.syfo.apprec.findApprecError
 import no.nav.syfo.apprec.toApprecCV
+import no.nav.syfo.client.AktoerIdClient
+import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.metrics.REQUEST_TIME
+import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.util.connectionFactory
 import no.nav.syfo.util.readProducerConfig
 import no.trygdeetaten.xml.eiff._1.XMLEIFellesformat
 import no.trygdeetaten.xml.eiff._1.XMLMottakenhetBlokk
 import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
 import javax.jms.Connection
@@ -46,6 +50,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException
 import java.io.StringReader
 import java.io.StringWriter
 import java.security.MessageDigest
+import java.util.concurrent.Executors
 import javax.jms.MessageProducer
 import javax.xml.bind.JAXBContext
 import javax.xml.bind.Marshaller
@@ -65,6 +70,7 @@ val fellesformatUnmarshaller: Unmarshaller = fellesformatJaxBContext.createUnmar
 
 val apprecJaxBContext: JAXBContext = JAXBContext.newInstance(XMLEIFellesformat::class.java, XMLAppRec::class.java)
 val apprecMarshaller: Marshaller = apprecJaxBContext.createMarshaller()
+val sykmeldingMarshaller: Marshaller = JAXBContext.newInstance(HelseOpplysningerArbeidsuforhet::class.java).createMarshaller()
 
 val redisMasterName = "mymaster"
 
@@ -72,7 +78,7 @@ data class ApplicationState(var running: Boolean = true)
 
 private val log = LoggerFactory.getLogger("nav.syfosmmottak-application")
 
-fun main(args: Array<String>) = runBlocking {
+fun main(args: Array<String>) = runBlocking<Unit>(Executors.newFixedThreadPool(4).asCoroutineDispatcher()) {
     val env = Environment()
     val applicationState = ApplicationState()
 
@@ -94,12 +100,15 @@ fun main(args: Array<String>) = runBlocking {
             val backoutQueue = session.createQueue("Q1_SYFOSMMOTTAK.INPUT_BOQ") // TODO: Resolve differently when finished
             session.close()
 
-            val producerProperties = readProducerConfig(env, valueSerializer = StringSerializer::class)
-            val kafkaproducer = KafkaProducer<String, String>(producerProperties)
+            val producerProperties = readProducerConfig(env, valueSerializer = JacksonKafkaSerializer::class)
+            val kafkaproducer = KafkaProducer<String, ReceivedSykmelding>(producerProperties)
 
             val httpClient = createHttpClient(env)
 
-            listen(inputQueue, receiptQueue, backoutQueue, connection, kafkaproducer, httpClient, env, applicationState, jedis).join()
+            val oidcClient = StsOidcClient(env.srvSyfoSmMottakUsername, env.srvSyfoSMMottakPassword)
+            val aktoerIdClient = AktoerIdClient(env.aktoerregisterV1Url, oidcClient)
+
+            listen(inputQueue, receiptQueue, backoutQueue, connection, kafkaproducer, httpClient, aktoerIdClient, env, applicationState, jedis).join()
         }
     }
 }
@@ -110,13 +119,14 @@ fun Application.initRouting(applicationState: ApplicationState) {
     }
 }
 
-fun listen(
+fun CoroutineScope.listen(
     inputQueue: Queue,
     receiptQueue: Queue,
     backoutQueue: Queue,
     connection: Connection,
-    kafkaproducer: KafkaProducer<String, String>,
+    kafkaproducer: KafkaProducer<String, ReceivedSykmelding>,
     httpClient: HttpClient,
+    aktoerIdClient: AktoerIdClient,
     env: Environment,
     applicationState: ApplicationState,
     jedis: Jedis
@@ -150,13 +160,22 @@ fun listen(
             }
             val requestLatency = REQUEST_TIME.startTimer()
             val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(inputMessageText)) as XMLEIFellesformat
-            val ediLoggId = fellesformat.get<XMLMottakenhetBlokk>().ediLoggId
-            val sha256String = sha256hashstring(extractHelseOpplysningerArbeidsuforhet(fellesformat))
+            val receiverBlock = fellesformat.get<XMLMottakenhetBlokk>()
+            val healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat)
+            val msgHead = fellesformat.get<XMLMsgHead>()
+            val ediLoggId = receiverBlock.ediLoggId
+            val sha256String = sha256hashstring(healthInformation)
+            val msgId = msgHead.msgInfo.msgId
+            val legekontorOrgNr = extractOrganisationNumberFromSender(fellesformat)?.id!!
+
+            val personNumberPatient = healthInformation.pasient.fodselsnummer.id
+            val personNumberDoctor = receiverBlock.avsenderFnrFraDigSignatur
+            val aktoerIds = aktoerIdClient.getAktoerIds(listOf(personNumberDoctor, personNumberPatient), msgId)
 
             logValues = arrayOf(
-                    keyValue("smId", fellesformat.get<XMLMottakenhetBlokk>().ediLoggId),
-                    keyValue("organizationNumber", extractOrganisationNumberFromSender(fellesformat)?.id),
-                    keyValue("msgId", fellesformat.get<XMLMsgHead>().msgInfo.msgId)
+                    keyValue("smId", ediLoggId),
+                    keyValue("organizationNumber", legekontorOrgNr),
+                    keyValue("msgId", msgId)
             )
 
             log.info("Received a SM2013, $logKeys", *logValues)
@@ -181,12 +200,24 @@ fun listen(
                 log.warn("Unable to contact redis, will allow possible duplicates.", connectionException)
             }
 
-            val validationResult = httpClient.executeRuleValidation(env, inputMessageText)
+            val receivedSykmelding = ReceivedSykmelding(
+                    sykmelding = sykmeldingMarshaller.toString(healthInformation),
+                    aktoerIdPasient = aktoerIds[personNumberPatient]!!.identer!!.first().ident,
+                    aktoerIdLege = aktoerIds[personNumberDoctor]!!.identer!!.first().ident,
+                    navLogId = ediLoggId,
+                    msgId = msgId,
+                    legekontorOrgNr = legekontorOrgNr,
+                    mottattDato = receiverBlock.mottattDatotid.toGregorianCalendar().toZonedDateTime().toLocalDateTime(),
+                    signaturDato = msgHead.msgInfo.genDate,
+                    fellesformat = inputMessageText
+            )
+
+            val validationResult = httpClient.executeRuleValidation(env, receivedSykmelding)
             when {
                 validationResult.status == Status.OK -> {
                     sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
                     log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueue, *logValues)
-                    kafkaproducer.send(ProducerRecord(env.sm2013AutomaticHandlingTopic, inputMessageText))
+                    kafkaproducer.send(ProducerRecord(env.sm2013AutomaticHandlingTopic, receivedSykmelding))
                     log.info("Message send to kafka {} $logKeys", env.sm2013AutomaticHandlingTopic, *logValues)
                     val currentRequestLatency = requestLatency.observeDuration()
                     log.info("Message $logKeys has outcome automatic, processing took {}s",
@@ -195,7 +226,7 @@ fun listen(
                 validationResult.status == Status.MANUAL_PROCESSING -> {
                     sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
                     log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueue, *logValues)
-                    kafkaproducer.send(ProducerRecord(env.sm2013ManualHandlingTopic, inputMessageText))
+                    kafkaproducer.send(ProducerRecord(env.sm2013ManualHandlingTopic, receivedSykmelding))
                     log.info("Message send to kafka {} $logKeys", env.sm2013ManualHandlingTopic, *logValues)
                     val currentRequestLatency = requestLatency.observeDuration()
                     log.info("Message $logKeys has outcome manual processing, processing took {}s",
