@@ -18,7 +18,7 @@ import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.kith.xmlstds.apprec._2004_11_21.XMLAppRec
 import no.kith.xmlstds.msghead._2006_05_24.XMLIdent
 import no.kith.xmlstds.msghead._2006_05_24.XMLMsgHead
-import no.nav.model.sykemelding2013.HelseOpplysningerArbeidsuforhet
+import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 import no.nav.syfo.api.Status
 import no.nav.syfo.api.createHttpClient
 import no.nav.syfo.api.executeRuleValidation
@@ -70,7 +70,6 @@ val fellesformatUnmarshaller: Unmarshaller = fellesformatJaxBContext.createUnmar
 
 val apprecJaxBContext: JAXBContext = JAXBContext.newInstance(XMLEIFellesformat::class.java, XMLAppRec::class.java)
 val apprecMarshaller: Marshaller = apprecJaxBContext.createMarshaller()
-val sykmeldingMarshaller: Marshaller = JAXBContext.newInstance(HelseOpplysningerArbeidsuforhet::class.java).createMarshaller()
 
 val redisMasterName = "mymaster"
 
@@ -167,6 +166,7 @@ fun CoroutineScope.listen(
             val sha256String = sha256hashstring(healthInformation)
             val msgId = msgHead.msgInfo.msgId
             val legekontorOrgNr = extractOrganisationNumberFromSender(fellesformat)?.id!!
+            val legekontorOrgName = msgHead.msgInfo.sender.organisation.organisationName
 
             val personNumberPatient = healthInformation.pasient.fodselsnummer.id
             val personNumberDoctor = receiverBlock.avsenderFnrFraDigSignatur
@@ -201,12 +201,13 @@ fun CoroutineScope.listen(
             }
 
             val receivedSykmelding = ReceivedSykmelding(
-                    sykmelding = sykmeldingMarshaller.toString(healthInformation),
+                    sykmelding = healthInformation,
                     aktoerIdPasient = aktoerIds[personNumberPatient]!!.identer!!.first().ident,
                     aktoerIdLege = aktoerIds[personNumberDoctor]!!.identer!!.first().ident,
                     navLogId = ediLoggId,
                     msgId = msgId,
                     legekontorOrgNr = legekontorOrgNr,
+                    legekontorOrgName = legekontorOrgName,
                     mottattDato = receiverBlock.mottattDatotid.toGregorianCalendar().toZonedDateTime().toLocalDateTime(),
                     signaturDato = msgHead.msgInfo.genDate,
                     fellesformat = inputMessageText
@@ -265,9 +266,9 @@ fun sendReceipt(
     apprecErrors: List<ApprecError> = listOf()
 ) {
     receiptProducer.send(session.createTextMessage().apply {
-        val fellesformat = createApprec(fellesformat, apprecStatus)
-        fellesformat.get<XMLAppRec>().error.addAll(apprecErrors.map { it.toApprecCV() })
-        text = apprecMarshaller.toString(fellesformat)
+        val apprec = createApprec(fellesformat, apprecStatus)
+        apprec.get<XMLAppRec>().error.addAll(apprecErrors.map { it.toApprecCV() })
+        text = apprecMarshaller.toString(apprec)
     })
 }
 
