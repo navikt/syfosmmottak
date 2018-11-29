@@ -178,7 +178,7 @@ fun CoroutineScope.listen(
                     keyValue("msgId", msgId)
             )
 
-            log.info("Response from aktørId, {} $logKeys", keyValue("response", aktoerIds), *logValues)
+            log.debug("Response from aktørId, {} $logKeys", keyValue("response", aktoerIds), *logValues)
 
             log.info("Received a SM2013, $logKeys", *logValues)
 
