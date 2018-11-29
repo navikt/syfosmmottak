@@ -11,6 +11,7 @@ import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.request.accept
 import io.ktor.client.request.post
 import io.ktor.http.ContentType
+import io.ktor.http.contentType
 import no.nav.syfo.Environment
 import no.nav.syfo.model.ReceivedSykmelding
 import org.slf4j.LoggerFactory
@@ -40,6 +41,7 @@ fun createHttpClient(env: Environment) = HttpClient(CIO.config {
 }
 
 suspend fun HttpClient.executeRuleValidation(env: Environment, payload: ReceivedSykmelding): ValidationResult = post {
+    contentType(ContentType.Application.Json)
     body = payload
     accept(ContentType.Application.Json)
 
