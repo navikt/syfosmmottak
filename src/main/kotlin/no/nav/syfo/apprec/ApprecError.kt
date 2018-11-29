@@ -1,6 +1,6 @@
 package no.nav.syfo.apprec
 
-import no.nav.syfo.api.RuleInfo
+import no.nav.syfo.client.RuleInfo
 
 enum class ApprecError(val v: String, val dn: String, val s: String, val ruleinfo: RuleInfo) {
     INVALID_FNR_SIZE("X99", "Pasienten sitt fødselsnummer eller D-nummer er ikke 11 tegn.", "2.16.578.1.12.4.1.1.8221", RuleInfo("INVALID_FNR_SIZE")),

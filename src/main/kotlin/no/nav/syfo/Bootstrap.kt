@@ -19,9 +19,9 @@ import no.kith.xmlstds.apprec._2004_11_21.XMLAppRec
 import no.kith.xmlstds.msghead._2006_05_24.XMLIdent
 import no.kith.xmlstds.msghead._2006_05_24.XMLMsgHead
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
-import no.nav.syfo.api.Status
-import no.nav.syfo.api.createHttpClient
-import no.nav.syfo.api.executeRuleValidation
+import no.nav.syfo.client.Status
+import no.nav.syfo.client.createHttpClient
+import no.nav.syfo.client.executeRuleValidation
 import no.nav.syfo.api.registerNaisApi
 import no.nav.syfo.apprec.ApprecError
 import no.nav.syfo.apprec.ApprecStatus
