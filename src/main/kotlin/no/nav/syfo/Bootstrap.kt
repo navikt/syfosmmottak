@@ -71,7 +71,6 @@ val fellesformatJaxBContext: JAXBContext = JAXBContext.newInstance(XMLEIFellesfo
 val fellesformatUnmarshaller: Unmarshaller = fellesformatJaxBContext.createUnmarshaller().apply {
     setAdapter(LocalDateTimeXmlAdapter::class.java, XMLDateTimeAdapter())
     setAdapter(LocalDateXmlAdapter::class.java, XMLDateAdapter())
-
 }
 
 val apprecJaxBContext: JAXBContext = JAXBContext.newInstance(XMLEIFellesformat::class.java, XMLAppRec::class.java)
