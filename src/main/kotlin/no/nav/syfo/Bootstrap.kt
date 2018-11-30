@@ -68,13 +68,14 @@ val objectMapper: ObjectMapper = ObjectMapper()
         .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
 
 val fellesformatJaxBContext: JAXBContext = JAXBContext.newInstance(XMLEIFellesformat::class.java, XMLMsgHead::class.java, HelseOpplysningerArbeidsuforhet::class.java)
-val fellesformatUnmarshaller: Unmarshaller = fellesformatJaxBContext.createUnmarshaller()
-
-val apprecJaxBContext: JAXBContext = JAXBContext.newInstance(XMLEIFellesformat::class.java, XMLAppRec::class.java)
-val apprecMarshaller: Marshaller = apprecJaxBContext.createMarshaller().apply {
+val fellesformatUnmarshaller: Unmarshaller = fellesformatJaxBContext.createUnmarshaller().apply {
     setAdapter(LocalDateTimeXmlAdapter::class.java, XMLDateTimeAdapter())
     setAdapter(LocalDateXmlAdapter::class.java, XMLDateAdapter())
+
 }
+
+val apprecJaxBContext: JAXBContext = JAXBContext.newInstance(XMLEIFellesformat::class.java, XMLAppRec::class.java)
+val apprecMarshaller: Marshaller = apprecJaxBContext.createMarshaller()
 
 val redisMasterName = "mymaster"
 
