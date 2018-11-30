@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import com.migesok.jaxb.adapter.javatime.LocalDateTimeXmlAdapter
+import com.migesok.jaxb.adapter.javatime.LocalDateXmlAdapter
 import io.ktor.application.Application
 import io.ktor.client.HttpClient
 import io.ktor.routing.routing
@@ -69,7 +71,10 @@ val fellesformatJaxBContext: JAXBContext = JAXBContext.newInstance(XMLEIFellesfo
 val fellesformatUnmarshaller: Unmarshaller = fellesformatJaxBContext.createUnmarshaller()
 
 val apprecJaxBContext: JAXBContext = JAXBContext.newInstance(XMLEIFellesformat::class.java, XMLAppRec::class.java)
-val apprecMarshaller: Marshaller = apprecJaxBContext.createMarshaller()
+val apprecMarshaller: Marshaller = apprecJaxBContext.createMarshaller().apply {
+    setAdapter(LocalDateTimeXmlAdapter::class.java, XMLDateTimeAdapter())
+    setAdapter(LocalDateXmlAdapter::class.java, XMLDateAdapter())
+}
 
 val redisMasterName = "mymaster"
 
