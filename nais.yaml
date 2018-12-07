@@ -45,7 +45,7 @@ fasitResources:
       resourceType: Queue
       propertyMap:
         queueName: SYFOSMMOTTAK_INPUT_QUEUE_QUEUENAME
-    #- alias: mottak_queue_utsending TODO after testing
+#   - alias: mottak_queue_utsending TODO after testing
     - alias: syfosmapprec_utsending
       resourceType: Queue
       propertyMap:
