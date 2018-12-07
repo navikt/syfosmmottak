@@ -29,7 +29,8 @@ resources:
   requests:
     cpu: 100m
     memory: 128Mi
-redis: true
+redis:
+  enabled: true
 fasitResources:
   used:
     - alias: srvsyfosmmottak
