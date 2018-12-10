@@ -1,3 +1,4 @@
+team: teamsykefravr
 name: "syfosmmottak"
 image: "repo.adeo.no:5443/syfo/syfosmmottak"
 replicas:
