@@ -5,8 +5,6 @@ pipeline {
 
     environment {
         APPLICATION_NAME = 'syfosmmottak'
-        APPLICATION_SERVICE = 'TODO'
-        APPLICATION_COMPONENT = 'TODO'
         FASIT_ENVIRONMENT = 'q1'
         ZONE = 'fss'
         DOCKER_SLUG = 'syfo'
@@ -15,17 +13,8 @@ pipeline {
 
      stages {
             stage('initialize') {
-                steps {
-                    script {
-                        init action: 'default'
-                        sh './gradlew clean'
-                        applicationVersionGradle = sh(script: './gradlew -q printVersion', returnStdout: true).trim()
-                        env.APPLICATION_VERSION = "${applicationVersionGradle}"
-                        if (applicationVersionGradle.endsWith('-SNAPSHOT')) {
-                            env.APPLICATION_VERSION = "${applicationVersionGradle}.${env.BUILD_ID}-${env.COMMIT_HASH_SHORT}"
-                        }
-                        init action: 'updateStatus'
-                    }
+            steps {
+                    init action: 'gradle'
                 }
             }
             stage('build') {
@@ -50,13 +39,23 @@ pipeline {
                     // TODO
                 }
             }
-            stage('deploy') {
-                steps {
-                    dockerUtils action: 'createPushImage'
-                    nais action: 'validate'
-                    nais action: 'upload'
-                    deployApp action: 'jiraPreprod'
+            stage('validate & upload nais.yaml to nexus m2internal') {
+             steps {
+                 nais action: 'validate'
+                 nais action: 'upload'
                 }
+            }
+            stage('deploy to preprod') {
+                steps {
+                     deployApp action: 'jiraPreprod'
+                }
+            }
+            stage('deploy to production') {
+                when { environment name: 'DEPLOY_TO', value: 'production' }
+                steps {
+                        deployApp action: 'jiraProd'
+                        githubStatus action: 'tagRelease'
+                    }
             }
         }
         post {

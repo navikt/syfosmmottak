@@ -38,10 +38,9 @@ redis:
   requests:
     cpu: 100m
     memory: 128Mi
+secrets: true
 fasitResources:
   used:
-    - alias: srvsyfosmmottak
-      resourceType: Credential
     - alias: mqGateway04
       resourceType: QueueManager
     - alias: syfosmmottak_channel
