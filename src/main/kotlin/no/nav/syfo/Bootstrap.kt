@@ -101,7 +101,7 @@ fun main(args: Array<String>) = runBlocking<Unit>(Executors.newFixedThreadPool(4
             val session = connection.createSession()
             val inputQueue = session.createQueue(env.syfosmmottakinputQueueName)
             val receiptQueue = session.createQueue(env.apprecQueue)
-            val backoutQueue = session.createQueue("Q1_SYFOSMMOTTAK.INPUT_BOQ") // TODO: Resolve differently when finished
+            val backoutQueue = session.createQueue(getBackoutQueueFor(env.syfosmmottakinputQueueName))
             session.close()
 
             val producerProperties = readProducerConfig(env, valueSerializer = JacksonKafkaSerializer::class)
@@ -293,3 +293,5 @@ fun sha256hashstring(helseOpplysningerArbeidsuforhet: HelseOpplysningerArbeidsuf
 
 fun extractHelseOpplysningerArbeidsuforhet(fellesformat: XMLEIFellesformat): HelseOpplysningerArbeidsuforhet =
         fellesformat.get<XMLMsgHead>().document[0].refDoc.content.any[0] as HelseOpplysningerArbeidsuforhet
+
+fun getBackoutQueueFor(queueName: String): String = "${queueName.replaceFirst("QA.", "")}_BOQ"
