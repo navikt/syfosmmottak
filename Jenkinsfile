@@ -12,51 +12,56 @@ pipeline {
     }
 
      stages {
-            stage('initialize') {
+        stage('initialize') {
             steps {
-                    init action: 'gradle'
-                }
+                init action: 'gradle'
             }
-            stage('build') {
-                steps {
-                    sh './gradlew build -x test'
-                }
+        }
+        stage('build') {
+            steps {
+                sh './gradlew build -x test'
             }
-            stage('run tests (unit & intergration)') {
-                steps {
-                    sh './gradlew test'
-                }
+        }
+        stage('run tests (unit & intergration)') {
+            steps {
+                sh './gradlew test'
             }
-            stage('create uber jar') {
-                steps {
-                    sh './gradlew shadowJar'
-                    slackStatus status: 'passed'
-                }
+        }
+        stage('create uber jar') {
+            steps {
+                sh './gradlew shadowJar'
+                slackStatus status: 'passed'
             }
-            stage('Create kafka topics') {
-                steps {
-                    sh 'echo TODO'
-                    // TODO
-                }
+        }
+       stage('push docker image') {
+              steps {
+                  dockerUtils action: 'createPushImage'
+              }
+         }
+        stage('Create kafka topics') {
+            steps {
+                sh 'echo TODO'
+                // TODO
             }
-            stage('validate & upload nais.yaml to nexus m2internal') {
+        }
+        stage('validate & upload nais.yaml to nexus m2internal') {
              steps {
                  nais action: 'validate'
                  nais action: 'upload'
-                }
-            }
-            stage('deploy to preprod') {
-                steps {
+             }
+         }
+        stage('deploy to preprod') {
+             steps {
                      deployApp action: 'jiraPreprod'
-                }
+             }
+         }
+        stage('deploy to production') {
+            when { environment name: 'DEPLOY_TO', value: 'production' }
+            steps {
+                deployApp action: 'jiraProd'
+                githubStatus action: 'tagRelease'
             }
-            stage('deploy to production') {
-                when { environment name: 'DEPLOY_TO', value: 'production' }
-                steps {
-                        deployApp action: 'jiraProd'
-                        githubStatus action: 'tagRelease'
-                    }
-            }
+         }
         }
         post {
             always {
