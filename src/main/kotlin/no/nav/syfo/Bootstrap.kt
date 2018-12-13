@@ -294,4 +294,5 @@ fun sha256hashstring(helseOpplysningerArbeidsuforhet: HelseOpplysningerArbeidsuf
 fun extractHelseOpplysningerArbeidsuforhet(fellesformat: XMLEIFellesformat): HelseOpplysningerArbeidsuforhet =
         fellesformat.get<XMLMsgHead>().document[0].refDoc.content.any[0] as HelseOpplysningerArbeidsuforhet
 
-fun getBackoutQueueFor(queueName: String): String = "${queueName.replaceFirst("QA.", "")}_BOQ"
+// TODO: Remove the second replace when the router is not in front
+fun getBackoutQueueFor(queueName: String): String = "${queueName.replaceFirst("QA.", "").replace("TEMP_ROUTED_", "")}_BOQ"
