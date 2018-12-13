@@ -58,3 +58,5 @@ fasitResources:
         queueName: MOTTAK_QUEUE_UTSENDING_QUEUENAME
     - alias: kafka_bootstrap_servers
       resourceType: baseurl
+    - alias: aktoerregister.api.v1
+      resourceType: RestService
