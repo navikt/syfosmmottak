@@ -86,7 +86,7 @@ data class ApplicationState(var running: Boolean = true)
 private val log = LoggerFactory.getLogger("nav.syfosmmottak-application")
 
 fun main(args: Array<String>) = runBlocking<Unit>(Executors.newFixedThreadPool(4).asCoroutineDispatcher()) {
-    val config: ApplicationConfig = objectMapper.readValue("TODO")
+    val config: ApplicationConfig = objectMapper.readValue(File("TODO"))
     val applicationState = ApplicationState()
     val credentials: VaultCredentials = objectMapper.readValue(vaultApplicationPropertiesPath.toFile())
 
