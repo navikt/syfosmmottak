@@ -5,13 +5,11 @@ pipeline {
 
     environment {
         APPLICATION_NAME = 'syfosmmottak'
-        FASIT_ENVIRONMENT = 'q1'
-        ZONE = 'fss'
         DOCKER_SLUG = 'syfo'
         DISABLE_SLACK_MESSAGES = true
     }
 
-     stages {
+    stages {
         stage('initialize') {
             steps {
                 init action: 'gradle'
@@ -33,45 +31,39 @@ pipeline {
                 slackStatus status: 'passed'
             }
         }
-       stage('push docker image') {
-              steps {
-                  dockerUtils action: 'createPushImage'
-              }
-         }
+        stage('push docker image') {
+            steps {
+                dockerUtils action: 'createPushImage'
+            }
+        }
         stage('Create kafka topics') {
             steps {
                 sh 'echo TODO'
                 // TODO
             }
         }
-        stage('validate & upload nais.yaml to nexus m2internal') {
-             steps {
-                 nais action: 'validate'
-                 nais action: 'upload'
-             }
-         }
         stage('deploy to preprod') {
-             steps {
-                     deployApp action: 'jiraPreprod'
-             }
-         }
+            steps {
+                deployApp action: 'kubectlDeploy', cluster: 'preprod-fss', placeholders: ['config.file': 'application-preprod.json']
+            }
+        }
         stage('deploy to production') {
             when { environment name: 'DEPLOY_TO', value: 'production' }
             steps {
-                deployApp action: 'jiraProd'
+                deployApp action: 'kubectlDeploy', cluster: 'preprod-fss', placeholders: ['config.file': 'application-prod.json']
                 githubStatus action: 'tagRelease'
             }
-         }
         }
-        post {
-            always {
-                postProcess action: 'always'
-            }
-            success {
-                postProcess action: 'success'
-            }
-            failure {
-                postProcess action: 'failure'
-            }
+    }
+    post {
+        always {
+            postProcess action: 'always'
         }
+        success {
+            postProcess action: 'success'
+        }
+        failure {
+            postProcess action: 'failure'
+        }
+    }
 }

@@ -3,6 +3,7 @@ package no.nav.syfo
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.migesok.jaxb.adapter.javatime.LocalDateTimeXmlAdapter
 import com.migesok.jaxb.adapter.javatime.LocalDateXmlAdapter
@@ -49,6 +50,7 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import redis.clients.jedis.Jedis
 import redis.clients.jedis.JedisSentinelPool
 import redis.clients.jedis.exceptions.JedisConnectionException
+import java.io.File
 import java.io.StringReader
 import java.io.StringWriter
 import java.security.MessageDigest
@@ -77,16 +79,18 @@ val apprecJaxBContext: JAXBContext = JAXBContext.newInstance(XMLEIFellesformat::
 val apprecMarshaller: Marshaller = apprecJaxBContext.createMarshaller()
 
 val redisMasterName = "mymaster"
+val redisHost = "rfs-syfosmmottak" // TODO: Do this properly with naiserator
 
 data class ApplicationState(var running: Boolean = true)
 
 private val log = LoggerFactory.getLogger("nav.syfosmmottak-application")
 
 fun main(args: Array<String>) = runBlocking<Unit>(Executors.newFixedThreadPool(4).asCoroutineDispatcher()) {
-    val env = Environment()
+    val config: ApplicationConfig = objectMapper.readValue("TODO")
     val applicationState = ApplicationState()
+    val credentials: VaultCredentials = objectMapper.readValue(vaultApplicationPropertiesPath.toFile())
 
-    val applicationServer = embeddedServer(Netty, env.applicationPort) {
+    val applicationServer = embeddedServer(Netty, config.applicationPort) {
         initRouting(applicationState)
     }.start(wait = false)
 
@@ -94,25 +98,24 @@ fun main(args: Array<String>) = runBlocking<Unit>(Executors.newFixedThreadPool(4
         applicationServer.stop(10, 10, TimeUnit.SECONDS)
     })
 
-    connectionFactory(env).createConnection(env.srvappserverUsername, env.srvappserverPassword).use { connection ->
+    connectionFactory(config).createConnection(credentials.mqUsername, credentials.mqPassword).use { connection ->
         connection.start()
-        JedisSentinelPool(redisMasterName, setOf("${env.redisHost}:26379")).resource.use {
-            jedis ->
+        JedisSentinelPool(redisMasterName, setOf("$redisHost:26379")).resource.use { jedis ->
             val session = connection.createSession()
-            val inputQueue = session.createQueue(env.syfosmmottakinputQueueName)
-            val receiptQueue = session.createQueue(env.apprecQueue)
-            val backoutQueue = session.createQueue(getBackoutQueueFor(env.syfosmmottakinputQueueName))
+            val inputQueue = session.createQueue(config.inputQueueName)
+            val receiptQueue = session.createQueue(config.apprecQueueName)
+            val backoutQueue = session.createQueue(getBackoutQueueFor(config.inputBackoutQueueName))
             session.close()
 
-            val producerProperties = readProducerConfig(env, valueSerializer = JacksonKafkaSerializer::class)
+            val producerProperties = readProducerConfig(config, credentials, valueSerializer = JacksonKafkaSerializer::class)
             val kafkaproducer = KafkaProducer<String, ReceivedSykmelding>(producerProperties)
 
-            val httpClient = createHttpClient(env)
+            val httpClient = createHttpClient(credentials)
 
-            val oidcClient = StsOidcClient(env.srvSyfoSmMottakUsername, env.srvSyfoSMMottakPassword)
-            val aktoerIdClient = AktoerIdClient(env.aktoerregisterV1Url, oidcClient)
+            val oidcClient = StsOidcClient(credentials.serviceuserUsername, credentials.serviceuserPassword)
+            val aktoerIdClient = AktoerIdClient(config.aktoerregisterV1Url, oidcClient)
 
-            listen(inputQueue, receiptQueue, backoutQueue, connection, kafkaproducer, httpClient, aktoerIdClient, env, applicationState, jedis).join()
+            listen(inputQueue, receiptQueue, backoutQueue, connection, kafkaproducer, httpClient, aktoerIdClient, config, applicationState, jedis).join()
         }
     }
 }
@@ -131,7 +134,7 @@ fun CoroutineScope.listen(
     kafkaproducer: KafkaProducer<String, ReceivedSykmelding>,
     httpClient: HttpClient,
     aktoerIdClient: AktoerIdClient,
-    env: Environment,
+    config: ApplicationConfig,
     applicationState: ApplicationState,
     jedis: Jedis
 ) = launch {
@@ -198,7 +201,7 @@ fun CoroutineScope.listen(
                 if (duplicate) {
                     log.warn("Message marked as duplicate $logKeys", redisEdiLoggId, *logValues)
                     sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(ApprecError.DUPLICATE))
-                    log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueue, *logValues)
+                    log.info("Apprec Receipt sent to {} $logKeys", config.apprecQueueName, *logValues)
                     continue
                 } else if (ediLoggId != null) {
                     jedis.setex(sha256String, TimeUnit.DAYS.toSeconds(7).toInt(), ediLoggId)
@@ -222,22 +225,22 @@ fun CoroutineScope.listen(
                     fellesformat = inputMessageText
             )
 
-            val validationResult = httpClient.executeRuleValidation(env, receivedSykmelding)
+            val validationResult = httpClient.executeRuleValidation(receivedSykmelding)
             when {
                 validationResult.status == Status.OK -> {
                     sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
-                    log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueue, *logValues)
-                    kafkaproducer.send(ProducerRecord(env.sm2013AutomaticHandlingTopic, receivedSykmelding))
-                    log.info("Message send to kafka {} $logKeys", env.sm2013AutomaticHandlingTopic, *logValues)
+                    log.info("Apprec Receipt sent to {} $logKeys", config.apprecQueueName, *logValues)
+                    kafkaproducer.send(ProducerRecord(config.sm2013AutomaticHandlingTopic, receivedSykmelding))
+                    log.info("Message send to kafka {} $logKeys", config.sm2013AutomaticHandlingTopic, *logValues)
                     val currentRequestLatency = requestLatency.observeDuration()
                     log.info("Message $logKeys has outcome automatic, processing took {}s",
                             currentRequestLatency, *logValues)
                 }
                 validationResult.status == Status.MANUAL_PROCESSING -> {
                     sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
-                    log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueue, *logValues)
-                    kafkaproducer.send(ProducerRecord(env.sm2013ManualHandlingTopic, receivedSykmelding))
-                    log.info("Message send to kafka {} $logKeys", env.sm2013ManualHandlingTopic, *logValues)
+                    log.info("Apprec Receipt sent to {} $logKeys", config.apprecQueueName, *logValues)
+                    kafkaproducer.send(ProducerRecord(config.sm2013ManualHandlingTopic, receivedSykmelding))
+                    log.info("Message send to kafka {} $logKeys", config.sm2013ManualHandlingTopic, *logValues)
                     val currentRequestLatency = requestLatency.observeDuration()
                     log.info("Message $logKeys has outcome manual processing, processing took {}s",
                             currentRequestLatency, *logValues)
@@ -246,7 +249,7 @@ fun CoroutineScope.listen(
                 validationResult.status == Status.INVALID -> {
                     val apprecErrors = findApprecError(validationResult.ruleHits)
                     sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, apprecErrors)
-                    log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueue, *logValues)
+                    log.info("Apprec Receipt sent to {} $logKeys", config.apprecQueueName, *logValues)
                     val currentRequestLatency = requestLatency.observeDuration()
                     log.info("Message $logKeys has outcome return, processing took {}s",
                             currentRequestLatency, *logValues)

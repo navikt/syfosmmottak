@@ -13,13 +13,13 @@ import io.ktor.client.request.accept
 import io.ktor.client.request.post
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
-import no.nav.syfo.Environment
+import no.nav.syfo.VaultCredentials
 import no.nav.syfo.model.ReceivedSykmelding
 import org.slf4j.LoggerFactory
 
 private val log = LoggerFactory.getLogger("no.nav.syfo.http")
 
-fun createHttpClient(env: Environment) = HttpClient(CIO.config {
+fun createHttpClient(credentials: VaultCredentials) = HttpClient(CIO.config {
     maxConnectionsCount = 1000 // Maximum number of socket connections.
     endpoint.apply {
         maxConnectionsPerRoute = 100
@@ -30,8 +30,8 @@ fun createHttpClient(env: Environment) = HttpClient(CIO.config {
     }
 }) {
     install(BasicAuth) {
-        username = env.srvSyfoSmMottakUsername
-        password = env.srvSyfoSMMottakPassword
+        username = credentials.serviceuserUsername
+        password = credentials.serviceuserPassword
     }
     install(JsonFeature) {
         serializer = JacksonSerializer {
@@ -42,13 +42,13 @@ fun createHttpClient(env: Environment) = HttpClient(CIO.config {
     }
 }
 
-suspend fun HttpClient.executeRuleValidation(env: Environment, payload: ReceivedSykmelding): ValidationResult = post {
+suspend fun HttpClient.executeRuleValidation(payload: ReceivedSykmelding): ValidationResult = post {
     contentType(ContentType.Application.Json)
     body = payload
     accept(ContentType.Application.Json)
 
     url {
-        host = env.syfoSmRegelerApiURL
+        host = "syfosmregler"
         path("v1", "rules", "validate")
     }
 }
