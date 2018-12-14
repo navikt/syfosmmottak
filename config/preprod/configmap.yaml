@@ -7,14 +7,14 @@ metadata:
     team: myteam
 data:
   application.json: |+
-{
-  "mqHostname": "b27apvl171.preprod.local",
-  "mqPort": 1414,
-  "mqGatewayName": "MQXLSC02",
-  "mqChannelName": "Q1_SYFOSMMOTTAK",
-  "kafkaBootstrapServers": "SSL://b27apvl00045.preprod.local:8443,SSL://b27apvl00046.preprod.local:8443,SSL://b27apvl00047.preprod.local:8443",
-  "inputQueueName": "QA.Q1_SYFOSMMOTTAK.TEMP_ROUTED_INPUT",
-  "apprecQueueName": "QA.Q1_SYFOSMAPPREC.UTSENDING",
-  "inputBackoutQueueName": "Q1_SYFOSMMOTTAK.INPUT_BOQ",
-  "aktoerregisterV1Url": "https://app-q1.adeo.no/aktoerregister/api/v1"
-}
+    {
+      "mqHostname": "b27apvl171.preprod.local",
+      "mqPort": 1414,
+      "mqGatewayName": "MQXLSC02",
+      "mqChannelName": "Q1_SYFOSMMOTTAK",
+      "kafkaBootstrapServers": "SSL://b27apvl00045.preprod.local:8443,SSL://b27apvl00046.preprod.local:8443,SSL://b27apvl00047.preprod.local:8443",
+      "inputQueueName": "QA.Q1_SYFOSMMOTTAK.TEMP_ROUTED_INPUT",
+      "apprecQueueName": "QA.Q1_SYFOSMAPPREC.UTSENDING",
+      "inputBackoutQueueName": "Q1_SYFOSMMOTTAK.INPUT_BOQ",
+      "aktoerregisterV1Url": "https://app-q1.adeo.no/aktoerregister/api/v1"
+    }
