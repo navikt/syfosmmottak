@@ -44,14 +44,14 @@ pipeline {
         }
         stage('deploy to preprod') {
             steps {
-                deployApp action: 'kubectlSubcommand', cluster: 'preprod-fss', subcmd: "create configmap syfosmmottak-application-config --from-file config/preprod/application.json"
+                deployApp action: 'kubectlApply', cluster: 'preprod-fss', file: 'config/preprod/configmap.yaml'
                 deployApp action: 'kubectlDeploy', cluster: 'preprod-fss'
             }
         }
         stage('deploy to production') {
             when { environment name: 'DEPLOY_TO', value: 'production' }
             steps {
-                deployApp action: 'kubectlSubcommand', cluster: 'prod-fss', subcmd: "create configmap syfosmmottak-application-config --from-file config/prod/application.json"
+                deployApp action: 'kubectlApply', cluster: 'prod-fss', file: 'config/prod/configmap.yaml'
                 deployApp action: 'kubectlDeploy', cluster: 'prod-fss'
                 githubStatus action: 'tagRelease'
             }

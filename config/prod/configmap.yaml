@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: myconfigmap
+  namespace: default
+  labels:
+    team: myteam
+data:
+  application.json: |+
+{
+  "mqHostname": "a01apvl064.adeo.no",
+  "mqPort": 1414,
+  "mqGatewayName": "MPLSC04",
+  "mqChannelName": "P_SYFOSMMOTTAK",
+  "kafkaBootstrapServers": "SASL_SSL://a01apvl00145.adeo.no:8443,SASL_SSL://a01apvl00146.adeo.no:8443,SASL_SSL://a01apvl00147.adeo.no:8443,SASL_SSL://a01apvl00149.adeo.no:8443",
+  "inputQueueName": "QA.P_SYFOSMMOTTAK.TEMP_ROUTED_INPUT",
+  "apprecQueueName": "QA.P_SYFOSMAPPREC.UTSENDING",
+  "inputBackoutQueueName": "P_SYFOSMMOTTAK.INPUT_BOQ",
+  "aktoerregisterV1Url": "https://app.adeo.no/aktoerregister/api/v1"
+}
