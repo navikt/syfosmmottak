@@ -35,4 +35,4 @@ spec:
   secrets: true
   configMaps:
     files:
-      - {{config.file}}
+      - syfosmmottak-application-json
