@@ -33,6 +33,6 @@ spec:
       cpu: 100m
       memory: 128Mi
   secrets: true
-  configMap:
+  configMaps:
     files:
       - {{config.file}}
