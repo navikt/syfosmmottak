@@ -60,3 +60,7 @@ fasitResources:
       resourceType: baseurl
     - alias: aktoerregister.api.v1
       resourceType: RestService
+    - alias: eia_queue_syfo_outbound
+      resourceType: Queue
+      propertyMap:
+        queueName: SYFOSERVICE_OUTBOUND_QUEUE_QUEUENAME

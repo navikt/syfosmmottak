@@ -17,6 +17,7 @@ import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.io.core.toByteArray
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.kith.xmlstds.apprec._2004_11_21.XMLAppRec
 import no.kith.xmlstds.msghead._2006_05_24.XMLIdent
@@ -54,6 +55,8 @@ import java.io.File
 import java.io.StringReader
 import java.io.StringWriter
 import java.security.MessageDigest
+import java.time.LocalDate
+import java.util.Base64
 import java.util.concurrent.Executors
 import javax.jms.MessageProducer
 import javax.xml.bind.JAXBContext
@@ -104,6 +107,7 @@ fun main(args: Array<String>) = runBlocking<Unit>(Executors.newFixedThreadPool(4
             val session = connection.createSession()
             val inputQueue = session.createQueue(config.inputQueueName)
             val receiptQueue = session.createQueue(config.apprecQueueName)
+            val syfoserviceQueue = session.createQueue(config.syfoserviceQueueName)
             val backoutQueue = session.createQueue(getBackoutQueueFor(config.inputBackoutQueueName))
             session.close()
 
@@ -115,7 +119,7 @@ fun main(args: Array<String>) = runBlocking<Unit>(Executors.newFixedThreadPool(4
             val oidcClient = StsOidcClient(credentials.serviceuserUsername, credentials.serviceuserPassword)
             val aktoerIdClient = AktoerIdClient(config.aktoerregisterV1Url, oidcClient)
 
-            listen(inputQueue, receiptQueue, backoutQueue, connection, kafkaproducer, httpClient, aktoerIdClient, config, applicationState, jedis).join()
+            listen(inputQueue, receiptQueue, backoutQueue, syfoserviceQueue, connection, kafkaproducer, httpClient, aktoerIdClient, config, applicationState, jedis).join()
         }
     }
 }
@@ -130,6 +134,7 @@ fun CoroutineScope.listen(
     inputQueue: Queue,
     receiptQueue: Queue,
     backoutQueue: Queue,
+    syfoserviceQueue: Queue,
     connection: Connection,
     kafkaproducer: KafkaProducer<String, ReceivedSykmelding>,
     httpClient: HttpClient,
@@ -232,6 +237,8 @@ fun CoroutineScope.listen(
                     log.info("Apprec Receipt sent to {} $logKeys", config.apprecQueueName, *logValues)
                     kafkaproducer.send(ProducerRecord(config.sm2013AutomaticHandlingTopic, receivedSykmelding))
                     log.info("Message send to kafka {} $logKeys", config.sm2013AutomaticHandlingTopic, *logValues)
+                    notifySyfoService(session, receiptProducer, ediLoggId, extractSyketilfelleStartDato(healthInformation), convertSykemeldingToBase64(healthInformation))
+                    log.info("Message send to syfo {} $logKeys", config.syfoserviceQueueName, *logValues)
                     val currentRequestLatency = requestLatency.observeDuration()
                     log.info("Message $logKeys has outcome automatic, processing took {}s",
                             currentRequestLatency, *logValues)
@@ -241,6 +248,8 @@ fun CoroutineScope.listen(
                     log.info("Apprec Receipt sent to {} $logKeys", config.apprecQueueName, *logValues)
                     kafkaproducer.send(ProducerRecord(config.sm2013ManualHandlingTopic, receivedSykmelding))
                     log.info("Message send to kafka {} $logKeys", config.sm2013ManualHandlingTopic, *logValues)
+                    notifySyfoService(session, receiptProducer, ediLoggId, extractSyketilfelleStartDato(healthInformation), convertSykemeldingToBase64(healthInformation))
+                    log.info("Message send to syfo {} $logKeys", config.syfoserviceQueueName, *logValues)
                     val currentRequestLatency = requestLatency.observeDuration()
                     log.info("Message $logKeys has outcome manual processing, processing took {}s",
                             currentRequestLatency, *logValues)
@@ -299,3 +308,33 @@ fun extractHelseOpplysningerArbeidsuforhet(fellesformat: XMLEIFellesformat): Hel
 
 // TODO: Remove the second replace when the router is not in front
 fun getBackoutQueueFor(queueName: String): String = "${queueName.replaceFirst("QA.", "").replace("TEMP_ROUTED_", "")}_BOQ"
+
+fun notifySyfoService(
+        session: Session,
+        receiptProducer: MessageProducer,
+        ediLoggId: String,
+        syketilfelleStartDato: LocalDate,
+        sykmelding: ByteArray
+
+      ) {
+    receiptProducer.send(session.createTextMessage().apply {
+        val syfo = Syfo(tilleggsdata = Tilleggsdata(ediLoggId = ediLoggId, syketilfelleStartDato = syketilfelleStartDato),sykmelding = sykmelding )
+        text = syfo.toString()
+    })
+}
+
+data class Syfo(
+        val tilleggsdata: Tilleggsdata,
+        val sykmelding: ByteArray
+)
+
+data class Tilleggsdata(
+        val ediLoggId: String,
+        val syketilfelleStartDato: LocalDate
+)
+
+fun extractSyketilfelleStartDato(helseOpplysningerArbeidsuforhet: HelseOpplysningerArbeidsuforhet): LocalDate =
+        helseOpplysningerArbeidsuforhet.syketilfelleStartDato
+
+fun convertSykemeldingToBase64(helseOpplysningerArbeidsuforhet: HelseOpplysningerArbeidsuforhet): ByteArray =
+        Base64.getEncoder().encode(helseOpplysningerArbeidsuforhet.toString().toByteArray(Charsets.ISO_8859_1))

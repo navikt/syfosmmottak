@@ -17,7 +17,8 @@ data class ApplicationConfig(
     val inputBackoutQueueName: String,
     val aktoerregisterV1Url: String,
     val sm2013ManualHandlingTopic: String = "privat-syfo-sm2013-manuellBehandling",
-    val sm2013AutomaticHandlingTopic: String = "privat-syfo-sm2013-automatiskBehandling"
+    val sm2013AutomaticHandlingTopic: String = "privat-syfo-sm2013-automatiskBehandling",
+    val syfoserviceQueueName: String
 )
 
 data class VaultCredentials(
