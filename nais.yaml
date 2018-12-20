@@ -64,3 +64,5 @@ fasitResources:
       resourceType: Queue
       propertyMap:
         queueName: SYFOSERVICE_OUTBOUND_QUEUE_QUEUENAME
+    - alias: subscription-ws
+      resourceType: Webserviceendpoint

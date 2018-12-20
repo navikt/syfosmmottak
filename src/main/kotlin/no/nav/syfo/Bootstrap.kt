@@ -22,7 +22,9 @@ import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.kith.xmlstds.apprec._2004_11_21.XMLAppRec
 import no.kith.xmlstds.msghead._2006_05_24.XMLIdent
 import no.kith.xmlstds.msghead._2006_05_24.XMLMsgHead
+import no.nav.emottak.subscription.SubscriptionPort
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
+import no.nav.paop.ws.configureBasicAuthFor
 import no.nav.syfo.client.Status
 import no.nav.syfo.client.createHttpClient
 import no.nav.syfo.client.executeRuleValidation
@@ -40,6 +42,9 @@ import no.nav.syfo.util.connectionFactory
 import no.nav.syfo.util.readProducerConfig
 import no.trygdeetaten.xml.eiff._1.XMLEIFellesformat
 import no.trygdeetaten.xml.eiff._1.XMLMottakenhetBlokk
+import org.apache.cxf.ext.logging.LoggingFeature
+import org.apache.cxf.jaxws.JaxWsProxyFactoryBean
+import org.apache.cxf.ws.addressing.WSAddressingFeature
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
@@ -119,7 +124,15 @@ fun main(args: Array<String>) = runBlocking<Unit>(Executors.newFixedThreadPool(4
             val oidcClient = StsOidcClient(credentials.serviceuserUsername, credentials.serviceuserPassword)
             val aktoerIdClient = AktoerIdClient(config.aktoerregisterV1Url, oidcClient)
 
-            listen(inputQueue, receiptQueue, backoutQueue, syfoserviceQueue, connection, kafkaproducer, httpClient, aktoerIdClient, config, applicationState, jedis).join()
+            val subscriptionEmottak = JaxWsProxyFactoryBean().apply {
+                address = config.subscriptionEndpointURL
+                features.add(LoggingFeature())
+                features.add(WSAddressingFeature())
+                serviceClass = SubscriptionPort::class.java
+            }.create() as SubscriptionPort
+            configureBasicAuthFor(subscriptionEmottak, credentials.serviceuserUsername, credentials.serviceuserPassword)
+
+            listen(inputQueue, receiptQueue, backoutQueue, syfoserviceQueue, connection, subscriptionEmottak, kafkaproducer, httpClient, aktoerIdClient, config, applicationState, jedis).join()
         }
     }
 }
@@ -136,6 +149,7 @@ fun CoroutineScope.listen(
     backoutQueue: Queue,
     syfoserviceQueue: Queue,
     connection: Connection,
+    subscriptionEmottak: SubscriptionPort,
     kafkaproducer: KafkaProducer<String, ReceivedSykmelding>,
     httpClient: HttpClient,
     aktoerIdClient: AktoerIdClient,
@@ -146,6 +160,7 @@ fun CoroutineScope.listen(
     val session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)
     val consumer = session.createConsumer(inputQueue)
     val receiptProducer = session.createProducer(receiptQueue)
+    val syfoserviceProducer = session.createProducer(syfoserviceQueue)
     val backoutProducer = session.createProducer(backoutQueue)
 
     while (applicationState.running) {
@@ -184,6 +199,19 @@ fun CoroutineScope.listen(
             val personNumberPatient = healthInformation.pasient.fodselsnummer.id
             val personNumberDoctor = receiverBlock.avsenderFnrFraDigSignatur
             val aktoerIds = aktoerIdClient.getAktoerIds(listOf(personNumberDoctor, personNumberPatient), msgId)
+
+            // TODO
+            // Invokes a web service that updates the electronic subscription service for Healthcare Professonals. This means that
+            // Healthcrae Professionals will receive corespondances via e-mail instead of by paper mail. This service is invoked
+            // everytime a new sick leave notics (sykmelding) is sendt in.
+            /* TODO
+            val statusResponse = subscriptionEmottak.startSubscription(StartSubscriptionRequest().apply {
+                key = "12344" //TODO this is the TSSid
+                data = msgHead.msgInfo.sender.toString().toByteArray()
+                partnerid = receiverBlock.partnerReferanse.toInt()
+
+            })
+            */
 
             logValues = arrayOf(
                     keyValue("smId", ediLoggId),
@@ -237,7 +265,7 @@ fun CoroutineScope.listen(
                     log.info("Apprec Receipt sent to {} $logKeys", config.apprecQueueName, *logValues)
                     kafkaproducer.send(ProducerRecord(config.sm2013AutomaticHandlingTopic, receivedSykmelding))
                     log.info("Message send to kafka {} $logKeys", config.sm2013AutomaticHandlingTopic, *logValues)
-                    notifySyfoService(session, receiptProducer, ediLoggId, extractSyketilfelleStartDato(healthInformation), convertSykemeldingToBase64(healthInformation))
+                    notifySyfoService(session, syfoserviceProducer, ediLoggId, healthInformation)
                     log.info("Message send to syfo {} $logKeys", config.syfoserviceQueueName, *logValues)
                     val currentRequestLatency = requestLatency.observeDuration()
                     log.info("Message $logKeys has outcome automatic, processing took {}s",
@@ -248,7 +276,7 @@ fun CoroutineScope.listen(
                     log.info("Apprec Receipt sent to {} $logKeys", config.apprecQueueName, *logValues)
                     kafkaproducer.send(ProducerRecord(config.sm2013ManualHandlingTopic, receivedSykmelding))
                     log.info("Message send to kafka {} $logKeys", config.sm2013ManualHandlingTopic, *logValues)
-                    notifySyfoService(session, receiptProducer, ediLoggId, extractSyketilfelleStartDato(healthInformation), convertSykemeldingToBase64(healthInformation))
+                    notifySyfoService(session, syfoserviceProducer, ediLoggId, healthInformation)
                     log.info("Message send to syfo {} $logKeys", config.syfoserviceQueueName, *logValues)
                     val currentRequestLatency = requestLatency.observeDuration()
                     log.info("Message $logKeys has outcome manual processing, processing took {}s",
@@ -310,27 +338,28 @@ fun extractHelseOpplysningerArbeidsuforhet(fellesformat: XMLEIFellesformat): Hel
 fun getBackoutQueueFor(queueName: String): String = "${queueName.replaceFirst("QA.", "").replace("TEMP_ROUTED_", "")}_BOQ"
 
 fun notifySyfoService(
-        session: Session,
-        receiptProducer: MessageProducer,
-        ediLoggId: String,
-        syketilfelleStartDato: LocalDate,
-        sykmelding: ByteArray
+    session: Session,
+    receiptProducer: MessageProducer,
+    ediLoggId: String,
+    healthInformation: HelseOpplysningerArbeidsuforhet
 
-      ) {
+) {
     receiptProducer.send(session.createTextMessage().apply {
-        val syfo = Syfo(tilleggsdata = Tilleggsdata(ediLoggId = ediLoggId, syketilfelleStartDato = syketilfelleStartDato),sykmelding = sykmelding )
+        val syketilfelleStartDato = extractSyketilfelleStartDato(healthInformation)
+        val sykmelding = convertSykemeldingToBase64(healthInformation)
+        val syfo = Syfo(tilleggsdata = Tilleggsdata(ediLoggId = ediLoggId, syketilfelleStartDato = syketilfelleStartDato), sykmelding = sykmelding)
         text = syfo.toString()
     })
 }
 
 data class Syfo(
-        val tilleggsdata: Tilleggsdata,
-        val sykmelding: ByteArray
+    val tilleggsdata: Tilleggsdata,
+    val sykmelding: ByteArray
 )
 
 data class Tilleggsdata(
-        val ediLoggId: String,
-        val syketilfelleStartDato: LocalDate
+    val ediLoggId: String,
+    val syketilfelleStartDato: LocalDate
 )
 
 fun extractSyketilfelleStartDato(helseOpplysningerArbeidsuforhet: HelseOpplysningerArbeidsuforhet): LocalDate =
