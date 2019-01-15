@@ -44,7 +44,7 @@ pipeline {
         }
         stage('deploy to preprod') {
             steps {
-                deployApp action: 'kubectlApply', cluster: 'prod-fss', file: 'redis.yaml'
+                deployApp action: 'kubectlApply', cluster: 'preprod-fss', file: 'redis.yaml'
                 deployApp action: 'kubectlApply', cluster: 'preprod-fss', file: 'config/preprod/configmap.yaml'
                 deployApp action: 'kubectlDeploy', cluster: 'preprod-fss', placeholders: ["config_file" : "application-preprod.json"]
             }
