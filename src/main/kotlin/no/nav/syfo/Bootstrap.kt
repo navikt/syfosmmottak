@@ -87,7 +87,7 @@ val apprecJaxBContext: JAXBContext = JAXBContext.newInstance(XMLEIFellesformat::
 val apprecMarshaller: Marshaller = apprecJaxBContext.createMarshaller()
 
 val redisMasterName = "mymaster"
-val redisHost = "rfs-syfosmmottak" // TODO: Do this properly with naiserator
+val redisHost = "rfs-redis-syfosmmottak" // TODO: Do this properly with naiserator
 
 data class ApplicationState(var running: Boolean = true)
 
@@ -113,7 +113,7 @@ fun main(args: Array<String>) = runBlocking<Unit>(Executors.newFixedThreadPool(4
             val inputQueue = session.createQueue(config.inputQueueName)
             val receiptQueue = session.createQueue(config.apprecQueueName)
             val syfoserviceQueue = session.createQueue(config.syfoserviceQueueName)
-            val backoutQueue = session.createQueue(getBackoutQueueFor(config.inputBackoutQueueName))
+            val backoutQueue = session.createQueue(config.inputBackoutQueueName)
             session.close()
 
             val producerProperties = readProducerConfig(config, credentials, valueSerializer = JacksonKafkaSerializer::class)
@@ -333,9 +333,6 @@ fun sha256hashstring(helseOpplysningerArbeidsuforhet: HelseOpplysningerArbeidsuf
 
 fun extractHelseOpplysningerArbeidsuforhet(fellesformat: XMLEIFellesformat): HelseOpplysningerArbeidsuforhet =
         fellesformat.get<XMLMsgHead>().document[0].refDoc.content.any[0] as HelseOpplysningerArbeidsuforhet
-
-// TODO: Remove the second replace when the router is not in front
-fun getBackoutQueueFor(queueName: String): String = "${queueName.replaceFirst("QA.", "").replace("TEMP_ROUTED_", "")}_BOQ"
 
 fun notifySyfoService(
     session: Session,
