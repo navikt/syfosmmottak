@@ -35,6 +35,9 @@ spec:
   secrets: true
   vault:
     enabled: true
+  env:
+    - name: CONFIG_FILE
+      value: {{ config_file }}
   configMaps:
     files:
       - syfosmmottak-application-json
