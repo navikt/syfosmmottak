@@ -1,6 +1,6 @@
 {
   "mqHostname": "b27apvl171.preprod.local",
-  "mqPort": 1414,
+  "mqPort": 1413,
   "mqGatewayName": "MQXLSC02",
   "mqChannelName": "Q1_SYFOSMMOTTAK",
   "kafkaBootstrapServers": "SSL://b27apvl00045.preprod.local:8443,SSL://b27apvl00046.preprod.local:8443,SSL://b27apvl00047.preprod.local:8443",
