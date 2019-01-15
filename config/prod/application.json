@@ -7,5 +7,7 @@
   "inputQueueName": "QA.P_SYFOSMMOTTAK.TEMP_ROUTED_INPUT",
   "apprecQueueName": "QA.P_SYFOSMAPPREC.UTSENDING",
   "inputBackoutQueueName": "P_SYFOSMMOTTAK.INPUT_BOQ",
-  "aktoerregisterV1Url": "https://app.adeo.no/aktoerregister/api/v1"
+  "aktoerregisterV1Url": "https://app.adeo.no/aktoerregister/api/v1",
+  "syfoserviceQueueName": "QA.P_EIA_SYFO_OUTBOUND",
+  "subscriptionEndpointURL": "https://wasapp.adeo.no/nav-emottak-eletter-web/services/"
 }
