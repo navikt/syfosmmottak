@@ -5,7 +5,7 @@ metadata:
     app: syfosmmottak
     environment: default
     team: teamsykefravr
-  name: syfosmmottak
+  name: redis-syfosmmottak
   namespace: default
 spec:
   redis:
