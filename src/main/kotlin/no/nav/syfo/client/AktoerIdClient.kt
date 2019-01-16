@@ -13,10 +13,11 @@ import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.client.request.parameter
 import io.ktor.http.ContentType
-import no.nav.syfo.VaultCredentials
+import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.model.IdentInfoResult
 
 class AktoerIdClient(private val endpointUrl: String, private val stsClient: StsOidcClient) {
+    @UseExperimental(KtorExperimentalAPI::class)
     private val client = HttpClient(CIO) {
         install(JsonFeature) {
             serializer = JacksonSerializer()

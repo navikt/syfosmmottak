@@ -11,11 +11,13 @@ import io.ktor.client.features.logging.Logger
 import io.ktor.client.features.logging.Logging
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
+import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.model.OidcToken
 
 class StsOidcClient(username: String, password: String) {
     private var tokenExpires: Long = 0
+    @UseExperimental(KtorExperimentalAPI::class)
     private val oidcClient = HttpClient(CIO) {
         install(JsonFeature) {
             serializer = JacksonSerializer()
