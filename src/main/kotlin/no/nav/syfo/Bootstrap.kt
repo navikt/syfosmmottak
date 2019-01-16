@@ -198,9 +198,7 @@ fun CoroutineScope.listen(
 
             val personNumberPatient = healthInformation.pasient.fodselsnummer.id
             val personNumberDoctor = receiverBlock.avsenderFnrFraDigSignatur
-
-            val aktoerIds = aktoerIdClient.getAktoerIds(listOf(personNumberPatient), msgId)
-            //val aktoerIds = aktoerIdClient.getAktoerIds(listOf(personNumberDoctor, personNumberPatient), msgId)
+            val aktoerIds = aktoerIdClient.getAktoerIds(listOf(personNumberDoctor, personNumberPatient), msgId)
 
             // TODO
             // Invokes a web service that updates the electronic subscription service for Healthcare Professonals. This means that
