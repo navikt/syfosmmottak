@@ -198,6 +198,7 @@ fun CoroutineScope.listen(
 
             val personNumberPatient = healthInformation.pasient.fodselsnummer.id
             val personNumberDoctor = receiverBlock.avsenderFnrFraDigSignatur
+            log.info("Calling Aktoer")
             val aktoerIds = aktoerIdClient.getAktoerIds(listOf(personNumberDoctor, personNumberPatient), msgId)
 
             // TODO
