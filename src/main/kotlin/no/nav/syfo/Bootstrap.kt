@@ -132,7 +132,7 @@ fun main(args: Array<String>) = runBlocking<Unit>(Executors.newFixedThreadPool(4
             }.create() as SubscriptionPort
             configureBasicAuthFor(subscriptionEmottak, credentials.serviceuserUsername, credentials.serviceuserPassword)
 
-            listen(inputQueue, receiptQueue, backoutQueue, syfoserviceQueue, connection, subscriptionEmottak, kafkaproducer, httpClient, aktoerIdClient, config, applicationState, jedis).join()
+            listen(inputQueue, receiptQueue, backoutQueue, syfoserviceQueue, connection, subscriptionEmottak, kafkaproducer, httpClient, aktoerIdClient, config, credentials, applicationState, jedis).join()
         }
     }
 }
@@ -154,6 +154,7 @@ fun CoroutineScope.listen(
     httpClient: HttpClient,
     aktoerIdClient: AktoerIdClient,
     config: ApplicationConfig,
+    credentials: VaultCredentials,
     applicationState: ApplicationState,
     jedis: Jedis
 ) = launch {
@@ -198,7 +199,7 @@ fun CoroutineScope.listen(
 
             val personNumberPatient = healthInformation.pasient.fodselsnummer.id
             val personNumberDoctor = receiverBlock.avsenderFnrFraDigSignatur
-            val aktoerIds = aktoerIdClient.getAktoerIds(listOf(personNumberDoctor, personNumberPatient), msgId)
+            val aktoerIds = aktoerIdClient.getAktoerIds(listOf(personNumberDoctor, personNumberPatient), msgId, credentials.serviceuserUsername)
 
             // TODO
             // Invokes a web service that updates the electronic subscription service for Healthcare Professonals. This means that

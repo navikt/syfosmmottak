@@ -13,6 +13,7 @@ import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.client.request.parameter
 import io.ktor.http.ContentType
+import no.nav.syfo.VaultCredentials
 import no.nav.syfo.model.IdentInfoResult
 
 class AktoerIdClient(private val endpointUrl: String, private val stsClient: StsOidcClient) {
@@ -26,13 +27,13 @@ class AktoerIdClient(private val endpointUrl: String, private val stsClient: Sts
         }
     }
 
-    suspend fun getAktoerIds(personNumbers: List<String>, trackingId: String): Map<String, IdentInfoResult> =
+    suspend fun getAktoerIds(personNumbers: List<String>, trackingId: String, username: String): Map<String, IdentInfoResult> =
             client.get("$endpointUrl/identer") {
                 accept(ContentType.Application.Json)
                 val oidcToken = stsClient.oidcToken()
                 headers {
                     append("Authorization", "Bearer ${oidcToken.access_token}")
-                    append("Nav-Consumer-Id", "srvsyfosmmottak")
+                    append("Nav-Consumer-Id", username)
                     append("Nav-Call-Id", trackingId)
                     append("Nav-Personidenter", personNumbers.joinToString(","))
                 }
