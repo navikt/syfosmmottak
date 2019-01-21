@@ -1,7 +1,7 @@
 package no.nav.syfo.client
 
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
+import io.ktor.client.engine.apache.Apache
 import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.features.logging.DEFAULT
@@ -18,7 +18,7 @@ import no.nav.syfo.model.IdentInfoResult
 
 class AktoerIdClient(private val endpointUrl: String, private val stsClient: StsOidcClient) {
     @UseExperimental(KtorExperimentalAPI::class)
-    private val client = HttpClient(CIO) {
+    private val client = HttpClient(Apache) {
         install(JsonFeature) {
             serializer = JacksonSerializer()
         }

@@ -1,7 +1,7 @@
 package no.nav.syfo.client
 
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
+import io.ktor.client.engine.apache.Apache
 import io.ktor.client.features.auth.basic.BasicAuth
 import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
@@ -18,7 +18,7 @@ import no.nav.syfo.model.OidcToken
 class StsOidcClient(username: String, password: String) {
     private var tokenExpires: Long = 0
     @UseExperimental(KtorExperimentalAPI::class)
-    private val oidcClient = HttpClient(CIO) {
+    private val oidcClient = HttpClient(Apache) {
         install(JsonFeature) {
             serializer = JacksonSerializer()
         }
