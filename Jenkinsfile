@@ -31,11 +31,6 @@ pipeline {
                 slackStatus status: 'passed'
             }
         }
-        stage('push docker image') {
-            steps {
-                dockerUtils action: 'createPushImage'
-            }
-        }
         stage('Create kafka topics') {
             steps {
                 sh 'echo TODO'
@@ -43,21 +38,19 @@ pipeline {
             }
         }
         stage('deploy to preprod') {
-            steps {
-                deployApp action: 'kubectlApply', cluster: 'preprod-fss', file: 'redis.yaml'
-                deployApp action: 'kubectlApply', cluster: 'preprod-fss', file: 'config/preprod/configmap.yaml'
-                deployApp action: 'kubectlDeploy', cluster: 'preprod-fss', placeholders: ["config_file" : "application-preprod.json"]
-            }
-        }
+                     steps {
+                          dockerUtils action: 'createPushImage'
+                          deployApp action: 'kubectlDeploy', cluster: 'preprod-fss'
+                          }
+                      }
         stage('deploy to production') {
-            when { environment name: 'DEPLOY_TO', value: 'production' }
-            steps {
-                deployApp action: 'kubectlApply', cluster: 'prod-fss', file: 'redis.yaml'
-                deployApp action: 'kubectlApply', cluster: 'prod-fss', file: 'config/prod/configmap.yaml'
-                deployApp action: 'kubectlDeploy', cluster: 'prod-fss', placeholders: ["config_file" : "application-prod.json"]
-                githubStatus action: 'tagRelease'
-            }
-        }
+                          when { environment name: 'DEPLOY_TO', value: 'production' }
+                     steps {
+                          deployApp action: 'kubectlDeploy', cluster: 'prod-fss', file: 'naiserator-prod.yaml'
+                          githubStatus action: 'tagRelease'
+                          }
+                       }
+          }
     }
     post {
         always {
