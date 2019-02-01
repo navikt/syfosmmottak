@@ -32,7 +32,6 @@ spec:
     requests:
       cpu: 100m
       memory: 128Mi
-  secrets: true
   vault:
     enabled: true
   env:

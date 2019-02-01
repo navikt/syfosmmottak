@@ -40,12 +40,14 @@ pipeline {
         stage('deploy to preprod') {
                      steps {
                           dockerUtils action: 'createPushImage'
+                          deployApp action: 'kubectlApply', cluster: 'preprod-fss', file: 'redis.yaml'
                           deployApp action: 'kubectlDeploy', cluster: 'preprod-fss'
                           }
                       }
         stage('deploy to production') {
                           when { environment name: 'DEPLOY_TO', value: 'production' }
                      steps {
+                          deployApp action: 'kubectlApply', cluster: 'prod-fss', file: 'redis.yaml'
                           deployApp action: 'kubectlDeploy', cluster: 'prod-fss', file: 'naiserator-prod.yaml'
                           githubStatus action: 'tagRelease'
                           }
