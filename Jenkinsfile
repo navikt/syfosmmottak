@@ -50,7 +50,6 @@ pipeline {
                           githubStatus action: 'tagRelease'
                           }
                        }
-          }
     }
     post {
         always {
