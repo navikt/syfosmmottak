@@ -8,10 +8,10 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.migesok.jaxb.adapter.javatime.LocalDateTimeXmlAdapter
 import com.migesok.jaxb.adapter.javatime.LocalDateXmlAdapter
 import io.ktor.application.Application
-import io.ktor.client.HttpClient
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.delay
@@ -22,12 +22,11 @@ import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.kith.xmlstds.apprec._2004_11_21.XMLAppRec
 import no.kith.xmlstds.msghead._2006_05_24.XMLIdent
 import no.kith.xmlstds.msghead._2006_05_24.XMLMsgHead
+import no.nav.emottak.subscription.StartSubscriptionRequest
 import no.nav.emottak.subscription.SubscriptionPort
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 import no.nav.paop.ws.configureBasicAuthFor
 import no.nav.syfo.client.Status
-import no.nav.syfo.client.createHttpClient
-import no.nav.syfo.client.executeRuleValidation
 import no.nav.syfo.api.registerNaisApi
 import no.nav.syfo.apprec.ApprecError
 import no.nav.syfo.apprec.ApprecStatus
@@ -35,7 +34,10 @@ import no.nav.syfo.apprec.createApprec
 import no.nav.syfo.apprec.findApprecError
 import no.nav.syfo.apprec.toApprecCV
 import no.nav.syfo.client.AktoerIdClient
+import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.StsOidcClient
+import no.nav.syfo.client.SyfoSykemeldingRuleClient
+import no.nav.syfo.client.findBestSamhandlerPraksis
 import no.nav.syfo.metrics.REQUEST_TIME
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.util.connectionFactory
@@ -93,6 +95,7 @@ data class ApplicationState(var running: Boolean = true)
 
 private val log = LoggerFactory.getLogger("nav.syfosmmottak-application")
 
+@KtorExperimentalAPI
 fun main(args: Array<String>) = runBlocking(Executors.newFixedThreadPool(4).asCoroutineDispatcher()) {
     val config: ApplicationConfig = objectMapper.readValue(File(System.getenv("CONFIG_FILE")))
     val applicationState = ApplicationState()
@@ -119,11 +122,14 @@ fun main(args: Array<String>) = runBlocking(Executors.newFixedThreadPool(4).asCo
             val producerProperties = readProducerConfig(config, credentials, valueSerializer = JacksonKafkaSerializer::class)
             val kafkaproducer = KafkaProducer<String, ReceivedSykmelding>(producerProperties)
 
-            val httpClient = createHttpClient(credentials)
+            val syfoSykemeldingRuleClient = SyfoSykemeldingRuleClient(config.syfosmreglerApiUrl, credentials)
+
+            val sarClient = SarClient(config.kuhrSarApiUrl, credentials)
 
             val oidcClient = StsOidcClient(credentials.serviceuserUsername, credentials.serviceuserPassword)
             val aktoerIdClient = AktoerIdClient(config.aktoerregisterV1Url, oidcClient)
 
+            // TODO remove this when going into skygge-prod
             val subscriptionEmottak = JaxWsProxyFactoryBean().apply {
                 address = config.subscriptionEndpointURL
                 features.add(LoggingFeature())
@@ -132,7 +138,7 @@ fun main(args: Array<String>) = runBlocking(Executors.newFixedThreadPool(4).asCo
             }.create() as SubscriptionPort
             configureBasicAuthFor(subscriptionEmottak, credentials.serviceuserUsername, credentials.serviceuserPassword)
 
-            listen(inputQueue, receiptQueue, backoutQueue, syfoserviceQueue, connection, subscriptionEmottak, kafkaproducer, httpClient, aktoerIdClient, config, credentials, applicationState, jedis).join()
+            listen(inputQueue, receiptQueue, backoutQueue, syfoserviceQueue, connection, subscriptionEmottak, kafkaproducer, syfoSykemeldingRuleClient, sarClient, aktoerIdClient, config, credentials, applicationState, jedis).join()
         }
     }
 }
@@ -143,6 +149,7 @@ fun Application.initRouting(applicationState: ApplicationState) {
     }
 }
 
+@KtorExperimentalAPI
 fun CoroutineScope.listen(
     inputQueue: Queue,
     receiptQueue: Queue,
@@ -151,7 +158,8 @@ fun CoroutineScope.listen(
     connection: Connection,
     subscriptionEmottak: SubscriptionPort,
     kafkaproducer: KafkaProducer<String, ReceivedSykmelding>,
-    httpClient: HttpClient,
+    syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
+    kuhrSarClient: SarClient,
     aktoerIdClient: AktoerIdClient,
     config: ApplicationConfig,
     credentials: VaultCredentials,
@@ -201,18 +209,14 @@ fun CoroutineScope.listen(
             val personNumberDoctor = receiverBlock.avsenderFnrFraDigSignatur
             val aktoerIds = aktoerIdClient.getAktoerIds(listOf(personNumberDoctor, personNumberPatient), msgId, credentials.serviceuserUsername)
 
-            // TODO
-            // Invokes a web service that updates the electronic subscription service for Healthcare Professonals. This means that
-            // Healthcrae Professionals will receive corespondances via e-mail instead of by paper mail. This service is invoked
-            // everytime a new sick leave notics (sykmelding) is sendt in.
-            /* TODO
-            val statusResponse = subscriptionEmottak.startSubscription(StartSubscriptionRequest().apply {
-                key = "12344" //TODO this is the TSSid
+            val samhandlerPraksis = findBestSamhandlerPraksis(kuhrSarClient.getSamhandler(personNumberDoctor),
+                    legekontorOrgName)?.samhandlerPraksis
+
+            subscriptionEmottak.startSubscription(StartSubscriptionRequest().apply {
+                key = samhandlerPraksis?.tss_ident
                 data = msgHead.msgInfo.sender.toString().toByteArray()
                 partnerid = receiverBlock.partnerReferanse.toInt()
-
             })
-            */
 
             logValues = arrayOf(
                     keyValue("smId", ediLoggId),
@@ -259,7 +263,7 @@ fun CoroutineScope.listen(
                     fellesformat = inputMessageText
             )
 
-            val validationResult = httpClient.executeRuleValidation(receivedSykmelding)
+            val validationResult = syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding)
             when {
                 validationResult.status == Status.OK -> {
                     sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)

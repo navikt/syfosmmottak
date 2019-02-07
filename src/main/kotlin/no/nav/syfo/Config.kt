@@ -19,7 +19,9 @@ data class ApplicationConfig(
     val sm2013ManualHandlingTopic: String = "privat-syfo-sm2013-manuellBehandling",
     val sm2013AutomaticHandlingTopic: String = "privat-syfo-sm2013-automatiskBehandling",
     val syfoserviceQueueName: String,
-    val subscriptionEndpointURL: String
+    val subscriptionEndpointURL: String,
+    val kuhrSarApiUrl: String = "http://kuhr-sar-api",
+    val syfosmreglerApiUrl: String = "http://syfosmregler"
 )
 
 data class VaultCredentials(

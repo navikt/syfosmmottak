@@ -21,7 +21,8 @@ import org.slf4j.LoggerFactory
 private val log = LoggerFactory.getLogger("no.nav.syfo.http")
 
 @KtorExperimentalAPI
-fun createHttpClient(credentials: VaultCredentials) = HttpClient(CIO.config {
+class SyfoSykemeldingRuleClient(private val endpointUrl: String, credentials: VaultCredentials) {
+    private val client = HttpClient(CIO.config {
     maxConnectionsCount = 1000 // Maximum number of socket connections.
     endpoint.apply {
         maxConnectionsPerRoute = 100
@@ -44,14 +45,11 @@ fun createHttpClient(credentials: VaultCredentials) = HttpClient(CIO.config {
     }
 }
 
-suspend fun HttpClient.executeRuleValidation(payload: ReceivedSykmelding): ValidationResult = post {
-    contentType(ContentType.Application.Json)
-    body = payload
-    accept(ContentType.Application.Json)
-
-    url {
-        host = "syfosmregler"
-        path("v1", "rules", "validate")
+suspend fun executeRuleValidation(payload: ReceivedSykmelding): ValidationResult =
+        client.post("$endpointUrl/v1/rules/validate") {
+        contentType(ContentType.Application.Json)
+        accept(ContentType.Application.Json)
+        body = payload
     }
 }
 

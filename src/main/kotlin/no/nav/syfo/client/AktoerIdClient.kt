@@ -16,9 +16,8 @@ import io.ktor.client.request.parameter
 import io.ktor.http.ContentType
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.model.IdentInfoResult
-
+@KtorExperimentalAPI
 class AktoerIdClient(private val endpointUrl: String, private val stsClient: StsOidcClient) {
-    @KtorExperimentalAPI
     private val client = HttpClient(CIO.config {
         maxConnectionsCount = 1000 // Maximum number of socket connections.
         endpoint.apply {
