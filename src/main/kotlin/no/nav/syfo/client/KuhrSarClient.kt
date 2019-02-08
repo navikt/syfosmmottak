@@ -11,6 +11,7 @@ import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.features.logging.DEFAULT
 import io.ktor.client.features.logging.LogLevel
+import io.ktor.client.features.logging.Logger
 import io.ktor.client.features.logging.Logging
 import io.ktor.client.request.accept
 import io.ktor.client.request.get
@@ -47,7 +48,7 @@ class SarClient(private val endpointUrl: String, private val credentials: VaultC
             this.password = credentials.serviceuserPassword
         }
         install(Logging) {
-            logger = io.ktor.client.features.logging.Logger.DEFAULT
+            logger = Logger.DEFAULT
             level = LogLevel.ALL
         }
     }

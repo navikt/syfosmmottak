@@ -22,6 +22,7 @@ import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.kith.xmlstds.apprec._2004_11_21.XMLAppRec
 import no.kith.xmlstds.msghead._2006_05_24.XMLIdent
 import no.kith.xmlstds.msghead._2006_05_24.XMLMsgHead
+import no.nav.emottak.subscription.StartSubscriptionRequest
 import no.nav.emottak.subscription.SubscriptionPort
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 import no.nav.paop.ws.configureBasicAuthFor
@@ -210,15 +211,13 @@ fun CoroutineScope.listen(
             val samhandlerPraksis = findBestSamhandlerPraksis(kuhrSarClient.getSamhandler(personNumberDoctor),
                     legekontorOrgName)?.samhandlerPraksis
 
-            // TODO remove this when going into skygge-prod
-            // implment after case: INC000001984559 is fixed
-            /*
+            // TODO comment out this when going into skygge-prod
+
             subscriptionEmottak.startSubscription(StartSubscriptionRequest().apply {
                 key = samhandlerPraksis?.tss_ident
                 data = msgHead.msgInfo.sender.toString().toByteArray()
                 partnerid = receiverBlock.partnerReferanse.toInt()
             })
-            */
 
             logValues = arrayOf(
                     keyValue("smId", ediLoggId),

@@ -1,6 +1,5 @@
 package no.nav.syfo
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.util.readProducerConfig
 import no.nav.syfo.utils.readConsumerConfig
@@ -12,7 +11,6 @@ import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.io.File
 import java.net.ServerSocket
 import java.time.Duration
 
@@ -28,7 +26,12 @@ object KafkaITSpek : Spek({
     )
 
     val credentials = VaultCredentials("", "", "", "")
-    val config: ApplicationConfig = objectMapper.readValue(File("application-local.json"))
+    val config = ApplicationConfig(mqHostname = "mqhost", mqPort = getRandomPort(),
+            mqGatewayName = "mqGateway", kafkaBootstrapServers = embeddedEnvironment.brokersURL,
+            mqChannelName = "syfomottak", aktoerregisterV1Url = "localhost-aktor", subscriptionEndpointURL = "localhost-emottak",
+            apprecQueueName = "apprequeue", inputBackoutQueueName = "inputbackqueue", inputQueueName = "inputqueue",
+            syfoserviceQueueName = "syfoserviequeue"
+    )
 
     val producer = KafkaProducer<String, String>(readProducerConfig(config, credentials, StringSerializer::class).apply {
         remove("security.protocol")

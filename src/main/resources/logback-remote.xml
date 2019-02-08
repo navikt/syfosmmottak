@@ -6,9 +6,7 @@
         </encoder>
     </appender>
 
-    <logger name="nav" level="DEBUG"/>
-    <logger name="org.apache.cxf.services" level="WARN"/>
-    <logger name="org.apache.cxf.ws.addressing" level="ERROR" />
+    <logger name="no.nav" level="DEBUG"/>
 
     <root level="INFO">
         <appender-ref ref="stdout_json"/>
