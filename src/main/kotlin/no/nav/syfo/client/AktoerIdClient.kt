@@ -1,6 +1,7 @@
 package no.nav.syfo.client
 
 import io.ktor.client.HttpClient
+import io.ktor.client.engine.apache.Apache
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.engine.config
 import io.ktor.client.features.json.JacksonSerializer
@@ -18,16 +19,7 @@ import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.model.IdentInfoResult
 @KtorExperimentalAPI
 class AktoerIdClient(private val endpointUrl: String, private val stsClient: StsOidcClient) {
-    private val client = HttpClient(CIO.config {
-        maxConnectionsCount = 1000 // Maximum number of socket connections.
-        endpoint.apply {
-            maxConnectionsPerRoute = 100
-            pipelineMaxSize = 20
-            keepAliveTime = 5000
-            connectTimeout = 5000
-            connectRetryAttempts = 5
-        }
-    }) {
+    private val client = HttpClient(Apache) {
         install(JsonFeature) {
             serializer = JacksonSerializer()
         }
