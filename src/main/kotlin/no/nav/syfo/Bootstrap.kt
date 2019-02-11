@@ -22,7 +22,6 @@ import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.kith.xmlstds.apprec._2004_11_21.XMLAppRec
 import no.kith.xmlstds.msghead._2006_05_24.XMLIdent
 import no.kith.xmlstds.msghead._2006_05_24.XMLMsgHead
-import no.nav.emottak.subscription.StartSubscriptionRequest
 import no.nav.emottak.subscription.SubscriptionPort
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 import no.nav.paop.ws.configureBasicAuthFor
@@ -44,7 +43,6 @@ import no.nav.syfo.util.connectionFactory
 import no.nav.syfo.util.readProducerConfig
 import no.trygdeetaten.xml.eiff._1.XMLEIFellesformat
 import no.trygdeetaten.xml.eiff._1.XMLMottakenhetBlokk
-import org.apache.cxf.ext.logging.LoggingFeature
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean
 import org.apache.cxf.ws.addressing.WSAddressingFeature
 import org.apache.kafka.clients.producer.KafkaProducer
