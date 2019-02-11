@@ -205,6 +205,12 @@ fun CoroutineScope.listen(
             val personNumberDoctor = receiverBlock.avsenderFnrFraDigSignatur
             val aktoerIds = aktoerIdClient.getAktoerIds(listOf(personNumberDoctor, personNumberPatient), msgId, credentials.serviceuserUsername)
 
+            logValues = arrayOf(
+                    keyValue("smId", ediLoggId),
+                    keyValue("organizationNumber", legekontorOrgNr),
+                    keyValue("msgId", msgId)
+            )
+
             val samhandlerPraksis = findBestSamhandlerPraksis(kuhrSarClient.getSamhandler(personNumberDoctor),
                     legekontorOrgName)?.samhandlerPraksis
 
@@ -216,12 +222,6 @@ fun CoroutineScope.listen(
                 partnerid = receiverBlock.partnerReferanse.toInt()
             })
             */
-
-            logValues = arrayOf(
-                    keyValue("smId", ediLoggId),
-                    keyValue("organizationNumber", legekontorOrgNr),
-                    keyValue("msgId", msgId)
-            )
 
             log.debug("Response from aktørId, {} $logKeys", keyValue("response", aktoerIds), *logValues)
 

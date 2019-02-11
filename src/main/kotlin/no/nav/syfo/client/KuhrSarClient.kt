@@ -49,7 +49,7 @@ class SarClient(private val endpointUrl: String, private val credentials: VaultC
         }
         install(Logging) {
             logger = Logger.DEFAULT
-            level = LogLevel.ALL
+            level = LogLevel.INFO
         }
     }
 
