@@ -131,7 +131,6 @@ fun main(args: Array<String>) = runBlocking(Executors.newFixedThreadPool(4).asCo
 
             val subscriptionEmottak = JaxWsProxyFactoryBean().apply {
                 address = config.subscriptionEndpointURL
-                features.add(LoggingFeature())
                 features.add(WSAddressingFeature())
                 serviceClass = SubscriptionPort::class.java
             }.create() as SubscriptionPort
@@ -211,13 +210,14 @@ fun CoroutineScope.listen(
             val samhandlerPraksis = findBestSamhandlerPraksis(kuhrSarClient.getSamhandler(personNumberDoctor),
                     legekontorOrgName)?.samhandlerPraksis
 
-            // TODO comment out this when going into skygge-prod
-
+            // TODO comment out this when going into prod-prod
+            /*
             subscriptionEmottak.startSubscription(StartSubscriptionRequest().apply {
                 key = samhandlerPraksis?.tss_ident
                 data = msgHead.msgInfo.sender.toString().toByteArray()
                 partnerid = receiverBlock.partnerReferanse.toInt()
             })
+            */
 
             logValues = arrayOf(
                     keyValue("smId", ediLoggId),

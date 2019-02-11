@@ -20,8 +20,8 @@ spec:
   readiness:
     path: /is_ready
     initialDelay: 30
-    periodSeconds: 5
     timeout: 5
+    periodSeconds: 10
   prometheus:
     enabled: true
     path: /prometheus
@@ -30,7 +30,7 @@ spec:
       cpu: 250m
       memory: 1Gi
     requests:
-      cpu: 100m
+      cpu: 50m
       memory: 128Mi
   vault:
     enabled: true
