@@ -5,8 +5,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.engine.config
+import io.ktor.client.engine.apache.Apache
 import io.ktor.client.features.auth.basic.BasicAuth
 import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
@@ -27,16 +26,7 @@ import kotlin.math.max
 @KtorExperimentalAPI
 class SarClient(private val endpointUrl: String, private val credentials: VaultCredentials) {
 
-    private val kuhrSarClient = HttpClient(CIO.config {
-        maxConnectionsCount = 1000 // Maximum number of socket connections.
-        endpoint.apply {
-            maxConnectionsPerRoute = 100
-            pipelineMaxSize = 20
-            keepAliveTime = 5000
-            connectTimeout = 5000
-            connectRetryAttempts = 5
-        }
-    }) {
+    private val kuhrSarClient = HttpClient(Apache) {
         install(JsonFeature) {
             serializer = JacksonSerializer {
                 registerKotlinModule()
