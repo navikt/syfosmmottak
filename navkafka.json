@@ -7,6 +7,7 @@
         {"member":"srvsyfosminfotrygd", "role":"CONSUMER"},
         {"member":"srvsyfosmregister", "role":"CONSUMER"},
         {"member":"srvsyfosmarena", "role":"CONSUMER"},
+        {"member":"srvDataverk", "role":"CONSUMER"},
         {"member":"srvsyfosmmottak", "role":"PRODUCER"}
       ],
       "numPartitions": 3
@@ -16,6 +17,7 @@
       "members": [
         {"member":"srvsyfosmgsak", "role":"CONSUMER"},
         {"member":"srvsyfosmarena", "role":"CONSUMER"},
+        {"member":"srvDataverk", "role":"CONSUMER"},
         {"member":"srvsyfosmmottak", "role":"PRODUCER"}
       ],
       "numPartitions": 3
