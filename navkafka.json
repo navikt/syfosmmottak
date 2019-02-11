@@ -15,7 +15,7 @@
     {
       "topicName": "privat-syfo-sm2013-manuellBehandling",
       "members": [
-        {"member":"srvsyfosmgsak", "role":"CONSUMER"},
+        {"member":"srvsyfooppgavegsak", "role":"CONSUMER"},
         {"member":"srvsyfosmarena", "role":"CONSUMER"},
         {"member":"srvDataverk", "role":"CONSUMER"},
         {"member":"srvsyfosmmottak", "role":"PRODUCER"}
