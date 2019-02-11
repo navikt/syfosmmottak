@@ -1,5 +1,6 @@
 package no.nav.syfo.client
 
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
@@ -41,6 +42,7 @@ class SarClient(private val endpointUrl: String, private val credentials: VaultC
                 registerKotlinModule()
                 registerModule(JavaTimeModule())
                 configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             }
         }
         install(BasicAuth) {
@@ -70,29 +72,8 @@ data class Samhandler(
     val ikke_godkjent_for_refusjon: String,
     val godkjent_egenandel_refusjon: String,
     val godkjent_for_fil: String,
-    val breg_hovedenhet: SamhandlerBregHovedenhet?,
     val endringslogg_tidspunkt_siste: Date?,
-    val samh_ident: List<SamhandlerIdent>,
-    val samh_praksis: List<SamhandlerPraksis>,
-    val samh_avtale: List<SamhandlerAvtale>,
-    val samh_direkte_oppgjor_avtale: List<SamhandlerDirekteOppgjoerAvtale>,
-    val samh_email: List<SamhEmail>?
-)
-
-data class SamhandlerBregHovedenhet(
-    val organisasjonsnummer: String,
-    val organisasjonsform: String,
-    val institusjonellsektorkodekode: String,
-    val naeringskode1kode: String,
-    val naeringskode2kode: String?
-)
-
-data class SamhandlerIdent(
-    val samh_id: String,
-    val samh_ident_id: String,
-    val ident: String,
-    val ident_type_kode: String,
-    val aktiv_ident: String
+    val samh_praksis: List<SamhandlerPraksis>
 )
 
 data class SamhandlerPraksis(
@@ -125,17 +106,7 @@ data class SamhandlerPraksis(
     val samh_praksis_type_kode: String?,
     val samh_id: String,
     val samh_praksis_id: String,
-    val samh_praksis_konto: List<SamhandlerPraksisKonto>,
-    val samh_praksis_periode: List<SamhandlerPeriode>,
-    val samh_praksis_email: List<SamhandlerPraksisEmail>?
-)
-
-data class SamhandlerPraksisKonto(
-    val tidspunkt_registrert: Date,
-    val registrert_av_id: String,
-    val konto: String,
-    val samh_praksis_id: String,
-    val samh_praksis_konto_id: String
+    val samh_praksis_periode: List<SamhandlerPeriode>
 )
 
 data class SamhandlerPeriode(
@@ -146,38 +117,6 @@ data class SamhandlerPeriode(
     val gyldig_til: Date?,
     val samh_praksis_id: String,
     val samh_praksis_periode_id: String
-)
-
-data class SamhandlerAvtale(
-    val gyldig_fra: Date,
-    val gyldig_til: Date?,
-    val prosentandel: String,
-    val avtale_type_kode: String,
-    val samh_id: String,
-    val samh_avtale_id: String
-)
-
-data class SamhandlerDirekteOppgjoerAvtale(
-    val gyldig_fra: Date,
-    val koll_avtale_mottatt_dato: Date?,
-    val monster_avtale_mottatt_dato: Date?,
-    val samh_id: String,
-    val samh_direkte_oppgjor_avtale_id: String
-)
-
-data class SamhandlerPraksisEmail(
-    val samh_praksis_email_id: String,
-    val samh_praksis_id: String,
-    val email: String,
-    val primaer_email: String?
-)
-
-data class SamhEmail(
-    val samh_email_id: String,
-    val samh_id: String,
-    val email: String,
-    val primaer_email: String,
-    val email_type_kode: String
 )
 
 data class SamhandlerPraksisMatch(val samhandlerPraksis: SamhandlerPraksis, val percentageMatch: Double)

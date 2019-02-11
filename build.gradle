@@ -36,7 +36,7 @@ plugins {
 }
 
 group 'no.nav.syfo'
-version '1.0.17'
+version '1.0.18'
 
 jar.manifest.attributes("Main-Class" : "no.nav.syfo.BootstrapKt")
 
