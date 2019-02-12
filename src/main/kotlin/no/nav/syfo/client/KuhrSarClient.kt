@@ -101,7 +101,7 @@ data class SamhandlerPraksis(
 
 data class SamhandlerPeriode(
     val endret_ved_import: String,
-    val sist_endret: Date,
+    val sist_endret: Date?,
     val slettet: String,
     val gyldig_fra: Date,
     val gyldig_til: Date?,
