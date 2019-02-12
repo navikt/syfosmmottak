@@ -203,7 +203,6 @@ fun CoroutineScope.listen(
 
             val personNumberPatient = healthInformation.pasient.fodselsnummer.id
             val personNumberDoctor = receiverBlock.avsenderFnrFraDigSignatur
-            val aktoerIds = aktoerIdClient.getAktoerIds(listOf(personNumberDoctor, personNumberPatient), msgId, credentials.serviceuserUsername)
 
             logValues = arrayOf(
                     keyValue("smId", ediLoggId),
@@ -211,8 +210,15 @@ fun CoroutineScope.listen(
                     keyValue("msgId", msgId)
             )
 
+            log.info("Received message, $logKeys", *logValues)
+
+            val aktoerIds = aktoerIdClient.getAktoerIds(listOf(personNumberDoctor, personNumberPatient), msgId, credentials.serviceuserUsername)
+            log.info("Fetched aktoerIds, $logKeys", *logValues)
+            log.debug("Response from aktørId, {} $logKeys", keyValue("response", aktoerIds), *logValues)
+
             val samhandlerPraksis = findBestSamhandlerPraksis(kuhrSarClient.getSamhandler(personNumberDoctor),
                     legekontorOrgName)?.samhandlerPraksis
+            log.info("Fetched samhandler information")
 
             // TODO comment out this when going into prod-prod
             /*
@@ -223,9 +229,7 @@ fun CoroutineScope.listen(
             })
             */
 
-            log.debug("Response from aktørId, {} $logKeys", keyValue("response", aktoerIds), *logValues)
-
-            log.info("Received a SM2013, $logKeys", *logValues)
+            log.info("Fetched required information, $logKeys", *logValues)
 
             if (log.isDebugEnabled) {
                 log.debug("Incoming message {}, $logKeys", inputMessageText, *logValues)
@@ -262,6 +266,8 @@ fun CoroutineScope.listen(
                     fellesformat = inputMessageText
             )
 
+
+            log.info("Validating against rules")
             val validationResult = syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding)
             when {
                 validationResult.status == Status.OK -> {
