@@ -266,7 +266,6 @@ fun CoroutineScope.listen(
                     fellesformat = inputMessageText
             )
 
-
             log.info("Validating against rules")
             val validationResult = syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding)
             when {
