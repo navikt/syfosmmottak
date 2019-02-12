@@ -26,7 +26,7 @@ pipeline {
                     } else {
                         env.DEPLOY_TO = 'production'
                     }
-                    updateStatus(env.APPLICATION_NAME, env.APPLICATION_VERSION)
+                    init action: 'updateStatus', applicationName: env.APPLICATION_NAME, applicationVersion: env.APPLICATION_VERSION
                 }
             }
         }
