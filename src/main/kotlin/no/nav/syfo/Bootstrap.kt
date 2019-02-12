@@ -198,7 +198,7 @@ fun CoroutineScope.listen(
             val ediLoggId = receiverBlock.ediLoggId
             val sha256String = sha256hashstring(healthInformation)
             val msgId = msgHead.msgInfo.msgId
-            val legekontorOrgNr = extractOrganisationNumberFromSender(fellesformat)?.id!!
+            val legekontorOrgNr = extractOrganisationNumberFromSender(fellesformat)?.id
             val legekontorOrgName = msgHead.msgInfo.sender.organisation.organisationName
 
             val personNumberPatient = healthInformation.pasient.fodselsnummer.id
@@ -259,7 +259,7 @@ fun CoroutineScope.listen(
                     personNrLege = personNumberDoctor,
                     navLogId = ediLoggId,
                     msgId = msgId,
-                    legekontorOrgNr = legekontorOrgNr,
+                    legekontorOrgNr = legekontorOrgNr!!,
                     legekontorOrgName = legekontorOrgName,
                     mottattDato = receiverBlock.mottattDatotid.toGregorianCalendar().toZonedDateTime().toLocalDateTime(),
                     signaturDato = msgHead.msgInfo.genDate,
