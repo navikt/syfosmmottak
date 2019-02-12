@@ -68,8 +68,8 @@ data class Samhandler(
 
 data class SamhandlerPraksis(
     val refusjon_type_kode: String,
-    val laerer: String,
-    val lege_i_spesialisering: String,
+    val laerer: String?,
+    val lege_i_spesialisering: String?,
     val tidspunkt_resync_periode: Date?,
     val tidspunkt_registrert: Date?,
     val samh_praksis_status_kode: String,
@@ -89,7 +89,6 @@ data class SamhandlerPraksis(
     val post_adresse_linje_5: String?,
     val post_kommune_nr: String?,
     val post_postnr: String?,
-    val resh_id: String?,
     val tss_ident: String,
     val navn: String?,
     val ident: String,
@@ -100,8 +99,6 @@ data class SamhandlerPraksis(
 )
 
 data class SamhandlerPeriode(
-    val endret_ved_import: String,
-    val sist_endret: Date?,
     val slettet: String,
     val gyldig_fra: Date,
     val gyldig_til: Date?,
