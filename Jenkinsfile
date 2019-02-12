@@ -16,7 +16,16 @@ pipeline {
     stages {
         stage('initialize') {
             steps {
-                init action: 'gradle'
+                init action: 'default'
+                sh(script: './gradlew clean')
+                def applicationVersionGradle = sh(script: './gradlew -q printVersion', returnStdout: true).trim()
+                env.APPLICATION_VERSION = "${applicationVersionGradle}-${env.COMMIT_HASH_SHORT}"
+                if (applicationVersionGradle.endsWith('-SNAPSHOT')) {
+                    env.APPLICATION_VERSION = "${applicationVersionGradle}.${env.BUILD_ID}-${env.COMMIT_HASH_SHORT}"
+                } else {
+                    env.DEPLOY_TO = 'production'
+                }
+                updateStatus(env.APPLICATION_NAME, env.APPLICATION_VERSION)
             }
         }
         stage('build') {
