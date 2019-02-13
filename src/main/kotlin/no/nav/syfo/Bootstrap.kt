@@ -37,6 +37,7 @@ import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.client.findBestSamhandlerPraksis
+import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
 import no.nav.syfo.metrics.REQUEST_TIME
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.util.connectionFactory
@@ -190,6 +191,7 @@ fun CoroutineScope.listen(
                 is TextMessage -> message.text
                 else -> throw RuntimeException("Incoming message needs to be a byte message or text message")
             }
+            INCOMING_MESSAGE_COUNTER.inc()
             val requestLatency = REQUEST_TIME.startTimer()
             val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(inputMessageText)) as XMLEIFellesformat
             val receiverBlock = fellesformat.get<XMLMottakenhetBlokk>()
