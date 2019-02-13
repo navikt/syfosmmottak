@@ -198,10 +198,13 @@ fun CoroutineScope.listen(
             val ediLoggId = receiverBlock.ediLoggId
             val sha256String = sha256hashstring(healthInformation)
             val msgId = msgHead.msgInfo.msgId
-            val org = objectMapper.writeValueAsString(fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.filter {
-                it.typeId.v != "ENH"
-            })
-            log.info("Organisation info, ediloggid $ediLoggId $org")
+            if (fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.any {
+                        it.typeId.s == "2.16.578.1.12.4.1.1.9051"
+                    })
+            else {
+                throw RuntimeException("NO HER-id!!!")
+            }
+
             val legekontorOrgNr = extractOrganisationNumberFromSender(fellesformat)?.id
             val legekontorOrgName = msgHead.msgInfo.sender.organisation.organisationName
 
