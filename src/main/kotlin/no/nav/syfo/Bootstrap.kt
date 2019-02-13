@@ -198,13 +198,8 @@ fun CoroutineScope.listen(
             val ediLoggId = receiverBlock.ediLoggId
             val sha256String = sha256hashstring(healthInformation)
             val msgId = msgHead.msgInfo.msgId
-            if (fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.any {
-                        it.typeId.s == "2.16.578.1.12.4.1.1.9051"
-                    })
-            else {
-                throw RuntimeException("NO HER-id!!!")
-            }
-
+            val legekontorHerId = extractOrganisationHerNumberFromSender(fellesformat)?.id
+            val legekontorReshId = extractOrganisationRashNumberFromSender(fellesformat)?.id
             val legekontorOrgNr = extractOrganisationNumberFromSender(fellesformat)?.id
             val legekontorOrgName = msgHead.msgInfo.sender.organisation.organisationName
 
@@ -266,8 +261,10 @@ fun CoroutineScope.listen(
                     personNrLege = personNumberDoctor,
                     navLogId = ediLoggId,
                     msgId = msgId,
-                    legekontorOrgNr = legekontorOrgNr!!,
+                    legekontorOrgNr = legekontorOrgNr,
                     legekontorOrgName = legekontorOrgName,
+                    legekontorHerId = legekontorHerId,
+                    legekontorReshId = legekontorReshId,
                     mottattDato = receiverBlock.mottattDatotid.toGregorianCalendar().toZonedDateTime().toLocalDateTime(),
                     signaturDato = msgHead.msgInfo.genDate,
                     fellesformat = inputMessageText
@@ -324,6 +321,16 @@ inline fun <reified T> XMLEIFellesformat.get() = this.any.find { it is T } as T
 fun extractOrganisationNumberFromSender(fellesformat: XMLEIFellesformat): XMLIdent? =
         fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.find {
             it.typeId.v == "ENH"
+        }
+
+fun extractOrganisationRashNumberFromSender(fellesformat: XMLEIFellesformat): XMLIdent? =
+        fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.find {
+            it.typeId.v == "RSH"
+        }
+
+fun extractOrganisationHerNumberFromSender(fellesformat: XMLEIFellesformat): XMLIdent? =
+        fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.find {
+            it.typeId.v == "HER"
         }
 
 fun sendReceipt(
