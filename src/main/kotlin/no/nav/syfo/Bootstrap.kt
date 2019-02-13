@@ -24,7 +24,6 @@ import no.kith.xmlstds.msghead._2006_05_24.XMLIdent
 import no.kith.xmlstds.msghead._2006_05_24.XMLMsgHead
 import no.nav.emottak.subscription.SubscriptionPort
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
-import no.nav.helse.sm2013.Organisation
 import no.nav.paop.ws.configureBasicAuthFor
 import no.nav.syfo.client.Status
 import no.nav.syfo.api.registerNaisApi
@@ -199,7 +198,7 @@ fun CoroutineScope.listen(
             val ediLoggId = receiverBlock.ediLoggId
             val sha256String = sha256hashstring(healthInformation)
             val msgId = msgHead.msgInfo.msgId
-            val org =  objectMapper.writeValueAsString(fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation)
+            val org = objectMapper.writeValueAsString(fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation)
             log.info("Organisation info $org")
             val legekontorOrgNr = extractOrganisationNumberFromSender(fellesformat)?.id
             val legekontorOrgName = msgHead.msgInfo.sender.organisation.organisationName
