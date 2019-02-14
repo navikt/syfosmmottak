@@ -12,8 +12,11 @@ import io.ktor.client.features.logging.Logging
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.util.KtorExperimentalAPI
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.model.OidcToken
+import no.nav.syfo.retryAsync
+
 @KtorExperimentalAPI
 class StsOidcClient(username: String, password: String) {
     private var tokenExpires: Long = 0
@@ -35,14 +38,16 @@ class StsOidcClient(username: String, password: String) {
 
     suspend fun oidcToken(): OidcToken {
         if (tokenExpires < System.currentTimeMillis()) {
-            oidcToken = newOidcToken()
+            oidcToken = newOidcToken().await()
             tokenExpires = System.currentTimeMillis() + (oidcToken.expires_in - 600) * 1000
         }
         return oidcToken
     }
 
-    private suspend fun newOidcToken(): OidcToken = oidcClient.get("http://security-token-service/rest/v1/sts/token") {
-        parameter("grant_type", "client_credentials")
-        parameter("scope", "openid")
+    private suspend fun newOidcToken(): Deferred<OidcToken> = oidcClient.retryAsync("oidc_service_account") {
+        oidcClient.get<OidcToken>("http://security-token-service/rest/v1/sts/token") {
+            parameter("grant_type", "client_credentials")
+            parameter("scope", "openid")
+        }
     }
 }

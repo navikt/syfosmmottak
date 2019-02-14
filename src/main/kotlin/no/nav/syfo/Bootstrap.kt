@@ -1,6 +1,5 @@
 package no.nav.syfo
 
-import com.ctc.wstx.exc.WstxException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
@@ -14,7 +13,6 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -35,14 +33,12 @@ import no.nav.syfo.apprec.createApprec
 import no.nav.syfo.apprec.findApprecError
 import no.nav.syfo.apprec.toApprecCV
 import no.nav.syfo.client.AktoerIdClient
-import no.nav.syfo.client.Samhandler
 import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.client.findBestSamhandlerPraksis
 import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
 import no.nav.syfo.metrics.REQUEST_TIME
-import no.nav.syfo.model.IdentInfoResult
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.util.connectionFactory
 import no.nav.syfo.util.readProducerConfig
@@ -62,7 +58,6 @@ import redis.clients.jedis.Jedis
 import redis.clients.jedis.JedisSentinelPool
 import redis.clients.jedis.exceptions.JedisConnectionException
 import java.io.File
-import java.io.IOException
 import java.io.StringReader
 import java.io.StringWriter
 import java.security.MessageDigest
@@ -221,10 +216,13 @@ fun CoroutineScope.listen(
 
             log.info("Received message, $logKeys", *logValues)
 
-            val aktoerIds = fetchAktoerIds(aktoerIdClient, (listOf(personNumberDoctor, personNumberPatient)), msgId, credentials.serviceuserUsername).await()
+            val aktoerIdsDeferred = aktoerIdClient.getAktoerIds(listOf(personNumberDoctor, personNumberPatient), msgId, credentials.serviceuserUsername)
+            val samhandlerInfoDeferred = kuhrSarClient.getSamhandler(personNumberDoctor)
+
+            val aktoerIds = aktoerIdsDeferred.await()
+            val samhandlerPraksis = findBestSamhandlerPraksis(samhandlerInfoDeferred.await(), legekontorOrgName)?.samhandlerPraksis
             log.info("Fetched aktoerIds, $logKeys", *logValues)
 
-            val samhandlerPraksis = findBestSamhandlerPraksis(fetchSamhandlerPraksis(kuhrSarClient, personNumberDoctor).await(), legekontorOrgName)?.samhandlerPraksis
             log.info("Fetched samhandler information")
 
             // TODO comment out this when going into prod-prod
@@ -270,7 +268,7 @@ fun CoroutineScope.listen(
             )
 
             log.info("Validating against rules")
-            val validationResult = syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding)
+            val validationResult = syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding).await()
             when {
                 validationResult.status == Status.OK -> {
                     sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
@@ -390,13 +388,3 @@ fun extractSyketilfelleStartDato(helseOpplysningerArbeidsuforhet: HelseOpplysnin
 
 fun convertSykemeldingToBase64(helseOpplysningerArbeidsuforhet: HelseOpplysningerArbeidsuforhet): ByteArray =
         Base64.getEncoder().encode(helseOpplysningerArbeidsuforhet.toString().toByteArray(Charsets.ISO_8859_1))
-
-fun CoroutineScope.fetchAktoerIds(aktoerIdClient: AktoerIdClient, personNumbers: List<String>, trackingId: String, username: String): Deferred<Map<String, IdentInfoResult>> =
-        retryAsync("aktorid_hent_identer", IOException::class, WstxException::class) {
-            aktoerIdClient.getAktoerIds(personNumbers, trackingId, username)
-        }
-
-fun CoroutineScope.fetchSamhandlerPraksis(kuhrSarClient: SarClient, ident: String): Deferred<List<Samhandler>> =
-        retryAsync("kuhrsar_hent_samhandler_praksis", IOException::class, WstxException::class) {
-            kuhrSarClient.getSamhandler(ident)
-        }

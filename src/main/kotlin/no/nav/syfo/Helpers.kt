@@ -22,7 +22,7 @@ inline fun <reified T> CoroutineScope.retryAsync(
             if (!isCausedBy(e, exceptionCausedByDepth, legalExceptions)) {
                 throw e
             }
-            log.warn("Failed to ", e)
+            log.warn("Failed to execute call $callName, retrying in $interval ms", e)
         }
         delay(interval)
     }
@@ -36,7 +36,7 @@ suspend inline fun <reified T> timed(callName: String, crossinline block: suspen
 fun isCausedBy(throwable: Throwable, depth: Int, legalExceptions: Array<out KClass<out Throwable>>): Boolean {
     var current: Throwable = throwable
     for (i in 0.until(depth)) {
-        if (current::class in legalExceptions) {
+        if (legalExceptions.any { it.isInstance(current) }) {
             return true
         }
         current = current.cause ?: break

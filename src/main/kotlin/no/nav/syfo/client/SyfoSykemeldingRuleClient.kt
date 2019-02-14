@@ -13,8 +13,10 @@ import io.ktor.client.request.post
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.util.KtorExperimentalAPI
+import kotlinx.coroutines.Deferred
 import no.nav.syfo.VaultCredentials
 import no.nav.syfo.model.ReceivedSykmelding
+import no.nav.syfo.retryAsync
 import org.slf4j.LoggerFactory
 
 private val log = LoggerFactory.getLogger("no.nav.syfo.http")
@@ -22,24 +24,25 @@ private val log = LoggerFactory.getLogger("no.nav.syfo.http")
 @KtorExperimentalAPI
 class SyfoSykemeldingRuleClient(private val endpointUrl: String, credentials: VaultCredentials) {
     private val client = HttpClient(Apache) {
-    install(BasicAuth) {
-        username = credentials.serviceuserUsername
-        password = credentials.serviceuserPassword
-    }
-    install(JsonFeature) {
-        serializer = JacksonSerializer {
-            registerKotlinModule()
-            registerModule(JavaTimeModule())
-            configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+        install(BasicAuth) {
+            username = credentials.serviceuserUsername
+            password = credentials.serviceuserPassword
+        }
+        install(JsonFeature) {
+            serializer = JacksonSerializer {
+                registerKotlinModule()
+                registerModule(JavaTimeModule())
+                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+            }
         }
     }
-}
 
-suspend fun executeRuleValidation(payload: ReceivedSykmelding): ValidationResult =
-        client.post("$endpointUrl/v1/rules/validate") {
-        contentType(ContentType.Application.Json)
-        accept(ContentType.Application.Json)
-        body = payload
+    suspend fun executeRuleValidation(payload: ReceivedSykmelding): Deferred<ValidationResult> = client.retryAsync("syfosmregler_validate") {
+        client.post<ValidationResult>("$endpointUrl/v1/rules/validate") {
+            contentType(ContentType.Application.Json)
+            accept(ContentType.Application.Json)
+            body = payload
+        }
     }
 }
 
