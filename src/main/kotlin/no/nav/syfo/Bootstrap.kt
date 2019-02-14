@@ -236,14 +236,13 @@ fun CoroutineScope.listen(
 
             try {
                 val redisEdiLoggId = jedis.get(sha256String)
-                val duplicate = redisEdiLoggId != null
 
-                if (duplicate) {
-                    log.warn("Message marked as duplicate $logKeys", redisEdiLoggId, *logValues)
+                if (redisEdiLoggId != null) {
+                    log.warn("Message with {} marked as duplicate $logKeys", keyValue("originalEdiLoggId", redisEdiLoggId), *logValues)
                     sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(ApprecError.DUPLICATE))
                     log.info("Apprec Receipt sent to {} $logKeys", config.apprecQueueName, *logValues)
                     continue
-                } else if (ediLoggId != null) {
+                } else {
                     jedis.setex(sha256String, TimeUnit.DAYS.toSeconds(7).toInt(), ediLoggId)
                 }
             } catch (connectionException: JedisConnectionException) {
@@ -280,8 +279,8 @@ fun CoroutineScope.listen(
                     log.info("Message send to syfo {} $logKeys", config.syfoserviceQueueName, *logValues)
                     */
                     val currentRequestLatency = requestLatency.observeDuration()
-                    log.info("Message $logKeys has outcome automatic, processing took {}s",
-                            currentRequestLatency, *logValues)
+                    log.info("Message $logKeys has outcome automatic, processing took {}s", *logValues,
+                            currentRequestLatency)
                 }
                 validationResult.status == Status.MANUAL_PROCESSING -> {
                     sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
@@ -292,18 +291,18 @@ fun CoroutineScope.listen(
                     log.info("Message send to syfo {} $logKeys", config.syfoserviceQueueName, *logValues)
                     */
                     val currentRequestLatency = requestLatency.observeDuration()
-                    log.info("Message $logKeys has outcome manual processing, processing took {}s",
-                            currentRequestLatency, *logValues)
-                    log.info("Message $logKeys Rules hits {}", validationResult.ruleHits, *logValues)
+                    log.info("Message $logKeys has outcome manual processing, processing took {}s", *logValues,
+                            currentRequestLatency)
+                    log.info("Message $logKeys Rules hits {}", *logValues, validationResult.ruleHits)
                 }
                 validationResult.status == Status.INVALID -> {
                     val apprecErrors = findApprecError(validationResult.ruleHits)
                     sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, apprecErrors)
                     log.info("Apprec Receipt sent to {} $logKeys", config.apprecQueueName, *logValues)
                     val currentRequestLatency = requestLatency.observeDuration()
-                    log.info("Message $logKeys has outcome return, processing took {}s",
-                            currentRequestLatency, *logValues)
-                    log.info("Message $logKeys Rules hits {}", validationResult.ruleHits, *logValues)
+                    log.info("Message $logKeys has outcome return, processing took {}s", *logValues,
+                            currentRequestLatency)
+                    log.info("Message $logKeys Rules hits {}", *logValues, validationResult.ruleHits)
                 }
             }
         } catch (e: Exception) {
