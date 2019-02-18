@@ -1,4 +1,4 @@
-FROM navikt/java:11
+FROM navikt/java:10
 COPY config-preprod.json .
 COPY config-prod.json .
 COPY build/libs/syfosmmottak-*-all.jar app.jar
