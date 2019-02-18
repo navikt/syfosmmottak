@@ -77,12 +77,6 @@ repositories {
     maven { url 'https://repo.adeo.no/repository/maven-releases/' }
     maven { url 'https://repo.adeo.no/repository/maven-snapshots/' }
     maven { url "https://dl.bintray.com/spekframework/spek-dev" }
-    maven {
-        url 'https://repo.adeo.no/repository/maven-releases/'
-        metadataSources {
-            artifact()
-        }
-    }
     maven { url "https://kotlin.bintray.com/kotlinx" }
 }
 
