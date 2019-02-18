@@ -78,7 +78,7 @@ data class SamhandlerPraksis(
     val samh_praksis_status_kode: String,
     val telefonnr: String?,
     val arbeids_kommune_nr: String?,
-    val arbeids_postnr: String,
+    val arbeids_postnr: String?,
     val arbeids_adresse_linje_1: String?,
     val arbeids_adresse_linje_2: String?,
     val arbeids_adresse_linje_3: String?,
