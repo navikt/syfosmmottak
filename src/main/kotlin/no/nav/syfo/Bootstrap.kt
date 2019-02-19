@@ -219,8 +219,8 @@ fun CoroutineScope.listen(
             val aktoerIdsDeferred = aktoerIdClient.getAktoerIds(listOf(personNumberDoctor, personNumberPatient), msgId, credentials.serviceuserUsername)
             val samhandlerInfoDeferred = kuhrSarClient.getSamhandler(personNumberDoctor)
 
-            val aktoerIds = aktoerIdsDeferred.await()
-            val samhandlerPraksis = findBestSamhandlerPraksis(samhandlerInfoDeferred.await(), legekontorOrgName)?.samhandlerPraksis
+            val aktoerIds = aktoerIdsDeferred
+            val samhandlerPraksis = findBestSamhandlerPraksis(samhandlerInfoDeferred, legekontorOrgName)?.samhandlerPraksis
 
             // TODO comment out this when going into prod-prod
             /*
@@ -264,7 +264,7 @@ fun CoroutineScope.listen(
             )
 
             log.info("Validating against rules, $logKeys", *logValues)
-            val validationResult = syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding).await()
+            val validationResult = syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding)
             when {
                 validationResult.status == Status.OK -> {
                     sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)

@@ -14,9 +14,7 @@ import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.http.ContentType
 import io.ktor.util.KtorExperimentalAPI
-import kotlinx.coroutines.Deferred
 import no.nav.syfo.VaultCredentials
-import no.nav.syfo.retryAsync
 import org.apache.commons.text.similarity.LevenshteinDistance
 import java.util.Date
 import kotlin.math.max
@@ -39,12 +37,11 @@ class SarClient(private val endpointUrl: String, private val credentials: VaultC
         }
     }
 
-    suspend fun getSamhandler(ident: String): Deferred<List<Samhandler>> = kuhrSarClient.retryAsync("kuhr_samh") {
+    suspend fun getSamhandler(ident: String): List<Samhandler> =
         kuhrSarClient.get<List<Samhandler>>("$endpointUrl/rest/sar/samh") {
             accept(ContentType.Application.Json)
             parameter("ident", ident)
         }
-    }
 }
 
 data class Samhandler(

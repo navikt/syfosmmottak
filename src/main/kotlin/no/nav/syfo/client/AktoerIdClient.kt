@@ -10,9 +10,7 @@ import io.ktor.client.request.headers
 import io.ktor.client.request.parameter
 import io.ktor.http.ContentType
 import io.ktor.util.KtorExperimentalAPI
-import kotlinx.coroutines.Deferred
 import no.nav.syfo.model.IdentInfoResult
-import no.nav.syfo.retryAsync
 
 @KtorExperimentalAPI
 class AktoerIdClient(private val endpointUrl: String, private val stsClient: StsOidcClient) {
@@ -22,7 +20,7 @@ class AktoerIdClient(private val endpointUrl: String, private val stsClient: Sts
         }
     }
 
-    suspend fun getAktoerIds(personNumbers: List<String>, trackingId: String, username: String): Deferred<Map<String, IdentInfoResult>> = client.retryAsync("aktoerid_identer") {
+    suspend fun getAktoerIds(personNumbers: List<String>, trackingId: String, username: String): Map<String, IdentInfoResult> =
         client.get<Map<String, IdentInfoResult>>("$endpointUrl/identer") {
             accept(ContentType.Application.Json)
             val oidcToken = stsClient.oidcToken()
@@ -35,5 +33,4 @@ class AktoerIdClient(private val endpointUrl: String, private val stsClient: Sts
             parameter("gjeldende", "true")
             parameter("identgruppe", "AktoerId")
         }
-    }
 }
