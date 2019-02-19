@@ -221,9 +221,6 @@ fun CoroutineScope.listen(
 
             val aktoerIds = aktoerIdsDeferred.await()
             val samhandlerPraksis = findBestSamhandlerPraksis(samhandlerInfoDeferred.await(), legekontorOrgName)?.samhandlerPraksis
-            log.info("Fetched aktoerIds, $logKeys", *logValues)
-
-            log.info("Fetched samhandler information")
 
             // TODO comment out this when going into prod-prod
             /*
@@ -266,7 +263,7 @@ fun CoroutineScope.listen(
                     fellesformat = inputMessageText
             )
 
-            log.info("Validating against rules")
+            log.info("Validating against rules, $logKeys", *logValues)
             val validationResult = syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding).await()
             when {
                 validationResult.status == Status.OK -> {
