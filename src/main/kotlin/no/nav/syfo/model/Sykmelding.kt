@@ -27,12 +27,18 @@ data class MedisinskVurdering(
     val bidiagnoser: List<Diagnose>,
     val svangerskap: Boolean,
     val yrkesskade: Boolean,
-    val yrkesskadeDato: LocalDate?
+    val yrkesskadeDato: LocalDate?,
+    val annenFraversArsak: AnnenFraversArsak?
 )
 
 data class Diagnose(
     val system: String,
     val kode: String
+)
+
+data class AnnenFraversArsak(
+    val beskrivelse: String,
+    val grunn: List<AnnenFraverGrunn>
 )
 
 data class Periode(
@@ -46,8 +52,8 @@ data class Periode(
 )
 
 data class AktivitetIkkeMulig(
-        val medisinskArsak: MedisinskArsak?,
-        val arbeidsrelatertArsak: ArbeidsrelatertArsak?
+    val medisinskArsak: MedisinskArsak?,
+    val arbeidsrelatertArsak: ArbeidsrelatertArsak?
 )
 
 data class ArbeidsrelatertArsak(
@@ -103,8 +109,8 @@ data class MeldingTilNAV(
 )
 
 data class KontaktMedPasient(
-    val kontaktDato: LocalDate,
-    val begrunnelseIkkeKontakt: String
+    val kontaktDato: LocalDate?,
+    val begrunnelseIkkeKontakt: String?
 )
 
 data class Behandler(
@@ -140,4 +146,17 @@ enum class SvarRestriksjon(val codeValue: String, val text: String, val oid: Str
     SKJERMET_FOR_ARBEIDSGIVER("A", "Informasjonen skal ikke vises arbeidsgiver"),
     SKJERMET_FOR_PASIENT("P", "Informasjonen skal ikke vises pasient"),
     SKJERMET_FOR_NAV("N", "Informasjonen skal ikke vises NAV")
+}
+
+enum class AnnenFraverGrunn(val codeValue: String, val text: String, val oid: String = "2.16.578.1.12.4.1.1.8131") {
+    GODKJENT_HELSEINSTITUSJON("1", "Når vedkommende er innlagt i en godkjent helseinstitusjon"),
+    BEHANDLING_FORHINDRER_ARBEID("2", "Når vedkommende er under behandling og legen erklærer at behandlingen gjør det nødvendig at vedkommende ikke arbeider"),
+    ARBEIDSRETTET_TILTAK("3", "Når vedkommende deltar på et arbeidsrettet tiltak"),
+    MOTTAR_TILSKUDD_GRUNNET_HELSETILSTAND("4", "Når vedkommende på grunn av sykdom, skade eller lyte får tilskott når vedkommende på grunn av sykdom, skade eller lyte får tilskott"),
+    NODVENDIG_KONTROLLUNDENRSOKELSE("5", "Når vedkommende er til nødvendig kontrollundersøkelse som krever minst 24 timers fravær, reisetid medregnet"),
+    SMITTEFARE("6", "Når vedkommende myndighet har nedlagt forbud mot at han eller hun arbeider på grunn av smittefare"),
+    ABORT("7", "Når vedkommende er arbeidsufør som følge av svangerskapsavbrudd"),
+    UFOR_GRUNNET_BARNLOSHET("8", "Når vedkommende er arbeidsufør som følge av behandling for barnløshet"),
+    DONOR("9", "Når vedkommende er donor eller er under vurdering som donor"),
+    BEHANDLING_STERILISERING("10", "Når vedkommende er arbeidsufør som følge av behandling i forbindelse med sterilisering")
 }

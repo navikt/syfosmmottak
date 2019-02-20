@@ -54,10 +54,16 @@ fun HelseOpplysningerArbeidsuforhet.MedisinskVurdering.toMedisinskVurdering() = 
         bidiagnoser = biDiagnoser.diagnosekode.map(CV::toDiagnose),
         svangerskap = isSvangerskap == true,
         yrkesskade = isYrkesskade == true,
-        yrkesskadeDato = yrkesskadeDato
+        yrkesskadeDato = yrkesskadeDato,
+        annenFraversArsak = annenFraversArsak.toAnnenFraversArsak()
 )
 
 fun CV.toDiagnose() = Diagnose(s, v)
+
+fun ArsakType.toAnnenFraversArsak() = AnnenFraversArsak(
+        beskrivelse = beskriv,
+        grunn = arsakskode.map { code -> AnnenFraverGrunn.values().first { it.codeValue == code.v } }
+)
 
 fun CS.toMedisinskArsakType() = MedisinskArsakType.values().first { it.codeValue == v }
 
