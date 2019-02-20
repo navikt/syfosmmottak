@@ -7,9 +7,9 @@ import no.nav.helse.sm2013.CV
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 
 fun HelseOpplysningerArbeidsuforhet.toSykmelding(
-        sykmeldingId: String,
-        pasientAktoerId: String,
-        legeAktoerId: String
+    sykmeldingId: String,
+    pasientAktoerId: String,
+    legeAktoerId: String
 ) = Sykmelding(
         id = sykmeldingId,
         pasientAktoerId = pasientAktoerId,
@@ -95,7 +95,6 @@ fun HelseOpplysningerArbeidsuforhet.UtdypendeOpplysninger.toMap() =
                     .map { svar -> svar.spmId to SporsmalSvar(svar = svar.svarTekst, restriksjoner = svar.restriksjon.restriksjonskode.map(CS::toSvarRestriksjon)) }
                     .toMap()
         }.toMap()
-
 
 fun CS.toSvarRestriksjon() =
         SvarRestriksjon.values().first { it.codeValue == v }
