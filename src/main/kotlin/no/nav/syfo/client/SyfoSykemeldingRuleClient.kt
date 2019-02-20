@@ -13,8 +13,10 @@ import io.ktor.client.request.post
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.util.KtorExperimentalAPI
+import kotlinx.coroutines.Deferred
 import no.nav.syfo.VaultCredentials
 import no.nav.syfo.model.ReceivedSykmelding
+import no.nav.syfo.retryAsync
 
 @KtorExperimentalAPI
 class SyfoSykemeldingRuleClient(private val endpointUrl: String, credentials: VaultCredentials) {
@@ -32,12 +34,13 @@ class SyfoSykemeldingRuleClient(private val endpointUrl: String, credentials: Va
         }
     }
 
-    suspend fun executeRuleValidation(payload: ReceivedSykmelding): ValidationResult =
+    suspend fun executeRuleValidation(payload: ReceivedSykmelding): Deferred<ValidationResult> = client.retryAsync("syfosmregler_validate") {
         client.post<ValidationResult>("$endpointUrl/v1/rules/validate") {
             contentType(ContentType.Application.Json)
             accept(ContentType.Application.Json)
             body = payload
         }
+    }
 }
 
 data class ValidationResult(

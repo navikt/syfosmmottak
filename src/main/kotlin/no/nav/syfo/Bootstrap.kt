@@ -40,6 +40,7 @@ import no.nav.syfo.client.findBestSamhandlerPraksis
 import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
 import no.nav.syfo.metrics.REQUEST_TIME
 import no.nav.syfo.model.ReceivedSykmelding
+import no.nav.syfo.model.toSykmelding
 import no.nav.syfo.util.connectionFactory
 import no.nav.syfo.util.readProducerConfig
 import no.trygdeetaten.xml.eiff._1.XMLEIFellesformat
@@ -246,11 +247,14 @@ fun CoroutineScope.listen(
                 log.warn("Unable to contact redis, will allow possible duplicates.", connectionException)
             }
 
+            val sykmelding = healthInformation.toSykmelding(
+                    sykmeldingId = msgId,
+                    pasientAktoerId = aktoerIds[personNumberPatient]!!.identer!!.first().ident,
+                    legeAktoerId = aktoerIds[personNumberDoctor]!!.identer!!.first().ident
+            )
             val receivedSykmelding = ReceivedSykmelding(
-                    sykmelding = healthInformation,
-                    aktoerIdPasient = aktoerIds[personNumberPatient]!!.identer!!.first().ident,
+                    sykmelding = sykmelding,
                     personNrPasient = personNumberPatient,
-                    aktoerIdLege = aktoerIds[personNumberDoctor]!!.identer!!.first().ident,
                     personNrLege = personNumberDoctor,
                     navLogId = ediLoggId,
                     msgId = msgId,
@@ -264,7 +268,7 @@ fun CoroutineScope.listen(
             )
 
             log.info("Validating against rules, $logKeys", *logValues)
-            val validationResult = syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding)
+            val validationResult = syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding).await()
             when {
                 validationResult.status == Status.OK -> {
                     sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
