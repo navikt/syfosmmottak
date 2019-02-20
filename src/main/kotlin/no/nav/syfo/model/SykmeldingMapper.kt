@@ -55,7 +55,7 @@ fun HelseOpplysningerArbeidsuforhet.MedisinskVurdering.toMedisinskVurdering() = 
         svangerskap = isSvangerskap == true,
         yrkesskade = isYrkesskade == true,
         yrkesskadeDato = yrkesskadeDato,
-        annenFraversArsak = annenFraversArsak.toAnnenFraversArsak()
+        annenFraversArsak = annenFraversArsak?.toAnnenFraversArsak()
 )
 
 fun CV.toDiagnose() = Diagnose(s, v)
