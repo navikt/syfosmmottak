@@ -104,7 +104,7 @@ fun Address.toAdresse() = Adresse(
         postnummer = postalCode.toInt(),
         kommune = city,
         postboks = postbox,
-        land = country.v // TODO?
+        land = country?.v // TODO?
 )
 
 fun ArsakType.toArbeidsrelatertArsak() = ArbeidsrelatertArsak(
