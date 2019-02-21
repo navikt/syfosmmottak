@@ -62,7 +62,7 @@ data class ArbeidsrelatertArsak(
 )
 
 data class MedisinskArsak(
-    val beskrivelse: String,
+    val beskrivelse: String?,
     val arsak: List<MedisinskArsakType>
 )
 

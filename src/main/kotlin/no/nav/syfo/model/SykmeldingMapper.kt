@@ -14,7 +14,7 @@ fun HelseOpplysningerArbeidsuforhet.toSykmelding(
         id = sykmeldingId,
         pasientAktoerId = pasientAktoerId,
         medisinskVurdering = medisinskVurdering.toMedisinskVurdering(),
-        skjermesForPasient = medisinskVurdering.isSkjermesForPasient,
+        skjermesForPasient = medisinskVurdering?.isSkjermesForPasient ?: false,
         perioder = aktivitet.periode.map(HelseOpplysningerArbeidsuforhet.Aktivitet.Periode::toPeriode),
         prognose = prognose.toPrognose(),
         utdypendeOpplysninger = utdypendeOpplysninger.toMap(),
