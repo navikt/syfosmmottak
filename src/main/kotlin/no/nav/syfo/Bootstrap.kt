@@ -277,7 +277,7 @@ fun CoroutineScope.listen(
                     kafkaproducer.send(ProducerRecord(config.sm2013AutomaticHandlingTopic, receivedSykmelding))
                     log.info("Message send to kafka {} $logKeys", config.sm2013AutomaticHandlingTopic, *logValues)
                     notifySyfoService(session, syfoserviceProducer, ediLoggId, healthInformation)
-                    log.info("Message send to syfo {} $logKeys", config.syfoserviceQueueName, *logValues)
+                    log.info("Message send to syfoService {} $logKeys", config.syfoserviceQueueName, *logValues)
                     val currentRequestLatency = requestLatency.observeDuration()
                     log.info("Message $logKeys has outcome automatic, processing took {}s", *logValues,
                             currentRequestLatency)
@@ -288,7 +288,7 @@ fun CoroutineScope.listen(
                     kafkaproducer.send(ProducerRecord(config.sm2013ManualHandlingTopic, receivedSykmelding))
                     log.info("Message send to kafka {} $logKeys", config.sm2013ManualHandlingTopic, *logValues)
                     notifySyfoService(session, syfoserviceProducer, ediLoggId, healthInformation)
-                    log.info("Message send to syfo {} $logKeys", config.syfoserviceQueueName, *logValues)
+                    log.info("Message send to syfoService {} $logKeys", config.syfoserviceQueueName, *logValues)
                     val currentRequestLatency = requestLatency.observeDuration()
                     log.info("Message $logKeys has outcome manual processing, processing took {}s", *logValues,
                             currentRequestLatency)
