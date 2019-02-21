@@ -101,7 +101,7 @@ fun CS.toSvarRestriksjon() =
 
 fun Address.toAdresse() = Adresse(
         gate = streetAdr,
-        postnummer = postalCode.toInt(),
+        postnummer = postalCode?.toIntOrNull(),
         kommune = city,
         postboks = postbox,
         land = country?.v // TODO?
