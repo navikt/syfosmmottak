@@ -264,6 +264,7 @@ fun CoroutineScope.listen(
                     legekontorReshId = legekontorReshId,
                     mottattDato = receiverBlock.mottattDatotid.toGregorianCalendar().toZonedDateTime().toLocalDateTime(),
                     signaturDato = msgHead.msgInfo.genDate,
+                    rulesetVersion = healthInformation.regelSettVersjon,
                     fellesformat = inputMessageText
             )
 
