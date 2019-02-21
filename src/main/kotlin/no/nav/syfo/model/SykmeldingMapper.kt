@@ -51,7 +51,7 @@ fun HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig.toAktiv
 
 fun HelseOpplysningerArbeidsuforhet.MedisinskVurdering.toMedisinskVurdering() = MedisinskVurdering(
         hovedDiagnose = hovedDiagnose.diagnosekode.toDiagnose(),
-        bidiagnoser = biDiagnoser?.diagnosekode?.map(CV::toDiagnose) ?: listOf(),
+        biDiagnoser = biDiagnoser?.diagnosekode?.map(CV::toDiagnose) ?: listOf(),
         svangerskap = isSvangerskap == true,
         yrkesskade = isYrkesskade == true,
         yrkesskadeDato = yrkesskadeDato,
@@ -71,7 +71,7 @@ fun CS.toArbeidsrelatertArsak() = ArbeidsrelatertArsakType.values().first { it.c
 
 fun HelseOpplysningerArbeidsuforhet.Prognose.toPrognose() = Prognose(
         arbeidsforEtterPeriode = isArbeidsforEtterEndtPeriode == true,
-        hennsynArbeidsplassen = beskrivHensynArbeidsplassen,
+        hensynArbeidsplassen = beskrivHensynArbeidsplassen,
         erIArbeid = erIArbeid?.let {
             ErIArbeid(
                     egetArbeidPaSikt = it.isEgetArbeidPaSikt == true,
