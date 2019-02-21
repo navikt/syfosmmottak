@@ -21,6 +21,14 @@
         {"member":"srvsyfosmmottak", "role":"PRODUCER"}
       ],
       "numPartitions": 3
+    },
+    {
+      "topicName": "privat-syfo-sm2013-avvistBehandling",
+      "members": [
+        {"member":"srvsyfooppgavegsak", "role":"CONSUMER"},
+        {"member":"srvsyfosmmottak", "role":"PRODUCER"}
+      ],
+      "numPartitions": 3
     }
   ]
 }

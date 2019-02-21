@@ -18,6 +18,7 @@ data class ApplicationConfig(
     val aktoerregisterV1Url: String,
     val sm2013ManualHandlingTopic: String = "privat-syfo-sm2013-manuellBehandling",
     val sm2013AutomaticHandlingTopic: String = "privat-syfo-sm2013-automatiskBehandling",
+    val sm2013InvalidHandlingTopic: String = "privat-syfo-sm2013-avvistBehandling",
     val syfoserviceQueueName: String,
     val subscriptionEndpointURL: String,
     val kuhrSarApiUrl: String = "http://kuhr-sar-api",

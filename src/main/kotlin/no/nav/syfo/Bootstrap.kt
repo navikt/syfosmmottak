@@ -298,6 +298,8 @@ fun CoroutineScope.listen(
                     val apprecErrors = findApprecError(validationResult.ruleHits)
                     sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, apprecErrors)
                     log.info("Apprec Receipt sent to {} $logKeys", config.apprecQueueName, *logValues)
+                    kafkaproducer.send(ProducerRecord(config.sm2013InvalidHandlingTopic, receivedSykmelding))
+                    log.info("Message send to kafka {} $logKeys", config.sm2013InvalidHandlingTopic, *logValues)
                     val currentRequestLatency = requestLatency.observeDuration()
                     log.info("Message $logKeys has outcome return, processing took {}s", *logValues,
                             currentRequestLatency)
