@@ -15,6 +15,7 @@ fun HelseOpplysningerArbeidsuforhet.toSykmelding(
         pasientAktoerId = pasientAktoerId,
         medisinskVurdering = medisinskVurdering.toMedisinskVurdering(),
         skjermesForPasient = medisinskVurdering?.isSkjermesForPasient ?: false,
+        arbeidsgiver = arbeidsgiver.toArbeidsgiver(),
         perioder = aktivitet.periode.map(HelseOpplysningerArbeidsuforhet.Aktivitet.Periode::toPeriode),
         prognose = prognose?.toPrognose(),
         utdypendeOpplysninger = utdypendeOpplysninger?.toMap(),
@@ -42,6 +43,13 @@ fun HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.toPeriode() = Periode(
 fun HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.GradertSykmelding.toGradert() = Gradert(
         reisetilskudd = isReisetilskudd == true,
         grad = sykmeldingsgrad
+)
+
+fun HelseOpplysningerArbeidsuforhet.Arbeidsgiver.toArbeidsgiver() = Arbeidsgiver(
+        harArbeidsgiver = HarArbeidsgiver.values().first { it.codeValue == harArbeidsgiver.v },
+        navn = navnArbeidsgiver,
+        yrkesbetegnelse = yrkesbetegnelse,
+        stillingsprosent = stillingsprosent
 )
 
 fun HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig.toAktivitetIkkeMulig() = AktivitetIkkeMulig(
