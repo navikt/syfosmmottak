@@ -40,7 +40,7 @@ fun HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.toPeriode() = Periode(
 )
 
 fun HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.GradertSykmelding.toGradert() = Gradert(
-        reisetilskudd = isReisetilskudd,
+        reisetilskudd = isReisetilskudd == true,
         grad = sykmeldingsgrad
 )
 
