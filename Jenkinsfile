@@ -53,9 +53,13 @@ pipeline {
                 // TODO
             }
         }
-        stage('deploy to preprod') {
+        stage('push docker image') {
             steps {
                 dockerUtils action: 'createPushImage'
+            }
+        }
+        stage('deploy to preprod') {
+            steps {
                 deployApp action: 'kubectlApply', cluster: 'preprod-fss', file: 'redis.yaml'
                 deployApp action: 'kubectlDeploy', cluster: 'preprod-fss'
             }
