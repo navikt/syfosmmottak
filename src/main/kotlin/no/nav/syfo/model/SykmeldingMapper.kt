@@ -18,7 +18,7 @@ fun HelseOpplysningerArbeidsuforhet.toSykmelding(
         arbeidsgiver = arbeidsgiver.toArbeidsgiver(),
         perioder = aktivitet.periode.map(HelseOpplysningerArbeidsuforhet.Aktivitet.Periode::toPeriode),
         prognose = prognose?.toPrognose(),
-        utdypendeOpplysninger = utdypendeOpplysninger.toMap(),
+        utdypendeOpplysninger = utdypendeOpplysninger?.toMap() ?: mapOf(),
         tiltakArbeidsplassen = tiltak?.tiltakArbeidsplassen,
         tiltakNAV = tiltak?.tiltakNAV,
         andreTiltak = tiltak?.andreTiltak,
