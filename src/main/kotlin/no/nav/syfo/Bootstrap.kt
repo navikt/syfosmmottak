@@ -373,9 +373,13 @@ fun notifySyfoService(
         val syketilfelleStartDato = extractSyketilfelleStartDato(healthInformation)
         val sykmelding = convertSykemeldingToBase64(healthInformation)
         val syfo = Syfo(tilleggsdata = Tilleggsdata(ediLoggId = ediLoggId, msgId = msgId, syketilfelleStartDato = syketilfelleStartDato), sykmelding = sykmelding)
-        text = xmlObjectWriter.writeValueAsString(syfo)
+        text = xmlObjectWriter.writeValueAsString(SyfoServiceInput(syfo))
     })
 }
+
+data class SyfoServiceInput(
+    val syfo: Syfo
+)
 
 data class Syfo(
     val tilleggsdata: Tilleggsdata,
