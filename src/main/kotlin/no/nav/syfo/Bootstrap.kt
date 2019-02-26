@@ -1,8 +1,10 @@
 package no.nav.syfo
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
@@ -373,14 +375,11 @@ fun notifySyfoService(
         val syketilfelleStartDato = extractSyketilfelleStartDato(healthInformation)
         val sykmelding = convertSykemeldingToBase64(healthInformation)
         val syfo = Syfo(tilleggsdata = Tilleggsdata(ediLoggId = ediLoggId, msgId = msgId, syketilfelleStartDato = syketilfelleStartDato), sykmelding = sykmelding)
-        text = xmlObjectWriter.writeValueAsString(SyfoServiceInput(syfo))
+        text = xmlObjectWriter.writeValueAsString(syfo)
     })
 }
 
-data class SyfoServiceInput(
-    val syfo: Syfo
-)
-
+@JacksonXmlRootElement(localName = "syfo")
 data class Syfo(
     val tilleggsdata: Tilleggsdata,
     val sykmelding: ByteArray
