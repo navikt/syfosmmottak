@@ -2,6 +2,7 @@ package no.nav.syfo
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
@@ -17,7 +18,6 @@ import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.io.core.toByteArray
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.kith.xmlstds.apprec._2004_11_21.XMLAppRec
 import no.kith.xmlstds.msghead._2006_05_24.XMLIdent
@@ -58,12 +58,12 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import redis.clients.jedis.Jedis
 import redis.clients.jedis.JedisSentinelPool
 import redis.clients.jedis.exceptions.JedisConnectionException
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.StringReader
 import java.io.StringWriter
 import java.security.MessageDigest
 import java.time.LocalDate
-import java.util.Base64
 import java.util.concurrent.Executors
 import javax.jms.MessageProducer
 import javax.xml.bind.JAXBContext
@@ -79,6 +79,8 @@ val objectMapper: ObjectMapper = ObjectMapper()
         .registerKotlinModule()
         .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
 
+val xmlObjectWriter: XmlMapper = XmlMapper()
+
 val fellesformatJaxBContext: JAXBContext = JAXBContext.newInstance(XMLEIFellesformat::class.java, XMLMsgHead::class.java, HelseOpplysningerArbeidsuforhet::class.java)
 val fellesformatUnmarshaller: Unmarshaller = fellesformatJaxBContext.createUnmarshaller().apply {
     setAdapter(LocalDateTimeXmlAdapter::class.java, XMLDateTimeAdapter())
@@ -87,6 +89,8 @@ val fellesformatUnmarshaller: Unmarshaller = fellesformatJaxBContext.createUnmar
 
 val apprecJaxBContext: JAXBContext = JAXBContext.newInstance(XMLEIFellesformat::class.java, XMLAppRec::class.java)
 val apprecMarshaller: Marshaller = apprecJaxBContext.createMarshaller()
+
+val sykmeldingMarshaller: Marshaller = JAXBContext.newInstance(HelseOpplysningerArbeidsuforhet::class.java).createMarshaller()
 
 val redisMasterName = "mymaster"
 val redisHost = "rfs-redis-syfosmmottak" // TODO: Do this properly with naiserator
@@ -357,7 +361,6 @@ fun sha256hashstring(helseOpplysningerArbeidsuforhet: HelseOpplysningerArbeidsuf
 fun extractHelseOpplysningerArbeidsuforhet(fellesformat: XMLEIFellesformat): HelseOpplysningerArbeidsuforhet =
         fellesformat.get<XMLMsgHead>().document[0].refDoc.content.any[0] as HelseOpplysningerArbeidsuforhet
 
-// TODO this does not work
 fun notifySyfoService(
     session: Session,
     receiptProducer: MessageProducer,
@@ -369,7 +372,8 @@ fun notifySyfoService(
         val syketilfelleStartDato = extractSyketilfelleStartDato(healthInformation)
         val sykmelding = convertSykemeldingToBase64(healthInformation)
         val syfo = Syfo(tilleggsdata = Tilleggsdata(ediLoggId = ediLoggId, syketilfelleStartDato = syketilfelleStartDato), sykmelding = sykmelding)
-        text = syfo.toString()
+        text = xmlObjectWriter.writeValueAsString(syfo)
+        log.info("notifySyfoService: ", text)
     })
 }
 
@@ -387,4 +391,7 @@ fun extractSyketilfelleStartDato(helseOpplysningerArbeidsuforhet: HelseOpplysnin
         helseOpplysningerArbeidsuforhet.syketilfelleStartDato
 
 fun convertSykemeldingToBase64(helseOpplysningerArbeidsuforhet: HelseOpplysningerArbeidsuforhet): ByteArray =
-        Base64.getEncoder().encode(helseOpplysningerArbeidsuforhet.toString().toByteArray(Charsets.ISO_8859_1))
+        ByteArrayOutputStream().use {
+            sykmeldingMarshaller.marshal(helseOpplysningerArbeidsuforhet, it)
+            it
+        }.toByteArray()
