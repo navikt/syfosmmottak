@@ -374,7 +374,6 @@ fun notifySyfoService(
         val sykmelding = convertSykemeldingToBase64(healthInformation)
         val syfo = Syfo(tilleggsdata = Tilleggsdata(ediLoggId = ediLoggId, msgId = msgId, syketilfelleStartDato = syketilfelleStartDato), sykmelding = sykmelding)
         text = xmlObjectWriter.writeValueAsString(syfo)
-        log.info("notifySyfoService: ", text)
     })
 }
 
