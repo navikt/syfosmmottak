@@ -280,7 +280,7 @@ fun CoroutineScope.listen(
                     log.info("Apprec Receipt sent to {} $logKeys", config.apprecQueueName, *logValues)
                     kafkaproducer.send(ProducerRecord(config.sm2013AutomaticHandlingTopic, receivedSykmelding))
                     log.info("Message send to kafka {} $logKeys", config.sm2013AutomaticHandlingTopic, *logValues)
-                    notifySyfoService(session, syfoserviceProducer, ediLoggId, healthInformation)
+                    notifySyfoService(session, syfoserviceProducer, ediLoggId, msgId, healthInformation)
                     log.info("Message send to syfoService {} $logKeys", config.syfoserviceQueueName, *logValues)
                     val currentRequestLatency = requestLatency.observeDuration()
                     log.info("Message $logKeys has outcome automatic, processing took {}s", *logValues,
@@ -291,7 +291,7 @@ fun CoroutineScope.listen(
                     log.info("Apprec Receipt sent to {} $logKeys", config.apprecQueueName, *logValues)
                     kafkaproducer.send(ProducerRecord(config.sm2013ManualHandlingTopic, receivedSykmelding))
                     log.info("Message send to kafka {} $logKeys", config.sm2013ManualHandlingTopic, *logValues)
-                    notifySyfoService(session, syfoserviceProducer, ediLoggId, healthInformation)
+                    notifySyfoService(session, syfoserviceProducer, ediLoggId, msgId, healthInformation)
                     log.info("Message send to syfoService {} $logKeys", config.syfoserviceQueueName, *logValues)
                     val currentRequestLatency = requestLatency.observeDuration()
                     log.info("Message $logKeys has outcome manual processing, processing took {}s", *logValues,
@@ -365,13 +365,14 @@ fun notifySyfoService(
     session: Session,
     receiptProducer: MessageProducer,
     ediLoggId: String,
+    msgId: String,
     healthInformation: HelseOpplysningerArbeidsuforhet
 
 ) {
     receiptProducer.send(session.createTextMessage().apply {
         val syketilfelleStartDato = extractSyketilfelleStartDato(healthInformation)
         val sykmelding = convertSykemeldingToBase64(healthInformation)
-        val syfo = Syfo(tilleggsdata = Tilleggsdata(ediLoggId = ediLoggId, syketilfelleStartDato = syketilfelleStartDato), sykmelding = sykmelding)
+        val syfo = Syfo(tilleggsdata = Tilleggsdata(ediLoggId = ediLoggId, msgId = msgId, syketilfelleStartDato = syketilfelleStartDato), sykmelding = sykmelding)
         text = xmlObjectWriter.writeValueAsString(syfo)
         log.info("notifySyfoService: ", text)
     })
@@ -384,6 +385,7 @@ data class Syfo(
 
 data class Tilleggsdata(
     val ediLoggId: String,
+    val msgId: String,
     val syketilfelleStartDato: LocalDate
 )
 
