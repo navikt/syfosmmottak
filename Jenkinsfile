@@ -11,7 +11,6 @@ pipeline {
     environment {
         APPLICATION_NAME = 'syfosmmottak'
         DOCKER_SLUG = 'syfo'
-        DISABLE_SLACK_MESSAGES = true
     }
 
     stages {
