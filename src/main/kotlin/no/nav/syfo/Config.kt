@@ -6,7 +6,8 @@ import java.nio.file.Paths
 val vaultApplicationPropertiesPath: Path = Paths.get("/var/run/secrets/nais.io/vault/credentials.json")
 
 data class ApplicationConfig(
-    val applicationPort: Int = 8080,
+    val applicationPort: Int,
+    val applicationThreads: Int,
     val mqHostname: String,
     val mqPort: Int,
     val mqGatewayName: String,
@@ -16,13 +17,17 @@ data class ApplicationConfig(
     val apprecQueueName: String,
     val inputBackoutQueueName: String,
     val aktoerregisterV1Url: String,
-    val sm2013ManualHandlingTopic: String = "privat-syfo-sm2013-manuellBehandling",
-    val sm2013AutomaticHandlingTopic: String = "privat-syfo-sm2013-automatiskBehandling",
-    val sm2013InvalidHandlingTopic: String = "privat-syfo-sm2013-avvistBehandling",
+    val sm2013ManualHandlingTopic: String,
+    val sm2013AutomaticHandlingTopic: String,
+    val sm2013InvalidHandlingTopic: String,
     val syfoserviceQueueName: String,
     val subscriptionEndpointURL: String,
-    val kuhrSarApiUrl: String = "http://kuhr-sar-api",
-    val syfosmreglerApiUrl: String = "http://syfosmregler"
+    val kuhrSarApiUrl: String,
+    val syfosmreglerApiUrl: String,
+    val arbeidsfordelingV1EndpointURL: String,
+    val sm2013OppgaveTopic: String,
+    val securityTokenServiceUrl: String,
+    val personV3EndpointURL: String
 )
 
 data class VaultCredentials(

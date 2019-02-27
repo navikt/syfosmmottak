@@ -19,3 +19,17 @@ fun readProducerConfig(
     this["value.serializer"] = valueSerializer.qualifiedName
     this["bootstrap.servers"] = config.kafkaBootstrapServers
 }
+
+fun readManualTaskProducerConfig(
+    config: ApplicationConfig,
+    credentials: VaultCredentials,
+    valueSerializer: KClass<out Serializer<out Any>>,
+    keySerializer: KClass<out Serializer<out Any>> = valueSerializer
+) = Properties().apply {
+    load(ApplicationConfig::class.java.getResourceAsStream("/kafka_manualtaskproducer.properties"))
+    this["sasl.jaas.config"] = "org.apache.kafka.common.security.plain.PlainLoginModule required " +
+            "username=\"${credentials.serviceuserUsername}\" password=\"${credentials.serviceuserPassword}\";"
+    this["key.serializer"] = keySerializer.qualifiedName
+    this["value.serializer"] = valueSerializer.qualifiedName
+    this["bootstrap.servers"] = config.kafkaBootstrapServers
+}

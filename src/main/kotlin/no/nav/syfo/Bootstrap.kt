@@ -1,24 +1,26 @@
 package no.nav.syfo
 
+import com.ctc.wstx.exc.WstxException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import com.migesok.jaxb.adapter.javatime.LocalDateTimeXmlAdapter
-import com.migesok.jaxb.adapter.javatime.LocalDateXmlAdapter
+import io.confluent.kafka.serializers.KafkaAvroSerializer
 import io.ktor.application.Application
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.util.KtorExperimentalAPI
+import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import net.logstash.logback.argument.StructuredArgument
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.kith.xmlstds.apprec._2004_11_21.XMLAppRec
 import no.kith.xmlstds.msghead._2006_05_24.XMLIdent
@@ -26,6 +28,7 @@ import no.kith.xmlstds.msghead._2006_05_24.XMLMsgHead
 import no.nav.emottak.subscription.SubscriptionPort
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 import no.nav.paop.ws.configureBasicAuthFor
+import no.nav.paop.ws.configureSTSFor
 import no.nav.syfo.client.Status
 import no.nav.syfo.api.registerNaisApi
 import no.nav.syfo.apprec.ApprecError
@@ -37,13 +40,29 @@ import no.nav.syfo.client.AktoerIdClient
 import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
+import no.nav.syfo.client.ValidationResult
 import no.nav.syfo.client.findBestSamhandlerPraksis
 import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
 import no.nav.syfo.metrics.REQUEST_TIME
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.toSykmelding
+import no.nav.syfo.sak.avro.PrioritetType
+import no.nav.syfo.sak.avro.ProduceTask
 import no.nav.syfo.util.connectionFactory
+import no.nav.syfo.util.readManualTaskProducerConfig
 import no.nav.syfo.util.readProducerConfig
+import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.binding.ArbeidsfordelingV1
+import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.informasjon.ArbeidsfordelingKriterier
+import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.informasjon.Tema
+import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.meldinger.FinnBehandlendeEnhetListeRequest
+import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.meldinger.FinnBehandlendeEnhetListeResponse
+import no.nav.tjeneste.virksomhet.person.v3.binding.PersonV3
+import no.nav.tjeneste.virksomhet.person.v3.informasjon.GeografiskTilknytning
+import no.nav.tjeneste.virksomhet.person.v3.informasjon.NorskIdent
+import no.nav.tjeneste.virksomhet.person.v3.informasjon.PersonIdent
+import no.nav.tjeneste.virksomhet.person.v3.informasjon.Personidenter
+import no.nav.tjeneste.virksomhet.person.v3.meldinger.HentGeografiskTilknytningRequest
+import no.nav.tjeneste.virksomhet.person.v3.meldinger.HentGeografiskTilknytningResponse
 import no.trygdeetaten.xml.eiff._1.XMLEIFellesformat
 import no.trygdeetaten.xml.eiff._1.XMLMottakenhetBlokk
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean
@@ -51,8 +70,6 @@ import org.apache.cxf.ws.addressing.WSAddressingFeature
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
-import javax.jms.Connection
-import javax.jms.Queue
 import javax.jms.Session
 import javax.jms.TextMessage
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -61,15 +78,15 @@ import redis.clients.jedis.JedisSentinelPool
 import redis.clients.jedis.exceptions.JedisConnectionException
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.IOException
 import java.io.StringReader
 import java.io.StringWriter
 import java.security.MessageDigest
 import java.time.LocalDate
 import java.util.concurrent.Executors
+import javax.jms.MessageConsumer
 import javax.jms.MessageProducer
-import javax.xml.bind.JAXBContext
 import javax.xml.bind.Marshaller
-import javax.xml.bind.Unmarshaller
 
 fun doReadynessCheck(): Boolean {
     return true
@@ -80,28 +97,15 @@ val objectMapper: ObjectMapper = ObjectMapper()
         .registerKotlinModule()
         .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
 
-val xmlObjectWriter: XmlMapper = XmlMapper()
-
-val fellesformatJaxBContext: JAXBContext = JAXBContext.newInstance(XMLEIFellesformat::class.java, XMLMsgHead::class.java, HelseOpplysningerArbeidsuforhet::class.java)
-val fellesformatUnmarshaller: Unmarshaller = fellesformatJaxBContext.createUnmarshaller().apply {
-    setAdapter(LocalDateTimeXmlAdapter::class.java, XMLDateTimeAdapter())
-    setAdapter(LocalDateXmlAdapter::class.java, XMLDateAdapter())
-}
-
-val apprecJaxBContext: JAXBContext = JAXBContext.newInstance(XMLEIFellesformat::class.java, XMLAppRec::class.java)
-val apprecMarshaller: Marshaller = apprecJaxBContext.createMarshaller()
-
-val sykmeldingMarshaller: Marshaller = JAXBContext.newInstance(HelseOpplysningerArbeidsuforhet::class.java).createMarshaller()
-
 val redisMasterName = "mymaster"
 val redisHost = "rfs-redis-syfosmmottak" // TODO: Do this properly with naiserator
 
-data class ApplicationState(var running: Boolean = true)
+data class ApplicationState(var running: Boolean = true, var initialized: Boolean = false)
 
 val log = LoggerFactory.getLogger("nav.syfosmmottak-application")
 
 @KtorExperimentalAPI
-fun main(args: Array<String>) = runBlocking(Executors.newFixedThreadPool(4).asCoroutineDispatcher()) {
+fun main(args: Array<String>) = runBlocking(Executors.newFixedThreadPool(2).asCoroutineDispatcher()) {
     val config: ApplicationConfig = objectMapper.readValue(File(System.getenv("CONFIG_FILE")))
     val applicationState = ApplicationState()
     val credentials: VaultCredentials = objectMapper.readValue(vaultApplicationPropertiesPath.toFile())
@@ -110,38 +114,77 @@ fun main(args: Array<String>) = runBlocking(Executors.newFixedThreadPool(4).asCo
         initRouting(applicationState)
     }.start(wait = false)
 
-    Runtime.getRuntime().addShutdownHook(Thread {
-        applicationServer.stop(10, 10, TimeUnit.SECONDS)
-    })
+    DefaultExports.initialize()
 
     connectionFactory(config).createConnection(credentials.mqUsername, credentials.mqPassword).use { connection ->
         connection.start()
-        JedisSentinelPool(redisMasterName, setOf("$redisHost:26379")).resource.use { jedis ->
-            val session = connection.createSession()
-            val inputQueue = session.createQueue(config.inputQueueName)
-            val receiptQueue = session.createQueue(config.apprecQueueName)
-            val syfoserviceQueue = session.createQueue(config.syfoserviceQueueName)
-            val backoutQueue = session.createQueue(config.inputBackoutQueueName)
-            session.close()
 
-            val producerProperties = readProducerConfig(config, credentials, valueSerializer = JacksonKafkaSerializer::class)
-            val kafkaproducer = KafkaProducer<String, ReceivedSykmelding>(producerProperties)
+        try {
+            val listeners = (1..config.applicationThreads).map {
+                launch {
+                    JedisSentinelPool(redisMasterName, setOf("$redisHost:26379")).resource.use { jedis ->
 
-            val syfoSykemeldingRuleClient = SyfoSykemeldingRuleClient(config.syfosmreglerApiUrl, credentials)
+                        val session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)
+                        val inputQueue = session.createQueue(config.inputQueueName)
+                        val receiptQueue = session.createQueue(config.apprecQueueName)
+                        val syfoserviceQueue = session.createQueue(config.syfoserviceQueueName)
+                        val backoutQueue = session.createQueue(config.inputBackoutQueueName)
 
-            val sarClient = SarClient(config.kuhrSarApiUrl, credentials)
+                        val inputconsumer = session.createConsumer(inputQueue)
+                        val receiptProducer = session.createProducer(receiptQueue)
+                        val syfoserviceProducer = session.createProducer(syfoserviceQueue)
+                        val backoutProducer = session.createProducer(backoutQueue)
 
-            val oidcClient = StsOidcClient(credentials.serviceuserUsername, credentials.serviceuserPassword)
-            val aktoerIdClient = AktoerIdClient(config.aktoerregisterV1Url, oidcClient)
+                        val producerProperties = readProducerConfig(config, credentials, valueSerializer = JacksonKafkaSerializer::class)
+                        val kafkaproducer = KafkaProducer<String, ReceivedSykmelding>(producerProperties)
 
-            val subscriptionEmottak = JaxWsProxyFactoryBean().apply {
-                address = config.subscriptionEndpointURL
-                features.add(WSAddressingFeature())
-                serviceClass = SubscriptionPort::class.java
-            }.create() as SubscriptionPort
-            configureBasicAuthFor(subscriptionEmottak, credentials.serviceuserUsername, credentials.serviceuserPassword)
+                        val manualTaskproducerProperties = readManualTaskProducerConfig(config, credentials, valueSerializer = KafkaAvroSerializer::class)
+                        val manualTaskkafkaproducer = KafkaProducer<String, ProduceTask>(manualTaskproducerProperties)
 
-            listen(inputQueue, receiptQueue, backoutQueue, syfoserviceQueue, connection, subscriptionEmottak, kafkaproducer, syfoSykemeldingRuleClient, sarClient, aktoerIdClient, config, credentials, applicationState, jedis).join()
+                        val syfoSykemeldingRuleClient = SyfoSykemeldingRuleClient(config.syfosmreglerApiUrl, credentials)
+
+                        val sarClient = SarClient(config.kuhrSarApiUrl, credentials)
+
+                        val oidcClient = StsOidcClient(credentials.serviceuserUsername, credentials.serviceuserPassword)
+                        val aktoerIdClient = AktoerIdClient(config.aktoerregisterV1Url, oidcClient)
+
+                        val subscriptionEmottak = JaxWsProxyFactoryBean().apply {
+                            address = config.subscriptionEndpointURL
+                            features.add(WSAddressingFeature())
+                            serviceClass = SubscriptionPort::class.java
+                        }.create() as SubscriptionPort
+                        configureBasicAuthFor(subscriptionEmottak, credentials.serviceuserUsername, credentials.serviceuserPassword)
+
+                        val arbeidsfordelingV1 = JaxWsProxyFactoryBean().apply {
+                            address = config.arbeidsfordelingV1EndpointURL
+                            serviceClass = ArbeidsfordelingV1::class.java
+                        }.create() as ArbeidsfordelingV1
+                        configureSTSFor(arbeidsfordelingV1, credentials.serviceuserUsername,
+                                credentials.serviceuserPassword, config.securityTokenServiceUrl)
+
+                        val personV3 = JaxWsProxyFactoryBean().apply {
+                            address = config.personV3EndpointURL
+                            serviceClass = PersonV3::class.java
+                        }.create() as PersonV3
+                        configureSTSFor(personV3, credentials.serviceuserUsername,
+                                credentials.serviceuserPassword, config.securityTokenServiceUrl)
+
+                        blockingApplicationLogic(inputconsumer, receiptProducer, syfoserviceProducer, backoutProducer,
+                                subscriptionEmottak, kafkaproducer,
+                                syfoSykemeldingRuleClient, sarClient, aktoerIdClient,
+                                config, credentials, applicationState, jedis, manualTaskkafkaproducer, personV3, session, arbeidsfordelingV1)
+                    }
+                }
+            }.toList()
+
+            applicationState.initialized = true
+
+            Runtime.getRuntime().addShutdownHook(Thread {
+                applicationServer.stop(10, 10, TimeUnit.SECONDS)
+            })
+            runBlocking { listeners.forEach { it.join() } }
+        } finally {
+            applicationState.running = false
         }
     }
 }
@@ -153,12 +196,11 @@ fun Application.initRouting(applicationState: ApplicationState) {
 }
 
 @KtorExperimentalAPI
-fun CoroutineScope.listen(
-    inputQueue: Queue,
-    receiptQueue: Queue,
-    backoutQueue: Queue,
-    syfoserviceQueue: Queue,
-    connection: Connection,
+suspend fun CoroutineScope.blockingApplicationLogic(
+    inputconsumer: MessageConsumer,
+    receiptProducer: MessageProducer,
+    syfoserviceProducer: MessageProducer,
+    backoutProducer: MessageProducer,
     subscriptionEmottak: SubscriptionPort,
     kafkaproducer: KafkaProducer<String, ReceivedSykmelding>,
     syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
@@ -167,16 +209,13 @@ fun CoroutineScope.listen(
     config: ApplicationConfig,
     credentials: VaultCredentials,
     applicationState: ApplicationState,
-    jedis: Jedis
-) = launch {
-    val session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)
-    val consumer = session.createConsumer(inputQueue)
-    val receiptProducer = session.createProducer(receiptQueue)
-    val syfoserviceProducer = session.createProducer(syfoserviceQueue)
-    val backoutProducer = session.createProducer(backoutQueue)
-
-    while (applicationState.running) {
-        val message = consumer.receiveNoWait()
+    jedis: Jedis,
+    kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
+    personV3: PersonV3,
+    session: Session,
+    arbeidsfordelingV1: ArbeidsfordelingV1
+) { while (applicationState.running) {
+        val message = inputconsumer.receiveNoWait()
         if (message == null) {
             delay(100)
             continue
@@ -290,6 +329,9 @@ fun CoroutineScope.listen(
                 validationResult.status == Status.MANUAL_PROCESSING -> {
                     sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
                     log.info("Apprec Receipt sent to {} $logKeys", config.apprecQueueName, *logValues)
+                    val geografiskTilknytning = fetchGeografiskTilknytning(personV3, receivedSykmelding)
+                    val finnBehandlendeEnhetListeResponse = fetchBehandlendeEnhet(arbeidsfordelingV1, geografiskTilknytning.await().geografiskTilknytning)
+                    createTask(kafkaManuelTaskProducer, receivedSykmelding, validationResult, findNavOffice(finnBehandlendeEnhetListeResponse.await()), logKeys, logValues)
                     kafkaproducer.send(ProducerRecord(config.sm2013ManualHandlingTopic, receivedSykmelding))
                     log.info("Message send to kafka {} $logKeys", config.sm2013ManualHandlingTopic, *logValues)
                     notifySyfoService(session, syfoserviceProducer, ediLoggId, msgId, healthInformation)
@@ -315,7 +357,8 @@ fun CoroutineScope.listen(
             log.error("Exception caught while handling message, sending to backout $logKeys", *logValues, e)
             backoutProducer.send(message)
         }
-    }
+}
+delay(100)
 }
 
 inline fun <reified T> XMLEIFellesformat.get() = this.any.find { it is T } as T
@@ -398,3 +441,47 @@ fun convertSykemeldingToBase64(helseOpplysningerArbeidsuforhet: HelseOpplysninge
             sykmeldingMarshaller.marshal(helseOpplysningerArbeidsuforhet, it)
             it
         }.toByteArray()
+
+fun CoroutineScope.fetchGeografiskTilknytning(personV3: PersonV3, receivedSykmelding: ReceivedSykmelding): Deferred<HentGeografiskTilknytningResponse> =
+        retryAsync("tps_hent_geografisktilknytning", IOException::class, WstxException::class) {
+            personV3.hentGeografiskTilknytning(HentGeografiskTilknytningRequest().withAktoer(PersonIdent().withIdent(
+                    NorskIdent()
+                            .withIdent(receivedSykmelding.personNrPasient)
+                            .withType(Personidenter().withValue("FNR")))))
+        }
+
+fun CoroutineScope.fetchBehandlendeEnhet(arbeidsfordelingV1: ArbeidsfordelingV1, geografiskTilknytning: GeografiskTilknytning?): Deferred<FinnBehandlendeEnhetListeResponse?> =
+        retryAsync("finn_nav_kontor", IOException::class, WstxException::class) {
+            arbeidsfordelingV1.finnBehandlendeEnhetListe(FinnBehandlendeEnhetListeRequest().apply {
+                val afk = ArbeidsfordelingKriterier()
+                if (geografiskTilknytning?.geografiskTilknytning != null) {
+                    afk.geografiskTilknytning = no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.informasjon.Geografi().apply {
+                        value = geografiskTilknytning.geografiskTilknytning
+                    }
+                }
+                afk.tema = Tema().apply {
+                    value = "SYM"
+                }
+                arbeidsfordelingKriterier = afk
+            })
+        }
+
+fun createTask(kafkaProducer: KafkaProducer<String, ProduceTask>, receivedSykmelding: ReceivedSykmelding, results: ValidationResult, navKontor: String, logKeys: String, logValues: Array<StructuredArgument>) {
+    kafkaProducer.send(ProducerRecord("aapen-syfo-oppgave-produserOppgave", ProduceTask(
+            receivedSykmelding.msgId, receivedSykmelding.sykmelding.pasientAktoerId,
+            navKontor, "", "GOSYS", "134325",
+            receivedSykmelding.legekontorOrgNr, "Manuell behandling", "SYM",
+            "SYM", "BEH_EL_SYM", "BEH_EL_SYM", "SYM_SYM",
+            1, LocalDate.now().toString(), LocalDate.now().plusDays(10).toString(),
+            PrioritetType.NORM, mapOf<String, String>()
+
+    )))
+    log.info("Message sendt to topic: aapen-syfo-oppgave-produserOppgave $logKeys", *logValues)
+}
+
+fun findNavOffice(finnBehandlendeEnhetListeResponse: FinnBehandlendeEnhetListeResponse?): String =
+        if (finnBehandlendeEnhetListeResponse?.behandlendeEnhetListe?.firstOrNull()?.enhetId == null) {
+            "0393"
+        } else {
+            finnBehandlendeEnhetListeResponse.behandlendeEnhetListe.first().enhetId
+        }

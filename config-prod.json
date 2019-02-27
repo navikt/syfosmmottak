@@ -9,5 +9,16 @@
   "inputBackoutQueueName": "P_SYFOSMMOTTAK.INPUT_BOQ",
   "aktoerregisterV1Url": "https://app.adeo.no/aktoerregister/api/v1",
   "syfoserviceQueueName": "QA.P_SYFOSMSYFOSERVICE.MOCKSYFO",
-  "subscriptionEndpointURL": "https://wasapp.adeo.no/nav-emottak-eletter-web/services/"
+  "subscriptionEndpointURL": "https://wasapp.adeo.no/nav-emottak-eletter-web/services/",
+  "arbeidsfordelingV1EndpointURL" : "https://app-q1.adeo.no/norg2/ws/Arbeidsfordeling/v1",
+  "sm2013OppgaveTopic": "aapen-syfo-oppgave-produserOppgave",
+  "sm2013ManualHandlingTopic": "privat-syfo-sm2013-manuellBehandling",
+  "sm2013AutomaticHandlingTopic":  "privat-syfo-sm2013-automatiskBehandling",
+  "sm2013InvalidHandlingTopic":  "privat-syfo-sm2013-avvistBehandling",
+  "kuhrSarApiUrl":  "http://kuhr-sar-api",
+  "syfosmreglerApiUrl": "http://syfosmregler",
+  "applicationPort": "8080",
+  "securityTokenServiceUrl" : "https://sts.adeo.no/SecurityTokenServiceProvider/",
+  "personV3EndpointURL" : "https://wasapp.adeo.no/tpsws/ws/Person/v3",
+  "applicationThreads": "1"
 }
