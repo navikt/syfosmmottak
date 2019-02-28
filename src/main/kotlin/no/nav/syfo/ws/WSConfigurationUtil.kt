@@ -18,8 +18,8 @@ fun configureBasicAuthFor(service: Any, username: String, password: String) =
             authorization.password = password
         }
 
-var STS_CLIENT_AUTHENTICATION_POLICY = "classpath:sts/sts.policies/untPolicy.xml"
-var STS_REQUEST_SAML_POLICY = "classpath:sts/sts.policies/requestSamlPolicy.xml"
+var STS_CLIENT_AUTHENTICATION_POLICY = "classpath:sts/policies/untPolicy.xml"
+var STS_REQUEST_SAML_POLICY = "classpath:sts/policies/requestSamlPolicy.xml"
 
 fun configureSTSFor(service: Any, username: String, password: String, endpoint: String) {
     val client = ClientProxy.getClient(service)
