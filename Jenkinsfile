@@ -18,7 +18,7 @@ pipeline {
             steps {
                 init action: 'default'
                 script {
-                    sh(script: './gradlew clean')
+                    sh(script: './gradlew clean --stacktrace')
                     def applicationVersionGradle = sh(script: './gradlew -q printVersion', returnStdout: true).trim()
                     env.APPLICATION_VERSION = "${applicationVersionGradle}-${env.COMMIT_HASH_SHORT}"
                     if (applicationVersionGradle.endsWith('-SNAPSHOT')) {
