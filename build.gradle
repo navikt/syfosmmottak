@@ -28,6 +28,7 @@ buildscript {
     ext.syfooppgave_schemas_version = '1.1-SNAPSHOT'
     ext.confluent_version = '4.1.1'
     ext.nav_person_v3_version = '3.2.0'
+    ext.jaxb_basic_ant_version = '1.11.1'
 
     ext.jaxb2SourceDir = file("$buildDir/generated-sources/jaxb2")
 }
@@ -78,7 +79,7 @@ repositories {
     mavenCentral()
     jcenter()
     maven { url "https://dl.bintray.com/kotlin/ktor" }
-    maven { url = "http://packages.confluent.io/maven/" }
+    maven { url "http://packages.confluent.io/maven/" }
     maven { url 'https://repo.adeo.no/repository/maven-releases/' }
     maven { url 'https://repo.adeo.no/repository/maven-snapshots/' }
     maven { url "https://dl.bintray.com/spekframework/spek-dev" }
@@ -112,6 +113,13 @@ compileKotlin {
 }
 
 dependencies {
+    wsdl2java "javax.xml.bind:jaxb-api:$jaxb_api_version"
+    wsdl2java "javax.xml.ws:jaxws-api:$jaxws_api_version"
+    wsdl2java "javax.activation:activation:$javax_activation_version"
+    wsdl2java "javax.annotation:javax.annotation-api:$javax_annotation_api_version"
+    wsdl2java "org.glassfish.jaxb:jaxb-runtime:$jaxb_version"
+    wsdl2java "org.jvnet.jaxb2_commons:jaxb2-basics-ant:$jaxb_basic_ant_version"
+
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
@@ -170,9 +178,4 @@ dependencies {
 
     testImplementation "org.apache.activemq:artemis-server:$artemis_version"
     testImplementation "org.apache.activemq:artemis-jms-client:$artemis_version"
-
-    wsdl2java "javax.xml.bind:jaxb-api:$jaxb_api_version"
-    wsdl2java "javax.xml.ws:jaxws-api:$jaxws_api_version"
-    wsdl2java "javax.activation:activation:$javax_activation_version"
-    wsdl2java "javax.annotation:javax.annotation-api:$javax_annotation_api_version"
 }
