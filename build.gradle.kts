@@ -158,7 +158,7 @@ dependencies {
 
 }
 
-
+val generatedSourcesDir = "$buildDir/generated-sources"
 
 tasks {
     create("printVersion") {
@@ -199,4 +199,8 @@ tasks {
         }
         testLogging.events("passed", "skipped", "failed")
     }
+}
+
+java {
+    sourceSets["main"].java.srcDirs(generatedSourcesDir)
 }
