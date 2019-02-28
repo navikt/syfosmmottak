@@ -33,6 +33,14 @@ buildscript {
     ext.jaxb_runtime_version = '2.4.0-b180830.0438'
 
     ext.jaxb2SourceDir = file("$buildDir/generated-sources/jaxb2")
+
+    repositories{
+        jcenter()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'no.nils:wsdl2java:0.10'
+    }
 }
 
 plugins {
