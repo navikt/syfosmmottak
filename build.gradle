@@ -29,6 +29,7 @@ buildscript {
     ext.nav_person_v3_version = '3.2.0'
     ext.jaxb_basic_ant_version = '1.11.1'
     ext.javax_annotation_api_version = '1.3.2'
+    ext.jaxws_tools_version = '2.3.1'
 
     ext.jaxb2SourceDir = file("$buildDir/generated-sources/jaxb2")
 }
@@ -117,6 +118,9 @@ dependencies {
     wsdl2java "javax.activation:activation:$javax_activation_version"
     wsdl2java "javax.xml.bind:jaxb-api:$jaxb_api_version"
     wsdl2java "javax.xml.ws:jaxws-api:$jaxws_api_version"
+    wsdl2java "com.sun.xml.ws:jaxws-tools:$jaxws_tools_version" 
+    exclude(group = "com.sun.xml.ws", module = "policy")
+
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
