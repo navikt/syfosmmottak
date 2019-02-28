@@ -39,9 +39,10 @@ val javaxAnnotationApiVersion = "1.3.2"
 val jaxwsToolsVersion = "2.3.1"
 val jaxbRuntimeVersion = "2.4.0-b180830.0438"
 
-val jaxb2SourceDir = file("$buildDir/generated-sources/jaxb2")
+tasks.withType<Jar> {
+    manifest.attributes["Main-Class"] = "no.nav.syfo.BootstrapKt"
+}
 
-val mainClass = "no.nav.syfo.BootstrapKt"
 
 plugins {
     java
@@ -158,7 +159,6 @@ dependencies {
 
 }
 
-val generatedSourcesDir = "$buildDir/generated-sources"
 
 tasks {
     create("printVersion") {
@@ -199,8 +199,4 @@ tasks {
         }
         testLogging.events("passed", "skipped", "failed")
     }
-}
-
-java {
-    sourceSets["main"].java.srcDirs(generatedSourcesDir)
 }
