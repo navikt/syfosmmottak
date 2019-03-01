@@ -470,8 +470,8 @@ fun createTask(kafkaProducer: KafkaProducer<String, ProduceTask>, receivedSykmel
     kafkaProducer.send(ProducerRecord("aapen-syfo-oppgave-produserOppgave", ProduceTask(
             receivedSykmelding.msgId, receivedSykmelding.sykmelding.pasientAktoerId,
             navKontor, "", "GOSYS", "134325",
-            receivedSykmelding.legekontorOrgNr, "Manuell behandling", "SYM",
-            "SYM", "BEH_EL_SYM", "BEH_EL_SYM", "SYM_SYM",
+            receivedSykmelding.legekontorOrgNr, "Manuell behandling Sykmelding", "",
+            "SYM", "", "BEH_EL_SYM", "",
             1, LocalDate.now().toString(), LocalDate.now().plusDays(10).toString(),
             PrioritetType.NORM, mapOf<String, String>()
 
