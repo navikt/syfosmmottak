@@ -83,6 +83,8 @@ import java.io.StringReader
 import java.io.StringWriter
 import java.security.MessageDigest
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Base64
 import java.util.concurrent.Executors
 import javax.jms.MessageConsumer
 import javax.jms.MessageProducer
@@ -416,7 +418,9 @@ fun notifySyfoService(
     receiptProducer.send(session.createTextMessage().apply {
         val syketilfelleStartDato = extractSyketilfelleStartDato(healthInformation)
         val sykmelding = convertSykemeldingToBase64(healthInformation)
-        val syfo = Syfo(tilleggsdata = Tilleggsdata(ediLoggId = ediLoggId, msgId = msgId, syketilfelleStartDato = syketilfelleStartDato), sykmelding = sykmelding)
+        val syfo = Syfo(
+                tilleggsdata = Tilleggsdata(ediLoggId = ediLoggId, msgId = msgId, syketilfelleStartDato = syketilfelleStartDato),
+                sykmelding = Base64.getEncoder().encodeToString(sykmelding))
         text = xmlObjectWriter.writeValueAsString(syfo)
     })
 }
@@ -424,7 +428,7 @@ fun notifySyfoService(
 @JacksonXmlRootElement(localName = "syfo")
 data class Syfo(
     val tilleggsdata: Tilleggsdata,
-    val sykmelding: ByteArray
+    val sykmelding: String
 )
 
 data class Tilleggsdata(
@@ -467,15 +471,25 @@ fun CoroutineScope.fetchBehandlendeEnhet(arbeidsfordelingV1: ArbeidsfordelingV1,
         }
 
 fun createTask(kafkaProducer: KafkaProducer<String, ProduceTask>, receivedSykmelding: ReceivedSykmelding, results: ValidationResult, navKontor: String, logKeys: String, logValues: Array<StructuredArgument>) {
-    kafkaProducer.send(ProducerRecord("aapen-syfo-oppgave-produserOppgave", ProduceTask(
-            receivedSykmelding.msgId, receivedSykmelding.sykmelding.pasientAktoerId,
-            navKontor, "", "GOSYS", "134325",
-            receivedSykmelding.legekontorOrgNr, "Manuell behandling Sykmelding", "",
-            "SYM", "", "BEH_EL_SYM", "",
-            1, LocalDate.now().toString(), LocalDate.now().plusDays(10).toString(),
-            PrioritetType.NORM, mapOf<String, String>()
+    kafkaProducer.send(ProducerRecord("aapen-syfo-oppgave-produserOppgave", receivedSykmelding.msgId, ProduceTask().apply {
+        messageId = receivedSykmelding.msgId
+        aktoerId = receivedSykmelding.sykmelding.pasientAktoerId
+        tildeltEnhetsnr = navKontor
+        opprettetAvEnhetsnr = "9999"
+        behandlesAvApplikasjon = "FS22" // Gosys
+        orgnr = receivedSykmelding.legekontorOrgNr
+        beskrivelse = "Manuell behandling sykmelding"
+        temagruppe = "SYM"
+        tema = ""
+        behandlingstema = "BEH_EL_SYM"
+        oppgavetype = ""
+        mappeId = 1
+        aktivDato = DateTimeFormatter.ISO_DATE.format(LocalDate.now())
+        fristFerdigstillelse = DateTimeFormatter.ISO_DATE.format(LocalDate.now())
+        prioritet = PrioritetType.NORM
+        metadata = mapOf()
+    }))
 
-    )))
     log.info("Message sendt to topic: aapen-syfo-oppgave-produserOppgave $logKeys", *logValues)
 }
 

@@ -162,7 +162,10 @@ dependencies {
 
 tasks {
     create("printVersion") {
-        println(project.version)
+
+        doLast {
+            println(project.version)
+        }
     }
     withType<KotlinCompile> {
         dependsOn("wsdl2java")
@@ -197,6 +200,8 @@ tasks {
         useJUnitPlatform {
             includeEngines("spek2")
         }
-        testLogging.events("passed", "skipped", "failed")
+        testLogging {
+            showStandardStreams = true
+        }
     }
 }

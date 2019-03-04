@@ -7,6 +7,7 @@ import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.io.StringReader
 import java.time.LocalDate
+import java.util.Base64
 
 object BootstrapSpek : Spek({
     val stringInput = getFileAsString("src/test/resources/sykemelding2013Regelsettversjon2.xml")
@@ -20,7 +21,10 @@ object BootstrapSpek : Spek({
 
     describe("Notify syfo service payload") {
         it("Produces a parsable XML") {
-            val syfo = Syfo(tilleggsdata = Tilleggsdata(ediLoggId = "abc", msgId = "def", syketilfelleStartDato = LocalDate.now()), sykmelding = "TODO".toByteArray(Charsets.UTF_8))
+            val syfo = Syfo(
+                    tilleggsdata = Tilleggsdata(ediLoggId = "abc", msgId = "def", syketilfelleStartDato = LocalDate.now()),
+                    sykmelding = Base64.getEncoder().encodeToString("TODO".toByteArray(Charsets.UTF_8))
+            )
             val text = xmlObjectWriter.writeValueAsString(syfo)
             println(text)
         }
