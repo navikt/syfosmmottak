@@ -357,8 +357,8 @@ suspend fun CoroutineScope.blockingApplicationLogic(
             log.error("Exception caught while handling message, sending to backout $logKeys", *logValues, e)
             backoutProducer.send(message)
         }
-}
-delay(100)
+    delay(100)
+    }
 }
 
 inline fun <reified T> XMLEIFellesformat.get() = this.any.find { it is T } as T
