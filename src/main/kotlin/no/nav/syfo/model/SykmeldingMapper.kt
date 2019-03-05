@@ -58,7 +58,7 @@ fun HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig.toAktiv
 )
 
 fun HelseOpplysningerArbeidsuforhet.MedisinskVurdering.toMedisinskVurdering() = MedisinskVurdering(
-        hovedDiagnose = hovedDiagnose.diagnosekode.toDiagnose(),
+        hovedDiagnose = hovedDiagnose?.diagnosekode?.toDiagnose(),
         biDiagnoser = biDiagnoser?.diagnosekode?.map(CV::toDiagnose) ?: listOf(),
         svangerskap = isSvangerskap == true,
         yrkesskade = isYrkesskade == true,
