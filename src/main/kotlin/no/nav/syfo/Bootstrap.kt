@@ -477,7 +477,7 @@ fun createTask(kafkaProducer: KafkaProducer<String, ProduceTask>, receivedSykmel
         tildeltEnhetsnr = navKontor
         opprettetAvEnhetsnr = "9999"
         behandlesAvApplikasjon = "FS22" // Gosys
-        orgnr = receivedSykmelding.legekontorOrgNr
+        orgnr = receivedSykmelding.legekontorOrgNr ?: ""
         beskrivelse = "Manuell behandling sykmelding"
         temagruppe = "SYM"
         tema = ""
