@@ -16,5 +16,11 @@ val INCOMING_MESSAGE_COUNTER: Counter = Counter.build()
         .help("Counts the number of incoming messages")
         .register()
 
+val APPREC_COUNTER: Counter = Counter.build()
+        .namespace(METRICS_NS)
+        .name("apprec_count")
+        .help("Counts the number of apprec messages")
+        .register()
+
 val NETWORK_CALL_SUMMARY: Summary = Summary.Builder().namespace(METRICS_NS).name("network_call_summary")
         .labelNames("http_endpoint").help("Summary for networked call times").register()

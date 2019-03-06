@@ -42,6 +42,7 @@ import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.client.ValidationResult
 import no.nav.syfo.client.findBestSamhandlerPraksis
+import no.nav.syfo.metrics.APPREC_COUNTER
 import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
 import no.nav.syfo.metrics.REQUEST_TIME
 import no.nav.syfo.model.ReceivedSykmelding
@@ -403,6 +404,7 @@ fun sendReceipt(
     apprecStatus: ApprecStatus,
     apprecErrors: List<ApprecError> = listOf()
 ) {
+    APPREC_COUNTER.inc()
     receiptProducer.send(session.createTextMessage().apply {
         val apprec = createApprec(fellesformat, apprecStatus)
         apprec.get<XMLAppRec>().error.addAll(apprecErrors.map { it.toApprecCV() })
