@@ -293,66 +293,82 @@ suspend fun CoroutineScope.blockingApplicationLogic(
                 log.warn("Unable to contact redis, will allow possible duplicates.", connectionException)
             }
 
-            val sykmelding = healthInformation.toSykmelding(
-                    sykmeldingId = msgId,
-                    pasientAktoerId = aktoerIds[personNumberPatient]!!.identer!!.first().ident,
-                    legeAktoerId = aktoerIds[personNumberDoctor]!!.identer!!.first().ident
-            )
-            val receivedSykmelding = ReceivedSykmelding(
-                    sykmelding = sykmelding,
-                    personNrPasient = personNumberPatient,
-                    personNrLege = personNumberDoctor,
-                    navLogId = ediLoggId,
-                    msgId = msgId,
-                    legekontorOrgNr = legekontorOrgNr,
-                    legekontorOrgName = legekontorOrgName,
-                    legekontorHerId = legekontorHerId,
-                    legekontorReshId = legekontorReshId,
-                    mottattDato = receiverBlock.mottattDatotid.toGregorianCalendar().toZonedDateTime().toLocalDateTime(),
-                    signaturDato = msgHead.msgInfo.genDate,
-                    rulesetVersion = healthInformation.regelSettVersjon,
-                    fellesformat = inputMessageText
-            )
-
-            log.info("Validating against rules, $logKeys", *logValues)
-            val validationResult = syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding).await()
+            // TODO do this better
             when {
-                validationResult.status == Status.OK -> {
-                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
+                aktoerIds[personNumberPatient]?.identer?.firstOrNull()?.ident == null -> {
+                    log.info("Patient not found i aktorRegister $logKeys", *logValues)
+                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(ApprecError.PATIENT_NOT_IN_FOLKEREGISTERET))
                     log.info("Apprec Receipt sent to {} $logKeys", config.apprecQueueName, *logValues)
-                    kafkaproducer.send(ProducerRecord(config.sm2013AutomaticHandlingTopic, receivedSykmelding))
-                    log.info("Message send to kafka {} $logKeys", config.sm2013AutomaticHandlingTopic, *logValues)
-                    notifySyfoService(session, syfoserviceProducer, ediLoggId, msgId, healthInformation)
-                    log.info("Message send to syfoService {} $logKeys", config.syfoserviceQueueName, *logValues)
-                    val currentRequestLatency = requestLatency.observeDuration()
-                    log.info("Message $logKeys has outcome automatic, processing took {}s", *logValues,
-                            currentRequestLatency)
                 }
-                validationResult.status == Status.MANUAL_PROCESSING -> {
-                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
+                aktoerIds[personNumberDoctor]?.identer?.firstOrNull()?.ident == null -> {
+                    log.info("Doctor not found i aktorRegister $logKeys", *logValues)
+                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(ApprecError.BEHANDLER_NOT_IN_FOLKEREGISTERET))
                     log.info("Apprec Receipt sent to {} $logKeys", config.apprecQueueName, *logValues)
-                    val geografiskTilknytning = fetchGeografiskTilknytning(personV3, receivedSykmelding)
-                    val finnBehandlendeEnhetListeResponse = fetchBehandlendeEnhet(arbeidsfordelingV1, geografiskTilknytning.await().geografiskTilknytning)
-                    createTask(kafkaManuelTaskProducer, receivedSykmelding, validationResult, findNavOffice(finnBehandlendeEnhetListeResponse.await()), logKeys, logValues)
-                    kafkaproducer.send(ProducerRecord(config.sm2013ManualHandlingTopic, receivedSykmelding))
-                    log.info("Message send to kafka {} $logKeys", config.sm2013ManualHandlingTopic, *logValues)
-                    notifySyfoService(session, syfoserviceProducer, ediLoggId, msgId, healthInformation)
-                    log.info("Message send to syfoService {} $logKeys", config.syfoserviceQueueName, *logValues)
-                    val currentRequestLatency = requestLatency.observeDuration()
-                    log.info("Message $logKeys has outcome manual processing, processing took {}s", *logValues,
-                            currentRequestLatency)
-                    log.info("Message $logKeys Rules hits {}", *logValues, validationResult.ruleHits)
                 }
-                validationResult.status == Status.INVALID -> {
-                    val apprecErrors = findApprecError(validationResult.ruleHits)
-                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, apprecErrors)
-                    log.info("Apprec Receipt sent to {} $logKeys", config.apprecQueueName, *logValues)
-                    kafkaproducer.send(ProducerRecord(config.sm2013InvalidHandlingTopic, receivedSykmelding))
-                    log.info("Message send to kafka {} $logKeys", config.sm2013InvalidHandlingTopic, *logValues)
-                    val currentRequestLatency = requestLatency.observeDuration()
-                    log.info("Message $logKeys has outcome return, processing took {}s", *logValues,
-                            currentRequestLatency)
-                    log.info("Message $logKeys Rules hits {}", *logValues, validationResult.ruleHits)
+                else -> {
+
+                    val sykmelding = healthInformation.toSykmelding(
+                            sykmeldingId = msgId,
+                            pasientAktoerId = aktoerIds[personNumberPatient]!!.identer!!.first().ident,
+                            legeAktoerId = aktoerIds[personNumberDoctor]!!.identer!!.first().ident
+                    )
+                    val receivedSykmelding = ReceivedSykmelding(
+                            sykmelding = sykmelding,
+                            personNrPasient = personNumberPatient,
+                            personNrLege = personNumberDoctor,
+                            navLogId = ediLoggId,
+                            msgId = msgId,
+                            legekontorOrgNr = legekontorOrgNr,
+                            legekontorOrgName = legekontorOrgName,
+                            legekontorHerId = legekontorHerId,
+                            legekontorReshId = legekontorReshId,
+                            mottattDato = receiverBlock.mottattDatotid.toGregorianCalendar().toZonedDateTime().toLocalDateTime(),
+                            signaturDato = msgHead.msgInfo.genDate,
+                            rulesetVersion = healthInformation.regelSettVersjon,
+                            fellesformat = inputMessageText
+                    )
+
+                    log.info("Validating against rules, $logKeys", *logValues)
+                    val validationResult = syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding).await()
+                    when {
+                        validationResult.status == Status.OK -> {
+                            sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
+                            log.info("Apprec Receipt sent to {} $logKeys", config.apprecQueueName, *logValues)
+                            kafkaproducer.send(ProducerRecord(config.sm2013AutomaticHandlingTopic, receivedSykmelding))
+                            log.info("Message send to kafka {} $logKeys", config.sm2013AutomaticHandlingTopic, *logValues)
+                            notifySyfoService(session, syfoserviceProducer, ediLoggId, msgId, healthInformation)
+                            log.info("Message send to syfoService {} $logKeys", config.syfoserviceQueueName, *logValues)
+                            val currentRequestLatency = requestLatency.observeDuration()
+                            log.info("Message $logKeys has outcome automatic, processing took {}s", *logValues,
+                                    currentRequestLatency)
+                        }
+                        validationResult.status == Status.MANUAL_PROCESSING -> {
+                            sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
+                            log.info("Apprec Receipt sent to {} $logKeys", config.apprecQueueName, *logValues)
+                            val geografiskTilknytning = fetchGeografiskTilknytning(personV3, receivedSykmelding)
+                            val finnBehandlendeEnhetListeResponse = fetchBehandlendeEnhet(arbeidsfordelingV1, geografiskTilknytning.await().geografiskTilknytning)
+                            createTask(kafkaManuelTaskProducer, receivedSykmelding, validationResult, findNavOffice(finnBehandlendeEnhetListeResponse.await()), logKeys, logValues)
+                            kafkaproducer.send(ProducerRecord(config.sm2013ManualHandlingTopic, receivedSykmelding))
+                            log.info("Message send to kafka {} $logKeys", config.sm2013ManualHandlingTopic, *logValues)
+                            notifySyfoService(session, syfoserviceProducer, ediLoggId, msgId, healthInformation)
+                            log.info("Message send to syfoService {} $logKeys", config.syfoserviceQueueName, *logValues)
+                            val currentRequestLatency = requestLatency.observeDuration()
+                            log.info("Message $logKeys has outcome manual processing, processing took {}s", *logValues,
+                                    currentRequestLatency)
+                            log.info("Message $logKeys Rules hits {}", *logValues, validationResult.ruleHits)
+                        }
+                        validationResult.status == Status.INVALID -> {
+                            val apprecErrors = findApprecError(validationResult.ruleHits)
+                            sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, apprecErrors)
+                            log.info("Apprec Receipt sent to {} $logKeys", config.apprecQueueName, *logValues)
+                            kafkaproducer.send(ProducerRecord(config.sm2013InvalidHandlingTopic, receivedSykmelding))
+                            log.info("Message send to kafka {} $logKeys", config.sm2013InvalidHandlingTopic, *logValues)
+                            val currentRequestLatency = requestLatency.observeDuration()
+                            log.info("Message $logKeys has outcome return, processing took {}s", *logValues,
+                                    currentRequestLatency)
+                            log.info("Message $logKeys Rules hits {}", *logValues, validationResult.ruleHits)
+                        }
+                    }
                 }
             }
         } catch (e: Exception) {

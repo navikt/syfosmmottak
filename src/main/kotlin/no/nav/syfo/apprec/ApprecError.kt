@@ -74,6 +74,10 @@ enum class ApprecError(val v: String, val dn: String, val s: String, val ruleinf
             "2.16.578.1.12.4.1.1.8221", RuleInfo("PARTIAL_SICK_LEAVE_TOO_HIGH_PERCENTAGE")),
     BACKDATING_SYKMELDING_EXTENSION("X99", "Fom-dato i ny sykmelding som er en forlengelse kan maks være tilbakedatert 1 mnd fra signaturdato. Skal telles.",
             "2.16.578.1.12.4.1.1.8221", RuleInfo("BACKDATING_SYKMELDING_EXTENSION")),
+    PATIENT_NOT_IN_FOLKEREGISTERET("X99", "Pasienten er ikkje registrert i folkeregisteret",
+            "2.16.578.1.12.4.1.1.8221", RuleInfo("")),
+    BEHANDLER_NOT_IN_FOLKEREGISTERET("X99", "er ikkje registrert i folkeregisteret",
+            "2.16.578.1.12.4.1.1.8221", RuleInfo("")),
 }
 
 fun findApprecError(listRuleinfo: List<RuleInfo>): List<ApprecError> = ApprecError.values().filter { listRuleinfo.contains(it.ruleinfo) }
