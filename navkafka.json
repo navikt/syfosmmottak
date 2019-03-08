@@ -18,6 +18,7 @@
         {"member":"srvsyfosmsak", "role":"CONSUMER"},
         {"member":"srvsyfosmarena", "role":"CONSUMER"},
         {"member":"srvDataverk", "role":"CONSUMER"},
+        {"member":"srvsyfosmregister", "role":"CONSUMER"},
         {"member":"srvsyfosmmottak", "role":"PRODUCER"}
       ],
       "numPartitions": 3
