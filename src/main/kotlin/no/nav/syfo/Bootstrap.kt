@@ -369,7 +369,7 @@ suspend fun CoroutineScope.blockingApplicationLogic(
                 log.info("Message($logKeys) got outcome {}, {}, processing took {}s",
                         *logValues,
                         keyValue("status", validationResult.status),
-                        keyValue("ruleHits", validationResult.ruleHits),
+                        keyValue("ruleHits", validationResult.ruleHits.joinToString(", ", "(", ")") { it.ruleMessage }),
                         keyValue("latency", currentRequestLatency))
             } catch (e: Exception) {
                 log.error("Exception caught while handling message, sending to backout $logKeys", *logValues, e)
