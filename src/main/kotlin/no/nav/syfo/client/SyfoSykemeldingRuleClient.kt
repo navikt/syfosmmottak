@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.apache.Apache
+import io.ktor.client.engine.cio.CIO
 import io.ktor.client.features.auth.basic.BasicAuth
 import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
@@ -20,7 +20,7 @@ import no.nav.syfo.retryAsync
 
 @KtorExperimentalAPI
 class SyfoSykemeldingRuleClient(private val endpointUrl: String, credentials: VaultCredentials) {
-    private val client = HttpClient(Apache) {
+    private val client = HttpClient(CIO) {
         install(BasicAuth) {
             username = credentials.serviceuserUsername
             password = credentials.serviceuserPassword
