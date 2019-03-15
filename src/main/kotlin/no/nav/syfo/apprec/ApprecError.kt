@@ -80,6 +80,8 @@ enum class ApprecError(val v: String, val dn: String, val s: String, val ruleinf
             "2.16.578.1.12.4.1.1.8221", RuleInfo("")),
     INVALID_ORGNR_SIZE("X99", "Organisjoansnummer som er oppgitt er ikke 9 tegn",
             "2.16.578.1.12.4.1.1.8221", RuleInfo("INVALID_ORGNR_SIZE")),
+    UNKNOWN_EXCEPTION("X99", "Ukjent feil oppstår prøv på nytt",
+            "2.16.578.1.12.4.1.1.8221", RuleInfo("")),
 }
 
 fun findApprecError(listRuleinfo: List<RuleInfo>): List<ApprecError> = ApprecError.values().filter { listRuleinfo.contains(it.ruleinfo) }

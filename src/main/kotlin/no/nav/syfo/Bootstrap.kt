@@ -315,64 +315,72 @@ suspend fun CoroutineScope.blockingApplicationLogic(
                     continue@loop
                 }
 
-                val sykmelding = healthInformation.toSykmelding(
-                        sykmeldingId = UUID.randomUUID().toString(),
-                        pasientAktoerId = patientIdents.identer!!.first().ident,
-                        legeAktoerId = doctorIdents.identer!!.first().ident,
-                        msgId = msgId
-                )
-                val receivedSykmelding = ReceivedSykmelding(
-                        sykmelding = sykmelding,
-                        personNrPasient = personNumberPatient,
-                        personNrLege = personNumberDoctor,
-                        navLogId = ediLoggId,
-                        msgId = msgId,
-                        legekontorOrgNr = legekontorOrgNr,
-                        legekontorOrgName = legekontorOrgName,
-                        legekontorHerId = legekontorHerId,
-                        legekontorReshId = legekontorReshId,
-                        mottattDato = receiverBlock.mottattDatotid.toGregorianCalendar().toZonedDateTime().toLocalDateTime(),
-                        signaturDato = msgHead.msgInfo.genDate,
-                        rulesetVersion = healthInformation.regelSettVersjon,
-                        fellesformat = inputMessageText
-                )
+                try {
+                    val sykmelding = healthInformation.toSykmelding(
+                            sykmeldingId = UUID.randomUUID().toString(),
+                            pasientAktoerId = patientIdents.identer!!.first().ident,
+                            legeAktoerId = doctorIdents.identer!!.first().ident,
+                            msgId = msgId
+                    )
+                    val receivedSykmelding = ReceivedSykmelding(
+                            sykmelding = sykmelding,
+                            personNrPasient = personNumberPatient,
+                            personNrLege = personNumberDoctor,
+                            navLogId = ediLoggId,
+                            msgId = msgId,
+                            legekontorOrgNr = legekontorOrgNr,
+                            legekontorOrgName = legekontorOrgName,
+                            legekontorHerId = legekontorHerId,
+                            legekontorReshId = legekontorReshId,
+                            mottattDato = receiverBlock.mottattDatotid.toGregorianCalendar().toZonedDateTime().toLocalDateTime(),
+                            signaturDato = msgHead.msgInfo.genDate,
+                            rulesetVersion = healthInformation.regelSettVersjon,
+                            fellesformat = inputMessageText
+                    )
 
-                log.info("Validating against rules, $logKeys", *logValues)
-                val validationResult = syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding).await()
+                    log.info("Validating against rules, $logKeys", *logValues)
+                    val validationResult = syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding).await()
 
-                if (validationResult.status in arrayOf(Status.OK, Status.MANUAL_PROCESSING)) {
-                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
+                    if (validationResult.status in arrayOf(Status.OK, Status.MANUAL_PROCESSING)) {
+                        sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
+                        log.info("Apprec Receipt sent to {} $logKeys", config.apprecQueueName, *logValues)
+
+                        notifySyfoService(session, syfoserviceProducer, ediLoggId, msgId, healthInformation)
+                        log.info("Message send to syfoService {} $logKeys", config.syfoserviceQueueName, *logValues)
+                    } else {
+                        sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, findApprecError(validationResult.ruleHits))
+                        log.info("Apprec Receipt sent to {} $logKeys", config.apprecQueueName, *logValues)
+                    }
+
+                    val topicName = when (validationResult.status) {
+                        Status.OK -> config.sm2013AutomaticHandlingTopic
+                        Status.MANUAL_PROCESSING -> config.sm2013ManualHandlingTopic
+                        Status.INVALID -> config.sm2013InvalidHandlingTopic
+                    }
+
+                    if (validationResult.status == Status.MANUAL_PROCESSING) {
+                        val geografiskTilknytning = fetchGeografiskTilknytning(personV3, receivedSykmelding)
+                        val finnBehandlendeEnhetListeResponse = fetchBehandlendeEnhet(arbeidsfordelingV1, geografiskTilknytning.await().geografiskTilknytning)
+                        createTask(kafkaManuelTaskProducer, receivedSykmelding, validationResult, findNavOffice(finnBehandlendeEnhetListeResponse.await()), logKeys, logValues)
+                    }
+
+                    kafkaproducer.send(ProducerRecord(topicName, receivedSykmelding.sykmelding.id, receivedSykmelding))
+                    log.info("Message send to kafka {} $logKeys", topicName, *logValues)
+
+                    val currentRequestLatency = requestLatency.observeDuration()
+
+                    log.info("Message($logKeys) got outcome {}, {}, processing took {}s",
+                            *logValues,
+                            keyValue("status", validationResult.status),
+                            keyValue("ruleHits", validationResult.ruleHits.joinToString(", ", "(", ")") { it.ruleMessage }),
+                            keyValue("latency", currentRequestLatency))
+                } catch (e: Exception) {
+                    log.error("Exception caught while handling message, sending apprec and sending message to backout $logKeys", *logValues, e)
+                    backoutProducer.send(message)
+                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(ApprecError.UNKNOWN_EXCEPTION))
                     log.info("Apprec Receipt sent to {} $logKeys", config.apprecQueueName, *logValues)
-
-                    notifySyfoService(session, syfoserviceProducer, ediLoggId, msgId, healthInformation)
-                    log.info("Message send to syfoService {} $logKeys", config.syfoserviceQueueName, *logValues)
-                } else {
-                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, findApprecError(validationResult.ruleHits))
-                    log.info("Apprec Receipt sent to {} $logKeys", config.apprecQueueName, *logValues)
+                    continue@loop
                 }
-
-                val topicName = when (validationResult.status) {
-                    Status.OK -> config.sm2013AutomaticHandlingTopic
-                    Status.MANUAL_PROCESSING -> config.sm2013ManualHandlingTopic
-                    Status.INVALID -> config.sm2013InvalidHandlingTopic
-                }
-
-                if (validationResult.status == Status.MANUAL_PROCESSING) {
-                    val geografiskTilknytning = fetchGeografiskTilknytning(personV3, receivedSykmelding)
-                    val finnBehandlendeEnhetListeResponse = fetchBehandlendeEnhet(arbeidsfordelingV1, geografiskTilknytning.await().geografiskTilknytning)
-                    createTask(kafkaManuelTaskProducer, receivedSykmelding, validationResult, findNavOffice(finnBehandlendeEnhetListeResponse.await()), logKeys, logValues)
-                }
-
-                kafkaproducer.send(ProducerRecord(topicName, receivedSykmelding.sykmelding.id, receivedSykmelding))
-                log.info("Message send to kafka {} $logKeys", topicName, *logValues)
-
-                val currentRequestLatency = requestLatency.observeDuration()
-
-                log.info("Message($logKeys) got outcome {}, {}, processing took {}s",
-                        *logValues,
-                        keyValue("status", validationResult.status),
-                        keyValue("ruleHits", validationResult.ruleHits.joinToString(", ", "(", ")") { it.ruleMessage }),
-                        keyValue("latency", currentRequestLatency))
             } catch (e: Exception) {
                 log.error("Exception caught while handling message, sending to backout $logKeys", *logValues, e)
                 backoutProducer.send(message)
