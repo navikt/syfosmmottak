@@ -13,7 +13,7 @@ fun HelseOpplysningerArbeidsuforhet.toSykmelding(
     msgId: String
 ) = Sykmelding(
         id = sykmeldingId,
-        msgid = msgId,
+        msgId = msgId,
         pasientAktoerId = pasientAktoerId,
         medisinskVurdering = medisinskVurdering.toMedisinskVurdering(),
         skjermesForPasient = medisinskVurdering?.isSkjermesForPasient ?: false,
