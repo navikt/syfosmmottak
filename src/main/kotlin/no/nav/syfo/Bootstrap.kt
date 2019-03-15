@@ -86,6 +86,7 @@ import java.security.MessageDigest
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Base64
+import java.util.UUID
 import java.util.concurrent.Executors
 import javax.jms.MessageConsumer
 import javax.jms.MessageProducer
@@ -315,9 +316,10 @@ suspend fun CoroutineScope.blockingApplicationLogic(
                 }
 
                 val sykmelding = healthInformation.toSykmelding(
-                        sykmeldingId = msgId,
+                        sykmeldingId = UUID.randomUUID().toString(),
                         pasientAktoerId = patientIdents.identer!!.first().ident,
-                        legeAktoerId = doctorIdents.identer!!.first().ident
+                        legeAktoerId = doctorIdents.identer!!.first().ident,
+                        msgId = msgId
                 )
                 val receivedSykmelding = ReceivedSykmelding(
                         sykmelding = sykmelding,
@@ -361,7 +363,7 @@ suspend fun CoroutineScope.blockingApplicationLogic(
                     createTask(kafkaManuelTaskProducer, receivedSykmelding, validationResult, findNavOffice(finnBehandlendeEnhetListeResponse.await()), logKeys, logValues)
                 }
 
-                kafkaproducer.send(ProducerRecord(topicName, receivedSykmelding.msgId, receivedSykmelding))
+                kafkaproducer.send(ProducerRecord(topicName, receivedSykmelding.sykmelding.id, receivedSykmelding))
                 log.info("Message send to kafka {} $logKeys", topicName, *logValues)
 
                 val currentRequestLatency = requestLatency.observeDuration()

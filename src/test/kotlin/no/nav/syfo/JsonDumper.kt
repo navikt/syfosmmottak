@@ -16,5 +16,5 @@ fun main() {
             .registerModule(JavaTimeModule()).apply {
                 configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
             }
-            .writeValueAsString(sm.toSykmelding("detteerensykmeldingid", "41234123", "12890371")))
+            .writeValueAsString(sm.toSykmelding("detteerensykmeldingid", "41234123", "12890371", "123124334")))
 }

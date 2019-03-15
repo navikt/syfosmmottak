@@ -9,9 +9,11 @@ import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 fun HelseOpplysningerArbeidsuforhet.toSykmelding(
     sykmeldingId: String,
     pasientAktoerId: String,
-    legeAktoerId: String
+    legeAktoerId: String,
+    msgId: String
 ) = Sykmelding(
         id = sykmeldingId,
+        msgid = msgId,
         pasientAktoerId = pasientAktoerId,
         medisinskVurdering = medisinskVurdering.toMedisinskVurdering(),
         skjermesForPasient = medisinskVurdering?.isSkjermesForPasient ?: false,
