@@ -25,6 +25,7 @@ import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.kith.xmlstds.apprec._2004_11_21.XMLAppRec
 import no.kith.xmlstds.msghead._2006_05_24.XMLIdent
 import no.kith.xmlstds.msghead._2006_05_24.XMLMsgHead
+import no.nav.emottak.subscription.StartSubscriptionRequest
 import no.nav.emottak.subscription.SubscriptionPort
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 import no.nav.paop.ws.configureBasicAuthFor
@@ -37,6 +38,7 @@ import no.nav.syfo.apprec.createApprec
 import no.nav.syfo.apprec.findApprecError
 import no.nav.syfo.apprec.toApprecCV
 import no.nav.syfo.client.AktoerIdClient
+import no.nav.syfo.client.SamhandlerPraksis
 import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
@@ -273,13 +275,12 @@ suspend fun CoroutineScope.blockingApplicationLogic(
                 val aktoerIds = aktoerIdsDeferred
                 val samhandlerPraksis = findBestSamhandlerPraksis(samhandlerInfoDeferred, legekontorOrgName)?.samhandlerPraksis
 
-                // TODO comment out this when going into prod-prod
+                // TODO comment out this when syfosmemottakmock is ready and up i prod
                 /*
-                subscriptionEmottak.startSubscription(StartSubscriptionRequest().apply {
-                    key = samhandlerPraksis?.tss_ident
-                    data = msgHead.msgInfo.sender.toString().toByteArray()
-                    partnerid = receiverBlock.partnerReferanse.toInt()
-                })
+                when(samhandlerPraksis){
+                    null -> log.info("None samhandlerPraksis is found")
+                    else -> startSubscription(subscriptionEmottak,samhandlerPraksis,msgHead,receiverBlock)
+                }
                 */
 
                 try {
@@ -359,8 +360,8 @@ suspend fun CoroutineScope.blockingApplicationLogic(
                     }
 
                     if (validationResult.status == Status.MANUAL_PROCESSING) {
-                        val geografiskTilknytning = fetchGeografiskTilknytning(personV3, receivedSykmelding)
-                        val finnBehandlendeEnhetListeResponse = fetchBehandlendeEnhet(arbeidsfordelingV1, geografiskTilknytning.await().geografiskTilknytning)
+                        val geografiskTilknytning = fetchGeografiskTilknytningAsync(personV3, receivedSykmelding)
+                        val finnBehandlendeEnhetListeResponse = fetchBehandlendeEnhetAsync(arbeidsfordelingV1, geografiskTilknytning.await().geografiskTilknytning)
                         createTask(kafkaManuelTaskProducer, receivedSykmelding, validationResult, findNavOffice(finnBehandlendeEnhetListeResponse.await()), logKeys, logValues)
                     }
 
@@ -473,7 +474,7 @@ fun convertSykemeldingToBase64(helseOpplysningerArbeidsuforhet: HelseOpplysninge
             it
         }.toByteArray()
 
-fun CoroutineScope.fetchGeografiskTilknytning(personV3: PersonV3, receivedSykmelding: ReceivedSykmelding): Deferred<HentGeografiskTilknytningResponse> =
+fun CoroutineScope.fetchGeografiskTilknytningAsync(personV3: PersonV3, receivedSykmelding: ReceivedSykmelding): Deferred<HentGeografiskTilknytningResponse> =
         retryAsync("tps_hent_geografisktilknytning", IOException::class, WstxException::class) {
             personV3.hentGeografiskTilknytning(HentGeografiskTilknytningRequest().withAktoer(PersonIdent().withIdent(
                     NorskIdent()
@@ -481,7 +482,7 @@ fun CoroutineScope.fetchGeografiskTilknytning(personV3: PersonV3, receivedSykmel
                             .withType(Personidenter().withValue("FNR")))))
         }
 
-fun CoroutineScope.fetchBehandlendeEnhet(arbeidsfordelingV1: ArbeidsfordelingV1, geografiskTilknytning: GeografiskTilknytning?): Deferred<FinnBehandlendeEnhetListeResponse?> =
+fun CoroutineScope.fetchBehandlendeEnhetAsync(arbeidsfordelingV1: ArbeidsfordelingV1, geografiskTilknytning: GeografiskTilknytning?): Deferred<FinnBehandlendeEnhetListeResponse?> =
         retryAsync("finn_nav_kontor", IOException::class, WstxException::class) {
             arbeidsfordelingV1.finnBehandlendeEnhetListe(FinnBehandlendeEnhetListeRequest().apply {
                 val afk = ArbeidsfordelingKriterier()
@@ -527,3 +528,17 @@ fun findNavOffice(finnBehandlendeEnhetListeResponse: FinnBehandlendeEnhetListeRe
         } else {
             finnBehandlendeEnhetListeResponse.behandlendeEnhetListe.first().enhetId
         }
+
+// TODO This functionality is only necessary due to sending out dialogMelding,oppfølginsplan to doctor
+fun startSubscription(
+    subscriptionEmottak: SubscriptionPort,
+    samhandlerPraksis: SamhandlerPraksis,
+    msgHead: XMLMsgHead,
+    receiverBlock: XMLMottakenhetBlokk
+) {
+    subscriptionEmottak.startSubscription(StartSubscriptionRequest().apply {
+        key = samhandlerPraksis.tss_ident
+        data = msgHead.msgInfo.sender.toString().toByteArray()
+        partnerid = receiverBlock.partnerReferanse.toInt()
+    })
+}
