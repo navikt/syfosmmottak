@@ -6,8 +6,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 group = "no.nav.syfo"
 version = "1.0.21"
 
-val artemisVersion = "2.6.2"
-val coroutinesVersion = "0.23.4"
+val artemisVersion = "2.6.4"
+val coroutinesVersion = "1.0.1"
 val fellesformatVersion = "1.0"
 val ibmMqVersion = "9.1.0.0"
 val javaxActivationVersion = "1.1.1"
@@ -24,7 +24,7 @@ val ktorVersion = "1.1.3"
 val logbackVersion = "1.2.3"
 val logstashEncoderVersion = "5.1"
 val prometheusVersion = "0.5.0"
-val spekVersion = "2.0.0-rc.1"
+val spekVersion = "2.0.1"
 val sykmeldingVersion = "1.1-SNAPSHOT"
 val subscriptionVersion = "1.0.5"
 val cxfVersion = "3.2.7"
@@ -145,7 +145,7 @@ dependencies {
     testImplementation ("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation ("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
-        exclude(group = "org.eclipse.jetty") // conflicts with WireMock
+        exclude(group = "org.eclipse.jetty")
     }
     testImplementation ("no.nav:kafka-embedded-env:$kafkaEmbeddedVersion")
     testImplementation ("org.apache.activemq:artemis-server:$artemisVersion")
