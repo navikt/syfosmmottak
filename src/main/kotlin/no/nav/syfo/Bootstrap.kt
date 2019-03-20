@@ -52,8 +52,8 @@ import no.nav.syfo.model.toSykmelding
 import no.nav.syfo.sak.avro.PrioritetType
 import no.nav.syfo.sak.avro.ProduceTask
 import no.nav.syfo.util.connectionFactory
-import no.nav.syfo.util.readManualTaskProducerConfig
-import no.nav.syfo.util.readProducerConfig
+import no.nav.syfo.util.loadBaseConfig
+import no.nav.syfo.util.toProducerConfig
 import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.binding.ArbeidsfordelingV1
 import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.informasjon.ArbeidsfordelingKriterier
 import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.informasjon.Tema
@@ -108,7 +108,7 @@ val redisHost = "rfs-redis-syfosmmottak" // TODO: Do this properly with naiserat
 
 data class ApplicationState(var running: Boolean = true, var initialized: Boolean = false)
 
-val log = LoggerFactory.getLogger("nav.syfosmmottak-application")
+val log = LoggerFactory.getLogger("nav.syfosmmottak-application")!!
 
 @KtorExperimentalAPI
 fun main(args: Array<String>) = runBlocking(Executors.newFixedThreadPool(2).asCoroutineDispatcher()) {
@@ -141,10 +141,13 @@ fun main(args: Array<String>) = runBlocking(Executors.newFixedThreadPool(2).asCo
                         val syfoserviceProducer = session.createProducer(syfoserviceQueue)
                         val backoutProducer = session.createProducer(backoutQueue)
 
-                        val producerProperties = readProducerConfig(config, credentials, valueSerializer = JacksonKafkaSerializer::class)
+                        val kafkaBaseConfig = loadBaseConfig(config, credentials)
+
+                        val producerProperties = kafkaBaseConfig.toProducerConfig(config.applicationName, valueSerializer = JacksonKafkaSerializer::class)
+
                         val kafkaproducer = KafkaProducer<String, ReceivedSykmelding>(producerProperties)
 
-                        val manualTaskproducerProperties = readManualTaskProducerConfig(config, credentials, valueSerializer = KafkaAvroSerializer::class)
+                        val manualTaskproducerProperties = kafkaBaseConfig.toProducerConfig(config.applicationName, valueSerializer = KafkaAvroSerializer::class)
                         val manualTaskkafkaproducer = KafkaProducer<String, ProduceTask>(manualTaskproducerProperties)
 
                         val syfoSykemeldingRuleClient = SyfoSykemeldingRuleClient(config.syfosmreglerApiUrl, credentials)
@@ -529,7 +532,7 @@ fun findNavOffice(finnBehandlendeEnhetListeResponse: FinnBehandlendeEnhetListeRe
             finnBehandlendeEnhetListeResponse.behandlendeEnhetListe.first().enhetId
         }
 
-// TODO This functionality is only necessary due to sending out dialogMelding,oppfølginsplan to doctor
+// TODO This functionality is only necessary due to sending out dialogMelding and oppfølginsplan to doctor
 fun startSubscription(
     subscriptionEmottak: SubscriptionPort,
     samhandlerPraksis: SamhandlerPraksis,

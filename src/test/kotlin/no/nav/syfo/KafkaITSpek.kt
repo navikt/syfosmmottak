@@ -1,8 +1,9 @@
 package no.nav.syfo
 
 import no.nav.common.KafkaEnvironment
-import no.nav.syfo.util.readProducerConfig
-import no.nav.syfo.utils.readConsumerConfig
+import no.nav.syfo.util.loadBaseConfig
+import no.nav.syfo.util.toConsumerConfig
+import no.nav.syfo.util.toProducerConfig
 import org.amshove.kluent.shouldEqual
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -13,6 +14,7 @@ import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.net.ServerSocket
 import java.time.Duration
+import java.util.Properties
 
 object KafkaITSpek : Spek({
     val topic = "aapen-test-topic"
@@ -33,18 +35,24 @@ object KafkaITSpek : Spek({
             syfoserviceQueueName = "syfoserviequeue", applicationPort = 1, applicationThreads = 2, arbeidsfordelingV1EndpointURL =
             "arbeidsfordeling", sm2013OppgaveTopic = "oppgaveTopic", securityTokenServiceUrl = "sts", personV3EndpointURL = "personv3",
             kuhrSarApiUrl = "kuhrsarApi", syfosmreglerApiUrl = "syfosmreglerApi", sm2013ManualHandlingTopic = "sm2013ManualHandlingTopic",
-            sm2013AutomaticHandlingTopic = "sm2013AutomaticHandlingTopic", sm2013InvalidHandlingTopic = "sm2013InvalidHandlingTopic"
+            sm2013AutomaticHandlingTopic = "sm2013AutomaticHandlingTopic", sm2013InvalidHandlingTopic = "sm2013InvalidHandlingTopic",
+            applicationName = "syfosmmottak"
     )
 
-    val producer = KafkaProducer<String, String>(readProducerConfig(config, credentials, StringSerializer::class).apply {
+    fun Properties.overrideForTest(): Properties = apply {
         remove("security.protocol")
         remove("sasl.mechanism")
-    })
+    }
 
-    val consumer = KafkaConsumer<String, String>(readConsumerConfig(config, credentials, StringDeserializer::class).apply {
-        remove("security.protocol")
-        remove("sasl.mechanism")
-    })
+    val baseConfig = loadBaseConfig(config, credentials).overrideForTest()
+
+    val producerProperties = baseConfig
+            .toProducerConfig("spek.integration", valueSerializer = StringSerializer::class)
+    val producer = KafkaProducer<String, String>(producerProperties)
+
+    val consumerProperties = baseConfig
+            .toConsumerConfig("spek.integration-consumer", valueDeserializer = StringDeserializer::class)
+    val consumer = KafkaConsumer<String, String>(consumerProperties)
     consumer.subscribe(listOf(topic))
 
     beforeGroup {
@@ -52,7 +60,7 @@ object KafkaITSpek : Spek({
     }
 
     afterGroup {
-        embeddedEnvironment.stop()
+        embeddedEnvironment.tearDown()
     }
 
     describe("Push a message on a topic") {
@@ -60,7 +68,7 @@ object KafkaITSpek : Spek({
         it("Can read the messages from the kafka topic") {
             producer.send(ProducerRecord(topic, message))
 
-            val messages = consumer.poll(Duration.ofMillis(10000)).toList()
+            val messages = consumer.poll(Duration.ofMillis(5000)).toList()
             messages.size shouldEqual 1
             messages[0].value() shouldEqual message
         }

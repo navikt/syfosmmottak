@@ -20,5 +20,6 @@
   "applicationPort": "8080",
   "securityTokenServiceUrl" : "https://sts.adeo.no/SecurityTokenServiceProvider/",
   "personV3EndpointURL" : "https://wasapp.adeo.no/tpsws/ws/Person/v3",
-  "applicationThreads": "1"
+  "applicationThreads": "1",
+  "applicationName" : "syfosmmottak"
 }

@@ -27,7 +27,8 @@ data class ApplicationConfig(
     val arbeidsfordelingV1EndpointURL: String,
     val sm2013OppgaveTopic: String,
     val securityTokenServiceUrl: String,
-    val personV3EndpointURL: String
+    val personV3EndpointURL: String,
+    val applicationName: String
 )
 
 data class VaultCredentials(
