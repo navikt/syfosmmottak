@@ -10,7 +10,7 @@
   "aktoerregisterV1Url": "https://app.adeo.no/aktoerregister/api/v1",
   "syfoserviceQueueName": "QA.P_SYFOSMSYFOSERVICE.MOCKSYFO",
   "subscriptionEndpointURL": "https://wasapp.adeo.no/nav-emottak-eletter-web/services/",
-  "arbeidsfordelingV1EndpointURL" : "https://app-q1.adeo.no/norg2/ws/Arbeidsfordeling/v1",
+  "arbeidsfordelingV1EndpointURL" : "https://app.adeo.no/norg2/ws/Arbeidsfordeling/v1",
   "sm2013OppgaveTopic": "aapen-syfo-oppgave-produserOppgave",
   "sm2013ManualHandlingTopic": "privat-syfo-sm2013-manuellBehandling",
   "sm2013AutomaticHandlingTopic":  "privat-syfo-sm2013-automatiskBehandling",
