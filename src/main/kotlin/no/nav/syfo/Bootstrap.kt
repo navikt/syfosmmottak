@@ -232,7 +232,8 @@ suspend fun CoroutineScope.blockingApplicationLogic(
             }
 
             var logValues = arrayOf(
-                    keyValue("smId", "missing"),
+                    keyValue("mottakId", "missing"),
+                    keyValue("sykmeldingId", "missing"),
                     keyValue("organizationNumber", "missing"),
                     keyValue("msgId", "missing")
             )
@@ -265,7 +266,7 @@ suspend fun CoroutineScope.blockingApplicationLogic(
                 val personNumberDoctor = receiverBlock.avsenderFnrFraDigSignatur
 
                 logValues = arrayOf(
-                        keyValue("smId", ediLoggId),
+                        keyValue("mottakId", ediLoggId),
                         keyValue("organizationNumber", legekontorOrgNr),
                         keyValue("msgId", msgId)
                 )
