@@ -10,7 +10,9 @@ import io.ktor.client.request.headers
 import io.ktor.client.request.parameter
 import io.ktor.http.ContentType
 import io.ktor.util.KtorExperimentalAPI
+import kotlinx.coroutines.Deferred
 import no.nav.syfo.model.IdentInfoResult
+import no.nav.syfo.retryAsync
 
 @KtorExperimentalAPI
 class AktoerIdClient(private val endpointUrl: String, private val stsClient: StsOidcClient) {
@@ -20,17 +22,19 @@ class AktoerIdClient(private val endpointUrl: String, private val stsClient: Sts
         }
     }
 
-    suspend fun getAktoerIds(personNumbers: List<String>, trackingId: String, username: String): Map<String, IdentInfoResult> =
-        client.get<Map<String, IdentInfoResult>>("$endpointUrl/identer") {
-            accept(ContentType.Application.Json)
-            val oidcToken = stsClient.oidcToken()
-            headers {
-                append("Authorization", "Bearer ${oidcToken.access_token}")
-                append("Nav-Consumer-Id", username)
-                append("Nav-Call-Id", trackingId)
-                append("Nav-Personidenter", personNumbers.joinToString(","))
+    suspend fun getAktoerIds(personNumbers: List<String>, trackingId: String, username: String): Deferred<Map<String, IdentInfoResult>> =
+            client.retryAsync("get_aktoerids") {
+                client.get<Map<String, IdentInfoResult>>("$endpointUrl/identer") {
+                    accept(ContentType.Application.Json)
+                    val oidcToken = stsClient.oidcToken()
+                    headers {
+                        append("Authorization", "Bearer ${oidcToken.access_token}")
+                        append("Nav-Consumer-Id", username)
+                        append("Nav-Call-Id", trackingId)
+                        append("Nav-Personidenter", personNumbers.joinToString(","))
+                    }
+                    parameter("gjeldende", "true")
+                    parameter("identgruppe", "AktoerId")
+                }
             }
-            parameter("gjeldende", "true")
-            parameter("identgruppe", "AktoerId")
-        }
 }

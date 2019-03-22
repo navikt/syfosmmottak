@@ -273,11 +273,10 @@ suspend fun CoroutineScope.blockingApplicationLogic(
 
                 log.info("Received message, $logKeys", *logValues)
 
-                val aktoerIdsDeferred = aktoerIdClient.getAktoerIds(listOf(personNumberDoctor, personNumberPatient), msgId, credentials.serviceuserUsername)
-                val samhandlerInfoDeferred = kuhrSarClient.getSamhandler(personNumberDoctor)
+                val aktoerIds = aktoerIdClient.getAktoerIds(listOf(personNumberDoctor, personNumberPatient), msgId, credentials.serviceuserUsername).await()
+                val samhandlerInfo = kuhrSarClient.getSamhandler(personNumberDoctor).await()
 
-                val aktoerIds = aktoerIdsDeferred
-                val samhandlerPraksis = findBestSamhandlerPraksis(samhandlerInfoDeferred, legekontorOrgName)?.samhandlerPraksis
+                val samhandlerPraksis = findBestSamhandlerPraksis(samhandlerInfo, legekontorOrgName)?.samhandlerPraksis
 
                 // TODO comment out this when syfosmemottakmock is ready and up i prod
                 /*
