@@ -503,7 +503,7 @@ fun CoroutineScope.fetchBehandlendeEnhetAsync(arbeidsfordelingV1: Arbeidsfordeli
 
 fun createTask(kafkaProducer: KafkaProducer<String, ProduceTask>, receivedSykmelding: ReceivedSykmelding, results: ValidationResult, navKontor: String, logKeys: String, logValues: Array<StructuredArgument>) {
     kafkaProducer.send(ProducerRecord("aapen-syfo-oppgave-produserOppgave", receivedSykmelding.msgId, ProduceTask().apply {
-        messageId = receivedSykmelding.msgId
+        messageId = receivedSykmelding.sykmelding.id
         aktoerId = receivedSykmelding.sykmelding.pasientAktoerId
         tildeltEnhetsnr = navKontor
         opprettetAvEnhetsnr = "9999"
