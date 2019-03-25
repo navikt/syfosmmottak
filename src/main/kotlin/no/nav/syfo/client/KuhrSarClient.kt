@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.client.HttpClient
+import io.ktor.client.call.receive
 import io.ktor.client.engine.apache.Apache
 import io.ktor.client.features.auth.basic.BasicAuth
 import io.ktor.client.features.json.JacksonSerializer
@@ -12,6 +13,7 @@ import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.request.accept
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
+import io.ktor.client.response.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.Deferred
@@ -22,7 +24,10 @@ import java.util.Date
 import kotlin.math.max
 
 @KtorExperimentalAPI
-class SarClient(private val endpointUrl: String, private val credentials: VaultCredentials) {
+class SarClient(
+    private val endpointUrl: String,
+    private val credentials: VaultCredentials
+) {
 
     private val kuhrSarClient = HttpClient(Apache) {
         install(JsonFeature) {
@@ -41,10 +46,11 @@ class SarClient(private val endpointUrl: String, private val credentials: VaultC
 
     suspend fun getSamhandler(ident: String): Deferred<List<Samhandler>> =
             kuhrSarClient.retryAsync("get_samhandler") {
-                kuhrSarClient.get<List<Samhandler>>("$endpointUrl/rest/sar/samh") {
+                // TODO: Remove this workaround whenever ktor issue #1009 is fixed
+                kuhrSarClient.get<HttpResponse>("$endpointUrl/rest/sar/samh") {
                     accept(ContentType.Application.Json)
                     parameter("ident", ident)
-                }
+                }.use { it.call.response.receive<List<Samhandler>>() }
             }
 }
 
