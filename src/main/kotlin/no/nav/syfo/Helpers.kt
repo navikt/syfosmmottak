@@ -13,7 +13,7 @@ inline fun <reified T> CoroutineScope.retryAsync(
     callName: String,
     vararg legalExceptions: KClass<out Throwable> = arrayOf(IOException::class, ConnectException::class),
     exceptionCausedByDepth: Int = 3,
-    retryIntervals: Array<Long> = arrayOf(500, 1000, 3000, 5000, 10000, 30000, 60000),
+    retryIntervals: Array<Long> = arrayOf(500, 1000, 3000, 5000, 10000),
     crossinline block: suspend () -> T
 ): Deferred<T> = async {
     for (interval in retryIntervals) {
@@ -22,6 +22,8 @@ inline fun <reified T> CoroutineScope.retryAsync(
         } catch (e: Throwable) {
             if (!isCausedBy(e, exceptionCausedByDepth, legalExceptions)) {
                 throw e
+            } else {
+                log.info("Check if ${e::class} is instance of ${legalExceptions.toList()} failed, ${e::class.java.classLoader} vs ${legalExceptions.map { it.java.classLoader } }")
             }
             log.warn("Failed to execute call $callName, retrying in $interval ms", e)
         }

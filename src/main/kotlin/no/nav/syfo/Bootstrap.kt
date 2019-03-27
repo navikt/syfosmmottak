@@ -225,172 +225,164 @@ suspend fun CoroutineScope.blockingApplicationLogic(
     arbeidsfordelingV1: ArbeidsfordelingV1
 ) {
     loop@ while (applicationState.running) {
-            val message = inputconsumer.receiveNoWait()
-            if (message == null) {
-                delay(100)
-                continue
-            }
+        val message = inputconsumer.receiveNoWait()
+        if (message == null) {
+            delay(100)
+            continue
+        }
 
-            var logValues = arrayOf(
-                    keyValue("mottakId", "missing"),
-                    keyValue("sykmeldingId", "missing"),
-                    keyValue("organizationNumber", "missing"),
-                    keyValue("msgId", "missing")
+        var logValues = arrayOf(
+                keyValue("mottakId", "missing"),
+                keyValue("sykmeldingId", "missing"),
+                keyValue("organizationNumber", "missing"),
+                keyValue("msgId", "missing")
+        )
+
+        val logKeys = logValues.joinToString(prefix = "(", postfix = ")", separator = ",") {
+            "{}"
+        }
+
+        try {
+            val inputMessageText = when (message) {
+                is TextMessage -> message.text
+                else -> throw RuntimeException("Incoming message needs to be a byte message or text message")
+            }
+            INCOMING_MESSAGE_COUNTER.inc()
+            val requestLatency = REQUEST_TIME.startTimer()
+            val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(inputMessageText)) as XMLEIFellesformat
+            val receiverBlock = fellesformat.get<XMLMottakenhetBlokk>()
+            val healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat)
+            val msgHead = fellesformat.get<XMLMsgHead>()
+            val ediLoggId = receiverBlock.ediLoggId
+            val sha256String = sha256hashstring(healthInformation)
+            val msgId = msgHead.msgInfo.msgId
+
+            val legekontorHerId = extractOrganisationHerNumberFromSender(fellesformat)?.id
+            val legekontorReshId = extractOrganisationRashNumberFromSender(fellesformat)?.id
+            val legekontorOrgNr = extractOrganisationNumberFromSender(fellesformat)?.id
+            val legekontorOrgName = msgHead.msgInfo.sender.organisation.organisationName
+
+            val personNumberPatient = healthInformation.pasient.fodselsnummer.id
+            val personNumberDoctor = receiverBlock.avsenderFnrFraDigSignatur
+
+            logValues = arrayOf(
+                    keyValue("mottakId", ediLoggId),
+                    keyValue("organizationNumber", legekontorOrgNr),
+                    keyValue("msgId", msgId)
             )
 
-            val logKeys = logValues.joinToString(prefix = "(", postfix = ")", separator = ",") {
-                "{}"
+            log.info("Received message, $logKeys", *logValues)
+
+            val aktoerIds = aktoerIdClient.getAktoerIds(listOf(personNumberDoctor, personNumberPatient), msgId, credentials.serviceuserUsername).await()
+            val samhandlerInfo = kuhrSarClient.getSamhandler(personNumberDoctor).await()
+
+            val samhandlerPraksis = findBestSamhandlerPraksis(samhandlerInfo, legekontorOrgName)?.samhandlerPraksis
+
+            // TODO comment out this when syfosmemottakmock is ready and up i prod
+            /*
+            when(samhandlerPraksis){
+                null -> log.info("None samhandlerPraksis is found")
+                else -> startSubscription(subscriptionEmottak,samhandlerPraksis,msgHead,receiverBlock)
             }
+            */
 
             try {
-                val inputMessageText = when (message) {
-                    is TextMessage -> message.text
-                    else -> throw RuntimeException("Incoming message needs to be a byte message or text message")
-                }
-                INCOMING_MESSAGE_COUNTER.inc()
-                val requestLatency = REQUEST_TIME.startTimer()
-                val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(inputMessageText)) as XMLEIFellesformat
-                val receiverBlock = fellesformat.get<XMLMottakenhetBlokk>()
-                val healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat)
-                val msgHead = fellesformat.get<XMLMsgHead>()
-                val ediLoggId = receiverBlock.ediLoggId
-                val sha256String = sha256hashstring(healthInformation)
-                val msgId = msgHead.msgInfo.msgId
+                val redisEdiLoggId = jedis.get(sha256String)
 
-                val legekontorHerId = extractOrganisationHerNumberFromSender(fellesformat)?.id
-                val legekontorReshId = extractOrganisationRashNumberFromSender(fellesformat)?.id
-                val legekontorOrgNr = extractOrganisationNumberFromSender(fellesformat)?.id
-                val legekontorOrgName = msgHead.msgInfo.sender.organisation.organisationName
-
-                val personNumberPatient = healthInformation.pasient.fodselsnummer.id
-                val personNumberDoctor = receiverBlock.avsenderFnrFraDigSignatur
-
-                logValues = arrayOf(
-                        keyValue("mottakId", ediLoggId),
-                        keyValue("organizationNumber", legekontorOrgNr),
-                        keyValue("msgId", msgId)
-                )
-
-                log.info("Received message, $logKeys", *logValues)
-
-                val aktoerIds = aktoerIdClient.getAktoerIds(listOf(personNumberDoctor, personNumberPatient), msgId, credentials.serviceuserUsername).await()
-                val samhandlerInfo = kuhrSarClient.getSamhandler(personNumberDoctor).await()
-
-                val samhandlerPraksis = findBestSamhandlerPraksis(samhandlerInfo, legekontorOrgName)?.samhandlerPraksis
-
-                // TODO comment out this when syfosmemottakmock is ready and up i prod
-                /*
-                when(samhandlerPraksis){
-                    null -> log.info("None samhandlerPraksis is found")
-                    else -> startSubscription(subscriptionEmottak,samhandlerPraksis,msgHead,receiverBlock)
-                }
-                */
-
-                try {
-                    val redisEdiLoggId = jedis.get(sha256String)
-
-                    if (redisEdiLoggId != null) {
-                        log.warn("Message with {} marked as duplicate $logKeys", keyValue("originalEdiLoggId", redisEdiLoggId), *logValues)
-                        sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(ApprecError.DUPLICATE))
-                        log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
-                        continue
-                    } else {
-                        jedis.setex(sha256String, TimeUnit.DAYS.toSeconds(7).toInt(), ediLoggId)
-                    }
-                } catch (connectionException: JedisConnectionException) {
-                    log.warn("Unable to contact redis, will allow possible duplicates.", connectionException)
-                }
-
-                val patientIdents = aktoerIds[personNumberPatient]
-                val doctorIdents = aktoerIds[personNumberDoctor]
-
-                if (patientIdents == null || patientIdents.feilmelding != null) {
-                    log.info("Patient not found i aktorRegister $logKeys, {}", *logValues,
-                            keyValue("errorMessage", patientIdents?.feilmelding ?: "No response for FNR"))
-                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(ApprecError.PATIENT_NOT_IN_FOLKEREGISTERET))
+                if (redisEdiLoggId != null) {
+                    log.warn("Message with {} marked as duplicate $logKeys", keyValue("originalEdiLoggId", redisEdiLoggId), *logValues)
+                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(ApprecError.DUPLICATE))
                     log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
-                    continue@loop
+                    continue
+                } else {
+                    jedis.setex(sha256String, TimeUnit.DAYS.toSeconds(7).toInt(), ediLoggId)
                 }
-                if (doctorIdents == null || doctorIdents.feilmelding != null) {
-                    log.info("Doctor not found i aktorRegister $logKeys, {}", *logValues,
-                            keyValue("errorMessage", doctorIdents?.feilmelding ?: "No response for FNR"))
-                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(ApprecError.BEHANDLER_NOT_IN_FOLKEREGISTERET))
-                    log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
-                    continue@loop
-                }
-
-                try {
-                    val sykmelding = healthInformation.toSykmelding(
-                            sykmeldingId = UUID.randomUUID().toString(),
-                            pasientAktoerId = patientIdents.identer!!.first().ident,
-                            legeAktoerId = doctorIdents.identer!!.first().ident,
-                            msgId = msgId
-                    )
-                    val receivedSykmelding = ReceivedSykmelding(
-                            sykmelding = sykmelding,
-                            personNrPasient = personNumberPatient,
-                            personNrLege = personNumberDoctor,
-                            navLogId = ediLoggId,
-                            msgId = msgId,
-                            legekontorOrgNr = legekontorOrgNr,
-                            legekontorOrgName = legekontorOrgName,
-                            legekontorHerId = legekontorHerId,
-                            legekontorReshId = legekontorReshId,
-                            mottattDato = receiverBlock.mottattDatotid.toGregorianCalendar().toZonedDateTime().toLocalDateTime(),
-                            signaturDato = msgHead.msgInfo.genDate,
-                            rulesetVersion = healthInformation.regelSettVersjon,
-                            fellesformat = inputMessageText
-                    )
-
-                    log.info("Validating against rules, $logKeys", *logValues)
-                    val validationResult = syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding).await()
-
-                    if (validationResult.status in arrayOf(Status.OK, Status.MANUAL_PROCESSING)) {
-                        sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
-                        log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
-
-                        notifySyfoService(session, syfoserviceProducer, ediLoggId, msgId, healthInformation)
-                        log.info("Message send to syfoService {} $logKeys", env.syfoserviceQueueName, *logValues)
-                    } else {
-                        sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, findApprecError(validationResult.ruleHits))
-                        log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
-                    }
-
-                    val topicName = when (validationResult.status) {
-                        Status.OK -> env.sm2013AutomaticHandlingTopic
-                        Status.MANUAL_PROCESSING -> env.sm2013ManualHandlingTopic
-                        Status.INVALID -> env.sm2013InvalidHandlingTopic
-                    }
-
-                    if (validationResult.status == Status.MANUAL_PROCESSING) {
-                        val geografiskTilknytning = fetchGeografiskTilknytningAsync(personV3, receivedSykmelding)
-                        val finnBehandlendeEnhetListeResponse = fetchBehandlendeEnhetAsync(arbeidsfordelingV1, geografiskTilknytning.await().geografiskTilknytning)
-                        createTask(kafkaManuelTaskProducer, receivedSykmelding, validationResult, findNavOffice(finnBehandlendeEnhetListeResponse.await()), logKeys, logValues)
-                    }
-
-                    kafkaproducer.send(ProducerRecord(topicName, receivedSykmelding.sykmelding.id, receivedSykmelding))
-                    log.info("Message send to kafka {} $logKeys", topicName, *logValues)
-
-                    val currentRequestLatency = requestLatency.observeDuration()
-
-                    log.info("Message($logKeys) got outcome {}, {}, processing took {}s",
-                            *logValues,
-                            keyValue("status", validationResult.status),
-                            keyValue("ruleHits", validationResult.ruleHits.joinToString(", ", "(", ")") { it.ruleMessage }),
-                            keyValue("latency", currentRequestLatency))
-                } catch (e: Exception) {
-                    log.error("Exception caught while handling message, sending apprec and sending message to backout $logKeys", *logValues, e)
-                    backoutProducer.send(message)
-                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(ApprecError.UNKNOWN_EXCEPTION))
-                    log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
-                    continue@loop
-                }
-            } catch (e: Exception) {
-                log.error("Exception caught while handling message, sending to backout $logKeys", *logValues, e)
-                backoutProducer.send(message)
+            } catch (connectionException: JedisConnectionException) {
+                log.warn("Unable to contact redis, will allow possible duplicates.", connectionException)
             }
-        delay(100)
+
+            val patientIdents = aktoerIds[personNumberPatient]
+            val doctorIdents = aktoerIds[personNumberDoctor]
+
+            if (patientIdents == null || patientIdents.feilmelding != null) {
+                log.info("Patient not found i aktorRegister $logKeys, {}", *logValues,
+                        keyValue("errorMessage", patientIdents?.feilmelding ?: "No response for FNR"))
+                sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(ApprecError.PATIENT_NOT_IN_FOLKEREGISTERET))
+                log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
+                continue@loop
+            }
+            if (doctorIdents == null || doctorIdents.feilmelding != null) {
+                log.info("Doctor not found i aktorRegister $logKeys, {}", *logValues,
+                        keyValue("errorMessage", doctorIdents?.feilmelding ?: "No response for FNR"))
+                sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(ApprecError.BEHANDLER_NOT_IN_FOLKEREGISTERET))
+                log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
+                continue@loop
+            }
+
+            val sykmelding = healthInformation.toSykmelding(
+                    sykmeldingId = UUID.randomUUID().toString(),
+                    pasientAktoerId = patientIdents.identer!!.first().ident,
+                    legeAktoerId = doctorIdents.identer!!.first().ident,
+                    msgId = msgId
+            )
+            val receivedSykmelding = ReceivedSykmelding(
+                    sykmelding = sykmelding,
+                    personNrPasient = personNumberPatient,
+                    personNrLege = personNumberDoctor,
+                    navLogId = ediLoggId,
+                    msgId = msgId,
+                    legekontorOrgNr = legekontorOrgNr,
+                    legekontorOrgName = legekontorOrgName,
+                    legekontorHerId = legekontorHerId,
+                    legekontorReshId = legekontorReshId,
+                    mottattDato = receiverBlock.mottattDatotid.toGregorianCalendar().toZonedDateTime().toLocalDateTime(),
+                    signaturDato = msgHead.msgInfo.genDate,
+                    rulesetVersion = healthInformation.regelSettVersjon,
+                    fellesformat = inputMessageText
+            )
+
+            log.info("Validating against rules, $logKeys", *logValues)
+            val validationResult = syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding).await()
+
+            if (validationResult.status in arrayOf(Status.OK, Status.MANUAL_PROCESSING)) {
+                sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
+                log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
+
+                notifySyfoService(session, syfoserviceProducer, ediLoggId, msgId, healthInformation)
+                log.info("Message send to syfoService {} $logKeys", env.syfoserviceQueueName, *logValues)
+            } else {
+                sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, findApprecError(validationResult.ruleHits))
+                log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
+            }
+
+            val topicName = when (validationResult.status) {
+                Status.OK -> env.sm2013AutomaticHandlingTopic
+                Status.MANUAL_PROCESSING -> env.sm2013ManualHandlingTopic
+                Status.INVALID -> env.sm2013InvalidHandlingTopic
+            }
+
+            if (validationResult.status == Status.MANUAL_PROCESSING) {
+                val geografiskTilknytning = fetchGeografiskTilknytningAsync(personV3, receivedSykmelding)
+                val finnBehandlendeEnhetListeResponse = fetchBehandlendeEnhetAsync(arbeidsfordelingV1, geografiskTilknytning.await().geografiskTilknytning)
+                createTask(kafkaManuelTaskProducer, receivedSykmelding, validationResult, findNavOffice(finnBehandlendeEnhetListeResponse.await()), logKeys, logValues)
+            }
+
+            kafkaproducer.send(ProducerRecord(topicName, receivedSykmelding.sykmelding.id, receivedSykmelding))
+            log.info("Message send to kafka {} $logKeys", topicName, *logValues)
+
+            val currentRequestLatency = requestLatency.observeDuration()
+
+            log.info("Message($logKeys) got outcome {}, {}, processing took {}s",
+                    *logValues,
+                    keyValue("status", validationResult.status),
+                    keyValue("ruleHits", validationResult.ruleHits.joinToString(", ", "(", ")") { it.ruleMessage }),
+                    keyValue("latency", currentRequestLatency))
+        } catch (e: Exception) {
+            log.error("Exception caught while handling message, sending to backout $logKeys", *logValues, e)
+            backoutProducer.send(message)
         }
+        delay(100)
+    }
 }
 
 inline fun <reified T> XMLEIFellesformat.get() = this.any.find { it is T } as T
