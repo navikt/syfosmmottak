@@ -1,5 +1,6 @@
 package no.nav.syfo
 
+import io.ktor.client.engine.cio.ConnectException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
@@ -10,7 +11,7 @@ import kotlin.reflect.KClass
 
 inline fun <reified T> CoroutineScope.retryAsync(
     callName: String,
-    vararg legalExceptions: KClass<out Throwable> = arrayOf(IOException::class),
+    vararg legalExceptions: KClass<out Throwable> = arrayOf(IOException::class, ConnectException::class),
     exceptionCausedByDepth: Int = 3,
     retryIntervals: Array<Long> = arrayOf(500, 1000, 3000, 5000, 10000, 30000, 60000),
     crossinline block: suspend () -> T
