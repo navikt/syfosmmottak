@@ -12,7 +12,7 @@ inline fun <reified T> CoroutineScope.retryAsync(
     callName: String,
     vararg legalExceptions: KClass<out Throwable> = arrayOf(IOException::class),
     exceptionCausedByDepth: Int = 3,
-    retryIntervals: Array<Long> = arrayOf(500, 1000, 3000, 5000, 10000),
+    retryIntervals: Array<Long> = arrayOf(500, 1000, 3000, 5000, 10000, 30000, 60000),
     crossinline block: suspend () -> T
 ): Deferred<T> = async {
     for (interval in retryIntervals) {
