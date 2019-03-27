@@ -65,4 +65,4 @@ spec:
   - name: MQ_INPUT_BOQ_QUEUE_NAME
     value: {{MQ_INPUT_BOQ_QUEUE_NAME}}
   - name: APPLICATION_THREADS
-    value: {{APPLICATION_THREADS}}
+    value: '{{APPLICATION_THREADS}}'
