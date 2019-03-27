@@ -80,10 +80,10 @@ import redis.clients.jedis.Jedis
 import redis.clients.jedis.JedisSentinelPool
 import redis.clients.jedis.exceptions.JedisConnectionException
 import java.io.ByteArrayOutputStream
-import java.io.File
 import java.io.IOException
 import java.io.StringReader
 import java.io.StringWriter
+import java.nio.file.Paths
 import java.security.MessageDigest
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -112,76 +112,76 @@ val log = LoggerFactory.getLogger("nav.syfosmmottak-application")!!
 
 @KtorExperimentalAPI
 fun main(args: Array<String>) = runBlocking(Executors.newFixedThreadPool(2).asCoroutineDispatcher()) {
-    val config: ApplicationConfig = objectMapper.readValue(File(System.getenv("CONFIG_FILE")))
+    val env = Environment()
+    val credentials = objectMapper.readValue<VaultCredentials>(Paths.get("/var/run/secrets/nais.io/vault/credentials.json").toFile())
     val applicationState = ApplicationState()
-    val credentials: VaultCredentials = objectMapper.readValue(vaultApplicationPropertiesPath.toFile())
 
-    val applicationServer = embeddedServer(Netty, config.applicationPort) {
+    val applicationServer = embeddedServer(Netty, env.applicationPort) {
         initRouting(applicationState)
     }.start(wait = false)
 
     DefaultExports.initialize()
 
-    connectionFactory(config).createConnection(credentials.mqUsername, credentials.mqPassword).use { connection ->
+    connectionFactory(env).createConnection(credentials.mqUsername, credentials.mqPassword).use { connection ->
         connection.start()
 
         try {
-            val listeners = (1..config.applicationThreads).map {
+            val listeners = (1..env.applicationThreads).map {
                 launch {
                     JedisSentinelPool(redisMasterName, setOf("$redisHost:26379")).resource.use { jedis ->
 
                         val session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)
-                        val inputQueue = session.createQueue(config.inputQueueName)
-                        val receiptQueue = session.createQueue(config.apprecQueueName)
-                        val syfoserviceQueue = session.createQueue(config.syfoserviceQueueName)
-                        val backoutQueue = session.createQueue(config.inputBackoutQueueName)
+                        val inputQueue = session.createQueue(env.inputQueueName)
+                        val receiptQueue = session.createQueue(env.apprecQueueName)
+                        val syfoserviceQueue = session.createQueue(env.syfoserviceQueueName)
+                        val backoutQueue = session.createQueue(env.inputBackoutQueueName)
 
                         val inputconsumer = session.createConsumer(inputQueue)
                         val receiptProducer = session.createProducer(receiptQueue)
                         val syfoserviceProducer = session.createProducer(syfoserviceQueue)
                         val backoutProducer = session.createProducer(backoutQueue)
 
-                        val kafkaBaseConfig = loadBaseConfig(config, credentials)
+                        val kafkaBaseConfig = loadBaseConfig(env, credentials)
 
-                        val producerProperties = kafkaBaseConfig.toProducerConfig(config.applicationName, valueSerializer = JacksonKafkaSerializer::class)
+                        val producerProperties = kafkaBaseConfig.toProducerConfig(env.applicationName, valueSerializer = JacksonKafkaSerializer::class)
 
                         val kafkaproducer = KafkaProducer<String, ReceivedSykmelding>(producerProperties)
 
-                        val manualTaskproducerProperties = kafkaBaseConfig.toProducerConfig(config.applicationName, valueSerializer = KafkaAvroSerializer::class)
+                        val manualTaskproducerProperties = kafkaBaseConfig.toProducerConfig(env.applicationName, valueSerializer = KafkaAvroSerializer::class)
                         val manualTaskkafkaproducer = KafkaProducer<String, ProduceTask>(manualTaskproducerProperties)
 
-                        val syfoSykemeldingRuleClient = SyfoSykemeldingRuleClient(config.syfosmreglerApiUrl, credentials)
+                        val syfoSykemeldingRuleClient = SyfoSykemeldingRuleClient(env.syfosmreglerApiUrl, credentials)
 
-                        val sarClient = SarClient(config.kuhrSarApiUrl, credentials)
+                        val sarClient = SarClient(env.kuhrSarApiUrl, credentials)
 
                         val oidcClient = StsOidcClient(credentials.serviceuserUsername, credentials.serviceuserPassword)
-                        val aktoerIdClient = AktoerIdClient(config.aktoerregisterV1Url, oidcClient)
+                        val aktoerIdClient = AktoerIdClient(env.aktoerregisterV1Url, oidcClient)
 
                         val subscriptionEmottak = JaxWsProxyFactoryBean().apply {
-                            address = config.subscriptionEndpointURL
+                            address = env.subscriptionEndpointURL
                             features.add(WSAddressingFeature())
                             serviceClass = SubscriptionPort::class.java
                         }.create() as SubscriptionPort
                         configureBasicAuthFor(subscriptionEmottak, credentials.serviceuserUsername, credentials.serviceuserPassword)
 
                         val arbeidsfordelingV1 = JaxWsProxyFactoryBean().apply {
-                            address = config.arbeidsfordelingV1EndpointURL
+                            address = env.arbeidsfordelingV1EndpointURL
                             serviceClass = ArbeidsfordelingV1::class.java
                         }.create() as ArbeidsfordelingV1
                         configureSTSFor(arbeidsfordelingV1, credentials.serviceuserUsername,
-                                credentials.serviceuserPassword, config.securityTokenServiceUrl)
+                                credentials.serviceuserPassword, env.securityTokenServiceUrl)
 
                         val personV3 = JaxWsProxyFactoryBean().apply {
-                            address = config.personV3EndpointURL
+                            address = env.personV3EndpointURL
                             serviceClass = PersonV3::class.java
                         }.create() as PersonV3
                         configureSTSFor(personV3, credentials.serviceuserUsername,
-                                credentials.serviceuserPassword, config.securityTokenServiceUrl)
+                                credentials.serviceuserPassword, env.securityTokenServiceUrl)
 
                         blockingApplicationLogic(inputconsumer, receiptProducer, syfoserviceProducer, backoutProducer,
                                 subscriptionEmottak, kafkaproducer,
                                 syfoSykemeldingRuleClient, sarClient, aktoerIdClient,
-                                config, credentials, applicationState, jedis, manualTaskkafkaproducer, personV3, session, arbeidsfordelingV1)
+                                env, credentials, applicationState, jedis, manualTaskkafkaproducer, personV3, session, arbeidsfordelingV1)
                     }
                 }
             }.toList()
@@ -215,7 +215,7 @@ suspend fun CoroutineScope.blockingApplicationLogic(
     syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
     kuhrSarClient: SarClient,
     aktoerIdClient: AktoerIdClient,
-    config: ApplicationConfig,
+    env: Environment,
     credentials: VaultCredentials,
     applicationState: ApplicationState,
     jedis: Jedis,
@@ -292,7 +292,7 @@ suspend fun CoroutineScope.blockingApplicationLogic(
                     if (redisEdiLoggId != null) {
                         log.warn("Message with {} marked as duplicate $logKeys", keyValue("originalEdiLoggId", redisEdiLoggId), *logValues)
                         sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(ApprecError.DUPLICATE))
-                        log.info("Apprec Receipt sent to {} $logKeys", config.apprecQueueName, *logValues)
+                        log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
                         continue
                     } else {
                         jedis.setex(sha256String, TimeUnit.DAYS.toSeconds(7).toInt(), ediLoggId)
@@ -308,14 +308,14 @@ suspend fun CoroutineScope.blockingApplicationLogic(
                     log.info("Patient not found i aktorRegister $logKeys, {}", *logValues,
                             keyValue("errorMessage", patientIdents?.feilmelding ?: "No response for FNR"))
                     sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(ApprecError.PATIENT_NOT_IN_FOLKEREGISTERET))
-                    log.info("Apprec Receipt sent to {} $logKeys", config.apprecQueueName, *logValues)
+                    log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
                     continue@loop
                 }
                 if (doctorIdents == null || doctorIdents.feilmelding != null) {
                     log.info("Doctor not found i aktorRegister $logKeys, {}", *logValues,
                             keyValue("errorMessage", doctorIdents?.feilmelding ?: "No response for FNR"))
                     sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(ApprecError.BEHANDLER_NOT_IN_FOLKEREGISTERET))
-                    log.info("Apprec Receipt sent to {} $logKeys", config.apprecQueueName, *logValues)
+                    log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
                     continue@loop
                 }
 
@@ -347,19 +347,19 @@ suspend fun CoroutineScope.blockingApplicationLogic(
 
                     if (validationResult.status in arrayOf(Status.OK, Status.MANUAL_PROCESSING)) {
                         sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
-                        log.info("Apprec Receipt sent to {} $logKeys", config.apprecQueueName, *logValues)
+                        log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
 
                         notifySyfoService(session, syfoserviceProducer, ediLoggId, msgId, healthInformation)
-                        log.info("Message send to syfoService {} $logKeys", config.syfoserviceQueueName, *logValues)
+                        log.info("Message send to syfoService {} $logKeys", env.syfoserviceQueueName, *logValues)
                     } else {
                         sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, findApprecError(validationResult.ruleHits))
-                        log.info("Apprec Receipt sent to {} $logKeys", config.apprecQueueName, *logValues)
+                        log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
                     }
 
                     val topicName = when (validationResult.status) {
-                        Status.OK -> config.sm2013AutomaticHandlingTopic
-                        Status.MANUAL_PROCESSING -> config.sm2013ManualHandlingTopic
-                        Status.INVALID -> config.sm2013InvalidHandlingTopic
+                        Status.OK -> env.sm2013AutomaticHandlingTopic
+                        Status.MANUAL_PROCESSING -> env.sm2013ManualHandlingTopic
+                        Status.INVALID -> env.sm2013InvalidHandlingTopic
                     }
 
                     if (validationResult.status == Status.MANUAL_PROCESSING) {
@@ -382,7 +382,7 @@ suspend fun CoroutineScope.blockingApplicationLogic(
                     log.error("Exception caught while handling message, sending apprec and sending message to backout $logKeys", *logValues, e)
                     backoutProducer.send(message)
                     sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(ApprecError.UNKNOWN_EXCEPTION))
-                    log.info("Apprec Receipt sent to {} $logKeys", config.apprecQueueName, *logValues)
+                    log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
                     continue@loop
                 }
             } catch (e: Exception) {

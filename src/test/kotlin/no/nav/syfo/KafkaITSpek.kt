@@ -28,7 +28,7 @@ object KafkaITSpek : Spek({
     )
 
     val credentials = VaultCredentials("", "", "", "")
-    val config = ApplicationConfig(mqHostname = "mqhost", mqPort = getRandomPort(),
+    val config = Environment(mqHostname = "mqhost", mqPort = getRandomPort(),
             mqGatewayName = "mqGateway", kafkaBootstrapServers = embeddedEnvironment.brokersURL,
             mqChannelName = "syfomottak", aktoerregisterV1Url = "localhost-aktor", subscriptionEndpointURL = "localhost-emottak",
             apprecQueueName = "apprequeue", inputBackoutQueueName = "inputbackqueue", inputQueueName = "inputqueue",

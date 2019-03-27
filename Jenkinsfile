@@ -59,14 +59,14 @@ pipeline {
         stage('deploy to preprod') {
             steps {
                 deployApp action: 'kubectlApply', cluster: 'preprod-fss', file: 'redis.yaml'
-                deployApp action: 'kubectlDeploy', cluster: 'preprod-fss'
+                deployApp action: 'kubectlDeploy', cluster: 'preprod-fss', placeholderFile: "preprod.env"
             }
         }
         stage('deploy to production') {
             when { environment name: 'DEPLOY_TO', value: 'production' }
             steps {
                 deployApp action: 'kubectlApply', cluster: 'prod-fss', file: 'redis.yaml'
-                deployApp action: 'kubectlDeploy', cluster: 'prod-fss', file: 'naiserator-prod.yaml'
+                deployApp action: 'kubectlDeploy', cluster: 'prod-fss', placeholderFile: "prod.env"
                 githubStatus action: 'tagRelease'
             }
         }
