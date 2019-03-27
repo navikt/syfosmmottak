@@ -342,7 +342,7 @@ suspend fun CoroutineScope.blockingApplicationLogic(
             )
 
             log.info("Validating against rules, $logKeys", *logValues)
-            val validationResult = syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding).await()
+            val validationResult = syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding, this).await()
 
             if (validationResult.status in arrayOf(Status.OK, Status.MANUAL_PROCESSING)) {
                 sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)

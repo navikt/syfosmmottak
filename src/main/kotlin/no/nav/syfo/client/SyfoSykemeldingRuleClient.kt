@@ -16,6 +16,7 @@ import io.ktor.client.response.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.util.KtorExperimentalAPI
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import no.nav.syfo.VaultCredentials
 import no.nav.syfo.model.ReceivedSykmelding
@@ -41,7 +42,7 @@ class SyfoSykemeldingRuleClient(private val endpointUrl: String, credentials: Va
         }
     }
 
-    suspend fun executeRuleValidation(payload: ReceivedSykmelding): Deferred<ValidationResult> = client.retryAsync("syfosmregler_validate") {
+    suspend fun executeRuleValidation(payload: ReceivedSykmelding, coroutineScope: CoroutineScope): Deferred<ValidationResult> = coroutineScope.retryAsync("syfosmregler_validate") {
         // TODO: Remove this workaround whenever ktor issue #1009 is fixed
         client.post<HttpResponse>("$endpointUrl/v1/rules/validate") {
             contentType(ContentType.Application.Json)
