@@ -14,9 +14,9 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.hotspot.DefaultExports
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -94,7 +94,6 @@ import javax.jms.Connection
 import javax.jms.MessageConsumer
 import javax.jms.MessageProducer
 import javax.xml.bind.Marshaller
-import kotlin.coroutines.CoroutineContext
 
 fun doReadynessCheck(): Boolean {
     return true
@@ -111,17 +110,16 @@ val coroutineContext = Executors.newFixedThreadPool(2).asCoroutineDispatcher()
 
 data class ApplicationState(
     var running: Boolean = true,
-    var initialized: Boolean = false,
-    override val coroutineContext: CoroutineContext
-) : CoroutineScope
+    var initialized: Boolean = false
+)
 
 val log = LoggerFactory.getLogger("nav.syfosmmottak-application")!!
 
 @KtorExperimentalAPI
-fun main() {
+fun main() = runBlocking(coroutineContext) {
     val env = Environment()
     val credentials = objectMapper.readValue<VaultCredentials>(Paths.get("/var/run/secrets/nais.io/vault/credentials.json").toFile())
-    val applicationState = ApplicationState(coroutineContext = coroutineContext)
+    val applicationState = ApplicationState()
 
     val applicationServer = embeddedServer(Netty, env.applicationPort) {
         initRouting(applicationState)
@@ -132,30 +130,33 @@ fun main() {
     connectionFactory(env).createConnection(credentials.mqUsername, credentials.mqPassword).use { connection ->
         connection.start()
 
-        try {
-            val listeners = (1..env.applicationThreads).map {
-                createListener(applicationState, env, credentials, connection)
-            }.toList()
+        val listeners = (1..env.applicationThreads).map {
+            launch {
+                try {
+                    createListener(applicationState, env, credentials, connection)
+                } finally {
+                    applicationState.running = false
+                }
+            }
+        }.toList()
 
-            applicationState.initialized = true
+        applicationState.initialized = true
 
-            Runtime.getRuntime().addShutdownHook(Thread {
-                applicationServer.stop(10, 10, TimeUnit.SECONDS)
-            })
-            runBlocking { listeners.forEach { it.join() } }
-        } finally {
-            applicationState.running = false
-        }
+        Runtime.getRuntime().addShutdownHook(Thread {
+            applicationServer.stop(10, 10, TimeUnit.SECONDS)
+        })
+
+        listeners.forEach { it.join() }
     }
 }
 
 @KtorExperimentalAPI
-fun createListener(
+suspend fun createListener(
     applicationState: ApplicationState,
     env: Environment,
     credentials: VaultCredentials,
     connection: Connection
-) = applicationState.launch {
+) {
     JedisSentinelPool(redisMasterName, setOf("$redisHost:26379")).resource.use { jedis ->
         val session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)
 
@@ -224,7 +225,7 @@ suspend fun blockingApplicationLogic(
     personV3: PersonV3,
     session: Session,
     arbeidsfordelingV1: ArbeidsfordelingV1
-) = applicationState.launch {
+) = coroutineScope {
     loop@ while (applicationState.running) {
         val message = inputconsumer.receiveNoWait()
         if (message == null) {
