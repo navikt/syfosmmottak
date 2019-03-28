@@ -1,10 +1,11 @@
-package no.nav.paop.ws
+package no.nav.syfo.ws
 
 import org.apache.cxf.Bus
 import org.apache.cxf.binding.soap.Soap12
 import org.apache.cxf.binding.soap.SoapMessage
 import org.apache.cxf.endpoint.Client
 import org.apache.cxf.frontend.ClientProxy
+import org.apache.cxf.jaxws.JaxWsProxyFactoryBean
 import org.apache.cxf.transport.http.HTTPConduit
 import org.apache.cxf.ws.policy.PolicyBuilder
 import org.apache.cxf.ws.policy.PolicyEngine
@@ -12,19 +13,47 @@ import org.apache.cxf.ws.policy.attachment.reference.RemoteReferenceResolver
 import org.apache.cxf.ws.security.SecurityConstants
 import org.apache.cxf.ws.security.trust.STSClient
 
-fun configureBasicAuthFor(service: Any, username: String, password: String) =
-        (ClientProxy.getClient(service).conduit as HTTPConduit).apply {
+class PortConfigurator<T> {
+    var proxyConfigurator: JaxWsProxyFactoryBean.() -> Unit = {}
+    var portConfigurator: T.() -> Unit = {}
+
+    fun proxy(configurator: JaxWsProxyFactoryBean.() -> Unit) {
+        proxyConfigurator = configurator
+    }
+
+    fun port(configurator: T.() -> Unit) {
+        portConfigurator = configurator
+    }
+
+    fun T.withSTS(username: String, password: String, endpoint: String) = apply {
+        val client = ClientProxy.getClient(this)
+        client.requestContext[SecurityConstants.STS_CLIENT] = createSystemUserSTSClient(client, username, password, endpoint, true)
+    }
+
+    fun T.withBasicAuth(username: String, password: String) = apply {
+        (ClientProxy.getClient(this).conduit as HTTPConduit).apply {
             authorization.userName = username
             authorization.password = password
         }
+    }
+}
+
+inline fun <reified T> createPort(
+    endpoint: String,
+    extraConfiguration: PortConfigurator<T>.() -> Unit = {}
+): T = PortConfigurator<T>().let { configurator ->
+    extraConfiguration(configurator)
+    (JaxWsProxyFactoryBean().apply {
+        address = endpoint
+        serviceClass = T::class.java
+        configurator.proxyConfigurator(this)
+    }.create() as T).apply {
+        configurator.portConfigurator(this)
+    }
+}
 
 var STS_CLIENT_AUTHENTICATION_POLICY = "classpath:sts/policies/untPolicy.xml"
 var STS_REQUEST_SAML_POLICY = "classpath:sts/policies/requestSamlPolicy.xml"
-
-fun configureSTSFor(service: Any, username: String, password: String, endpoint: String) {
-    val client = ClientProxy.getClient(service)
-    client.requestContext[SecurityConstants.STS_CLIENT] = createSystemUserSTSClient(client, username, password, endpoint, true)
-}
 
 fun createSystemUserSTSClient(client: Client, username: String, password: String, loc: String, cacheTokenInEndpoint: Boolean): STSClient =
         STSClientWSTrust13And14(client.bus).apply {

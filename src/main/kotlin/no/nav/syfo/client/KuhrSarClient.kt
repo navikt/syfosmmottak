@@ -16,9 +16,8 @@ import io.ktor.client.request.parameter
 import io.ktor.client.response.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.util.KtorExperimentalAPI
-import kotlinx.coroutines.Deferred
 import no.nav.syfo.VaultCredentials
-import no.nav.syfo.retryAsync
+import no.nav.syfo.retry
 import org.apache.commons.text.similarity.LevenshteinDistance
 import java.util.Date
 import kotlin.math.max
@@ -44,8 +43,8 @@ class SarClient(
         }
     }
 
-    suspend fun getSamhandler(ident: String): Deferred<List<Samhandler>> =
-            kuhrSarClient.retryAsync("get_samhandler") {
+    suspend fun getSamhandler(ident: String): List<Samhandler> =
+            retry("get_samhandler") {
                 // TODO: Remove this workaround whenever ktor issue #1009 is fixed
                 kuhrSarClient.get<HttpResponse>("$endpointUrl/rest/sar/samh") {
                     accept(ContentType.Application.Json)

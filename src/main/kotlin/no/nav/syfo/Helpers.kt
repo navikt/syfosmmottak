@@ -1,24 +1,21 @@
 package no.nav.syfo
 
 import io.ktor.client.engine.cio.ConnectException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import no.nav.syfo.metrics.NETWORK_CALL_SUMMARY
 import java.io.IOException
 import kotlin.reflect.KClass
 
-inline fun <reified T> CoroutineScope.retryAsync(
+suspend inline fun <reified T> retry(
     callName: String,
     vararg legalExceptions: KClass<out Throwable> = arrayOf(IOException::class, ConnectException::class),
     exceptionCausedByDepth: Int = 3,
     retryIntervals: Array<Long> = arrayOf(500, 1000, 3000, 5000, 10000),
     crossinline block: suspend () -> T
-): Deferred<T> = async {
+): T {
     for (interval in retryIntervals) {
         try {
-            return@async timed(callName) { block() }
+            return timed(callName) { block() }
         } catch (e: Throwable) {
             if (!isCausedBy(e, exceptionCausedByDepth, legalExceptions)) {
                 throw e
@@ -29,7 +26,7 @@ inline fun <reified T> CoroutineScope.retryAsync(
         }
         delay(interval)
     }
-    timed(callName) { block() }
+    return timed(callName) { block() }
 }
 
 suspend inline fun <reified T> timed(callName: String, crossinline block: suspend() -> T) = NETWORK_CALL_SUMMARY.labels(callName).startTimer().use {

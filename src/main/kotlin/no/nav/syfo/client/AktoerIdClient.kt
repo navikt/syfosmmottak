@@ -12,9 +12,8 @@ import io.ktor.client.request.parameter
 import io.ktor.client.response.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.util.KtorExperimentalAPI
-import kotlinx.coroutines.Deferred
 import no.nav.syfo.model.IdentInfoResult
-import no.nav.syfo.retryAsync
+import no.nav.syfo.retry
 
 @KtorExperimentalAPI
 class AktoerIdClient(
@@ -27,8 +26,8 @@ class AktoerIdClient(
         }
     }
 
-    suspend fun getAktoerIds(personNumbers: List<String>, trackingId: String, username: String): Deferred<Map<String, IdentInfoResult>> =
-            client.retryAsync("get_aktoerids") {
+    suspend fun getAktoerIds(personNumbers: List<String>, trackingId: String, username: String): Map<String, IdentInfoResult> =
+            retry("get_aktoerids") {
                 // TODO: Remove this workaround whenever ktor issue #1009 is fixed
                 client.get<HttpResponse>("$endpointUrl/identer") {
                     accept(ContentType.Application.Json)

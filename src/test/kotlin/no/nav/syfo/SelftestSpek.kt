@@ -12,7 +12,7 @@ import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
 object SelftestSpek : Spek({
-    val applicationState = ApplicationState()
+    val applicationState = ApplicationState(coroutineContext = coroutineContext)
 
     afterGroup {
         applicationState.running = false
