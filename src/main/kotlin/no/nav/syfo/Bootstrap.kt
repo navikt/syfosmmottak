@@ -130,7 +130,7 @@ fun main() = runBlocking(coroutineContext) {
     connectionFactory(env).createConnection(credentials.mqUsername, credentials.mqPassword).use { connection ->
         connection.start()
 
-        val listeners = (1..env.applicationThreads).map {
+        val listeners = (0.until(env.applicationThreads)).map {
             launch {
                 try {
                     createListener(applicationState, env, credentials, connection)
