@@ -35,7 +35,8 @@
       "topicName": "privat-syfo-sm2013-behandlingsUtfall",
       "members": [
         {"member":"srvsyfosmregister", "role":"CONSUMER"},
-        {"member":"srvsyfosmmottak", "role":"PRODUCER"}
+        {"member":"srvsyfosmmottak", "role":"PRODUCER"},
+        {"member":"srvsyfosminfotrygd", "role":"PRODUCER"}
       ],
       "numPartitions": 3
     }
