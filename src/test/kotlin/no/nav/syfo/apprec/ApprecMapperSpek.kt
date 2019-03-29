@@ -19,8 +19,9 @@ object ApprecMapperSpek : Spek({
     val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
 
     describe("Duplicate AppRec") {
+        val apprecErrorDuplicate = createApprecError("Duplikat! - Denne sykmeldingen er mottatt tidligere. Skal ikke sendes på nytt.")
         val ff = createApprec(fellesformat, ApprecStatus.avvist)
-        ff.get<XMLAppRec>().error.add(ApprecError.DUPLICATE.toApprecCV())
+        ff.get<XMLAppRec>().error.add(apprecErrorDuplicate)
         it("Has the same ediLoggId as the source") {
             ff.get<XMLMottakenhetBlokk>().ediLoggId shouldEqual fellesformat.get<XMLMottakenhetBlokk>().ediLoggId
         }
@@ -28,13 +29,13 @@ object ApprecMapperSpek : Spek({
             ff.get<XMLAppRec>().status.dn shouldEqual ApprecStatus.avvist.dn
         }
         it("Sets appRec error dn to duplicate") {
-            ff.get<XMLAppRec>().error.first().dn shouldEqual ApprecError.DUPLICATE.dn
+            ff.get<XMLAppRec>().error.first().dn shouldEqual apprecErrorDuplicate.dn
         }
         it("Sets appRec error v to duplicate") {
-            ff.get<XMLAppRec>().error.first().v shouldEqual ApprecError.DUPLICATE.v
+            ff.get<XMLAppRec>().error.first().v shouldEqual apprecErrorDuplicate.v
         }
         it("Sets appRec error s to duplicate") {
-            ff.get<XMLAppRec>().error.first().s shouldEqual ApprecError.DUPLICATE.s
+            ff.get<XMLAppRec>().error.first().s shouldEqual apprecErrorDuplicate.s
         }
     }
 
@@ -125,16 +126,17 @@ object ApprecMapperSpek : Spek({
         }
     }
     describe("Error AppRec") {
+        val apprecErrorinvalidFnrSize = createApprecError("Fødselsnummer/D-nummer kan passerer ikke modulus 11")
         val ff = createApprec(fellesformat, ApprecStatus.avvist)
-        ff.get<XMLAppRec>().error.add(ApprecError.INVALID_FNR_SIZE.toApprecCV())
+        ff.get<XMLAppRec>().error.add(apprecErrorinvalidFnrSize)
         it("Sets appRec error dn to duplicate") {
-            ff.get<XMLAppRec>().error.first().dn shouldEqual ApprecError.INVALID_FNR_SIZE.dn
+            ff.get<XMLAppRec>().error.first().dn shouldEqual apprecErrorinvalidFnrSize.dn
         }
         it("Sets appRec error v to duplicate") {
-            ff.get<XMLAppRec>().error.first().v shouldEqual ApprecError.INVALID_FNR_SIZE.v
+            ff.get<XMLAppRec>().error.first().v shouldEqual apprecErrorinvalidFnrSize.v
         }
         it("Sets appRec error s to duplicate") {
-            ff.get<XMLAppRec>().error.first().s shouldEqual ApprecError.INVALID_FNR_SIZE.s
+            ff.get<XMLAppRec>().error.first().s shouldEqual apprecErrorinvalidFnrSize.s
         }
     }
 })

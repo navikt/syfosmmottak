@@ -23,6 +23,7 @@ import kotlinx.coroutines.runBlocking
 import net.logstash.logback.argument.StructuredArgument
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.kith.xmlstds.apprec._2004_11_21.XMLAppRec
+import no.kith.xmlstds.apprec._2004_11_21.XMLCV
 import no.kith.xmlstds.msghead._2006_05_24.XMLIdent
 import no.kith.xmlstds.msghead._2006_05_24.XMLMsgHead
 import no.nav.emottak.subscription.StartSubscriptionRequest
@@ -30,10 +31,9 @@ import no.nav.emottak.subscription.SubscriptionPort
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 import no.nav.syfo.client.Status
 import no.nav.syfo.api.registerNaisApi
-import no.nav.syfo.apprec.ApprecError
 import no.nav.syfo.apprec.ApprecStatus
 import no.nav.syfo.apprec.createApprec
-import no.nav.syfo.apprec.findApprecError
+import no.nav.syfo.apprec.createApprecError
 import no.nav.syfo.apprec.toApprecCV
 import no.nav.syfo.client.AktoerIdClient
 import no.nav.syfo.client.SamhandlerPraksis
@@ -293,7 +293,7 @@ suspend fun blockingApplicationLogic(
 
                 if (redisEdiLoggId != null) {
                     log.warn("Message with {} marked as duplicate $logKeys", keyValue("originalEdiLoggId", redisEdiLoggId), *logValues)
-                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(ApprecError.DUPLICATE))
+                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(createApprecError("Duplikat! - Denne sykmeldingen er mottatt tidligere. Skal ikke sendes på nytt.")))
                     log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
                     continue
                 } else {
@@ -310,14 +310,18 @@ suspend fun blockingApplicationLogic(
             if (patientIdents == null || patientIdents.feilmelding != null) {
                 log.info("Patient not found i aktorRegister $logKeys, {}", *logValues,
                         keyValue("errorMessage", patientIdents?.feilmelding ?: "No response for FNR"))
-                sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(ApprecError.PATIENT_NOT_IN_FOLKEREGISTERET))
+                sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(createApprecError("Pasienten er ikkje registrert i folkeregisteret")))
                 log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
                 continue@loop
             }
             if (doctorIdents == null || doctorIdents.feilmelding != null) {
                 log.info("Doctor not found i aktorRegister $logKeys, {}", *logValues,
                         keyValue("errorMessage", doctorIdents?.feilmelding ?: "No response for FNR"))
-                sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(ApprecError.BEHANDLER_NOT_IN_FOLKEREGISTERET))
+                sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(XMLCV().apply {
+                    dn = "Behandler er ikkje registrert i folkeregisteret"
+                    v = "2.16.578.1.12.4.1.1.8221"
+                    s = "X99"
+                }))
                 log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
                 continue@loop
             }
@@ -354,7 +358,7 @@ suspend fun blockingApplicationLogic(
                 notifySyfoService(session, syfoserviceProducer, ediLoggId, msgId, healthInformation)
                 log.info("Message send to syfoService {} $logKeys", env.syfoserviceQueueName, *logValues)
             } else {
-                sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, findApprecError(validationResult.ruleHits))
+                sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, validationResult.ruleHits.map { it.toApprecCV() })
                 log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
             }
 
@@ -378,7 +382,7 @@ suspend fun blockingApplicationLogic(
             log.info("Message($logKeys) got outcome {}, {}, processing took {}s",
                     *logValues,
                     keyValue("status", validationResult.status),
-                    keyValue("ruleHits", validationResult.ruleHits.joinToString(", ", "(", ")") { it.ruleMessage }),
+                    keyValue("ruleHits", validationResult.ruleHits.joinToString(", ", "(", ")") { it.ruleName }),
                     keyValue("latency", currentRequestLatency))
         } catch (e: Exception) {
             log.error("Exception caught while handling message, sending to backout $logKeys", *logValues, e)
@@ -410,12 +414,12 @@ fun sendReceipt(
     receiptProducer: MessageProducer,
     fellesformat: XMLEIFellesformat,
     apprecStatus: ApprecStatus,
-    apprecErrors: List<ApprecError> = listOf()
+    apprecErrors: List<XMLCV> = listOf()
 ) {
     APPREC_COUNTER.inc()
     receiptProducer.send(session.createTextMessage().apply {
         val apprec = createApprec(fellesformat, apprecStatus)
-        apprec.get<XMLAppRec>().error.addAll(apprecErrors.map { it.toApprecCV() })
+        apprec.get<XMLAppRec>().error.addAll(apprecErrors)
         text = apprecMarshaller.toString(apprec)
     })
 }

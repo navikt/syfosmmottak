@@ -56,7 +56,9 @@ data class ValidationResult(
 )
 
 data class RuleInfo(
-    val ruleMessage: String
+    val ruleName: String,
+    val textToUser: String,
+    val textToTreater: String
 )
 
 enum class Status {

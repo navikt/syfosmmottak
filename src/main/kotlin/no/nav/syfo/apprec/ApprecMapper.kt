@@ -14,6 +14,7 @@ import no.kith.xmlstds.msghead._2006_05_24.XMLIdent
 import no.kith.xmlstds.msghead._2006_05_24.XMLMsgHead
 import no.kith.xmlstds.msghead._2006_05_24.XMLOrganisation
 import no.nav.syfo.SyfoSmMottakConstant
+import no.nav.syfo.client.RuleInfo
 import no.nav.syfo.get
 import no.trygdeetaten.xml.eiff._1.XMLEIFellesformat
 import no.trygdeetaten.xml.eiff._1.XMLMottakenhetBlokk
@@ -113,11 +114,13 @@ fun XMLIdent.intoAdditionalId(): XMLAdditionalId {
     }
 }
 
-fun ApprecError.toApprecCV(): AppRecCV {
-    val error = this
-    return AppRecCV().apply {
-        dn = error.dn
-        v = error.v
-        s = error.s
-    }
+fun RuleInfo.toApprecCV(): AppRecCV {
+    val ruleInfo = this
+    return createApprecError(ruleInfo.textToTreater)
 }
+
+fun createApprecError(textToTreater: String): AppRecCV = AppRecCV().apply {
+        dn = textToTreater
+        v = "2.16.578.1.12.4.1.1.8221"
+        s = "X99"
+    }
