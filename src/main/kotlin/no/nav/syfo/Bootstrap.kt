@@ -169,7 +169,9 @@ suspend fun createListener(
 
         val producerProperties = kafkaBaseConfig.toProducerConfig(env.applicationName, valueSerializer = JacksonKafkaSerializer::class)
 
-        val kafkaproducer = KafkaProducer<String, ReceivedSykmelding>(producerProperties)
+        val kafkaproducerreceivedSykmelding = KafkaProducer<String, ReceivedSykmelding>(producerProperties)
+
+        val kafkaproducervalidationResult = KafkaProducer<String, ValidationResult>(producerProperties)
 
         val manualTaskproducerProperties = kafkaBaseConfig.toProducerConfig(env.applicationName, valueSerializer = KafkaAvroSerializer::class)
         val manualTaskkafkaproducer = KafkaProducer<String, ProduceTask>(manualTaskproducerProperties)
@@ -195,7 +197,7 @@ suspend fun createListener(
         }
 
         blockingApplicationLogic(inputconsumer, receiptProducer, syfoserviceProducer, backoutProducer,
-                subscriptionEmottak, kafkaproducer, syfoSykemeldingRuleClient, sarClient, aktoerIdClient, env,
+                subscriptionEmottak, kafkaproducerreceivedSykmelding, kafkaproducervalidationResult, syfoSykemeldingRuleClient, sarClient, aktoerIdClient, env,
                 credentials, applicationState, jedis, manualTaskkafkaproducer, personV3, session, arbeidsfordelingV1)
     }
 }
@@ -213,7 +215,8 @@ suspend fun blockingApplicationLogic(
     syfoserviceProducer: MessageProducer,
     backoutProducer: MessageProducer,
     subscriptionEmottak: SubscriptionPort,
-    kafkaproducer: KafkaProducer<String, ReceivedSykmelding>,
+    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
+    kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
     syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
     kuhrSarClient: SarClient,
     aktoerIdClient: AktoerIdClient,
@@ -374,8 +377,11 @@ suspend fun blockingApplicationLogic(
                 createTask(kafkaManuelTaskProducer, receivedSykmelding, validationResult, findNavOffice(finnBehandlendeEnhetListeResponse), logKeys, logValues)
             }
 
-            kafkaproducer.send(ProducerRecord(topicName, receivedSykmelding.sykmelding.id, receivedSykmelding))
+            kafkaproducerreceivedSykmelding.send(ProducerRecord(topicName, receivedSykmelding.sykmelding.id, receivedSykmelding))
             log.info("Message send to kafka {} $logKeys", topicName, *logValues)
+
+            kafkaproducervalidationResult.send(ProducerRecord(env.sm2013BehandlingsUtfallToipic, receivedSykmelding.sykmelding.id, validationResult))
+            log.info("Validation results send to kafka {} $logKeys", env.sm2013BehandlingsUtfallToipic, *logValues)
 
             val currentRequestLatency = requestLatency.observeDuration()
 
