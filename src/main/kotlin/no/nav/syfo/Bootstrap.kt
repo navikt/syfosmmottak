@@ -380,8 +380,9 @@ suspend fun blockingApplicationLogic(
             kafkaproducerreceivedSykmelding.send(ProducerRecord(topicName, receivedSykmelding.sykmelding.id, receivedSykmelding))
             log.info("Message send to kafka {} $logKeys", topicName, *logValues)
 
-            kafkaproducervalidationResult.send(ProducerRecord(env.sm2013BehandlingsUtfallToipic, receivedSykmelding.sykmelding.id, validationResult))
-            log.info("Validation results send to kafka {} $logKeys", env.sm2013BehandlingsUtfallToipic, *logValues)
+            if (validationResult.status == Status.MANUAL_PROCESSING || validationResult.status == Status.INVALID) {
+                sendValidationResult(validationResult, kafkaproducervalidationResult, env, receivedSykmelding, logKeys, logValues)
+            }
 
             val currentRequestLatency = requestLatency.observeDuration()
 
@@ -549,4 +550,10 @@ fun startSubscription(
         data = msgHead.msgInfo.sender.toString().toByteArray()
         partnerid = receiverBlock.partnerReferanse.toInt()
     })
+}
+
+fun sendValidationResult(validationResult: ValidationResult, kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>, env: Environment, receivedSykmelding: ReceivedSykmelding, logKeys: String, logValues: Array<StructuredArgument>) {
+
+    kafkaproducervalidationResult.send(ProducerRecord(env.sm2013BehandlingsUtfallToipic, receivedSykmelding.sykmelding.id, validationResult))
+    log.info("Validation results send to kafka {} $logKeys", env.sm2013BehandlingsUtfallToipic, *logValues)
 }
