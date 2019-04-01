@@ -27,6 +27,7 @@
       "topicName": "privat-syfo-sm2013-avvistBehandling",
       "members": [
         {"member":"srvsyfosmsak", "role":"CONSUMER"},
+        {"member":"srvsyfosmregister", "role":"CONSUMER"},
         {"member":"srvsyfosmmottak", "role":"PRODUCER"}
       ],
       "numPartitions": 3
