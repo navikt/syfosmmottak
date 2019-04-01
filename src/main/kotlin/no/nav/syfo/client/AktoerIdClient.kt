@@ -13,7 +13,7 @@ import io.ktor.client.response.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.model.IdentInfoResult
-import no.nav.syfo.retry
+import no.nav.syfo.helpers.retry
 
 @KtorExperimentalAPI
 class AktoerIdClient(

@@ -24,6 +24,7 @@ val ktorVersion = "1.1.3"
 val logbackVersion = "1.2.3"
 val logstashEncoderVersion = "5.1"
 val prometheusVersion = "0.6.0"
+val smCommonVersion = "1.0.2"
 val spekVersion = "2.0.1"
 val sykmeldingVersion = "1.1-SNAPSHOT"
 val subscriptionVersion = "1.0.5"
@@ -66,12 +67,12 @@ buildscript {
 }
 
 repositories {
-    maven (url= "https://repo.adeo.no/repository/maven-snapshots/")
-    maven (url= "https://repo.adeo.no/repository/maven-releases/")
-    maven (url= "https://dl.bintray.com/kotlin/ktor")
-    maven (url= "https://dl.bintray.com/spekframework/spek-dev")
-    maven (url= "http://packages.confluent.io/maven/")
-    maven (url= "https://kotlin.bintray.com/kotlinx")
+    maven(url= "https://repo.adeo.no/repository/maven-snapshots/")
+    maven(url= "https://repo.adeo.no/repository/maven-releases/")
+    maven(url= "https://dl.bintray.com/kotlin/ktor")
+    maven(url= "https://dl.bintray.com/spekframework/spek-dev")
+    maven(url= "http://packages.confluent.io/maven/")
+    maven(url= "https://kotlin.bintray.com/kotlinx")
     mavenCentral()
     jcenter()
 }
@@ -90,66 +91,67 @@ dependencies {
         exclude(group = "com.sun.xml.ws", module = "policy")
     }
 
+    navWsdl("no.nav.tjenester:subscription-nav-emottak-eletter-web:$subscriptionVersion@zip")
+
 
     implementation(kotlin("stdlib"))
 
-    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
-    implementation ("io.prometheus:simpleclient_hotspot:$prometheusVersion")
-    implementation ("io.prometheus:simpleclient_common:$prometheusVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+    implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
+    implementation("io.prometheus:simpleclient_common:$prometheusVersion")
 
-    implementation ("io.ktor:ktor-server-netty:$ktorVersion")
-    implementation ("io.ktor:ktor-client-apache:$ktorVersion")
-    implementation ("io.ktor:ktor-client-cio:$ktorVersion")
-    implementation ("io.ktor:ktor-client-auth-basic:$ktorVersion")
-    implementation ("io.ktor:ktor-client-jackson:$ktorVersion")
+    implementation("io.ktor:ktor-server-netty:$ktorVersion")
+    implementation("io.ktor:ktor-client-apache:$ktorVersion")
+    implementation("io.ktor:ktor-client-cio:$ktorVersion")
+    implementation("io.ktor:ktor-client-auth-basic:$ktorVersion")
+    implementation("io.ktor:ktor-client-jackson:$ktorVersion")
 
-    implementation ("ch.qos.logback:logback-classic:$logbackVersion")
-    implementation ("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
+    implementation("ch.qos.logback:logback-classic:$logbackVersion")
+    implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
 
-    implementation ("com.ibm.mq:com.ibm.mq.allclient:$ibmMqVersion")
+    implementation("org.apache.kafka:kafka_2.12:$kafkaVersion")
+    implementation("io.confluent:kafka-avro-serializer:$confluentVersion")
 
-    implementation ("org.apache.kafka:kafka_2.12:$kafkaVersion")
-    implementation ("io.confluent:kafka-avro-serializer:$confluentVersion")
+    implementation("com.fasterxml.jackson.module:jackson-module-jaxb-annotations:$jacksonVersion")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
+    implementation("no.nav.helse.xml:sm2013:$sykmeldingVersion")
+    implementation("no.nav.syfo.tjenester:fellesformat:$fellesformatVersion")
+    implementation("no.nav.syfo.tjenester:kith-hodemelding:$kithHodemeldingVersion")
+    implementation("no.nav.syfo.tjenester:kith-apprec:$kithApprecVersion")
+    implementation("no.nav.tjenester:nav-arbeidsfordeling-v1-tjenestespesifikasjon:$navArbeidsfordelingv1Version:jaxws")
+    implementation("no.nav.syfo:syfooppgave-schemas:$syfooppgaveSchemasVersion")
+    implementation("no.nav.tjenester:nav-person-v3-tjenestespesifikasjon:$navPersonv3Version")
 
-    implementation ("com.fasterxml.jackson.module:jackson-module-jaxb-annotations:$jacksonVersion")
-    implementation ("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
-    implementation ("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
-    implementation ("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
+    implementation("no.nav.syfo.sm:syfosm-common-models:$smCommonVersion")
+    implementation("no.nav.syfo.sm:syfosm-common-networking:$smCommonVersion")
+    implementation("no.nav.syfo.sm:syfosm-common-rest-sts:$smCommonVersion")
+    implementation("no.nav.syfo.sm:syfosm-common-kafka:$smCommonVersion")
+    implementation("no.nav.syfo.sm:syfosm-common-mq:$smCommonVersion")
+    implementation("no.nav.syfo.sm:syfosm-common-ws:$smCommonVersion")
 
-    navWsdl("no.nav.tjenester:subscription-nav-emottak-eletter-web:$subscriptionVersion@zip")
-    implementation ("no.nav.helse.xml:sm2013:$sykmeldingVersion")
-    implementation ("no.nav.syfo.tjenester:fellesformat:$fellesformatVersion")
-    implementation ("no.nav.syfo.tjenester:kith-hodemelding:$kithHodemeldingVersion")
-    implementation ("no.nav.syfo.tjenester:kith-apprec:$kithApprecVersion")
-    implementation ("no.nav.tjenester:nav-arbeidsfordeling-v1-tjenestespesifikasjon:$navArbeidsfordelingv1Version:jaxws")
-    implementation ("no.nav.syfo:syfooppgave-schemas:$syfooppgaveSchemasVersion")
-    implementation ("no.nav.tjenester:nav-person-v3-tjenestespesifikasjon:$navPersonv3Version")
+    implementation("redis.clients:jedis:$jedisVersion")
 
-    implementation ("redis.clients:jedis:$jedisVersion")
+    implementation("org.apache.commons:commons-text:$commonsTextVersion")
 
-    implementation ("org.apache.commons:commons-text:$commonsTextVersion")
-    implementation ("org.apache.cxf:cxf-rt-frontend-jaxws:$cxfVersion")
-    implementation ("org.apache.cxf:cxf-rt-features-logging:$cxfVersion")
-    implementation ("org.apache.cxf:cxf-rt-transports-http:$cxfVersion")
-    implementation ("org.apache.cxf:cxf-rt-ws-security:$cxfVersion")
-
-    implementation ("javax.xml.ws:jaxws-api:$jaxwsApiVersion")
-    implementation ("javax.annotation:javax.annotation-api:$javaxAnnotationApiVersion")
-    implementation ("javax.xml.bind:jaxb-api:$jaxbApiVersion")
-    implementation ("org.glassfish.jaxb:jaxb-runtime:$jaxbRuntimeVersion")
-    implementation ("javax.activation:activation:$javaxActivationVersion")
+    implementation("javax.xml.ws:jaxws-api:$jaxwsApiVersion")
+    implementation("javax.annotation:javax.annotation-api:$javaxAnnotationApiVersion")
+    implementation("javax.xml.bind:jaxb-api:$jaxbApiVersion")
+    implementation("org.glassfish.jaxb:jaxb-runtime:$jaxbRuntimeVersion")
+    implementation("javax.activation:activation:$javaxActivationVersion")
     implementation("com.sun.xml.ws:jaxws-tools:$jaxwsToolsVersion") {
         exclude(group = "com.sun.xml.ws", module = "policy")
     }
 
-    testImplementation ("org.amshove.kluent:kluent:$kluentVersion")
-    testImplementation ("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
+    testImplementation("org.amshove.kluent:kluent:$kluentVersion")
+    testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
         exclude(group = "org.eclipse.jetty")
     }
-    testImplementation ("no.nav:kafka-embedded-env:$kafkaEmbeddedVersion")
-    testImplementation ("org.apache.activemq:artemis-server:$artemisVersion")
-    testImplementation ("org.apache.activemq:artemis-jms-client:$artemisVersion")
+    testImplementation("no.nav:kafka-embedded-env:$kafkaEmbeddedVersion")
+    testImplementation("org.apache.activemq:artemis-server:$artemisVersion")
+    testImplementation("org.apache.activemq:artemis-jms-client:$artemisVersion")
 
     testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion") {
         exclude(group = "org.jetbrains.kotlin")
@@ -170,6 +172,8 @@ tasks {
     }
     withType<KotlinCompile> {
         dependsOn("wsdl2java")
+
+        kotlinOptions.jvmTarget = "1.8"
     }
 
     val copyWsdlFromArtifacts =  create("copyWsdlFromArtifacts", Copy::class) {

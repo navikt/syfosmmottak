@@ -17,7 +17,7 @@ import io.ktor.client.response.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.VaultCredentials
-import no.nav.syfo.retry
+import no.nav.syfo.helpers.retry
 import org.apache.commons.text.similarity.LevenshteinDistance
 import java.util.Date
 import kotlin.math.max

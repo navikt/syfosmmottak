@@ -18,7 +18,8 @@ import io.ktor.http.contentType
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.VaultCredentials
 import no.nav.syfo.model.ReceivedSykmelding
-import no.nav.syfo.retry
+import no.nav.syfo.model.ValidationResult
+import no.nav.syfo.helpers.retry
 
 @KtorExperimentalAPI
 class SyfoSykemeldingRuleClient(private val endpointUrl: String, credentials: VaultCredentials) {
@@ -48,21 +49,4 @@ class SyfoSykemeldingRuleClient(private val endpointUrl: String, credentials: Va
             body = payload
         }.use { it.call.response.receive<ValidationResult>() }
     }
-}
-
-data class ValidationResult(
-    val status: Status,
-    val ruleHits: List<RuleInfo>
-)
-
-data class RuleInfo(
-    val ruleName: String,
-    val textToUser: String,
-    val textToTreater: String
-)
-
-enum class Status {
-    OK,
-    MANUAL_PROCESSING,
-    INVALID
 }

@@ -14,8 +14,8 @@ import no.kith.xmlstds.msghead._2006_05_24.XMLIdent
 import no.kith.xmlstds.msghead._2006_05_24.XMLMsgHead
 import no.kith.xmlstds.msghead._2006_05_24.XMLOrganisation
 import no.nav.syfo.SyfoSmMottakConstant
-import no.nav.syfo.client.RuleInfo
 import no.nav.syfo.get
+import no.nav.syfo.model.RuleInfo
 import no.trygdeetaten.xml.eiff._1.XMLEIFellesformat
 import no.trygdeetaten.xml.eiff._1.XMLMottakenhetBlokk
 import java.time.LocalDateTime
@@ -116,7 +116,7 @@ fun XMLIdent.intoAdditionalId(): XMLAdditionalId {
 
 fun RuleInfo.toApprecCV(): AppRecCV {
     val ruleInfo = this
-    return createApprecError(ruleInfo.textToTreater)
+    return createApprecError(ruleInfo.messageForSender)
 }
 
 fun createApprecError(textToTreater: String): AppRecCV = AppRecCV().apply {
