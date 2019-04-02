@@ -46,6 +46,7 @@ import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.metrics.APPREC_COUNTER
 import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
 import no.nav.syfo.metrics.REQUEST_TIME
+import no.nav.syfo.metrics.RULE_HIT_STATUS_COUNTER
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
@@ -354,6 +355,8 @@ suspend fun blockingApplicationLogic(
 
             log.info("Validating against rules, $logKeys", *logValues)
             val validationResult = syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding)
+
+            RULE_HIT_STATUS_COUNTER.labels(validationResult.status.name).inc()
 
             if (validationResult.status in arrayOf(Status.OK, Status.MANUAL_PROCESSING)) {
                 sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
