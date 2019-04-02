@@ -38,8 +38,8 @@ data class VaultCredentials(
     val mqUsername: String,
     val mqPassword: String
 ) : KafkaCredentials {
-    override val kafkaUsername: String = mqUsername
-    override val kafkaPassword: String = mqPassword
+    override val kafkaUsername: String = serviceuserUsername
+    override val kafkaPassword: String = serviceuserPassword
 }
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =
