@@ -356,8 +356,6 @@ suspend fun blockingApplicationLogic(
             log.info("Validating against rules, $logKeys", *logValues)
             val validationResult = syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding)
 
-            RULE_HIT_STATUS_COUNTER.labels(validationResult.status.name).inc()
-
             if (validationResult.status in arrayOf(Status.OK, Status.MANUAL_PROCESSING)) {
                 sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
                 log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
