@@ -83,7 +83,7 @@ fun ArsakType.toAnnenFraversArsak() = AnnenFraversArsak(
 )
 
 // TODO: Remove if-wrapping whenever the EPJ systems stops sending garbage data
-fun CS.toMedisinskArsakType() = if (v == "0") { null } else { MedisinskArsakType.values().first { it.codeValue == v } }
+fun CS.toMedisinskArsakType() = if (v.trim() == "0") { null } else { MedisinskArsakType.values().first { it.codeValue == v } }
 
 // TODO: Remove if-wrapping whenever the EPJ systems stops sending garbage data
 fun CS.toArbeidsrelatertArsak() = if (v == "0") { null } else { ArbeidsrelatertArsakType.values().first { it.codeValue == v } }
