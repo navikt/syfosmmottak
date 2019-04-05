@@ -285,8 +285,8 @@ suspend fun blockingApplicationLogic(
             val samhandlerPraksis = findBestSamhandlerPraksis(samhandlerInfo, legekontorOrgName)?.samhandlerPraksis
 
             when (samhandlerPraksis) {
-                null -> log.info("None samhandlerPraksis is found")
-                else -> startSubscription(subscriptionEmottak, samhandlerPraksis, msgHead, receiverBlock)
+                null -> log.info("SamhandlerPraksis is Not found, $logKeys, *logValues")
+                else -> startSubscription(subscriptionEmottak, samhandlerPraksis, msgHead, receiverBlock, logKeys, logValues)
             }
 
             try {
@@ -541,9 +541,11 @@ fun startSubscription(
     subscriptionEmottak: SubscriptionPort,
     samhandlerPraksis: SamhandlerPraksis,
     msgHead: XMLMsgHead,
-    receiverBlock: XMLMottakenhetBlokk
+    receiverBlock: XMLMottakenhetBlokk,
+    logKeys: String,
+    logValues: Array<StructuredArgument>
 ) {
-    log.info("samhandlerPraksis is found, name: ${samhandlerPraksis.navn}")
+    log.info("SamhandlerPraksis is found, name: ${samhandlerPraksis.navn} $logKeys", *logValues)
     subscriptionEmottak.startSubscription(StartSubscriptionRequest().apply {
         key = samhandlerPraksis.tss_ident
         data = msgHead.msgInfo.sender.toString().toByteArray()
