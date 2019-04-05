@@ -21,7 +21,7 @@ object SykmeldingMapperSpek : Spek({
 
         it("Validate MedisinskeArsaker Arsakskode is mapped") {
 
-            val medisinskeArsakerArsakskodeV = "1"
+            val medisinskeArsakerArsakskodeV = " 1"
 
             val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
                 arbeidsgiver = HelseOpplysningerArbeidsuforhet.Arbeidsgiver().apply {
@@ -105,7 +105,7 @@ object SykmeldingMapperSpek : Spek({
                     msgId = "12313-12313-123123as-asda"
             )
 
-            sykmelding.perioder.first().aktivitetIkkeMulig?.medisinskArsak?.arsak?.first()?.codeValue shouldEqual medisinskeArsakerArsakskodeV
+            sykmelding.perioder.first().aktivitetIkkeMulig?.medisinskArsak?.arsak?.first()?.codeValue shouldEqual medisinskeArsakerArsakskodeV.trim()
         }
     }
 })
