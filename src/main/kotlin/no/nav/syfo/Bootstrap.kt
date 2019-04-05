@@ -543,6 +543,7 @@ fun startSubscription(
     msgHead: XMLMsgHead,
     receiverBlock: XMLMottakenhetBlokk
 ) {
+    log.info("samhandlerPraksis is found, name: ${samhandlerPraksis.navn}")
     subscriptionEmottak.startSubscription(StartSubscriptionRequest().apply {
         key = samhandlerPraksis.tss_ident
         data = msgHead.msgInfo.sender.toString().toByteArray()
