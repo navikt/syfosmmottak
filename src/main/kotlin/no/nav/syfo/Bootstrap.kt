@@ -285,7 +285,7 @@ suspend fun blockingApplicationLogic(
             val samhandlerPraksis = findBestSamhandlerPraksis(samhandlerInfo, legekontorOrgName)?.samhandlerPraksis
 
             when (samhandlerPraksis) {
-                null -> log.info("SamhandlerPraksis is Not found, $logKeys, *logValues")
+                null -> log.info("SamhandlerPraksis is Not found, $logKeys", *logValues)
                 else -> startSubscription(subscriptionEmottak, samhandlerPraksis, msgHead, receiverBlock, logKeys, logValues)
             }
 
