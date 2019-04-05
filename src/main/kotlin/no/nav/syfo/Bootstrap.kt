@@ -284,13 +284,10 @@ suspend fun blockingApplicationLogic(
             val samhandlerInfo = kuhrSarClient.getSamhandler(personNumberDoctor)
             val samhandlerPraksis = findBestSamhandlerPraksis(samhandlerInfo, legekontorOrgName)?.samhandlerPraksis
 
-            // TODO comment out this when syfosmemottakmock is ready and up i prod
-            /*
-            when(samhandlerPraksis){
+            when (samhandlerPraksis) {
                 null -> log.info("None samhandlerPraksis is found")
-                else -> startSubscription(subscriptionEmottak,samhandlerPraksis,msgHead,receiverBlock)
+                else -> startSubscription(subscriptionEmottak, samhandlerPraksis, msgHead, receiverBlock)
             }
-            */
 
             try {
                 val redisEdiLoggId = jedis.get(sha256String)
