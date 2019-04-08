@@ -77,7 +77,7 @@ fun ArsakType.toAnnenFraversArsak() = AnnenFraversArsak(
             if (code.v == "0") {
                 null
             } else {
-                AnnenFraverGrunn.values().first { it.codeValue == code.v }
+                AnnenFraverGrunn.values().first { it.codeValue == code.v.trim() }
             }
         }
 )
