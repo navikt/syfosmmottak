@@ -537,7 +537,7 @@ fun findNavOffice(finnBehandlendeEnhetListeResponse: FinnBehandlendeEnhetListeRe
         }
 
 // TODO This functionality is only necessary due to sending out dialogMelding and oppfølginsplan to doctor
-fun startSubscription(
+suspend fun startSubscription(
     subscriptionEmottak: SubscriptionPort,
     samhandlerPraksis: SamhandlerPraksis,
     msgHead: XMLMsgHead,
@@ -546,11 +546,13 @@ fun startSubscription(
     logValues: Array<StructuredArgument>
 ) {
     log.info("SamhandlerPraksis is found, name: ${samhandlerPraksis.navn} $logKeys", *logValues)
-    subscriptionEmottak.startSubscription(StartSubscriptionRequest().apply {
-        key = samhandlerPraksis.tss_ident
-        data = msgHead.msgInfo.sender.toString().toByteArray()
-        partnerid = receiverBlock.partnerReferanse.toInt()
-    })
+    retry("start_subscription_emottak", IOException::class, WstxException::class) {
+        subscriptionEmottak.startSubscription(StartSubscriptionRequest().apply {
+            key = samhandlerPraksis.tss_ident
+            data = msgHead.msgInfo.sender.toString().toByteArray()
+            partnerid = receiverBlock.partnerReferanse.toInt()
+        })
+    }
 }
 
 fun sendValidationResult(validationResult: ValidationResult, kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>, env: Environment, receivedSykmelding: ReceivedSykmelding, logKeys: String, logValues: Array<StructuredArgument>) {
