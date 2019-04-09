@@ -87,6 +87,8 @@ import java.io.StringWriter
 import java.nio.file.Paths
 import java.security.MessageDigest
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Base64
 import java.util.UUID
@@ -480,11 +482,11 @@ data class Syfo(
 data class Tilleggsdata(
     val ediLoggId: String,
     val msgId: String,
-    val syketilfelleStartDato: LocalDate
+    val syketilfelleStartDato: LocalDateTime
 )
 
-fun extractSyketilfelleStartDato(helseOpplysningerArbeidsuforhet: HelseOpplysningerArbeidsuforhet): LocalDate =
-        helseOpplysningerArbeidsuforhet.syketilfelleStartDato
+fun extractSyketilfelleStartDato(helseOpplysningerArbeidsuforhet: HelseOpplysningerArbeidsuforhet): LocalDateTime =
+        LocalDateTime.of(helseOpplysningerArbeidsuforhet.syketilfelleStartDato, LocalTime.NOON)
 
 fun convertSykemeldingToBase64(helseOpplysningerArbeidsuforhet: HelseOpplysningerArbeidsuforhet): ByteArray =
         ByteArrayOutputStream().use {

@@ -6,7 +6,7 @@ import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.io.StringReader
-import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.Base64
 
 object BootstrapSpek : Spek({
@@ -22,7 +22,7 @@ object BootstrapSpek : Spek({
     describe("Notify syfo service payload") {
         it("Produces a parsable XML") {
             val syfo = Syfo(
-                    tilleggsdata = Tilleggsdata(ediLoggId = "abc", msgId = "def", syketilfelleStartDato = LocalDate.now()),
+                    tilleggsdata = Tilleggsdata(ediLoggId = "abc", msgId = "def", syketilfelleStartDato = LocalDateTime.now()),
                     sykmelding = Base64.getEncoder().encodeToString("TODO".toByteArray(Charsets.UTF_8))
             )
             val text = xmlObjectWriter.writeValueAsString(syfo)
