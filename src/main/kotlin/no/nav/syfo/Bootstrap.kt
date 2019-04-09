@@ -327,6 +327,17 @@ suspend fun blockingApplicationLogic(
                 continue@loop
             }
 
+            if (healthInformation.aktivitet.periode.isNullOrEmpty()) {
+                log.info("Periode is missing $logKeys", *logValues)
+                sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(XMLCV().apply {
+                    dn = "Ingen perioder er oppgitt i sykmeldingen."
+                    v = "2.16.578.1.12.4.1.1.8221"
+                    s = "X99"
+                }))
+                log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
+                continue@loop
+            }
+
             val sykmelding = healthInformation.toSykmelding(
                     sykmeldingId = UUID.randomUUID().toString(),
                     pasientAktoerId = patientIdents.identer!!.first().ident,
