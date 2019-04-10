@@ -107,16 +107,17 @@ fun HelseOpplysningerArbeidsuforhet.Prognose.toPrognose() = Prognose(
             )
         }
 )
-
+// TODO: Remove mapNotNull whenever the EPJ systems stops sending garbage data
 fun HelseOpplysningerArbeidsuforhet.UtdypendeOpplysninger.toMap() =
         spmGruppe.map { spmGruppe ->
             spmGruppe.spmGruppeId to spmGruppe.spmSvar
-                    .map { svar -> svar.spmId to SporsmalSvar(svar = svar.svarTekst, restriksjoner = svar.restriksjon?.restriksjonskode?.map(CS::toSvarRestriksjon) ?: listOf()) }
+                    .map { svar -> svar.spmId to SporsmalSvar(svar = svar.svarTekst, restriksjoner = svar.restriksjon?.restriksjonskode?.mapNotNull(CS::toSvarRestriksjon) ?: listOf()) }
                     .toMap()
         }.toMap()
 
+// TODO: Remove if-wrapping whenever the EPJ systems stops sending garbage data
 fun CS.toSvarRestriksjon() =
-        SvarRestriksjon.values().first { it.codeValue == v }
+        if (v.isNullOrBlank()) { null } else { SvarRestriksjon.values().first { it.codeValue == v } }
 
 fun Address.toAdresse() = Adresse(
         gate = streetAdr,
