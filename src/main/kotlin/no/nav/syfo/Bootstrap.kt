@@ -527,11 +527,11 @@ fun createTask(kafkaProducer: KafkaProducer<String, ProduceTask>, receivedSykmel
         behandlesAvApplikasjon = "FS22" // Gosys
         orgnr = receivedSykmelding.legekontorOrgNr ?: ""
         beskrivelse = "Manuell behandling sykmelding: ${results.ruleHits}"
-        temagruppe = "OVRG" // TODO find corret value
-        tema = "SYM" // TODO find corret value
-        behandlingstema = "ab0061" // TODO find corret value
-        oppgavetype = "BEH_EL_SYM" // TODO find corret value
-        behandlingstype = "ae0001" // TODO find corret value
+        temagruppe = "ANY"
+        tema = "SYM"
+        behandlingstema = "ANY"
+        oppgavetype = "BEH_EL_SYM"
+        behandlingstype = "ANY"
         mappeId = 1
         aktivDato = DateTimeFormatter.ISO_DATE.format(LocalDate.now())
         fristFerdigstillelse = DateTimeFormatter.ISO_DATE.format(LocalDate.now())
