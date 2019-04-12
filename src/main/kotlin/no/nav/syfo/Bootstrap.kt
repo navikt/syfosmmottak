@@ -495,7 +495,7 @@ fun convertSykemeldingToBase64(helseOpplysningerArbeidsuforhet: HelseOpplysninge
         }.toByteArray()
 
 suspend fun fetchGeografiskTilknytning(personV3: PersonV3, receivedSykmelding: ReceivedSykmelding): HentGeografiskTilknytningResponse =
-        retry("tps_hent_geografisktilknytning", IOException::class, WstxException::class) {
+        retry("tps_hent_geografisktilknytning", arrayOf(500L, 1000L, 3000L, 5000L, 10000L), IOException::class, WstxException::class) {
             personV3.hentGeografiskTilknytning(HentGeografiskTilknytningRequest().withAktoer(PersonIdent().withIdent(
                     NorskIdent()
                             .withIdent(receivedSykmelding.personNrPasient)
@@ -503,7 +503,7 @@ suspend fun fetchGeografiskTilknytning(personV3: PersonV3, receivedSykmelding: R
         }
 
 suspend fun fetchBehandlendeEnhet(arbeidsfordelingV1: ArbeidsfordelingV1, geografiskTilknytning: GeografiskTilknytning?): FinnBehandlendeEnhetListeResponse? =
-        retry("finn_nav_kontor", IOException::class, WstxException::class) {
+        retry("finn_nav_kontor", arrayOf(500L, 1000L, 3000L, 5000L, 10000L), IOException::class, WstxException::class) {
             arbeidsfordelingV1.finnBehandlendeEnhetListe(FinnBehandlendeEnhetListeRequest().apply {
                 val afk = ArbeidsfordelingKriterier()
                 if (geografiskTilknytning?.geografiskTilknytning != null) {
@@ -559,7 +559,7 @@ suspend fun startSubscription(
     logValues: Array<StructuredArgument>
 ) {
     log.info("SamhandlerPraksis is found, name: ${samhandlerPraksis.navn} $logKeys", *logValues)
-    retry("start_subscription_emottak", IOException::class, WstxException::class) {
+    retry("start_subscription_emottak", arrayOf(500L, 1000L, 3000L, 5000L, 10000L), IOException::class, WstxException::class) {
         subscriptionEmottak.startSubscription(StartSubscriptionRequest().apply {
             key = samhandlerPraksis.tss_ident
             data = msgHead.msgInfo.sender.toString().toByteArray()

@@ -29,7 +29,8 @@ fun HelseOpplysningerArbeidsuforhet.toSykmelding(
         kontaktMedPasient = kontaktMedPasient.toKontaktMedPasient(),
         behandletTidspunkt = kontaktMedPasient.behandletDato,
         behandler = behandler.toBehandler(legeAktoerId),
-        avsenderSystem = avsenderSystem.toAvsenderSystem()
+        avsenderSystem = avsenderSystem.toAvsenderSystem(),
+        syketilfelleStartDato = syketilfelleStartDato
 )
 
 fun HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.toPeriode() = Periode(
