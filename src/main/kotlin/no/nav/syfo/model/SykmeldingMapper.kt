@@ -5,12 +5,14 @@ import no.nav.helse.sm2013.ArsakType
 import no.nav.helse.sm2013.CS
 import no.nav.helse.sm2013.CV
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
+import java.time.LocalDateTime
 
 fun HelseOpplysningerArbeidsuforhet.toSykmelding(
     sykmeldingId: String,
     pasientAktoerId: String,
     legeAktoerId: String,
-    msgId: String
+    msgId: String,
+    signaturDato: LocalDateTime
 ) = Sykmelding(
         id = sykmeldingId,
         msgId = msgId,
@@ -30,7 +32,8 @@ fun HelseOpplysningerArbeidsuforhet.toSykmelding(
         behandletTidspunkt = kontaktMedPasient.behandletDato,
         behandler = behandler.toBehandler(legeAktoerId),
         avsenderSystem = avsenderSystem.toAvsenderSystem(),
-        syketilfelleStartDato = syketilfelleStartDato
+        syketilfelleStartDato = syketilfelleStartDato,
+        signaturDato = signaturDato
 )
 
 fun HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.toPeriode() = Periode(
@@ -158,7 +161,8 @@ fun HelseOpplysningerArbeidsuforhet.Behandler.toBehandler(aktoerId: String) = Be
         fnr = id.find { it.typeId.v == "FNR" }?.id ?: id.first { it.typeId.v == "DNR" }.id,
         hpr = id.find { it.typeId.v == "HPR" }?.id,
         her = id.find { it.typeId.v == "HER" }?.id,
-        adresse = adresse.toAdresse()
+        adresse = adresse.toAdresse(),
+        tlf = kontaktInfo.firstOrNull()?.teleAddress?.v
 )
 
 fun HelseOpplysningerArbeidsuforhet.AvsenderSystem.toAvsenderSystem() = AvsenderSystem(

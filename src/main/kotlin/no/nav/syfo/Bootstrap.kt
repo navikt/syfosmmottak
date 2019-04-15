@@ -344,7 +344,8 @@ suspend fun blockingApplicationLogic(
                     sykmeldingId = UUID.randomUUID().toString(),
                     pasientAktoerId = patientIdents.identer!!.first().ident,
                     legeAktoerId = doctorIdents.identer!!.first().ident,
-                    msgId = msgId
+                    msgId = msgId,
+                    signaturDato = msgHead.msgInfo.genDate
             )
             val receivedSykmelding = ReceivedSykmelding(
                     sykmelding = sykmelding,
@@ -357,7 +358,6 @@ suspend fun blockingApplicationLogic(
                     legekontorHerId = legekontorHerId,
                     legekontorReshId = legekontorReshId,
                     mottattDato = receiverBlock.mottattDatotid.toGregorianCalendar().toZonedDateTime().toLocalDateTime(),
-                    signaturDato = msgHead.msgInfo.genDate,
                     rulesetVersion = healthInformation.regelSettVersjon,
                     fellesformat = inputMessageText
             )

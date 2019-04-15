@@ -7,6 +7,7 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 import no.nav.syfo.model.toSykmelding
 import java.io.StringReader
+import java.time.LocalDateTime
 
 fun main() {
 
@@ -16,5 +17,5 @@ fun main() {
             .registerModule(JavaTimeModule()).apply {
                 configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
             }
-            .writeValueAsString(sm.toSykmelding("detteerensykmeldingid", "41234123", "12890371", "123124334")))
+            .writeValueAsString(sm.toSykmelding("detteerensykmeldingid", "41234123", "12890371", "123124334", LocalDateTime.now())))
 }
