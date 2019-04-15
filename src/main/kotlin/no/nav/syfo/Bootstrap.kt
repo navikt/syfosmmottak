@@ -281,10 +281,17 @@ suspend fun blockingApplicationLogic(
 
             log.info("Received message, $logKeys", *logValues)
 
-            val aktoerIdsDeferred = async { aktoerIdClient.getAktoerIds(listOf(personNumberDoctor, personNumberPatient), msgId, credentials.serviceuserUsername) }
+            val aktoerIdsDeferred = async {
+                aktoerIdClient.getAktoerIds(
+                        listOf(personNumberDoctor,
+                                personNumberPatient),
+                        msgId, credentials.serviceuserUsername)
+            }
 
             val samhandlerInfo = kuhrSarClient.getSamhandler(personNumberDoctor)
-            val samhandlerPraksis = findBestSamhandlerPraksis(samhandlerInfo, legekontorOrgName)?.samhandlerPraksis
+            val samhandlerPraksis = findBestSamhandlerPraksis(
+                    samhandlerInfo,
+                    legekontorOrgName)?.samhandlerPraksis
 
             when (samhandlerPraksis) {
                 null -> log.info("SamhandlerPraksis is Not found, $logKeys", *logValues)
@@ -296,7 +303,9 @@ suspend fun blockingApplicationLogic(
 
                 if (redisEdiLoggId != null) {
                     log.warn("Message with {} marked as duplicate $logKeys", keyValue("originalEdiLoggId", redisEdiLoggId), *logValues)
-                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(createApprecError("Duplikat! - Denne sykmeldingen er mottatt tidligere. Skal ikke sendes på nytt.")))
+                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
+                            createApprecError("Duplikat! - Denne sykmeldingen er mottatt tidligere. " +
+                                    "Skal ikke sendes på nytt.")))
                     log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
                     continue
                 } else {
@@ -313,29 +322,24 @@ suspend fun blockingApplicationLogic(
             if (patientIdents == null || patientIdents.feilmelding != null) {
                 log.info("Patient not found i aktorRegister $logKeys, {}", *logValues,
                         keyValue("errorMessage", patientIdents?.feilmelding ?: "No response for FNR"))
-                sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(createApprecError("Pasienten er ikkje registrert i folkeregisteret")))
+                sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
+                        createApprecError("Pasienten er ikkje registrert i folkeregisteret")))
                 log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
                 continue@loop
             }
             if (doctorIdents == null || doctorIdents.feilmelding != null) {
                 log.info("Doctor not found i aktorRegister $logKeys, {}", *logValues,
                         keyValue("errorMessage", doctorIdents?.feilmelding ?: "No response for FNR"))
-                sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(XMLCV().apply {
-                    dn = "Behandler er ikkje registrert i folkeregisteret"
-                    v = "2.16.578.1.12.4.1.1.8221"
-                    s = "X99"
-                }))
+                sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
+                        createApprecError("Behandler er ikkje registrert i folkeregisteret")))
                 log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
                 continue@loop
             }
 
             if (healthInformation.aktivitet == null || healthInformation.aktivitet.periode.isNullOrEmpty()) {
                 log.info("Periode is missing $logKeys", *logValues)
-                sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(XMLCV().apply {
-                    dn = "Ingen perioder er oppgitt i sykmeldingen."
-                    v = "2.16.578.1.12.4.1.1.8221"
-                    s = "X99"
-                }))
+                sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
+                        createApprecError("Ingen perioder er oppgitt i sykmeldingen.")))
                 log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
                 continue@loop
             }
