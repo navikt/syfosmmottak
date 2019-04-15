@@ -329,7 +329,7 @@ suspend fun blockingApplicationLogic(
                 continue@loop
             }
 
-            if (healthInformation.aktivitet.periode.isNullOrEmpty()) {
+            if (healthInformation.aktivitet == null || healthInformation.aktivitet.periode.isNullOrEmpty()) {
                 log.info("Periode is missing $logKeys", *logValues)
                 sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(XMLCV().apply {
                     dn = "Ingen perioder er oppgitt i sykmeldingen."
