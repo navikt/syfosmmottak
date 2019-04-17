@@ -344,6 +344,14 @@ suspend fun blockingApplicationLogic(
                 continue@loop
             }
 
+            if (healthInformation.medisinskVurdering.biDiagnoser.diagnosekode.any { it.v.isNullOrEmpty() }) {
+                log.info("diagnosekode is missing $logKeys", *logValues)
+                sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
+                        createApprecError("Diagnosekode på bidiagnose mangler")))
+                log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
+                continue@loop
+            }
+
             val sykmelding = healthInformation.toSykmelding(
                     sykmeldingId = UUID.randomUUID().toString(),
                     pasientAktoerId = patientIdents.identer!!.first().ident,
