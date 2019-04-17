@@ -344,7 +344,7 @@ suspend fun blockingApplicationLogic(
                 continue@loop
             }
 
-            if (healthInformation.medisinskVurdering.biDiagnoser.diagnosekode.any { it.v.isNullOrEmpty() }) {
+            if (healthInformation.medisinskVurdering?.biDiagnoser != null && healthInformation.medisinskVurdering.biDiagnoser.diagnosekode.any { it.v.isNullOrEmpty() }) {
                 log.info("diagnosekode is missing $logKeys", *logValues)
                 sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
                         createApprecError("Diagnosekode på bidiagnose mangler")))
