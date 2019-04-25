@@ -40,11 +40,6 @@ val javaxAnnotationApiVersion = "1.3.2"
 val jaxwsToolsVersion = "2.3.1"
 val jaxbRuntimeVersion = "2.4.0-b180830.0438"
 
-tasks.withType<Jar> {
-    manifest.attributes["Main-Class"] = "no.nav.syfo.BootstrapKt"
-}
-
-
 plugins {
     java
     id("no.nils.wsdl2java") version "0.10"
@@ -164,6 +159,10 @@ dependencies {
 
 
 tasks {
+    withType<Jar> {
+        manifest.attributes["Main-Class"] = "no.nav.syfo.BootstrapKt"
+    }
+    
     create("printVersion") {
 
         doLast {
@@ -208,5 +207,9 @@ tasks {
         testLogging {
             showStandardStreams = true
         }
+    }
+
+    "check" {
+        dependsOn("formatKotlin")
     }
 }
