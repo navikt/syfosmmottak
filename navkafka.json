@@ -30,7 +30,8 @@
       "members": [
         {"member":"srvsyfosmsak", "role":"CONSUMER"},
         {"member":"srvsyfosmregister", "role":"CONSUMER"},
-        {"member":"srvsyfosmmottak", "role":"PRODUCER"}
+        {"member":"srvsyfosmmottak", "role":"PRODUCER"},
+        {"member":"srvsyfosmvarsel", "role":"CONSUMER"}
       ],
       "numPartitions": 3
     },
