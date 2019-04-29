@@ -13,6 +13,7 @@ import no.trygdeetaten.xml.eiff._1.XMLEIFellesformat
 
 import javax.xml.bind.JAXBContext
 import javax.xml.bind.Marshaller
+import javax.xml.bind.Marshaller.JAXB_ENCODING
 import javax.xml.bind.Unmarshaller
 
 val xmlObjectWriter: XmlMapper = XmlMapper().apply {
@@ -31,3 +32,4 @@ val apprecJaxBContext: JAXBContext = JAXBContext.newInstance(XMLEIFellesformat::
 val apprecMarshaller: Marshaller = apprecJaxBContext.createMarshaller()
 
 val sykmeldingMarshaller: Marshaller = JAXBContext.newInstance(HelseOpplysningerArbeidsuforhet::class.java).createMarshaller()
+        .apply { setProperty(JAXB_ENCODING, "ISO-8859-1") }
