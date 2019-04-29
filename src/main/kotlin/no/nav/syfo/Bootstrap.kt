@@ -257,8 +257,6 @@ suspend fun blockingApplicationLogic(
                 else -> throw RuntimeException("Incoming message needs to be a byte message or text message")
             }
             INCOMING_MESSAGE_COUNTER.inc()
-            // TODO remove after testing knut
-            log.info("Incomming message $inputMessageText")
             val requestLatency = REQUEST_TIME.startTimer()
             val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(inputMessageText)) as XMLEIFellesformat
             val receiverBlock = fellesformat.get<XMLMottakenhetBlokk>()
