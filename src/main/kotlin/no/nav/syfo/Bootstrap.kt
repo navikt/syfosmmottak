@@ -258,7 +258,7 @@ suspend fun blockingApplicationLogic(
             }
             INCOMING_MESSAGE_COUNTER.inc()
             // TODO remove after testing knut
-            log.info("Incomming message", inputMessageText)
+            log.info("Incomming message $inputMessageText")
             val requestLatency = REQUEST_TIME.startTimer()
             val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(inputMessageText)) as XMLEIFellesformat
             val receiverBlock = fellesformat.get<XMLMottakenhetBlokk>()
