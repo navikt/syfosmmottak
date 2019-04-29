@@ -45,6 +45,7 @@ import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.metrics.APPREC_COUNTER
 import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
+import no.nav.syfo.metrics.INVALID_MESSAGE_NO_NOTICE
 import no.nav.syfo.metrics.REQUEST_TIME
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.Status
@@ -325,6 +326,7 @@ suspend fun blockingApplicationLogic(
                 sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
                         createApprecError("Pasienten er ikkje registrert i folkeregisteret")))
                 log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
+                INVALID_MESSAGE_NO_NOTICE.inc()
                 continue@loop
             }
             if (doctorIdents == null || doctorIdents.feilmelding != null) {
@@ -333,6 +335,7 @@ suspend fun blockingApplicationLogic(
                 sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
                         createApprecError("Behandler er ikkje registrert i folkeregisteret")))
                 log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
+                INVALID_MESSAGE_NO_NOTICE.inc()
                 continue@loop
             }
 
@@ -341,6 +344,7 @@ suspend fun blockingApplicationLogic(
                 sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
                         createApprecError("Ingen perioder er oppgitt i sykmeldingen.")))
                 log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
+                INVALID_MESSAGE_NO_NOTICE.inc()
                 continue@loop
             }
 
@@ -349,6 +353,7 @@ suspend fun blockingApplicationLogic(
                 sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
                         createApprecError("Diagnosekode på bidiagnose mangler")))
                 log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
+                INVALID_MESSAGE_NO_NOTICE.inc()
                 continue@loop
             }
 
