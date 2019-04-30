@@ -483,6 +483,9 @@ fun notifySyfoService(
 
 ) {
     receiptProducer.send(session.createTextMessage().apply {
+
+        log.info("notifySyfoService Fom: ${healthInformation.aktivitet.periode.first().periodeFOMDato} Tom: ${healthInformation.aktivitet.periode.first().periodeTOMDato} ")
+
         val syketilfelleStartDato = extractSyketilfelleStartDato(healthInformation)
         val sykmelding = convertSykemeldingToBase64(healthInformation)
         val syfo = Syfo(
