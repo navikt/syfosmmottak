@@ -263,6 +263,7 @@ suspend fun blockingApplicationLogic(
             val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(inputMessageText)) as XMLEIFellesformat
             val receiverBlock = fellesformat.get<XMLMottakenhetBlokk>()
             val healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat)
+            log.info("after unmarshal Fom: ${healthInformation.aktivitet.periode.first().periodeFOMDato} Tom: ${healthInformation.aktivitet.periode.first().periodeTOMDato} ")
             val msgHead = fellesformat.get<XMLMsgHead>()
             val ediLoggId = receiverBlock.ediLoggId
             val sha256String = sha256hashstring(healthInformation)
