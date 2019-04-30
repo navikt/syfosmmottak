@@ -256,6 +256,8 @@ suspend fun blockingApplicationLogic(
                 is TextMessage -> message.text
                 else -> throw RuntimeException("Incoming message needs to be a byte message or text message")
             }
+            // TODO remove after teting
+            log.info("Icomming message: $inputMessageText")
             INCOMING_MESSAGE_COUNTER.inc()
             val requestLatency = REQUEST_TIME.startTimer()
             val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(inputMessageText)) as XMLEIFellesformat
