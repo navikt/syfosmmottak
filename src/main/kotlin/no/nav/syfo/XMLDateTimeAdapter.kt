@@ -10,13 +10,13 @@ import javax.xml.bind.DatatypeConverter
 class XMLDateTimeAdapter : LocalDateTimeXmlAdapter() {
     override fun unmarshal(stringValue: String?): LocalDateTime? = when (stringValue) {
         null -> null
-        else -> DatatypeConverter.parseDateTime(stringValue).toInstant().atZone(ZoneOffset.UTC).toLocalDateTime()
+        else -> DatatypeConverter.parseDateTime(stringValue).toInstant().atZone(ZoneOffset.MAX).toLocalDateTime()
     }
 }
 
 class XMLDateAdapter : LocalDateXmlAdapter() {
     override fun unmarshal(stringValue: String?): LocalDate? = when (stringValue) {
         null -> null
-        else -> DatatypeConverter.parseDate(stringValue).toInstant().atZone(ZoneOffset.UTC).toLocalDate()
+        else -> DatatypeConverter.parseDate(stringValue).toInstant().atZone(ZoneOffset.MAX).toLocalDate()
     }
 }
