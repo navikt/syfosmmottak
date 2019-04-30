@@ -256,14 +256,11 @@ suspend fun blockingApplicationLogic(
                 is TextMessage -> message.text
                 else -> throw RuntimeException("Incoming message needs to be a byte message or text message")
             }
-            // TODO remove after teting
-            log.info("Icomming message: $inputMessageText")
             INCOMING_MESSAGE_COUNTER.inc()
             val requestLatency = REQUEST_TIME.startTimer()
             val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(inputMessageText)) as XMLEIFellesformat
             val receiverBlock = fellesformat.get<XMLMottakenhetBlokk>()
             val healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat)
-            log.info("after unmarshal Fom: ${healthInformation.aktivitet.periode.first().periodeFOMDato} Tom: ${healthInformation.aktivitet.periode.first().periodeTOMDato} ")
             val msgHead = fellesformat.get<XMLMsgHead>()
             val ediLoggId = receiverBlock.ediLoggId
             val sha256String = sha256hashstring(healthInformation)
@@ -484,8 +481,6 @@ fun notifySyfoService(
 
 ) {
     receiptProducer.send(session.createTextMessage().apply {
-
-        log.info("notifySyfoService Fom: ${healthInformation.aktivitet.periode.first().periodeFOMDato} Tom: ${healthInformation.aktivitet.periode.first().periodeTOMDato} ")
 
         val syketilfelleStartDato = extractSyketilfelleStartDato(healthInformation)
         val sykmelding = convertSykemeldingToBase64(healthInformation)
