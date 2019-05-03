@@ -28,8 +28,7 @@ class AktoerIdClient(
 
     suspend fun getAktoerIds(personNumbers: List<String>, trackingId: String, username: String): Map<String, IdentInfoResult> =
             retry("get_aktoerids") {
-                // TODO: Remove this workaround whenever ktor issue #1009 is fixed
-                client.get<HttpResponse>("$endpointUrl/identer") {
+                client.get<Map<String, IdentInfoResult>>("$endpointUrl/identer") {
                     accept(ContentType.Application.Json)
                     val oidcToken = stsClient.oidcToken()
                     headers {
@@ -40,6 +39,6 @@ class AktoerIdClient(
                     }
                     parameter("gjeldende", "true")
                     parameter("identgruppe", "AktoerId")
-                }.use { it.call.response.receive<Map<String, IdentInfoResult>>() }
+                }
             }
 }
