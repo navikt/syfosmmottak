@@ -357,6 +357,15 @@ suspend fun blockingApplicationLogic(
                 continue@loop
             }
 
+            if (healthInformation.behandler.id.find { it.typeId.v == "FNR" }?.id == null) {
+                log.info("FNR is missing on behandler $logKeys", *logValues)
+                sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
+                        createApprecError("Fødselsnummer på behandler mangler")))
+                log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
+                INVALID_MESSAGE_NO_NOTICE.inc()
+                continue@loop
+            }
+
             val sykmelding = healthInformation.toSykmelding(
                     sykmeldingId = UUID.randomUUID().toString(),
                     pasientAktoerId = patientIdents.identer!!.first().ident,
