@@ -28,6 +28,7 @@ fun main() {
     val receivedSykmelding = ReceivedSykmelding(
             sykmelding = sm.toSykmelding("detteerensykmeldingid", "41234123", "12890371", "123124334", LocalDateTime.now()),
             personNrPasient = "1231231",
+            tlfPasient = "1323423424",
             personNrLege = "123134",
             navLogId = "4d3fad98-6c40-47ec-99b6-6ca7c98aa5ad",
             msgId = "06b2b55f-c2c5-4ee0-8e0a-6e252ec2a550",
