@@ -29,6 +29,7 @@ import no.kith.xmlstds.msghead._2006_05_24.XMLMsgHead
 import no.nav.emottak.subscription.StartSubscriptionRequest
 import no.nav.emottak.subscription.SubscriptionPort
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
+import no.nav.helse.sm2013.TeleCom
 import no.nav.syfo.api.registerNaisApi
 import no.nav.syfo.apprec.ApprecStatus
 import no.nav.syfo.apprec.createApprec
@@ -376,7 +377,7 @@ suspend fun blockingApplicationLogic(
             val receivedSykmelding = ReceivedSykmelding(
                     sykmelding = sykmelding,
                     personNrPasient = personNumberPatient,
-                    tlfPasient = healthInformation.pasient.kontaktInfo.firstOrNull()?.typeTelecom?.v,
+                    tlfPasient = healthInformation.pasient.kontaktInfo.firstOrNull()?.teleAddress?.v,
                     personNrLege = personNumberDoctor,
                     navLogId = ediLoggId,
                     msgId = msgId,
