@@ -300,16 +300,25 @@ suspend fun blockingApplicationLogic(
             }
 
             try {
-                val redisEdiLoggId = jedis.get(sha256String)
+                val redisSha256String = jedis.get(sha256String)
+                val redisEdiloggid = jedis.get(ediLoggId)
 
-                if (redisEdiLoggId != null) {
-                    log.warn("Message with {} marked as duplicate $logKeys", keyValue("originalEdiLoggId", redisEdiLoggId), *logValues)
+                if (redisSha256String != null) {
+                    log.warn("Message with {} marked as duplicate $logKeys", keyValue("originalEdiLoggId", redisSha256String), *logValues)
+                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
+                            createApprecError("Duplikat! - Denne sykmeldingen er mottatt tidligere. " +
+                                    "Skal ikke sendes på nytt.")))
+                    log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
+                    continue
+                } else if (redisEdiloggid != null) {
+                    log.warn("Message with {} marked as duplicate $logKeys", keyValue("originalEdiLoggId", redisEdiloggid), *logValues)
                     sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
                             createApprecError("Duplikat! - Denne sykmeldingen er mottatt tidligere. " +
                                     "Skal ikke sendes på nytt.")))
                     log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
                     continue
                 } else {
+                    jedis.setex(ediLoggId, TimeUnit.DAYS.toSeconds(7).toInt(), ediLoggId)
                     jedis.setex(sha256String, TimeUnit.DAYS.toSeconds(7).toInt(), ediLoggId)
                 }
             } catch (connectionException: JedisConnectionException) {
