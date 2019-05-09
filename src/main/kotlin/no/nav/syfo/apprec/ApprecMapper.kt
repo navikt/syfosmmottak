@@ -25,7 +25,7 @@ fun createApprec(fellesformat: XMLEIFellesformat, apprecStatus: ApprecStatus): X
         any.add(XMLMottakenhetBlokk().apply {
             ediLoggId = fellesformat.get<XMLMottakenhetBlokk>().ediLoggId
             ebRole = SyfoSmMottakConstant.ebRoleNav.string
-            ebService = SyfoSmMottakConstant.ebServiceLegemelding.string
+            ebService = SyfoSmMottakConstant.ebServiceSykmelding.string
             ebAction = SyfoSmMottakConstant.ebActionSvarmelding.string
         }
         )

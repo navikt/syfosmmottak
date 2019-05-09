@@ -45,7 +45,7 @@ object ApprecMapperSpek : Spek({
             ff.get<XMLMottakenhetBlokk>().ebRole shouldEqual SyfoSmMottakConstant.ebRoleNav.string
         }
         it("Sets ebService") {
-            ff.get<XMLMottakenhetBlokk>().ebService shouldEqual SyfoSmMottakConstant.ebServiceLegemelding.string
+            ff.get<XMLMottakenhetBlokk>().ebService shouldEqual SyfoSmMottakConstant.ebServiceSykmelding.string
         }
         it("Sets ebAction") {
             ff.get<XMLMottakenhetBlokk>().ebAction shouldEqual SyfoSmMottakConstant.ebActionSvarmelding.string
