@@ -426,9 +426,9 @@ suspend fun blockingApplicationLogic(
 
             kafkaproducerreceivedSykmelding.send(ProducerRecord(topicName, receivedSykmelding.sykmelding.id, receivedSykmelding))
             log.info("Message send to kafka {} $logKeys", topicName, *logValues)
-
-            sendValidationResult(validationResult, kafkaproducervalidationResult, env, receivedSykmelding, logKeys, logValues)
-
+            if (validationResult.status == Status.MANUAL_PROCESSING || validationResult.status == Status.INVALID) {
+                sendValidationResult(validationResult, kafkaproducervalidationResult, env, receivedSykmelding, logKeys, logValues)
+            }
             val currentRequestLatency = requestLatency.observeDuration()
 
             log.info("Message($logKeys) got outcome {}, {}, processing took {}s",
