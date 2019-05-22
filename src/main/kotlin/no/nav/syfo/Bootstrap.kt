@@ -294,10 +294,12 @@ suspend fun blockingApplicationLogic(
                     samhandlerInfo,
                     legekontorOrgName)?.samhandlerPraksis
 
+            /* TODO Emottak-tokt vil ikkje starte i Q1, se slack #atom, når det er fikset kommenter koden inn igjen
             when (samhandlerPraksis) {
                 null -> log.info("SamhandlerPraksis is Not found, $logKeys", *logValues)
                 else -> startSubscription(subscriptionEmottak, samhandlerPraksis, msgHead, receiverBlock, logKeys, logValues)
             }
+             */
 
             try {
                 val redisSha256String = jedis.get(sha256String)
