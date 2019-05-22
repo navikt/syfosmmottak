@@ -39,8 +39,8 @@ fun main() {
             mottattDato = LocalDateTime.now(),
             rulesetVersion = "2",
             fellesformat = objectMapper
-                    .writeValueAsString(inputMessageText)
-
+                    .writeValueAsString(inputMessageText),
+            tssid = "13415"
     )
 
     println(objectMapper.writeValueAsString(receivedSykmelding))

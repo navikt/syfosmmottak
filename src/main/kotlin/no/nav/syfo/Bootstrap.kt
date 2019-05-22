@@ -395,7 +395,8 @@ suspend fun blockingApplicationLogic(
                     legekontorReshId = legekontorReshId,
                     mottattDato = receiverBlock.mottattDatotid.toGregorianCalendar().toZonedDateTime().toLocalDateTime(),
                     rulesetVersion = healthInformation.regelSettVersjon,
-                    fellesformat = inputMessageText
+                    fellesformat = inputMessageText,
+                    tssid = samhandlerPraksis?.tss_ident ?: ""
             )
 
             log.info("Validating against rules, $logKeys", *logValues)
