@@ -293,13 +293,11 @@ suspend fun blockingApplicationLogic(
             val samhandlerPraksis = findBestSamhandlerPraksis(
                     samhandlerInfo,
                     legekontorOrgName)?.samhandlerPraksis
-/* TODO legg tilbake når emottak er opp i Q1
+
             when (samhandlerPraksis) {
                 null -> log.info("SamhandlerPraksis is Not found, $logKeys", *logValues)
                 else -> startSubscription(subscriptionEmottak, samhandlerPraksis, msgHead, receiverBlock, logKeys, logValues)
             }
-
- */
 
             try {
                 val redisSha256String = jedis.get(sha256String)
