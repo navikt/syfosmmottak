@@ -20,7 +20,7 @@ val kafkaEmbeddedVersion = "1.0.0"
 val kithHodemeldingVersion = "1.1"
 val kithApprecVersion = "1.1"
 val kluentVersion = "1.39"
-val ktorVersion = "1.1.5"
+val ktorVersion = "1.2.0"
 val logbackVersion = "1.2.3"
 val logstashEncoderVersion = "5.1"
 val prometheusVersion = "0.6.0"
@@ -64,7 +64,6 @@ buildscript {
 repositories {
     maven(url= "https://repo.adeo.no/repository/maven-snapshots/")
     maven(url= "https://repo.adeo.no/repository/maven-releases/")
-    maven(url= "https://dl.bintray.com/kotlin/ktor")
     maven(url= "https://dl.bintray.com/spekframework/spek-dev")
     maven(url= "http://packages.confluent.io/maven/")
     maven(url= "https://kotlin.bintray.com/kotlinx")
@@ -98,7 +97,7 @@ dependencies {
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("io.ktor:ktor-client-apache:$ktorVersion")
     implementation("io.ktor:ktor-client-cio:$ktorVersion")
-    implementation("io.ktor:ktor-client-auth-basic:$ktorVersion")
+    implementation("io.ktor:ktor-client-auth-basic-jvm:$ktorVersion")
     implementation("io.ktor:ktor-client-jackson:$ktorVersion")
 
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
