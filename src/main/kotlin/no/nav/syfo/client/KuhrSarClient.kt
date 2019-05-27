@@ -43,14 +43,13 @@ class SarClient(
         }
     }
 
-    suspend fun getSamhandler(ident: String): List<Samhandler> =
-            retry("get_samhandler") {
-                // TODO: Remove this workaround whenever ktor issue #1009 is fixed
-                kuhrSarClient.get<HttpResponse>("$endpointUrl/rest/sar/samh") {
-                    accept(ContentType.Application.Json)
-                    parameter("ident", ident)
-                }.use { it.call.response.receive<List<Samhandler>>() }
-            }
+    suspend fun getSamhandler(ident: String): List<Samhandler> = retry("get_samhandler") {
+        // TODO: Remove this workaround whenever ktor issue #1009 is fixed
+        kuhrSarClient.get<HttpResponse>("$endpointUrl/rest/sar/samh") {
+            accept(ContentType.Application.Json)
+            parameter("ident", ident)
+        }.use { it.call.response.receive<List<Samhandler>>() }
+    }
 }
 
 data class Samhandler(
