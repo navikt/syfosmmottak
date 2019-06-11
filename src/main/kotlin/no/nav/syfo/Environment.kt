@@ -30,7 +30,7 @@ data class Environment(
     val inputQueueName: String = getEnvVar("MQ_INPUT_QUEUE_NAME"),
     val apprecQueueName: String = getEnvVar("MQ_APPREC_QUEUE_NAME"),
     val inputBackoutQueueName: String = getEnvVar("MQ_INPUT_BOQ_QUEUE_NAME"),
-    val redishost: String = getEnvVar("REDIS_HOST", "syfosmmottak-redis.default.svc.nais.local")
+    val redishost: String = getEnvVar("REDIS_HOST", "syfosmmottak-redis")
 ) : MqConfig, KafkaConfig
 
 data class VaultCredentials(
