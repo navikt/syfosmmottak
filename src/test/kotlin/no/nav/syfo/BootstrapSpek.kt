@@ -23,7 +23,7 @@ object BootstrapSpek : Spek({
         it("Produces a parsable XML") {
             val syfo = Syfo(
                     tilleggsdata = Tilleggsdata(ediLoggId = "abc", msgId = "def", syketilfelleStartDato = LocalDateTime.now()),
-                    sykmelding = Base64.getEncoder().encodeToString("TODO".toByteArray(Charsets.UTF_8))
+                    sykmelding = Base64.getEncoder().encodeToString("LOL2k".toByteArray(Charsets.UTF_8))
             )
             val text = xmlObjectWriter.writeValueAsString(syfo)
             println(text)

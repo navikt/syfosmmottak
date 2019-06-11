@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.client.HttpClient
-import io.ktor.client.call.receive
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.engine.config
 import io.ktor.client.features.auth.basic.BasicAuth
@@ -12,7 +11,6 @@ import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.request.accept
 import io.ktor.client.request.post
-import io.ktor.client.response.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.util.KtorExperimentalAPI
@@ -42,11 +40,10 @@ class SyfoSykemeldingRuleClient(private val endpointUrl: String, credentials: Va
     }
 
     suspend fun executeRuleValidation(payload: ReceivedSykmelding): ValidationResult = retry("syfosmregler_validate") {
-        // TODO: Remove this workaround whenever ktor issue #1009 is fixed
-        client.post<HttpResponse>("$endpointUrl/v1/rules/validate") {
+        client.post<ValidationResult>("$endpointUrl/v1/rules/validate") {
             contentType(ContentType.Application.Json)
             accept(ContentType.Application.Json)
             body = payload
-        }.use { it.call.response.receive<ValidationResult>() }
+        }
     }
 }

@@ -109,8 +109,6 @@ val objectMapper: ObjectMapper = ObjectMapper()
         .registerKotlinModule()
         .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
 
-val redisMasterName = "mymaster"
-val redisHost = "rfs-redis-syfosmmottak" // TODO: Do this properly with naiserator
 val coroutineContext = Executors.newFixedThreadPool(2).asCoroutineDispatcher()
 
 data class ApplicationState(
@@ -162,7 +160,7 @@ suspend fun createListener(
     credentials: VaultCredentials,
     connection: Connection
 ) {
-    JedisSentinelPool(redisMasterName, setOf("${env.redishost}:26379")).resource.use { jedis ->
+    JedisSentinelPool("mymaster", setOf("${env.redishost}:26379")).resource.use { jedis ->
         val session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)
 
         val inputconsumer = session.consumerForQueue(env.inputQueueName)
@@ -589,7 +587,7 @@ fun findNavOffice(finnBehandlendeEnhetListeResponse: FinnBehandlendeEnhetListeRe
             finnBehandlendeEnhetListeResponse.behandlendeEnhetListe.first().enhetId
         }
 
-// TODO This functionality is only necessary due to sending out dialogMelding and oppfølginsplan to doctor
+// This functionality is only necessary due to sending out dialogMelding and oppfølginsplan to doctor
 suspend fun startSubscription(
     subscriptionEmottak: SubscriptionPort,
     samhandlerPraksis: SamhandlerPraksis,

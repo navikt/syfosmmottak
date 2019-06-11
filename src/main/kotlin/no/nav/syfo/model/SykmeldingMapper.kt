@@ -128,7 +128,7 @@ fun Address.toAdresse() = Adresse(
         postnummer = postalCode?.toIntOrNull(),
         kommune = city,
         postboks = postbox,
-        land = country?.v // TODO?
+        land = country?.v
 )
 
 // TODO: Remove mapNotNull whenever the EPJ systems stops sending garbage data

@@ -20,8 +20,8 @@
     </Pasient>
     <Arbeidsgiver>
         <HarArbeidsgiver V="1" DN="Én arbeidsgiver"/>
-        <NavnArbeidsgiver>TODO</NavnArbeidsgiver>
-        <Yrkesbetegnelse>TODO</Yrkesbetegnelse>
+        <NavnArbeidsgiver>NAV IT</NavnArbeidsgiver>
+        <Yrkesbetegnelse>utvikler</Yrkesbetegnelse>
         <Stillingsprosent>100</Stillingsprosent>
     </Arbeidsgiver>
     <MedisinskVurdering>
