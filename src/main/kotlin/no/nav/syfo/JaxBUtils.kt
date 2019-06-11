@@ -8,6 +8,7 @@ import com.migesok.jaxb.adapter.javatime.LocalDateTimeXmlAdapter
 import com.migesok.jaxb.adapter.javatime.LocalDateXmlAdapter
 import no.kith.xmlstds.apprec._2004_11_21.XMLAppRec
 import no.kith.xmlstds.msghead._2006_05_24.XMLMsgHead
+import no.kith.xmlstds.msghead._2006_05_24.XMLSender
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 import no.trygdeetaten.xml.eiff._1.XMLEIFellesformat
 
@@ -32,4 +33,7 @@ val apprecJaxBContext: JAXBContext = JAXBContext.newInstance(XMLEIFellesformat::
 val apprecMarshaller: Marshaller = apprecJaxBContext.createMarshaller()
 
 val sykmeldingMarshaller: Marshaller = JAXBContext.newInstance(HelseOpplysningerArbeidsuforhet::class.java).createMarshaller()
+        .apply { setProperty(JAXB_ENCODING, "ISO-8859-1") }
+
+val senderMarshaller: Marshaller = JAXBContext.newInstance(XMLSender::class.java).createMarshaller()
         .apply { setProperty(JAXB_ENCODING, "ISO-8859-1") }

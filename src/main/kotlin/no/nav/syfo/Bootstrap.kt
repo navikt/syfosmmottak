@@ -26,6 +26,7 @@ import no.kith.xmlstds.apprec._2004_11_21.XMLAppRec
 import no.kith.xmlstds.apprec._2004_11_21.XMLCV
 import no.kith.xmlstds.msghead._2006_05_24.XMLIdent
 import no.kith.xmlstds.msghead._2006_05_24.XMLMsgHead
+import no.kith.xmlstds.msghead._2006_05_24.XMLSender
 import no.nav.emottak.subscription.StartSubscriptionRequest
 import no.nav.emottak.subscription.SubscriptionPort
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
@@ -603,11 +604,17 @@ suspend fun startSubscription(
             legalExceptions = *arrayOf(IOException::class, WstxException::class)) {
         subscriptionEmottak.startSubscription(StartSubscriptionRequest().apply {
             key = samhandlerPraksis.tss_ident
-            data = msgHead.msgInfo.sender.toString().toByteArray()
+            data = convertSenderToBase64(msgHead.msgInfo.sender)
             partnerid = receiverBlock.partnerReferanse.toInt()
         })
     }
 }
+
+fun convertSenderToBase64(sender: XMLSender): ByteArray =
+        ByteArrayOutputStream().use {
+            senderMarshaller.marshal(sender, it)
+            it
+        }.toByteArray()
 
 fun sendValidationResult(validationResult: ValidationResult, kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>, env: Environment, receivedSykmelding: ReceivedSykmelding, logKeys: String, logValues: Array<StructuredArgument>) {
 
