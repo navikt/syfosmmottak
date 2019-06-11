@@ -162,7 +162,7 @@ suspend fun createListener(
     credentials: VaultCredentials,
     connection: Connection
 ) {
-    JedisSentinelPool(redisMasterName, setOf("$redisHost:26379")).resource.use { jedis ->
+    JedisSentinelPool(redisMasterName, setOf("${env.redishost}:26379")).resource.use { jedis ->
         val session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)
 
         val inputconsumer = session.consumerForQueue(env.inputQueueName)
