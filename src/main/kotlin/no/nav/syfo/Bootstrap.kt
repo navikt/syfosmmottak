@@ -80,7 +80,6 @@ import javax.jms.Session
 import javax.jms.TextMessage
 import org.apache.kafka.clients.producer.ProducerRecord
 import redis.clients.jedis.Jedis
-import redis.clients.jedis.JedisSentinelPool
 import redis.clients.jedis.exceptions.JedisConnectionException
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -160,7 +159,7 @@ suspend fun createListener(
     credentials: VaultCredentials,
     connection: Connection
 ) {
-    JedisSentinelPool("mymaster", setOf("${env.redishost}:26379")).resource.use { jedis ->
+    Jedis(env.redishost, 6379).use { jedis ->
         val session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)
 
         val inputconsumer = session.consumerForQueue(env.inputQueueName)
