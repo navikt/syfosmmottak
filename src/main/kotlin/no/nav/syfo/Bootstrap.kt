@@ -424,7 +424,7 @@ suspend fun blockingApplicationLogic(
                 val geografiskTilknytning = fetchGeografiskTilknytning(personV3, receivedSykmelding)
                 val patientDiskresjonsKode = fetchDiskresjonsKode(personV3, receivedSykmelding)
                 val finnBehandlendeEnhetListeResponse = fetchBehandlendeEnhet(arbeidsfordelingV1, geografiskTilknytning.geografiskTilknytning, patientDiskresjonsKode)
-                if(finnBehandlendeEnhetListeResponse?.behandlendeEnhetListe?.firstOrNull()?.enhetId == null ){
+                if (finnBehandlendeEnhetListeResponse?.behandlendeEnhetListe?.firstOrNull()?.enhetId == null) {
                     log.error("arbeidsfordeling fant ingen nav-enheter $logKeys", *logValues)
                 }
                 createTask(kafkaManuelTaskProducer, receivedSykmelding, validationResult, finnBehandlendeEnhetListeResponse?.behandlendeEnhetListe?.firstOrNull()?.enhetId ?: "0393", logKeys, logValues)
@@ -563,7 +563,7 @@ suspend fun fetchBehandlendeEnhet(arbeidsfordelingV1: ArbeidsfordelingV1, geogra
                     value = "BEH_EL_SYM"
                 }
 
-                if(!patientDiskresjonsKode.isNullOrBlank()) {
+                if (!patientDiskresjonsKode.isNullOrBlank()) {
                     afk.diskresjonskode = Diskresjonskoder().apply {
                         value = patientDiskresjonsKode
                     }
