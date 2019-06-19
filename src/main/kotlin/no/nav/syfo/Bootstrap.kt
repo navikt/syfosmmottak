@@ -60,6 +60,7 @@ import no.nav.syfo.sak.avro.ProduceTask
 import no.nav.syfo.ws.createPort
 import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.binding.ArbeidsfordelingV1
 import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.informasjon.ArbeidsfordelingKriterier
+import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.informasjon.Diskresjonskoder
 import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.informasjon.Oppgavetyper
 import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.informasjon.Tema
 import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.meldinger.FinnBehandlendeEnhetListeRequest
@@ -71,6 +72,7 @@ import no.nav.tjeneste.virksomhet.person.v3.informasjon.PersonIdent
 import no.nav.tjeneste.virksomhet.person.v3.informasjon.Personidenter
 import no.nav.tjeneste.virksomhet.person.v3.meldinger.HentGeografiskTilknytningRequest
 import no.nav.tjeneste.virksomhet.person.v3.meldinger.HentGeografiskTilknytningResponse
+import no.nav.tjeneste.virksomhet.person.v3.meldinger.HentPersonRequest
 import no.trygdeetaten.xml.eiff._1.XMLEIFellesformat
 import no.trygdeetaten.xml.eiff._1.XMLMottakenhetBlokk
 import org.apache.cxf.ws.addressing.WSAddressingFeature
@@ -420,8 +422,9 @@ suspend fun blockingApplicationLogic(
 
             if (validationResult.status == Status.MANUAL_PROCESSING) {
                 val geografiskTilknytning = fetchGeografiskTilknytning(personV3, receivedSykmelding)
-                val finnBehandlendeEnhetListeResponse = fetchBehandlendeEnhet(arbeidsfordelingV1, geografiskTilknytning.geografiskTilknytning)
-                createTask(kafkaManuelTaskProducer, receivedSykmelding, validationResult, findNavOffice(finnBehandlendeEnhetListeResponse), logKeys, logValues)
+                val patientDiskresjonsKode = fetchDiskresjonsKode(personV3, receivedSykmelding)
+                val finnBehandlendeEnhetListeResponse = fetchBehandlendeEnhet(arbeidsfordelingV1, geografiskTilknytning.geografiskTilknytning, patientDiskresjonsKode)
+                createTask(kafkaManuelTaskProducer, receivedSykmelding, validationResult, finnBehandlendeEnhetListeResponse?.behandlendeEnhetListe?.firstOrNull()?.enhetId ?: "0393", logKeys, logValues)
             }
 
             kafkaproducerreceivedSykmelding.send(ProducerRecord(topicName, receivedSykmelding.sykmelding.id, receivedSykmelding))
@@ -538,7 +541,7 @@ suspend fun fetchGeografiskTilknytning(personV3: PersonV3, receivedSykmelding: R
                             .withType(Personidenter().withValue("FNR")))))
         }
 
-suspend fun fetchBehandlendeEnhet(arbeidsfordelingV1: ArbeidsfordelingV1, geografiskTilknytning: GeografiskTilknytning?): FinnBehandlendeEnhetListeResponse? =
+suspend fun fetchBehandlendeEnhet(arbeidsfordelingV1: ArbeidsfordelingV1, geografiskTilknytning: GeografiskTilknytning?, patientDiskresjonsKode: String): FinnBehandlendeEnhetListeResponse? =
         retry(callName = "finn_nav_kontor",
                 retryIntervals = arrayOf(500L, 1000L, 3000L, 5000L, 10000L),
                 legalExceptions = *arrayOf(IOException::class, WstxException::class)) {
@@ -557,15 +560,21 @@ suspend fun fetchBehandlendeEnhet(arbeidsfordelingV1: ArbeidsfordelingV1, geogra
                     value = "BEH_EL_SYM"
                 }
 
+                afk.diskresjonskode = Diskresjonskoder().apply {
+                    value = patientDiskresjonsKode
+                }
+
                 arbeidsfordelingKriterier = afk
             })
         }
 
-fun findNavOffice(finnBehandlendeEnhetListeResponse: FinnBehandlendeEnhetListeResponse?): String =
-        if (finnBehandlendeEnhetListeResponse?.behandlendeEnhetListe?.firstOrNull()?.enhetId == null) {
-            "0393"
-        } else {
-            finnBehandlendeEnhetListeResponse.behandlendeEnhetListe.first().enhetId
+suspend fun fetchDiskresjonsKode(personV3: PersonV3, receivedSykmelding: ReceivedSykmelding): String =
+        retry(callName = "tps_hent_person",
+                retryIntervals = arrayOf(500L, 1000L, 3000L, 5000L, 10000L),
+                legalExceptions = *arrayOf(IOException::class, WstxException::class)) {
+            personV3.hentPerson(HentPersonRequest()
+                    .withAktoer(PersonIdent().withIdent(NorskIdent().withIdent(receivedSykmelding.personNrPasient)))
+            ).person.diskresjonskode.kodeverksRef ?: ""
         }
 
 fun createTask(kafkaProducer: KafkaProducer<String, ProduceTask>, receivedSykmelding: ReceivedSykmelding, results: ValidationResult, navKontor: String, logKeys: String, logValues: Array<StructuredArgument>) {
