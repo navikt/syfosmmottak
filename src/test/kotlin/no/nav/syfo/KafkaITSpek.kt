@@ -32,8 +32,8 @@ object KafkaITSpek : Spek({
             mqGatewayName = "mqGateway", kafkaBootstrapServers = embeddedEnvironment.brokersURL,
             mqChannelName = "syfomottak", aktoerregisterV1Url = "localhost-aktor", subscriptionEndpointURL = "localhost-emottak",
             apprecQueueName = "apprequeue", inputBackoutQueueName = "inputbackqueue", inputQueueName = "inputqueue",
-            syfoserviceQueueName = "syfoserviequeue", applicationPort = 1, applicationThreads = 2, arbeidsfordelingV1EndpointURL =
-            "arbeidsfordeling", sm2013OppgaveTopic = "oppgaveTopic", securityTokenServiceUrl = "sts", personV3EndpointURL = "personv3",
+            syfoserviceQueueName = "syfoserviequeue", applicationPort = 1, applicationThreads = 2, organisasjonEnhetV2EndpointURL =
+            "orgenhetv2", sm2013OppgaveTopic = "oppgaveTopic", securityTokenServiceUrl = "sts", personV3EndpointURL = "personv3",
             kuhrSarApiUrl = "kuhrsarApi", syfosmreglerApiUrl = "syfosmreglerApi", sm2013ManualHandlingTopic = "sm2013ManualHandlingTopic",
             sm2013AutomaticHandlingTopic = "sm2013AutomaticHandlingTopic", sm2013InvalidHandlingTopic = "sm2013InvalidHandlingTopic",
             applicationName = "syfosmmottak"

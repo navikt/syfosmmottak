@@ -31,7 +31,7 @@ val subscriptionVersion = "1.0.5"
 val cxfVersion = "3.2.7"
 val jaxwsApiVersion = "2.3.1"
 val commonsTextVersion = "1.4"
-val navArbeidsfordelingv1Version = "1.1.0"
+val organisasjonEnhetV2Version = "2.1.0"
 val syfooppgaveSchemasVersion = "1.2-SNAPSHOT"
 val confluentVersion = "4.1.1"
 val navPersonv3Version = "3.2.0"
@@ -113,7 +113,7 @@ dependencies {
     implementation("no.nav.syfo.tjenester:fellesformat:$fellesformatVersion")
     implementation("no.nav.syfo.tjenester:kith-hodemelding:$kithHodemeldingVersion")
     implementation("no.nav.syfo.tjenester:kith-apprec:$kithApprecVersion")
-    implementation("no.nav.tjenester:nav-arbeidsfordeling-v1-tjenestespesifikasjon:$navArbeidsfordelingv1Version:jaxws")
+    implementation("no.nav.tjenester:nav-organisasjonEnhet-v2-tjenestespesifikasjon:$organisasjonEnhetV2Version:jaxws")
     implementation("no.nav.syfo:syfooppgave-schemas:$syfooppgaveSchemasVersion")
     implementation("no.nav.tjenester:nav-person-v3-tjenestespesifikasjon:$navPersonv3Version")
 
