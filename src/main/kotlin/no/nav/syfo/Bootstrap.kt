@@ -58,10 +58,12 @@ import no.nav.syfo.mq.producerForQueue
 import no.nav.syfo.sak.avro.PrioritetType
 import no.nav.syfo.sak.avro.ProduceTask
 import no.nav.syfo.ws.createPort
-import no.nav.tjeneste.virksomhet.organisasjonenhet.v2.meldinger.FinnNAVKontorResponse
-import no.nav.tjeneste.virksomhet.organisasjonenhet.v2.meldinger.FinnNAVKontorRequest
-import no.nav.tjeneste.virksomhet.organisasjonenhet.v2.binding.OrganisasjonEnhetV2
-import no.nav.tjeneste.virksomhet.organisasjonenhet.v2.informasjon.Geografi
+import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.binding.ArbeidsfordelingV1
+import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.informasjon.ArbeidsfordelingKriterier
+import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.informasjon.Oppgavetyper
+import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.informasjon.Tema
+import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.meldinger.FinnBehandlendeEnhetListeRequest
+import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.meldinger.FinnBehandlendeEnhetListeResponse
 import no.nav.tjeneste.virksomhet.person.v3.binding.PersonV3
 import no.nav.tjeneste.virksomhet.person.v3.informasjon.GeografiskTilknytning
 import no.nav.tjeneste.virksomhet.person.v3.informasjon.NorskIdent
@@ -189,7 +191,7 @@ suspend fun createListener(
             port { withBasicAuth(credentials.serviceuserUsername, credentials.serviceuserPassword) }
         }
 
-        val orgnaisasjonEnhet = createPort<OrganisasjonEnhetV2>(env.organisasjonEnhetV2EndpointURL) {
+        val arbeidsfordelingV1 = createPort<ArbeidsfordelingV1>(env.arbeidsfordelingV1EndpointURL) {
             port { withSTS(credentials.serviceuserUsername, credentials.serviceuserPassword, env.securityTokenServiceUrl) }
         }
 
@@ -199,7 +201,7 @@ suspend fun createListener(
 
         blockingApplicationLogic(inputconsumer, receiptProducer, syfoserviceProducer, backoutProducer,
                 subscriptionEmottak, kafkaproducerreceivedSykmelding, kafkaproducervalidationResult, syfoSykemeldingRuleClient, sarClient, aktoerIdClient, env,
-                credentials, applicationState, jedis, manualTaskkafkaproducer, personV3, session, orgnaisasjonEnhet)
+                credentials, applicationState, jedis, manualTaskkafkaproducer, personV3, session, arbeidsfordelingV1)
     }
 }
 
@@ -228,7 +230,7 @@ suspend fun blockingApplicationLogic(
     kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
     personV3: PersonV3,
     session: Session,
-    orgnaisasjonEnhetV2: OrganisasjonEnhetV2
+    arbeidsfordelingV1: ArbeidsfordelingV1
 ) = coroutineScope {
     loop@ while (applicationState.running) {
         val message = inputconsumer.receiveNoWait()
@@ -418,7 +420,7 @@ suspend fun blockingApplicationLogic(
 
             if (validationResult.status == Status.MANUAL_PROCESSING) {
                 val geografiskTilknytning = fetchGeografiskTilknytning(personV3, receivedSykmelding)
-                val finnBehandlendeEnhetListeResponse = fetchBehandlendeEnhet(orgnaisasjonEnhetV2, geografiskTilknytning.geografiskTilknytning)
+                val finnBehandlendeEnhetListeResponse = fetchBehandlendeEnhet(arbeidsfordelingV1, geografiskTilknytning.geografiskTilknytning)
                 createTask(kafkaManuelTaskProducer, receivedSykmelding, validationResult, findNavOffice(finnBehandlendeEnhetListeResponse), logKeys, logValues)
             }
 
@@ -536,15 +538,34 @@ suspend fun fetchGeografiskTilknytning(personV3: PersonV3, receivedSykmelding: R
                             .withType(Personidenter().withValue("FNR")))))
         }
 
-suspend fun fetchBehandlendeEnhet(orgnaisasjonEnhetV2: OrganisasjonEnhetV2, geografiskTilknytningResponse: GeografiskTilknytning?): FinnNAVKontorResponse? =
+suspend fun fetchBehandlendeEnhet(arbeidsfordelingV1: ArbeidsfordelingV1, geografiskTilknytning: GeografiskTilknytning?): FinnBehandlendeEnhetListeResponse? =
         retry(callName = "finn_nav_kontor",
                 retryIntervals = arrayOf(500L, 1000L, 3000L, 5000L, 10000L),
                 legalExceptions = *arrayOf(IOException::class, WstxException::class)) {
-                orgnaisasjonEnhetV2.finnNAVKontor(FinnNAVKontorRequest().apply {
-                    geografiskTilknytning = Geografi().apply {
-                            value = geografiskTilknytningResponse?.geografiskTilknytning ?: "0"
-                        }
-                })
+            arbeidsfordelingV1.finnBehandlendeEnhetListe(FinnBehandlendeEnhetListeRequest().apply {
+                val afk = ArbeidsfordelingKriterier()
+                if (geografiskTilknytning?.geografiskTilknytning != null) {
+                    afk.geografiskTilknytning = no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.informasjon.Geografi().apply {
+                        value = geografiskTilknytning.geografiskTilknytning
+                    }
+                }
+                afk.tema = Tema().apply {
+                    value = "SYM"
+                }
+
+                afk.oppgavetype = Oppgavetyper().apply {
+                    value = "BEH_EL_SYM"
+                }
+
+                arbeidsfordelingKriterier = afk
+            })
+        }
+
+fun findNavOffice(finnBehandlendeEnhetListeResponse: FinnBehandlendeEnhetListeResponse?): String =
+        if (finnBehandlendeEnhetListeResponse?.behandlendeEnhetListe?.firstOrNull()?.enhetId == null) {
+            "0393"
+        } else {
+            finnBehandlendeEnhetListeResponse.behandlendeEnhetListe.first().enhetId
         }
 
 fun createTask(kafkaProducer: KafkaProducer<String, ProduceTask>, receivedSykmelding: ReceivedSykmelding, results: ValidationResult, navKontor: String, logKeys: String, logValues: Array<StructuredArgument>) {
@@ -570,13 +591,6 @@ fun createTask(kafkaProducer: KafkaProducer<String, ProduceTask>, receivedSykmel
 
     log.info("Message sendt to topic: aapen-syfo-oppgave-produserOppgave $logKeys", *logValues)
 }
-
-fun findNavOffice(finnNAVKontorResponse: FinnNAVKontorResponse?): String =
-        if (finnNAVKontorResponse?.navKontor == null) {
-            "0393"
-        } else {
-            finnNAVKontorResponse.navKontor.enhetId
-        }
 
 // This functionality is only necessary due to sending out dialogMelding and oppfølginsplan to doctor
 suspend fun startSubscription(
