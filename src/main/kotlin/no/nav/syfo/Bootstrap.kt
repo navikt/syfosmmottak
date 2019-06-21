@@ -579,7 +579,7 @@ suspend fun fetchDiskresjonsKode(personV3: PersonV3, receivedSykmelding: Receive
                 legalExceptions = *arrayOf(IOException::class, WstxException::class)) {
             personV3.hentPerson(HentPersonRequest()
                     .withAktoer(PersonIdent().withIdent(NorskIdent().withIdent(receivedSykmelding.personNrPasient)))
-            ).person?.diskresjonskode?.kodeverksRef
+            ).person?.diskresjonskode?.value
         }
 
 fun createTask(kafkaProducer: KafkaProducer<String, ProduceTask>, receivedSykmelding: ReceivedSykmelding, results: ValidationResult, navKontor: String, logKeys: String, logValues: Array<StructuredArgument>) {
