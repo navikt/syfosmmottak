@@ -111,7 +111,7 @@ fun calculatePercentageStringMatch(str1: String?, str2: String): Double {
     return (maxDistance - distance) / maxDistance
 }
 
-fun findBestSamhandlerPraksis(samhandlers: List<Samhandler>, orgName: String): SamhandlerPraksisMatch? {
+fun findBestSamhandlerPraksis(samhandlers: List<Samhandler>, orgName: String, her_id: String?): SamhandlerPraksisMatch? {
 
     val aktiveSamhandlere = samhandlers.flatMap { it.samh_praksis }
             .filter {
@@ -126,9 +126,18 @@ fun findBestSamhandlerPraksis(samhandlers: List<Samhandler>, orgName: String): S
             .filter { !it.navn.isNullOrEmpty() }
             .toList()
 
-    return aktiveSamhandlere
-            .map {
-                SamhandlerPraksisMatch(it, calculatePercentageStringMatch(it.navn, orgName))
-            }.sortedBy { it.percentageMatch }
-            .firstOrNull()
+    return if (!her_id.isNullOrEmpty() && aktiveSamhandlere.firstOrNull { samhandlerPraksis ->
+                !samhandlerPraksis.her_id.isNullOrEmpty() && samhandlerPraksis.her_id == her_id
+            } != null) {
+            val samhandlerPraksis = aktiveSamhandlere.first {
+                it.her_id.equals(her_id)
+                }
+            SamhandlerPraksisMatch(samhandlerPraksis, "100".toDouble())
+    } else {
+            aktiveSamhandlere
+                .map { samhandlerPraksis ->
+                    SamhandlerPraksisMatch(samhandlerPraksis, calculatePercentageStringMatch(samhandlerPraksis.navn, orgName))
+                }.sortedBy { it.percentageMatch }
+                .firstOrNull()
+    }
 }

@@ -293,7 +293,7 @@ suspend fun blockingApplicationLogic(
             val samhandlerInfo = kuhrSarClient.getSamhandler(personNumberDoctor)
             val samhandlerPraksis = findBestSamhandlerPraksis(
                     samhandlerInfo,
-                    legekontorOrgName)?.samhandlerPraksis
+                    legekontorOrgName, legekontorHerId)?.samhandlerPraksis
 
             when (samhandlerPraksis) {
                 null -> log.info("SamhandlerPraksis is Not found, $logKeys", *logValues)
