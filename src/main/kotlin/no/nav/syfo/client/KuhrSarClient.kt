@@ -88,7 +88,7 @@ data class SamhandlerPraksis(
     val post_postnr: String?,
     val tss_ident: String,
     val navn: String?,
-    val ident: String,
+    val ident: String?,
     val samh_praksis_type_kode: String?,
     val samh_id: String,
     val samh_praksis_id: String,
