@@ -111,33 +111,25 @@ fun calculatePercentageStringMatch(str1: String?, str2: String): Double {
     return (maxDistance - distance) / maxDistance
 }
 
-fun findBestSamhandlerPraksis(samhandlers: List<Samhandler>, orgName: String, her_id: String?): SamhandlerPraksisMatch? {
-
+fun findBestSamhandlerPraksis(samhandlers: List<Samhandler>, orgName: String, herId: String?): SamhandlerPraksisMatch? {
     val aktiveSamhandlere = samhandlers.flatMap { it.samh_praksis }
-            .filter {
-                it.samh_praksis_status_kode == "aktiv"
-            }
+            .filter { praksis -> praksis.samh_praksis_status_kode == "aktiv" }
             .filter {
                 it.samh_praksis_periode
-                        .filter { it.gyldig_fra <= Date() }
-                        .filter { it.gyldig_til == null || it.gyldig_til >= Date() }
+                        .filter { periode -> periode.gyldig_fra <= Date() }
+                        .filter { periode -> periode.gyldig_til == null || periode.gyldig_til >= Date() }
                         .any()
             }
             .filter { !it.navn.isNullOrEmpty() }
-            .toList()
 
-    return if (!her_id.isNullOrEmpty() && aktiveSamhandlere.firstOrNull { samhandlerPraksis ->
-                !samhandlerPraksis.her_id.isNullOrEmpty() && samhandlerPraksis.her_id == her_id
-            } != null) {
-            val samhandlerPraksis = aktiveSamhandlere.first {
-                it.her_id.equals(her_id)
-                }
-            SamhandlerPraksisMatch(samhandlerPraksis, "100".toDouble())
-    } else {
-            aktiveSamhandlere
-                .map { samhandlerPraksis ->
-                    SamhandlerPraksisMatch(samhandlerPraksis, calculatePercentageStringMatch(samhandlerPraksis.navn, orgName))
-                }.sortedBy { it.percentageMatch }
-                .firstOrNull()
+    if (!herId.isNullOrEmpty()) {
+        val samhandlerByHerId = aktiveSamhandlere.firstOrNull { samhandler -> samhandler.her_id == herId }
+        if (samhandlerByHerId != null)
+            return SamhandlerPraksisMatch(samhandlerByHerId, 100.0)
     }
+
+    return aktiveSamhandlere
+            .map { samhandlerPraksis ->
+                SamhandlerPraksisMatch(samhandlerPraksis, calculatePercentageStringMatch(samhandlerPraksis.navn, orgName) * 100)
+            }.maxBy { it.percentageMatch }
 }
