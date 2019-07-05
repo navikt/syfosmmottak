@@ -23,7 +23,7 @@ import org.w3c.dom.Element
 import java.time.LocalDateTime
 import javax.xml.parsers.DocumentBuilderFactory
 
-fun apprecToElemment(apprec: XMLAppRec): Element {
+fun apprecToElement(apprec: XMLAppRec): Element {
     val document = DocumentBuilderFactory.newInstance()
             .newDocumentBuilder()
             .newDocument()
@@ -41,7 +41,7 @@ fun createApprec(fellesformat: XMLEIFellesformat, apprecStatus: ApprecStatus, ap
         }
         )
 
-        any.add(apprecToElemment(XMLAppRec().apply {
+        any.add(apprecToElement(XMLAppRec().apply {
             msgType = XMLCS().apply {
                 v = SyfoSmMottakConstant.apprec.string
             }
