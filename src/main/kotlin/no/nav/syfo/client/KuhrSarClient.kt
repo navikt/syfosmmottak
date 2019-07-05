@@ -14,8 +14,11 @@ import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.http.ContentType
 import io.ktor.util.KtorExperimentalAPI
+import net.logstash.logback.argument.StructuredArgument
+import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.syfo.VaultCredentials
 import no.nav.syfo.helpers.retry
+import no.nav.syfo.log
 import org.apache.commons.text.similarity.LevenshteinDistance
 import java.util.Date
 import kotlin.math.max
@@ -111,8 +114,23 @@ fun calculatePercentageStringMatch(str1: String?, str2: String): Double {
     return (maxDistance - distance) / maxDistance
 }
 
-fun findBestSamhandlerPraksis(samhandlers: List<Samhandler>, orgName: String, herId: String?): SamhandlerPraksisMatch? {
-    val aktiveSamhandlere = samhandlers.flatMap { it.samh_praksis }
+fun List<SamhandlerPeriode>.formaterPerioder() = joinToString(",", "periode(", ") ") { periode ->
+    "${periode.gyldig_fra} -> ${periode.gyldig_til}"
+}
+
+fun List<Samhandler>.formaterPraksis() = flatMap { it.samh_praksis }
+        .joinToString(",", "praksis(", ") ") { praksis ->
+            "${praksis.navn}: ${praksis.samh_praksis_status_kode} ${praksis.samh_praksis_periode.formaterPerioder()}"
+        }
+
+fun findBestSamhandlerPraksis(
+    samhandlere: List<Samhandler>,
+    orgName: String,
+    herId: String?,
+    logKeys: String,
+    logValues: Array<StructuredArgument>
+): SamhandlerPraksisMatch? {
+    val aktiveSamhandlere = samhandlere.flatMap { it.samh_praksis }
             .filter { praksis -> praksis.samh_praksis_status_kode == "aktiv" }
             .filter {
                 it.samh_praksis_periode
@@ -121,6 +139,12 @@ fun findBestSamhandlerPraksis(samhandlers: List<Samhandler>, orgName: String, he
                         .any()
             }
             .filter { !it.navn.isNullOrEmpty() }
+
+    if (aktiveSamhandlere.isEmpty()) {
+        log.info("Fant ingen aktive samhandlere. Meta: ${samhandlere.formaterPraksis()} {} $logKeys",
+                keyValue("antallPraksiser", samhandlere.size),
+                *logValues)
+    }
 
     if (!herId.isNullOrEmpty()) {
         val samhandlerByHerId = aktiveSamhandlere.firstOrNull { samhandler -> samhandler.her_id == herId }
