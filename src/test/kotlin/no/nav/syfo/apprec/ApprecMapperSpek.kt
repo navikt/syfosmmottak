@@ -5,6 +5,7 @@ import no.kith.xmlstds.msghead._2006_05_24.XMLMsgHead
 import no.nav.syfo.SyfoSmMottakConstant
 import no.nav.syfo.fellesformatUnmarshaller
 import no.nav.syfo.get
+import no.nav.syfo.serializeAppRec
 import no.nav.syfo.utils.getFileAsString
 import no.trygdeetaten.xml.eiff._1.XMLEIFellesformat
 import no.trygdeetaten.xml.eiff._1.XMLMottakenhetBlokk
@@ -13,14 +14,20 @@ import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.io.StringReader
 import java.time.LocalDateTime
+import javax.xml.bind.JAXBContext
 
 object ApprecMapperSpek : Spek({
     val stringInput = getFileAsString("src/test/resources/sykemelding2013Regelsettversjon2.xml")
     val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
+    val apprecUnmarshaller = JAXBContext.newInstance(XMLEIFellesformat::class.java, XMLAppRec::class.java, XMLMottakenhetBlokk::class.java)
+            .createUnmarshaller()
+
+    fun marshalAndUnmarshal(fellesformat: XMLEIFellesformat): XMLEIFellesformat =
+            apprecUnmarshaller.unmarshal(StringReader(serializeAppRec(fellesformat))) as XMLEIFellesformat
 
     describe("Duplicate AppRec") {
         val apprecErrorDuplicate = createApprecError("Duplikat! - Denne sykmeldingen er mottatt tidligere. Skal ikke sendes på nytt.")
-        val ff = createApprec(fellesformat, ApprecStatus.avvist)
+        val ff = marshalAndUnmarshal(createApprec(fellesformat, ApprecStatus.avvist, listOf()))
         ff.get<XMLAppRec>().error.add(apprecErrorDuplicate)
         it("Has the same ediLoggId as the source") {
             ff.get<XMLMottakenhetBlokk>().ediLoggId shouldEqual fellesformat.get<XMLMottakenhetBlokk>().ediLoggId
@@ -40,7 +47,7 @@ object ApprecMapperSpek : Spek({
     }
 
     describe("OK AppRec") {
-        val ff = createApprec(fellesformat, ApprecStatus.ok)
+        val ff = marshalAndUnmarshal(createApprec(fellesformat, ApprecStatus.ok, listOf()))
         it("Sets ebRole to ebRoleNav") {
             ff.get<XMLMottakenhetBlokk>().ebRole shouldEqual SyfoSmMottakConstant.ebRoleNav.string
         }
@@ -127,7 +134,7 @@ object ApprecMapperSpek : Spek({
     }
     describe("Error AppRec") {
         val apprecErrorinvalidFnrSize = createApprecError("Fødselsnummer/D-nummer kan passerer ikke modulus 11")
-        val ff = createApprec(fellesformat, ApprecStatus.avvist)
+        val ff = marshalAndUnmarshal(createApprec(fellesformat, ApprecStatus.avvist, listOf()))
         ff.get<XMLAppRec>().error.add(apprecErrorinvalidFnrSize)
         it("Sets appRec error dn to duplicate") {
             ff.get<XMLAppRec>().error.first().dn shouldEqual apprecErrorinvalidFnrSize.dn

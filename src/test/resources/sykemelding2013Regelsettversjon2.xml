@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <EI_fellesformat xmlns="http://www.trygdeetaten.no/xml/eiff/1/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <MsgHead xmlns="http://www.kith.no/xmlstds/msghead/2006-05-24" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
         <MsgInfo>
@@ -17,7 +17,7 @@
                     </Ident>
                     <Ident>
                         <Id>223456789</Id>
-                        <TypeId DN="Organisasjonsnummeret i Enhetsregister (Brønnøysund)" S="1.16.578.1.12.3.1.1.9051" V="ENH" />
+                        <TypeId DN="Organisasjonsnummeret i Enhetsregister (BrÃ¸nnÃ¸ysund)" S="1.16.578.1.12.3.1.1.9051" V="ENH" />
                     </Ident>
                     <Ident>
                         <Id>0123</Id>
@@ -30,7 +30,7 @@
                         <City>SANDVIKA</City>
                     </Address>
                     <HealthcareProfessional>
-                        <FamilyName>Sødal</FamilyName>
+                        <FamilyName>SÃ¸dal</FamilyName>
                         <MiddleName>Fos</MiddleName>
                         <GivenName>Ingvild</GivenName>
                         <Ident>
@@ -39,7 +39,7 @@
                         </Ident>
                         <Ident>
                             <Id>12343567</Id>
-                            <TypeId DN="Fødselsnummer" S="2.16.578.1.12.4.1.1.8327" V="FNR" />
+                            <TypeId DN="FÃ¸dselsnummer" S="2.16.578.1.12.4.1.1.8327" V="FNR" />
                         </Ident>
                         <Ident>
                             <Id>12343568</Id>
@@ -79,7 +79,7 @@
                 <DateOfBirth>1989-12-12</DateOfBirth>
                 <Ident>
                     <Id>12128913767</Id>
-                    <TypeId DN="Fødselsnummer" S="2.16.578.1.12.4.1.1.8327" V="FNR" />
+                    <TypeId DN="FÃ¸dselsnummer" S="2.16.578.1.12.4.1.1.8327" V="FNR" />
                 </Ident>
                 <Address>
                     <Type DN="Postadresse" V="PST" />
@@ -104,13 +104,13 @@
                             </Navn>
                             <Fodselsnummer>
                                 <Id xmlns="http://www.kith.no/xmlstds/felleskomponent1">12128913767</Id>
-                                <TypeId xmlns="http://www.kith.no/xmlstds/felleskomponent1" DN="Fødselsnummer" S="2.16.578.1.12.4.1.1.8116" V="FNR" />
+                                <TypeId xmlns="http://www.kith.no/xmlstds/felleskomponent1" DN="FÃ¸dselsnummer" S="2.16.578.1.12.4.1.1.8116" V="FNR" />
                             </Fodselsnummer>
-                            <NavnFastlege>Jørn Gilberg</NavnFastlege>
+                            <NavnFastlege>JÃ¸rn Gilberg</NavnFastlege>
                             <NAVKontor>0219</NAVKontor>
                         </Pasient>
                         <Arbeidsgiver>
-                            <HarArbeidsgiver DN="Én arbeidsgiver" V="1" />
+                            <HarArbeidsgiver DN="Ã‰n arbeidsgiver" V="1" />
                             <NavnArbeidsgiver>Pridok As</NavnArbeidsgiver>
                             <Yrkesbetegnelse>Test Yrke Pasient 9</Yrkesbetegnelse>
                             <Stillingsprosent>100</Stillingsprosent>
@@ -126,7 +126,7 @@
                                 <PeriodeTOMDato>2018-08-04</PeriodeTOMDato>
                                 <AktivitetIkkeMulig>
                                     <MedisinskeArsaker>
-                                        <Arsakskode DN="Helsetilstanden hindrer pasienten i å være i aktivitet" V="1" />
+                                        <Arsakskode DN="Helsetilstanden hindrer pasienten i Ã¥ vÃ¦re i aktivitet" V="1" />
                                     </MedisinskeArsaker>
                                     <Arbeidsplassen />
                                 </AktivitetIkkeMulig>
@@ -139,7 +139,7 @@
                         <Tiltak />
                         <MeldingTilNav>
                             <BistandNAVUmiddelbart>true</BistandNAVUmiddelbart>
-                            <BeskrivBistandNAV>Test Ønsker Bistand</BeskrivBistandNAV>
+                            <BeskrivBistandNAV>Test Ã˜nsker Bistand</BeskrivBistandNAV>
                         </MeldingTilNav>
                         <KontaktMedPasient>
                             <BehandletDato>2018-07-31T00:00:00+02:00</BehandletDato>
@@ -151,7 +151,7 @@
                             </Navn>
                             <Id>
                                 <Id xmlns="http://www.kith.no/xmlstds/felleskomponent1">300631044141</Id>
-                                <TypeId xmlns="http://www.kith.no/xmlstds/felleskomponent1" DN="Fødselsnummer" S="2.16.578.1.12.4.1.1.8116" V="FNR" />
+                                <TypeId xmlns="http://www.kith.no/xmlstds/felleskomponent1" DN="FÃ¸dselsnummer" S="2.16.578.1.12.4.1.1.8116" V="FNR" />
                             </Id>
                             <Id>
                                 <Id xmlns="http://www.kith.no/xmlstds/felleskomponent1">123456</Id>
@@ -184,7 +184,7 @@
                     <DigestValue>QlR2pL73ef1VBxa0jRN3ECV6oi+RDGPP+8vETLlKjjU=</DigestValue>
                 </Reference>
             </SignedInfo>
-            <SignatureValue>fdgljndfsgnjlljnfdgljndfgljnølnjcblvnxjnjlcbnjknjkbdfxnkjxcfkjnjdfnbluiseajdsjf</SignatureValue>
+            <SignatureValue>fdgljndfsgnjlljnfdgljndfgljnÃ¸lnjcblvnxjnjlcbnjknjkbdfxnkjxcfkjnjdfnbluiseajdsjf</SignatureValue>
             <KeyInfo>
                 <X509Data>
                     <X509Certificate>tersjndgfnjknjkdfgnjkdfgkndfsgnjkldfgkjndgfknjnjkfdgnm,m ,xvm,fjvcxjknjnkcvxjncvxjnxcvjkncxvjnkjkncvxjkfdgjkdfgjknjn</X509Certificate>

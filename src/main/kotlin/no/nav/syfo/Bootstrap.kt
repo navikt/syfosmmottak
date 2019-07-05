@@ -22,7 +22,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import net.logstash.logback.argument.StructuredArgument
 import net.logstash.logback.argument.StructuredArguments.keyValue
-import no.kith.xmlstds.apprec._2004_11_21.XMLAppRec
 import no.kith.xmlstds.apprec._2004_11_21.XMLCV
 import no.kith.xmlstds.msghead._2006_05_24.XMLIdent
 import no.kith.xmlstds.msghead._2006_05_24.XMLMsgHead
@@ -474,11 +473,12 @@ fun sendReceipt(
 ) {
     APPREC_COUNTER.inc()
     receiptProducer.send(session.createTextMessage().apply {
-        val apprec = createApprec(fellesformat, apprecStatus)
-        apprec.get<XMLAppRec>().error.addAll(apprecErrors)
-        text = apprecMarshaller.toString(apprec)
+        val apprec = createApprec(fellesformat, apprecStatus, apprecErrors)
+        text = serializeAppRec(apprec)
     })
 }
+
+fun serializeAppRec(fellesformat: XMLEIFellesformat) = apprecFFJaxbMarshaller.toString(fellesformat)
 
 fun Marshaller.toString(input: Any): String = StringWriter().use {
     marshal(input, it)

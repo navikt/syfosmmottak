@@ -29,8 +29,10 @@ val fellesformatUnmarshaller: Unmarshaller = fellesformatJaxBContext.createUnmar
     setAdapter(LocalDateXmlAdapter::class.java, XMLDateAdapter())
 }
 
-val apprecJaxBContext: JAXBContext = JAXBContext.newInstance(XMLEIFellesformat::class.java, XMLAppRec::class.java)
-val apprecMarshaller: Marshaller = apprecJaxBContext.createMarshaller()
+val apprecJaxbContext: JAXBContext = JAXBContext.newInstance(XMLAppRec::class.java)
+val apprecJaxbMarshaller: Marshaller = apprecJaxbContext.createMarshaller()
+val apprecFFJaxbContext: JAXBContext = JAXBContext.newInstance(XMLEIFellesformat::class.java)
+val apprecFFJaxbMarshaller: Marshaller = apprecFFJaxbContext.createMarshaller()
 
 val sykmeldingMarshaller: Marshaller = JAXBContext.newInstance(HelseOpplysningerArbeidsuforhet::class.java).createMarshaller()
         .apply { setProperty(JAXB_ENCODING, "ISO-8859-1") }

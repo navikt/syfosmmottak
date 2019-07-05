@@ -38,6 +38,7 @@ val navPersonv3Version = "3.2.0"
 val javaxAnnotationApiVersion = "1.3.2"
 val jaxwsToolsVersion = "2.3.1"
 val jaxbRuntimeVersion = "2.4.0-b180830.0438"
+val staxApiVersion = "1.0-2"
 
 plugins {
     java

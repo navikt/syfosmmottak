@@ -14,13 +14,24 @@ import no.kith.xmlstds.msghead._2006_05_24.XMLIdent
 import no.kith.xmlstds.msghead._2006_05_24.XMLMsgHead
 import no.kith.xmlstds.msghead._2006_05_24.XMLOrganisation
 import no.nav.syfo.SyfoSmMottakConstant
+import no.nav.syfo.apprecJaxbMarshaller
 import no.nav.syfo.get
 import no.nav.syfo.model.RuleInfo
 import no.trygdeetaten.xml.eiff._1.XMLEIFellesformat
 import no.trygdeetaten.xml.eiff._1.XMLMottakenhetBlokk
+import org.w3c.dom.Element
 import java.time.LocalDateTime
+import javax.xml.parsers.DocumentBuilderFactory
 
-fun createApprec(fellesformat: XMLEIFellesformat, apprecStatus: ApprecStatus): XMLEIFellesformat {
+fun apprecToElemment(apprec: XMLAppRec): Element {
+    val document = DocumentBuilderFactory.newInstance()
+            .newDocumentBuilder()
+            .newDocument()
+    apprecJaxbMarshaller.marshal(apprec, document)
+    return document.documentElement
+}
+
+fun createApprec(fellesformat: XMLEIFellesformat, apprecStatus: ApprecStatus, apprecErrors: List<AppRecCV>): XMLEIFellesformat {
     val fellesformatApprec = XMLEIFellesformat().apply {
         any.add(XMLMottakenhetBlokk().apply {
             ediLoggId = fellesformat.get<XMLMottakenhetBlokk>().ediLoggId
@@ -29,7 +40,8 @@ fun createApprec(fellesformat: XMLEIFellesformat, apprecStatus: ApprecStatus): X
             ebAction = SyfoSmMottakConstant.ebActionSvarmelding.string
         }
         )
-        any.add(XMLAppRec().apply {
+
+        any.add(apprecToElemment(XMLAppRec().apply {
             msgType = XMLCS().apply {
                 v = SyfoSmMottakConstant.apprec.string
             }
@@ -58,8 +70,9 @@ fun createApprec(fellesformat: XMLEIFellesformat, apprecStatus: ApprecStatus): X
                 issueDate = fellesformat.get<XMLMsgHead>().msgInfo.genDate
                 id = fellesformat.get<XMLMsgHead>().msgInfo.msgId
             }
-        }
-        )
+
+            error.addAll(apprecErrors)
+        }))
     }
 
     return fellesformatApprec
