@@ -1,7 +1,7 @@
 package no.nav.syfo
 
+import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.syfo.utils.getFileAsString
-import no.trygdeetaten.xml.eiff._1.XMLEIFellesformat
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe

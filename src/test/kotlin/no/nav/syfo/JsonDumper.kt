@@ -8,7 +8,7 @@ import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.toSykmelding
 import no.nav.syfo.utils.getFileAsString
-import no.trygdeetaten.xml.eiff._1.XMLEIFellesformat
+import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import java.io.StringReader
 import java.time.LocalDateTime
 

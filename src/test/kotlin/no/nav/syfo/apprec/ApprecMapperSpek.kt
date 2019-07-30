@@ -1,14 +1,14 @@
 package no.nav.syfo.apprec
 
-import no.kith.xmlstds.apprec._2004_11_21.XMLAppRec
-import no.kith.xmlstds.msghead._2006_05_24.XMLMsgHead
+import no.nav.helse.msgHead.XMLMsgHead
+import no.nav.helse.apprecV1.XMLAppRec
 import no.nav.syfo.SyfoSmMottakConstant
 import no.nav.syfo.fellesformatUnmarshaller
 import no.nav.syfo.get
 import no.nav.syfo.serializeAppRec
 import no.nav.syfo.utils.getFileAsString
-import no.trygdeetaten.xml.eiff._1.XMLEIFellesformat
-import no.trygdeetaten.xml.eiff._1.XMLMottakenhetBlokk
+import no.nav.helse.eiFellesformat.XMLEIFellesformat
+import no.nav.helse.eiFellesformat.XMLMottakenhetBlokk
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
