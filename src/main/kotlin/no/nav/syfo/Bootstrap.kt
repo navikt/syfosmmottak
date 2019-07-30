@@ -22,12 +22,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import net.logstash.logback.argument.StructuredArgument
 import net.logstash.logback.argument.StructuredArguments.keyValue
-import no.kith.xmlstds.apprec._2004_11_21.XMLCV
-import no.kith.xmlstds.msghead._2006_05_24.XMLIdent
-import no.kith.xmlstds.msghead._2006_05_24.XMLMsgHead
-import no.kith.xmlstds.msghead._2006_05_24.XMLSender
 import no.nav.emottak.subscription.StartSubscriptionRequest
 import no.nav.emottak.subscription.SubscriptionPort
+import no.nav.helse.apprecV1.XMLCV
+import no.nav.helse.eiFellesformat.XMLEIFellesformat
+import no.nav.helse.eiFellesformat.XMLMottakenhetBlokk
+import no.nav.helse.msgHead.XMLIdent
+import no.nav.helse.msgHead.XMLMsgHead
+import no.nav.helse.msgHead.XMLSender
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 import no.nav.syfo.api.registerNaisApi
 import no.nav.syfo.apprec.ApprecStatus
@@ -72,8 +74,6 @@ import no.nav.tjeneste.virksomhet.person.v3.informasjon.Personidenter
 import no.nav.tjeneste.virksomhet.person.v3.meldinger.HentGeografiskTilknytningRequest
 import no.nav.tjeneste.virksomhet.person.v3.meldinger.HentGeografiskTilknytningResponse
 import no.nav.tjeneste.virksomhet.person.v3.meldinger.HentPersonRequest
-import no.trygdeetaten.xml.eiff._1.XMLEIFellesformat
-import no.trygdeetaten.xml.eiff._1.XMLMottakenhetBlokk
 import org.apache.cxf.ws.addressing.WSAddressingFeature
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory

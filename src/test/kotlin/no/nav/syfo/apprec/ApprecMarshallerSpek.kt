@@ -3,7 +3,7 @@ package no.nav.syfo.apprec
 import no.nav.syfo.fellesformatUnmarshaller
 import no.nav.syfo.serializeAppRec
 import no.nav.syfo.utils.getFileAsString
-import no.trygdeetaten.xml.eiff._1.XMLEIFellesformat
+import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import org.amshove.kluent.shouldContain
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe

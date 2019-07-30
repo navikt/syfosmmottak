@@ -8,7 +8,7 @@ version = "1.0.28"
 
 val artemisVersion = "2.6.4"
 val coroutinesVersion = "1.0.1"
-val fellesformatVersion = "1.0"
+val fellesformatVersion = "2019.07.30-12-26-5c924ef4f04022bbb850aaf299eb8e4464c1ca6a"
 val ibmMqVersion = "9.1.0.0"
 val javaxActivationVersion = "1.1.1"
 val jacksonVersion = "2.9.7"
@@ -17,27 +17,27 @@ val jaxbVersion = "2.3.0.1"
 val jedisVersion = "2.9.0"
 val kafkaVersion = "2.0.0"
 val kafkaEmbeddedVersion = "1.0.0"
-val kithHodemeldingVersion = "1.1"
-val kithApprecVersion = "1.1"
+val kithHodemeldingVersion = "2019.07.30-12-26-5c924ef4f04022bbb850aaf299eb8e4464c1ca6a"
+val kithApprecVersion = "2019.07.30-04-23-2a0d1388209441ec05d2e92a821eed4f796a3ae2"
 val kluentVersion = "1.39"
-val ktorVersion = "1.2.0"
+val ktorVersion = "1.2.2"
 val logbackVersion = "1.2.3"
 val logstashEncoderVersion = "5.1"
 val prometheusVersion = "0.6.0"
-val smCommonVersion = "1.0.20"
+val smCommonVersion = "1.0.22"
 val spekVersion = "2.0.5"
-val sykmeldingVersion = "1.1-SNAPSHOT"
-val subscriptionVersion = "1.0.5"
+val sykmeldingVersion = "2019.07.29-02-53-86b22e73f7843e422ee500b486dac387a582f2d1"
 val cxfVersion = "3.2.7"
 val jaxwsApiVersion = "2.3.1"
 val commonsTextVersion = "1.4"
-val navArbeidsfordelingv1Version = "1.1.0"
-val syfooppgaveSchemasVersion = "1.2-SNAPSHOT"
+val navArbeidsfordelingv1Version = "1.2019.07.11-06.47-b55f47790a9d"
+val syfooppgaveSchemasVersion = "c8be932543e7356a34690ce7979d494c5d8516d8"
 val confluentVersion = "4.1.1"
-val navPersonv3Version = "3.2.0"
+val navPersonv3Version = "1.2019.07.11-06.47-b55f47790a9d"
 val javaxAnnotationApiVersion = "1.3.2"
 val jaxwsToolsVersion = "2.3.1"
 val jaxbRuntimeVersion = "2.4.0-b180830.0438"
+val javaTimeAdapterVersion = "1.1.3"
 
 plugins {
     java
@@ -61,17 +61,12 @@ buildscript {
 }
 
 repositories {
-    maven(url= "https://repo.adeo.no/repository/maven-snapshots/")
-    maven(url= "https://repo.adeo.no/repository/maven-releases/")
+    mavenCentral()
+    jcenter()
     maven(url= "https://dl.bintray.com/spekframework/spek-dev")
     maven(url= "http://packages.confluent.io/maven/")
     maven(url= "https://kotlin.bintray.com/kotlinx")
-    mavenCentral()
-    jcenter()
-}
-
-val navWsdl= configurations.create("navWsdl") {
-    setTransitive(false)
+    maven(url = "https://oss.sonatype.org/content/groups/staging/")
 }
 
 dependencies {
@@ -83,9 +78,6 @@ dependencies {
     wsdl2java ("com.sun.xml.ws:jaxws-tools:$jaxwsToolsVersion") {
         exclude(group = "com.sun.xml.ws", module = "policy")
     }
-
-    navWsdl("no.nav.tjenester:subscription-nav-emottak-eletter-web:$subscriptionVersion@zip")
-
 
     implementation(kotlin("stdlib"))
 
@@ -110,12 +102,12 @@ dependencies {
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
     implementation("no.nav.helse.xml:sm2013:$sykmeldingVersion")
-    implementation("no.nav.syfo.tjenester:fellesformat:$fellesformatVersion")
-    implementation("no.nav.syfo.tjenester:kith-hodemelding:$kithHodemeldingVersion")
-    implementation("no.nav.syfo.tjenester:kith-apprec:$kithApprecVersion")
-    implementation("no.nav.tjenester:nav-arbeidsfordeling-v1-tjenestespesifikasjon:$navArbeidsfordelingv1Version:jaxws")
-    implementation("no.nav.syfo:syfooppgave-schemas:$syfooppgaveSchemasVersion")
-    implementation("no.nav.tjenester:nav-person-v3-tjenestespesifikasjon:$navPersonv3Version")
+    implementation("no.nav.helse.xml:xmlfellesformat:$fellesformatVersion")
+    implementation("no.nav.helse.xml:kith-hodemelding:$kithHodemeldingVersion")
+    implementation("no.nav.helse.xml:kith-apprec:$kithApprecVersion")
+    implementation("no.nav.tjenestespesifikasjoner:arbeidsfordeling-v1-tjenestespesifikasjon:$navArbeidsfordelingv1Version")
+    implementation("no.nav.syfo.schemas:syfosmoppgave-avro:$syfooppgaveSchemasVersion")
+    implementation("no.nav.tjenestespesifikasjoner:person-v3-tjenestespesifikasjon:$navPersonv3Version")
 
     implementation("no.nav.syfo.sm:syfosm-common-models:$smCommonVersion")
     implementation("no.nav.syfo.sm:syfosm-common-networking:$smCommonVersion")
@@ -127,6 +119,8 @@ dependencies {
     implementation("redis.clients:jedis:$jedisVersion")
 
     implementation("org.apache.commons:commons-text:$commonsTextVersion")
+
+    implementation("com.migesok", "jaxb-java-time-adapters", javaTimeAdapterVersion)
 
     implementation("javax.xml.ws:jaxws-api:$jaxwsApiVersion")
     implementation("javax.annotation:javax.annotation-api:$javaxAnnotationApiVersion")
@@ -173,21 +167,10 @@ tasks {
         kotlinOptions.jvmTarget = "1.8"
     }
 
-    val copyWsdlFromArtifacts =  create("copyWsdlFromArtifacts", Copy::class) {
-        includeEmptyDirs = false
-
-        navWsdl.asFileTree.forEach { artifact ->
-            from(zipTree(artifact))
-        }
-        into("$buildDir/schema/")
-        include("**/*.xsd", "**/*.wsdl")
-    }
-
     withType<Wsdl2JavaTask> {
-        dependsOn(copyWsdlFromArtifacts)
-        wsdlDir = file("$buildDir/schema")
+        wsdlDir = file("$projectDir/src/main/resources/wsdl")
         wsdlsToGenerate = listOf(
-                mutableListOf("-xjc", "-b", "$projectDir/src/main/xjb/binding.xml", "$buildDir/schema/subscription.wsdl")
+                mutableListOf("-xjc", "-b", "$projectDir/src/main/resources/xjb/binding.xml", "$projectDir/src/main/resources/wsdl/subscription.wsdl")
         )
     }
 
