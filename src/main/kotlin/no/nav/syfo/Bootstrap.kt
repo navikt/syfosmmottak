@@ -295,9 +295,8 @@ suspend fun blockingApplicationLogic(
 
             when (samhandlerPraksis) {
                 null -> log.info("SamhandlerPraksis is Not found, $logKeys", *logValues)
-                else -> if (!samhandlerParksisisLegevakt(samhandlerPraksis)){
-                    startSubscription(subscriptionEmottak, samhandlerPraksis, msgHead, receiverBlock, logKeys, logValues)}
-                else {
+                else -> if (!samhandlerParksisisLegevakt(samhandlerPraksis)) {
+                    startSubscription(subscriptionEmottak, samhandlerPraksis, msgHead, receiverBlock, logKeys, logValues) } else {
                     log.info("SamhandlerPraksis is Legevakt, subscription_emottak is not created, $logKeys", *logValues)
                 }
             }
