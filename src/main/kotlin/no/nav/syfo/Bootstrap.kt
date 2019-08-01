@@ -295,7 +295,11 @@ suspend fun blockingApplicationLogic(
 
             when (samhandlerPraksis) {
                 null -> log.info("SamhandlerPraksis is Not found, $logKeys", *logValues)
-                else -> startSubscription(subscriptionEmottak, samhandlerPraksis, msgHead, receiverBlock, logKeys, logValues)
+                else -> if (!samhandlerParksisisLegevakt(samhandlerPraksis)){
+                    startSubscription(subscriptionEmottak, samhandlerPraksis, msgHead, receiverBlock, logKeys, logValues)}
+                else {
+                    log.info("SamhandlerPraksis is Legevakt, subscription_emottak is not created, $logKeys", *logValues)
+                }
             }
 
             try {
@@ -604,6 +608,10 @@ fun createTask(kafkaProducer: KafkaProducer<String, ProduceTask>, receivedSykmel
 
     log.info("Message sendt to topic: aapen-syfo-oppgave-produserOppgave $logKeys", *logValues)
 }
+
+fun samhandlerParksisisLegevakt(samhandlerPraksis: SamhandlerPraksis): Boolean =
+        !samhandlerPraksis.samh_praksis_type_kode.isNullOrEmpty() && (samhandlerPraksis.samh_praksis_type_kode == "LEVA" ||
+                samhandlerPraksis.samh_praksis_type_kode == "LEKO")
 
 // This functionality is only necessary due to sending out dialogMelding and oppfølginsplan to doctor
 suspend fun startSubscription(

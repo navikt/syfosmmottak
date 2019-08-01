@@ -21,8 +21,6 @@ object KuhrSarClientSpek : Spek({
     describe("KuhrSarClient") {
         val samhandler: List<Samhandler> = objectMapper.readValue(KuhrSarClientSpek::class.java.getResourceAsStream("/kuhr_sahr_response.json").readBytes().toString(Charsets.UTF_8))
         val samhandlerIngenAktive: List<Samhandler> = objectMapper.readValue(KuhrSarClientSpek::class.java.getResourceAsStream("/kuhr_sahr_ingen_aktive_response.json").readBytes().toString(Charsets.UTF_8))
-        val samhandlerleva: List<Samhandler> = objectMapper.readValue(KuhrSarClientSpek::class.java.getResourceAsStream("/kuhr_sahr_leva.json").readBytes().toString(Charsets.UTF_8))
-        val samhandlerleko: List<Samhandler> = objectMapper.readValue(KuhrSarClientSpek::class.java.getResourceAsStream("/kuhr_sahr_leko.json").readBytes().toString(Charsets.UTF_8))
 
         it("Finner en aktiv samhandler praksis") {
             val match = findBestSamhandlerPraksis(samhandler, "SomeInvalidName", null, "", arrayOf())
@@ -53,18 +51,6 @@ object KuhrSarClientSpek : Spek({
 
         it("Returnerer ingen samhandler praksiser om det ikke er noen aktive med aktive praksis perioder") {
             val match = findBestSamhandlerPraksis(samhandlerIngenAktive, "", "12345", "", arrayOf())
-
-            match shouldEqual null
-        }
-
-        it("Returnerer ingen samhandler praksiser pga typen samhandler praksis er LEVA") {
-            val match = findBestSamhandlerPraksis(samhandlerleva, "Testlegesenteret", "12345", "", arrayOf())
-
-            match shouldEqual null
-        }
-
-        it("Returnerer ingen samhandler praksiser pga typen samhandler praksis er LEKO") {
-            val match = findBestSamhandlerPraksis(samhandlerleko, "Testlegesenteret", "12345", "", arrayOf())
 
             match shouldEqual null
         }
