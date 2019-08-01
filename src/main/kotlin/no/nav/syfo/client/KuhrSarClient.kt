@@ -139,6 +139,8 @@ fun findBestSamhandlerPraksis(
                         .any()
             }
             .filter { !it.navn.isNullOrEmpty() }
+            .filter { it.samh_praksis_type_kode != "LEVA"}
+            .filter { it.samh_praksis_type_kode != "LEKO"}
 
     if (aktiveSamhandlere.isEmpty()) {
         log.info("Fant ingen aktive samhandlere. Meta: ${samhandlere.formaterPraksis()} {} $logKeys",
