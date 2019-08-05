@@ -119,6 +119,8 @@ data class ApplicationState(
 
 val log = LoggerFactory.getLogger("nav.syfosmmottak-application")!!
 
+const val NAV_OPPFOLGING_UTLAND_KONTOR_NR = "0393"
+
 @KtorExperimentalAPI
 fun main() = runBlocking(coroutineContext) {
     val env = Environment()
@@ -286,7 +288,8 @@ suspend fun blockingApplicationLogic(
             when (samhandlerPraksis) {
                 null -> log.info("SamhandlerPraksis is Not found, {}", fields(loggingMeta))
                 else -> if (!samhandlerParksisisLegevakt(samhandlerPraksis)) {
-                    startSubscription(subscriptionEmottak, samhandlerPraksis, msgHead, receiverBlock, loggingMeta) } else {
+                    startSubscription(subscriptionEmottak, samhandlerPraksis, msgHead, receiverBlock, loggingMeta)
+                } else {
                     log.info("SamhandlerPraksis is Legevakt, subscription_emottak is not created, {}", fields(loggingMeta))
                 }
             }
@@ -420,7 +423,8 @@ suspend fun blockingApplicationLogic(
                 if (finnBehandlendeEnhetListeResponse?.behandlendeEnhetListe?.firstOrNull()?.enhetId == null) {
                     log.error("arbeidsfordeling fant ingen nav-enheter {}", fields(loggingMeta))
                 }
-                createTask(kafkaManuelTaskProducer, receivedSykmelding, validationResult, finnBehandlendeEnhetListeResponse?.behandlendeEnhetListe?.firstOrNull()?.enhetId ?: "0393", loggingMeta)
+                createTask(kafkaManuelTaskProducer, receivedSykmelding, validationResult, finnBehandlendeEnhetListeResponse?.behandlendeEnhetListe?.firstOrNull()?.enhetId
+                        ?: NAV_OPPFOLGING_UTLAND_KONTOR_NR, loggingMeta)
             }
 
             kafkaproducerreceivedSykmelding.send(ProducerRecord(topicName, receivedSykmelding.sykmelding.id, receivedSykmelding))
