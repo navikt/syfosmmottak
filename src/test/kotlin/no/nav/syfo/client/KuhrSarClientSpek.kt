@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import no.nav.syfo.LoggingMeta
 import org.amshove.kluent.shouldBeLessThan
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
@@ -23,34 +24,34 @@ object KuhrSarClientSpek : Spek({
         val samhandlerIngenAktive: List<Samhandler> = objectMapper.readValue(KuhrSarClientSpek::class.java.getResourceAsStream("/kuhr_sahr_ingen_aktive_response.json").readBytes().toString(Charsets.UTF_8))
 
         it("Finner en aktiv samhandler praksis") {
-            val match = findBestSamhandlerPraksis(samhandler, "SomeInvalidName", null, "", arrayOf())
+            val match = findBestSamhandlerPraksis(samhandler, "SomeInvalidName", null, LoggingMeta("", "", ""))
                     ?: fail("Unable to find samhandler praksis")
             match.percentageMatch shouldBeLessThan 50.0
         }
 
         it("Foretrekker samhandler praksisen med en matchende her id selv om navnet er likt") {
-            val match = findBestSamhandlerPraksis(samhandler, "Testlegesenteret", "12345", "", arrayOf())
+            val match = findBestSamhandlerPraksis(samhandler, "Testlegesenteret", "12345", LoggingMeta("", "", ""))
                     ?: fail("Unable to find samhandler praksis")
             match.percentageMatch shouldEqual 100.0
             match.samhandlerPraksis.samh_praksis_id shouldEqual "1000456788"
         }
 
         it("Finner en samhandler praksis når navnet matcher 100%") {
-            val match = findBestSamhandlerPraksis(samhandler, "Testlegesenteret", null, "", arrayOf())
+            val match = findBestSamhandlerPraksis(samhandler, "Testlegesenteret", null, LoggingMeta("", "", ""))
                     ?: fail("Unable to find samhandler praksis")
             match.percentageMatch shouldEqual 100.0
             match.samhandlerPraksis.samh_praksis_id shouldEqual "1000456789"
         }
 
         it("Finner en samhandler praksis når her iden ikke matcher") {
-            val match = findBestSamhandlerPraksis(samhandler, "Testlegesenteret", "23456", "", arrayOf())
+            val match = findBestSamhandlerPraksis(samhandler, "Testlegesenteret", "23456", LoggingMeta("", "", ""))
                     ?: fail("Unable to find samhandler praksis")
             match.percentageMatch shouldEqual 100.0
             match.samhandlerPraksis.samh_praksis_id shouldEqual "1000456789"
         }
 
         it("Returnerer ingen samhandler praksiser om det ikke er noen aktive med aktive praksis perioder") {
-            val match = findBestSamhandlerPraksis(samhandlerIngenAktive, "", "12345", "", arrayOf())
+            val match = findBestSamhandlerPraksis(samhandlerIngenAktive, "", "12345", LoggingMeta("", "", ""))
 
             match shouldEqual null
         }

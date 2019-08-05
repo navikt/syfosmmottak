@@ -20,7 +20,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import net.logstash.logback.argument.StructuredArgument
+import net.logstash.logback.argument.StructuredArguments.fields
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.emottak.subscription.StartSubscriptionRequest
 import no.nav.emottak.subscription.SubscriptionPort
@@ -118,6 +118,8 @@ data class ApplicationState(
 )
 
 val log = LoggerFactory.getLogger("nav.syfosmmottak-application")!!
+
+const val NAV_OPPFOLGING_UTLAND_KONTOR_NR = "0393"
 
 @KtorExperimentalAPI
 fun main() = runBlocking(coroutineContext) {
@@ -240,17 +242,6 @@ suspend fun blockingApplicationLogic(
             continue
         }
 
-        var logValues = arrayOf(
-                keyValue("mottakId", "missing"),
-                keyValue("sykmeldingId", "missing"),
-                keyValue("organizationNumber", "missing"),
-                keyValue("msgId", "missing")
-        )
-
-        val logKeys = logValues.joinToString(prefix = "(", postfix = ")", separator = ",") {
-            "{}"
-        }
-
         try {
             val inputMessageText = when (message) {
                 is TextMessage -> message.text
@@ -259,9 +250,16 @@ suspend fun blockingApplicationLogic(
             INCOMING_MESSAGE_COUNTER.inc()
             val requestLatency = REQUEST_TIME.startTimer()
             val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(inputMessageText)) as XMLEIFellesformat
+
             val receiverBlock = fellesformat.get<XMLMottakenhetBlokk>()
-            val healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat)
             val msgHead = fellesformat.get<XMLMsgHead>()
+
+            val loggingMeta = LoggingMeta(
+                    mottakId = receiverBlock.ediLoggId,
+                    orgNr = extractOrganisationNumberFromSender(fellesformat)?.id,
+                    msgId = msgHead.msgInfo.msgId
+            )
+            val healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat)
             val ediLoggId = receiverBlock.ediLoggId
             val sha256String = sha256hashstring(healthInformation)
             val msgId = msgHead.msgInfo.msgId
@@ -274,13 +272,7 @@ suspend fun blockingApplicationLogic(
             val personNumberPatient = healthInformation.pasient.fodselsnummer.id
             val personNumberDoctor = receiverBlock.avsenderFnrFraDigSignatur
 
-            logValues = arrayOf(
-                    keyValue("mottakId", ediLoggId),
-                    keyValue("organizationNumber", legekontorOrgNr),
-                    keyValue("msgId", msgId)
-            )
-
-            log.info("Received message, $logKeys", *logValues)
+            log.info("Received message, {}", fields(loggingMeta))
 
             val aktoerIdsDeferred = async {
                 aktoerIdClient.getAktoerIds(
@@ -291,13 +283,14 @@ suspend fun blockingApplicationLogic(
 
             val samhandlerInfo = kuhrSarClient.getSamhandler(personNumberDoctor)
             val samhandlerPraksis = findBestSamhandlerPraksis(samhandlerInfo, legekontorOrgName, legekontorHerId,
-                    logKeys, logValues)?.samhandlerPraksis
+                    loggingMeta)?.samhandlerPraksis
 
             when (samhandlerPraksis) {
-                null -> log.info("SamhandlerPraksis is Not found, $logKeys", *logValues)
+                null -> log.info("SamhandlerPraksis is Not found, {}", fields(loggingMeta))
                 else -> if (!samhandlerParksisisLegevakt(samhandlerPraksis)) {
-                    startSubscription(subscriptionEmottak, samhandlerPraksis, msgHead, receiverBlock, logKeys, logValues) } else {
-                    log.info("SamhandlerPraksis is Legevakt, subscription_emottak is not created, $logKeys", *logValues)
+                    startSubscription(subscriptionEmottak, samhandlerPraksis, msgHead, receiverBlock, loggingMeta)
+                } else {
+                    log.info("SamhandlerPraksis is Legevakt, subscription_emottak is not created, {}", fields(loggingMeta))
                 }
             }
 
@@ -306,18 +299,18 @@ suspend fun blockingApplicationLogic(
                 val redisEdiloggid = jedis.get(ediLoggId)
 
                 if (redisSha256String != null) {
-                    log.warn("Message with {} marked as duplicate $logKeys", keyValue("originalEdiLoggId", redisSha256String), *logValues)
+                    log.warn("Message with {} marked as duplicate {}", keyValue("originalEdiLoggId", redisSha256String), fields(loggingMeta))
                     sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
                             createApprecError("Duplikat! - Denne sykmeldingen er mottatt tidligere. " +
                                     "Skal ikke sendes på nytt.")))
-                    log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
+                    log.info("Apprec Receipt sent to {}, {}", env.apprecQueueName, fields(loggingMeta))
                     continue
                 } else if (redisEdiloggid != null) {
-                    log.warn("Message with {} marked as duplicate $logKeys", keyValue("originalEdiLoggId", redisEdiloggid), *logValues)
+                    log.warn("Message with {} marked as duplicate {}", keyValue("originalEdiLoggId", redisEdiloggid), fields(loggingMeta))
                     sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
                             createApprecError("Duplikat! - Denne sykmeldingen er mottatt tidligere. " +
                                     "Skal ikke sendes på nytt.")))
-                    log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
+                    log.info("Apprec Receipt sent to {}, {}", env.apprecQueueName, fields(loggingMeta))
                     continue
                 } else {
                     jedis.setex(ediLoggId, TimeUnit.DAYS.toSeconds(7).toInt(), ediLoggId)
@@ -332,47 +325,49 @@ suspend fun blockingApplicationLogic(
             val doctorIdents = aktoerIds[personNumberDoctor]
 
             if (patientIdents == null || patientIdents.feilmelding != null) {
-                log.info("Patient not found i aktorRegister $logKeys, {}", *logValues,
-                        keyValue("errorMessage", patientIdents?.feilmelding ?: "No response for FNR"))
+                log.info("Patient not found i aktorRegister error: {}, {}",
+                        keyValue("errorMessage", patientIdents?.feilmelding ?: "No response for FNR"),
+                        fields(loggingMeta))
                 sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
                         createApprecError("Pasienten er ikkje registrert i folkeregisteret")))
-                log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
+                log.info("Apprec Receipt sent to {}, {}", env.apprecQueueName, fields(loggingMeta))
                 INVALID_MESSAGE_NO_NOTICE.inc()
                 continue@loop
             }
             if (doctorIdents == null || doctorIdents.feilmelding != null) {
-                log.info("Doctor not found i aktorRegister $logKeys, {}", *logValues,
-                        keyValue("errorMessage", doctorIdents?.feilmelding ?: "No response for FNR"))
+                log.info("Doctor not found i aktorRegister error: {}, {}",
+                        keyValue("errorMessage", doctorIdents?.feilmelding ?: "No response for FNR"),
+                        fields(loggingMeta))
                 sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
                         createApprecError("Behandler er ikkje registrert i folkeregisteret")))
-                log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
+                log.info("Apprec Receipt sent to {}, {}", env.apprecQueueName, fields(loggingMeta))
                 INVALID_MESSAGE_NO_NOTICE.inc()
                 continue@loop
             }
 
             if (healthInformation.aktivitet == null || healthInformation.aktivitet.periode.isNullOrEmpty()) {
-                log.info("Periode is missing $logKeys", *logValues)
+                log.info("Periode is missing {}", fields(loggingMeta))
                 sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
                         createApprecError("Ingen perioder er oppgitt i sykmeldingen.")))
-                log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
+                log.info("Apprec Receipt sent to {}, {}", env.apprecQueueName, fields(loggingMeta))
                 INVALID_MESSAGE_NO_NOTICE.inc()
                 continue@loop
             }
 
             if (healthInformation.medisinskVurdering?.biDiagnoser != null && healthInformation.medisinskVurdering.biDiagnoser.diagnosekode.any { it.v.isNullOrEmpty() }) {
-                log.info("diagnosekode is missing $logKeys", *logValues)
+                log.info("diagnosekode is missing {}", fields(loggingMeta))
                 sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
                         createApprecError("Diagnosekode på bidiagnose mangler")))
-                log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
+                log.info("Apprec Receipt sent to {}, {}", env.apprecQueueName, fields(loggingMeta))
                 INVALID_MESSAGE_NO_NOTICE.inc()
                 continue@loop
             }
 
             if (healthInformation.behandler.id.find { it.typeId.v == "FNR" }?.id ?: healthInformation.behandler.id.first { it.typeId.v == "DNR" }.id == null) {
-                log.info("FNR or DNR is missing on behandler $logKeys", *logValues)
+                log.info("FNR or DNR is missing on behandler {}", fields(loggingMeta))
                 sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
                         createApprecError("Fødselsnummer/d-nummer på behandler mangler")))
-                log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
+                log.info("Apprec Receipt sent to {}, {}", env.apprecQueueName, fields(loggingMeta))
                 INVALID_MESSAGE_NO_NOTICE.inc()
                 continue@loop
             }
@@ -401,18 +396,18 @@ suspend fun blockingApplicationLogic(
                     tssid = samhandlerPraksis?.tss_ident ?: ""
             )
 
-            log.info("Validating against rules, $logKeys", *logValues)
+            log.info("Validating against rules, sykmeldingId {},  {}", keyValue("sykmeldingId", sykmelding.id), fields(loggingMeta))
             val validationResult = syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding)
 
             if (validationResult.status in arrayOf(Status.OK, Status.MANUAL_PROCESSING)) {
                 sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
-                log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
+                log.info("Apprec Receipt sent to {}, {}", env.apprecQueueName, fields(loggingMeta))
 
                 notifySyfoService(session, syfoserviceProducer, ediLoggId, msgId, healthInformation)
-                log.info("Message send to syfoService {} $logKeys", env.syfoserviceQueueName, *logValues)
+                log.info("Message send to syfoService {}, {}", env.syfoserviceQueueName, fields(loggingMeta))
             } else {
                 sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, validationResult.ruleHits.map { it.toApprecCV() })
-                log.info("Apprec Receipt sent to {} $logKeys", env.apprecQueueName, *logValues)
+                log.info("Apprec Receipt sent to {}, {}", env.apprecQueueName, fields(loggingMeta))
             }
 
             val topicName = when (validationResult.status) {
@@ -426,25 +421,27 @@ suspend fun blockingApplicationLogic(
                 val patientDiskresjonsKode = fetchDiskresjonsKode(personV3, receivedSykmelding)
                 val finnBehandlendeEnhetListeResponse = fetchBehandlendeEnhet(arbeidsfordelingV1, geografiskTilknytning.geografiskTilknytning, patientDiskresjonsKode)
                 if (finnBehandlendeEnhetListeResponse?.behandlendeEnhetListe?.firstOrNull()?.enhetId == null) {
-                    log.error("arbeidsfordeling fant ingen nav-enheter $logKeys", *logValues)
+                    log.error("arbeidsfordeling fant ingen nav-enheter {}", fields(loggingMeta))
                 }
-                createTask(kafkaManuelTaskProducer, receivedSykmelding, validationResult, finnBehandlendeEnhetListeResponse?.behandlendeEnhetListe?.firstOrNull()?.enhetId ?: "0393", logKeys, logValues)
+                createTask(kafkaManuelTaskProducer, receivedSykmelding, validationResult, finnBehandlendeEnhetListeResponse?.behandlendeEnhetListe?.firstOrNull()?.enhetId
+                        ?: NAV_OPPFOLGING_UTLAND_KONTOR_NR, loggingMeta)
             }
 
             kafkaproducerreceivedSykmelding.send(ProducerRecord(topicName, receivedSykmelding.sykmelding.id, receivedSykmelding))
-            log.info("Message send to kafka {} $logKeys", topicName, *logValues)
+            log.info("Message send to kafka {}, {}", topicName, fields(loggingMeta))
             if (validationResult.status == Status.MANUAL_PROCESSING || validationResult.status == Status.INVALID) {
-                sendValidationResult(validationResult, kafkaproducervalidationResult, env, receivedSykmelding, logKeys, logValues)
+                sendValidationResult(validationResult, kafkaproducervalidationResult, env, receivedSykmelding, loggingMeta)
             }
+
             val currentRequestLatency = requestLatency.observeDuration()
 
-            log.info("Message($logKeys) got outcome {}, {}, processing took {}s",
-                    *logValues,
+            log.info("Message got outcome {}, {}, processing took {}s",
                     keyValue("status", validationResult.status),
                     keyValue("ruleHits", validationResult.ruleHits.joinToString(", ", "(", ")") { it.ruleName }),
-                    keyValue("latency", currentRequestLatency))
+                    keyValue("latency", currentRequestLatency),
+                    fields(loggingMeta))
         } catch (e: Exception) {
-            log.error("Exception caught while handling message, sending to backout $logKeys", *logValues, e)
+            log.error("Exception caught while handling message, sending to backout", e)
             backoutProducer.send(message)
         }
     }
@@ -584,7 +581,7 @@ suspend fun fetchDiskresjonsKode(personV3: PersonV3, receivedSykmelding: Receive
             ).person?.diskresjonskode?.value
         }
 
-fun createTask(kafkaProducer: KafkaProducer<String, ProduceTask>, receivedSykmelding: ReceivedSykmelding, results: ValidationResult, navKontor: String, logKeys: String, logValues: Array<StructuredArgument>) {
+fun createTask(kafkaProducer: KafkaProducer<String, ProduceTask>, receivedSykmelding: ReceivedSykmelding, results: ValidationResult, navKontor: String, loggingMeta: LoggingMeta) {
     kafkaProducer.send(ProducerRecord("aapen-syfo-oppgave-produserOppgave", receivedSykmelding.sykmelding.id, ProduceTask().apply {
         messageId = receivedSykmelding.msgId
         aktoerId = receivedSykmelding.sykmelding.pasientAktoerId
@@ -605,7 +602,7 @@ fun createTask(kafkaProducer: KafkaProducer<String, ProduceTask>, receivedSykmel
         metadata = mapOf()
     }))
 
-    log.info("Message sendt to topic: aapen-syfo-oppgave-produserOppgave $logKeys", *logValues)
+    log.info("Message sendt to topic: aapen-syfo-oppgave-produserOppgave {}", fields(loggingMeta))
 }
 
 fun samhandlerParksisisLegevakt(samhandlerPraksis: SamhandlerPraksis): Boolean =
@@ -618,10 +615,9 @@ suspend fun startSubscription(
     samhandlerPraksis: SamhandlerPraksis,
     msgHead: XMLMsgHead,
     receiverBlock: XMLMottakenhetBlokk,
-    logKeys: String,
-    logValues: Array<StructuredArgument>
+    loggingMeta: LoggingMeta
 ) {
-    log.info("SamhandlerPraksis is found, name: ${samhandlerPraksis.navn} $logKeys", *logValues)
+    log.info("SamhandlerPraksis is found, name: ${samhandlerPraksis.navn},  {}", fields(loggingMeta))
     retry(callName = "start_subscription_emottak",
             retryIntervals = arrayOf(500L, 1000L, 3000L, 5000L, 10000L),
             legalExceptions = *arrayOf(IOException::class, WstxException::class)) {
@@ -639,8 +635,8 @@ fun convertSenderToBase64(sender: XMLSender): ByteArray =
             it
         }.toByteArray()
 
-fun sendValidationResult(validationResult: ValidationResult, kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>, env: Environment, receivedSykmelding: ReceivedSykmelding, logKeys: String, logValues: Array<StructuredArgument>) {
+fun sendValidationResult(validationResult: ValidationResult, kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>, env: Environment, receivedSykmelding: ReceivedSykmelding, loggingMeta: LoggingMeta) {
 
     kafkaproducervalidationResult.send(ProducerRecord(env.sm2013BehandlingsUtfallToipic, receivedSykmelding.sykmelding.id, validationResult))
-    log.info("Validation results send to kafka {} $logKeys", env.sm2013BehandlingsUtfallToipic, *logValues)
+    log.info("Validation results send to kafka {}, {}", env.sm2013BehandlingsUtfallToipic, fields(loggingMeta))
 }
