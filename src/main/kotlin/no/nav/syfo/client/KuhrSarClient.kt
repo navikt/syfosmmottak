@@ -14,8 +14,9 @@ import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.http.ContentType
 import io.ktor.util.KtorExperimentalAPI
-import net.logstash.logback.argument.StructuredArgument
+import net.logstash.logback.argument.StructuredArguments
 import net.logstash.logback.argument.StructuredArguments.keyValue
+import no.nav.syfo.LoggingMeta
 import no.nav.syfo.VaultCredentials
 import no.nav.syfo.helpers.retry
 import no.nav.syfo.log
@@ -127,8 +128,7 @@ fun findBestSamhandlerPraksis(
     samhandlere: List<Samhandler>,
     orgName: String,
     herId: String?,
-    logKeys: String,
-    logValues: Array<StructuredArgument>
+    loggingMeta: LoggingMeta
 ): SamhandlerPraksisMatch? {
     val aktiveSamhandlere = samhandlere.flatMap { it.samh_praksis }
             .filter { praksis -> praksis.samh_praksis_status_kode == "aktiv" }
@@ -141,9 +141,9 @@ fun findBestSamhandlerPraksis(
             .filter { !it.navn.isNullOrEmpty() }
 
     if (aktiveSamhandlere.isEmpty()) {
-        log.info("Fant ingen aktive samhandlere. Meta: ${samhandlere.formaterPraksis()} {} $logKeys",
+        log.info("Fant ingen aktive samhandlere. antallPraksiser: {}  Meta: ${samhandlere.formaterPraksis()} {}, {} ",
                 keyValue("antallPraksiser", samhandlere.size),
-                *logValues)
+                StructuredArguments.fields(loggingMeta))
     }
 
     if (!herId.isNullOrEmpty()) {
