@@ -11,7 +11,8 @@
         {"member":"srvsykmkonsument", "role":"CONSUMER"},
         {"member":"srvsyfosmmottak", "role":"PRODUCER"},
         {"member":"srvspsak", "role": "CONSUMER"},
-        {"member":"srvsyfoprediksjoner", "role": "CONSUMER"}
+        {"member":"srvsyfoprediksjoner", "role": "CONSUMER"},
+        {"member":"srvsyfosmvarsel", "role":"CONSUMER"}
       ],
       "numPartitions": 3
     },
@@ -24,7 +25,8 @@
         {"member":"srvsyfosmregister", "role":"CONSUMER"},
         {"member":"srvsykmkonsument", "role":"CONSUMER"},
         {"member":"srvsyfosmmottak", "role":"PRODUCER"},
-        {"member":"srvsyfoprediksjoner", "role": "CONSUMER"}
+        {"member":"srvsyfoprediksjoner", "role": "CONSUMER"},
+        {"member":"srvsyfosmvarsel", "role":"CONSUMER"}
       ],
       "numPartitions": 3
     },
