@@ -14,6 +14,8 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.hotspot.DefaultExports
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -96,7 +98,6 @@ import java.time.format.DateTimeFormatter
 import java.util.Base64
 import java.util.UUID
 import java.util.concurrent.Executors
-import javax.jms.Connection
 import javax.jms.MessageConsumer
 import javax.jms.MessageProducer
 import javax.xml.bind.Marshaller
@@ -114,7 +115,7 @@ val coroutineContext = Executors.newFixedThreadPool(2).asCoroutineDispatcher()
 
 data class ApplicationState(
     var running: Boolean = true,
-    var initialized: Boolean = false
+    var ready: Boolean = false
 )
 
 val log = LoggerFactory.getLogger("nav.syfosmmottak-application")!!
@@ -136,76 +137,103 @@ fun main() = runBlocking(coroutineContext) {
     connectionFactory(env).createConnection(credentials.mqUsername, credentials.mqPassword).use { connection ->
         connection.start()
 
-        val listeners = (0.until(env.applicationThreads)).map {
-            launch {
-                try {
-                    createListener(applicationState, env, credentials, connection)
-                } finally {
-                    applicationState.running = false
-                }
+        Jedis(env.redishost, 6379).use { jedis ->
+            val session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)
+
+            val inputconsumer = session.consumerForQueue(env.inputQueueName)
+            val receiptProducer = session.producerForQueue(env.apprecQueueName)
+            val syfoserviceProducer = session.producerForQueue(env.syfoserviceQueueName)
+            val backoutProducer = session.producerForQueue(env.inputBackoutQueueName)
+
+            val kafkaBaseConfig = loadBaseConfig(env, credentials)
+
+            val producerProperties = kafkaBaseConfig.toProducerConfig(env.applicationName, valueSerializer = JacksonKafkaSerializer::class)
+
+            val kafkaproducerreceivedSykmelding = KafkaProducer<String, ReceivedSykmelding>(producerProperties)
+
+            val kafkaproducervalidationResult = KafkaProducer<String, ValidationResult>(producerProperties)
+
+            val manualTaskproducerProperties = kafkaBaseConfig.toProducerConfig(env.applicationName, valueSerializer = KafkaAvroSerializer::class)
+            val manualTaskkafkaproducer = KafkaProducer<String, ProduceTask>(manualTaskproducerProperties)
+
+            val syfoSykemeldingRuleClient = SyfoSykemeldingRuleClient(env.syfosmreglerApiUrl, credentials)
+
+            val sarClient = SarClient(env.kuhrSarApiUrl, credentials)
+
+            val oidcClient = StsOidcClient(credentials.serviceuserUsername, credentials.serviceuserPassword)
+            val aktoerIdClient = AktoerIdClient(env.aktoerregisterV1Url, oidcClient)
+
+            val subscriptionEmottak = createPort<SubscriptionPort>(env.subscriptionEndpointURL) {
+                proxy { features.add(WSAddressingFeature()) }
+                port { withBasicAuth(credentials.serviceuserUsername, credentials.serviceuserPassword) }
             }
-        }.toList()
 
-        applicationState.initialized = true
+            val arbeidsfordelingV1 = createPort<ArbeidsfordelingV1>(env.arbeidsfordelingV1EndpointURL) {
+                port { withSTS(credentials.serviceuserUsername, credentials.serviceuserPassword, env.securityTokenServiceUrl) }
+            }
 
-        Runtime.getRuntime().addShutdownHook(Thread {
-            applicationServer.stop(10, 10, TimeUnit.SECONDS)
-        })
+            val personV3 = createPort<PersonV3>(env.personV3EndpointURL) {
+                port { withSTS(credentials.serviceuserUsername, credentials.serviceuserPassword, env.securityTokenServiceUrl) }
+            }
 
-        listeners.forEach { it.join() }
+            launchListeners(env, applicationState, inputconsumer, receiptProducer, syfoserviceProducer, backoutProducer,
+                    subscriptionEmottak, kafkaproducerreceivedSykmelding, kafkaproducervalidationResult,
+                    syfoSykemeldingRuleClient, sarClient, aktoerIdClient,
+                    credentials, jedis, manualTaskkafkaproducer,
+                    personV3, session, arbeidsfordelingV1)
+
+            Runtime.getRuntime().addShutdownHook(Thread {
+                connection.close()
+                applicationServer.stop(10, 10, TimeUnit.SECONDS)
+            })
+        }
     }
 }
 
+fun CoroutineScope.createListener(applicationState: ApplicationState, action: suspend CoroutineScope.() -> Unit): Job =
+        launch {
+            try {
+                action()
+            } catch (e: TrackableException) {
+                log.error("En uhåndtert feil oppstod, applikasjonen restarter {}", fields(e.loggingMeta), e.cause)
+            } finally {
+                applicationState.running = false
+            }
+        }
+
 @KtorExperimentalAPI
-suspend fun createListener(
-    applicationState: ApplicationState,
+suspend fun CoroutineScope.launchListeners(
     env: Environment,
+    applicationState: ApplicationState,
+    inputconsumer: MessageConsumer,
+    receiptProducer: MessageProducer,
+    syfoserviceProducer: MessageProducer,
+    backoutProducer: MessageProducer,
+    subscriptionEmottak: SubscriptionPort,
+    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
+    kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
+    syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
+    kuhrSarClient: SarClient,
+    aktoerIdClient: AktoerIdClient,
     credentials: VaultCredentials,
-    connection: Connection
+    jedis: Jedis,
+    kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
+    personV3: PersonV3,
+    session: Session,
+    arbeidsfordelingV1: ArbeidsfordelingV1
 ) {
-    Jedis(env.redishost, 6379).use { jedis ->
-        val session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)
-
-        val inputconsumer = session.consumerForQueue(env.inputQueueName)
-        val receiptProducer = session.producerForQueue(env.apprecQueueName)
-        val syfoserviceProducer = session.producerForQueue(env.syfoserviceQueueName)
-        val backoutProducer = session.producerForQueue(env.inputBackoutQueueName)
-
-        val kafkaBaseConfig = loadBaseConfig(env, credentials)
-
-        val producerProperties = kafkaBaseConfig.toProducerConfig(env.applicationName, valueSerializer = JacksonKafkaSerializer::class)
-
-        val kafkaproducerreceivedSykmelding = KafkaProducer<String, ReceivedSykmelding>(producerProperties)
-
-        val kafkaproducervalidationResult = KafkaProducer<String, ValidationResult>(producerProperties)
-
-        val manualTaskproducerProperties = kafkaBaseConfig.toProducerConfig(env.applicationName, valueSerializer = KafkaAvroSerializer::class)
-        val manualTaskkafkaproducer = KafkaProducer<String, ProduceTask>(manualTaskproducerProperties)
-
-        val syfoSykemeldingRuleClient = SyfoSykemeldingRuleClient(env.syfosmreglerApiUrl, credentials)
-
-        val sarClient = SarClient(env.kuhrSarApiUrl, credentials)
-
-        val oidcClient = StsOidcClient(credentials.serviceuserUsername, credentials.serviceuserPassword)
-        val aktoerIdClient = AktoerIdClient(env.aktoerregisterV1Url, oidcClient)
-
-        val subscriptionEmottak = createPort<SubscriptionPort>(env.subscriptionEndpointURL) {
-            proxy { features.add(WSAddressingFeature()) }
-            port { withBasicAuth(credentials.serviceuserUsername, credentials.serviceuserPassword) }
+    val listeners = (0.until(env.applicationThreads)).map {
+        createListener(applicationState) {
+            blockingApplicationLogic(inputconsumer, receiptProducer, syfoserviceProducer, backoutProducer,
+                    subscriptionEmottak, kafkaproducerreceivedSykmelding, kafkaproducervalidationResult,
+                    syfoSykemeldingRuleClient, kuhrSarClient, aktoerIdClient, env,
+                    credentials, applicationState, jedis, kafkaManuelTaskProducer,
+                    personV3, session, arbeidsfordelingV1)
         }
+    }.toList()
 
-        val arbeidsfordelingV1 = createPort<ArbeidsfordelingV1>(env.arbeidsfordelingV1EndpointURL) {
-            port { withSTS(credentials.serviceuserUsername, credentials.serviceuserPassword, env.securityTokenServiceUrl) }
-        }
-
-        val personV3 = createPort<PersonV3>(env.personV3EndpointURL) {
-            port { withSTS(credentials.serviceuserUsername, credentials.serviceuserPassword, env.securityTokenServiceUrl) }
-        }
-
-        blockingApplicationLogic(inputconsumer, receiptProducer, syfoserviceProducer, backoutProducer,
-                subscriptionEmottak, kafkaproducerreceivedSykmelding, kafkaproducervalidationResult, syfoSykemeldingRuleClient, sarClient, aktoerIdClient, env,
-                credentials, applicationState, jedis, manualTaskkafkaproducer, personV3, session, arbeidsfordelingV1)
-    }
+    applicationState.ready = true
+    listeners.forEach { it.join() }
 }
 
 fun Application.initRouting(applicationState: ApplicationState) {
@@ -259,6 +287,7 @@ suspend fun blockingApplicationLogic(
                     orgNr = extractOrganisationNumberFromSender(fellesformat)?.id,
                     msgId = msgHead.msgInfo.msgId
             )
+
             val healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat)
             val ediLoggId = receiverBlock.ediLoggId
             val sha256String = sha256hashstring(healthInformation)
