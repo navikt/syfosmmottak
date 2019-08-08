@@ -115,7 +115,7 @@ fun HelseOpplysningerArbeidsuforhet.Prognose.toPrognose() = Prognose(
 fun HelseOpplysningerArbeidsuforhet.UtdypendeOpplysninger.toMap() =
         spmGruppe.map { spmGruppe ->
             spmGruppe.spmGruppeId to spmGruppe.spmSvar
-                    .map { svar -> svar.spmId to SporsmalSvar(svar = svar.svarTekst, restriksjoner = svar.restriksjon?.restriksjonskode?.mapNotNull(CS::toSvarRestriksjon) ?: listOf()) }
+                    .map { svar -> svar.spmId to SporsmalSvar(sporsmal = svar.spmTekst, svar = svar.svarTekst, restriksjoner = svar.restriksjon?.restriksjonskode?.mapNotNull(CS::toSvarRestriksjon) ?: listOf()) }
                     .toMap()
         }.toMap()
 
