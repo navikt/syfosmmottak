@@ -195,7 +195,7 @@ fun CoroutineScope.createListener(applicationState: ApplicationState, action: su
             try {
                 action()
             } catch (e: TrackableException) {
-                log.error("En uhåndtert feil oppstod, applikasjonen restarter {}", fields(e.loggingMeta), e.cause)
+                log.error("En uhåndtert feil oppstod, applikasjonen restarter {}", e.cause)
             } finally {
                 applicationState.running = false
             }
@@ -263,215 +263,217 @@ suspend fun blockingApplicationLogic(
     session: Session,
     arbeidsfordelingV1: ArbeidsfordelingV1
 ) = coroutineScope {
-    loop@ while (applicationState.running) {
-        val message = inputconsumer.receiveNoWait()
-        if (message == null) {
-            delay(100)
-            continue
-        }
-
-        try {
-            val inputMessageText = when (message) {
-                is TextMessage -> message.text
-                else -> throw RuntimeException("Incoming message needs to be a byte message or text message")
-            }
-            INCOMING_MESSAGE_COUNTER.inc()
-            val requestLatency = REQUEST_TIME.startTimer()
-            val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(inputMessageText)) as XMLEIFellesformat
-
-            val receiverBlock = fellesformat.get<XMLMottakenhetBlokk>()
-            val msgHead = fellesformat.get<XMLMsgHead>()
-
-            val loggingMeta = LoggingMeta(
-                    mottakId = receiverBlock.ediLoggId,
-                    orgNr = extractOrganisationNumberFromSender(fellesformat)?.id,
-                    msgId = msgHead.msgInfo.msgId
-            )
-
-            val healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat)
-            val ediLoggId = receiverBlock.ediLoggId
-            val sha256String = sha256hashstring(healthInformation)
-            val msgId = msgHead.msgInfo.msgId
-
-            val legekontorHerId = extractOrganisationHerNumberFromSender(fellesformat)?.id
-            val legekontorReshId = extractOrganisationRashNumberFromSender(fellesformat)?.id
-            val legekontorOrgNr = extractOrganisationNumberFromSender(fellesformat)?.id
-            val legekontorOrgName = msgHead.msgInfo.sender.organisation.organisationName
-
-            val personNumberPatient = healthInformation.pasient.fodselsnummer.id
-            val personNumberDoctor = receiverBlock.avsenderFnrFraDigSignatur
-
-            log.info("Received message, {}", fields(loggingMeta))
-
-            val aktoerIdsDeferred = async {
-                aktoerIdClient.getAktoerIds(
-                        listOf(personNumberDoctor,
-                                personNumberPatient),
-                        msgId, credentials.serviceuserUsername)
-            }
-
-            val samhandlerInfo = kuhrSarClient.getSamhandler(personNumberDoctor)
-            val samhandlerPraksis = findBestSamhandlerPraksis(samhandlerInfo, legekontorOrgName, legekontorHerId,
-                    loggingMeta)?.samhandlerPraksis
-
-            when (samhandlerPraksis) {
-                null -> log.info("SamhandlerPraksis is Not found, {}", fields(loggingMeta))
-                else -> if (!samhandlerParksisisLegevakt(samhandlerPraksis)) {
-                    startSubscription(subscriptionEmottak, samhandlerPraksis, msgHead, receiverBlock, loggingMeta)
-                } else {
-                    log.info("SamhandlerPraksis is Legevakt, subscription_emottak is not created, {}", fields(loggingMeta))
-                }
+    wrapExceptions {
+        loop@ while (applicationState.running) {
+            val message = inputconsumer.receiveNoWait()
+            if (message == null) {
+                delay(100)
+                continue
             }
 
             try {
-                val redisSha256String = jedis.get(sha256String)
-                val redisEdiloggid = jedis.get(ediLoggId)
+                val inputMessageText = when (message) {
+                    is TextMessage -> message.text
+                    else -> throw RuntimeException("Incoming message needs to be a byte message or text message")
+                }
+                INCOMING_MESSAGE_COUNTER.inc()
+                val requestLatency = REQUEST_TIME.startTimer()
+                val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(inputMessageText)) as XMLEIFellesformat
 
-                if (redisSha256String != null) {
-                    log.warn("Message with {} marked as duplicate {}", keyValue("originalEdiLoggId", redisSha256String), fields(loggingMeta))
+                val receiverBlock = fellesformat.get<XMLMottakenhetBlokk>()
+                val msgHead = fellesformat.get<XMLMsgHead>()
+
+                val loggingMeta = LoggingMeta(
+                        mottakId = receiverBlock.ediLoggId,
+                        orgNr = extractOrganisationNumberFromSender(fellesformat)?.id,
+                        msgId = msgHead.msgInfo.msgId
+                )
+
+                val healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat)
+                val ediLoggId = receiverBlock.ediLoggId
+                val sha256String = sha256hashstring(healthInformation)
+                val msgId = msgHead.msgInfo.msgId
+
+                val legekontorHerId = extractOrganisationHerNumberFromSender(fellesformat)?.id
+                val legekontorReshId = extractOrganisationRashNumberFromSender(fellesformat)?.id
+                val legekontorOrgNr = extractOrganisationNumberFromSender(fellesformat)?.id
+                val legekontorOrgName = msgHead.msgInfo.sender.organisation.organisationName
+
+                val personNumberPatient = healthInformation.pasient.fodselsnummer.id
+                val personNumberDoctor = receiverBlock.avsenderFnrFraDigSignatur
+
+                log.info("Received message, {}", fields(loggingMeta))
+
+                val aktoerIdsDeferred = async {
+                    aktoerIdClient.getAktoerIds(
+                            listOf(personNumberDoctor,
+                                    personNumberPatient),
+                            msgId, credentials.serviceuserUsername)
+                }
+
+                val samhandlerInfo = kuhrSarClient.getSamhandler(personNumberDoctor)
+                val samhandlerPraksis = findBestSamhandlerPraksis(samhandlerInfo, legekontorOrgName, legekontorHerId,
+                        loggingMeta)?.samhandlerPraksis
+
+                when (samhandlerPraksis) {
+                    null -> log.info("SamhandlerPraksis is Not found, {}", fields(loggingMeta))
+                    else -> if (!samhandlerParksisisLegevakt(samhandlerPraksis)) {
+                        startSubscription(subscriptionEmottak, samhandlerPraksis, msgHead, receiverBlock, loggingMeta)
+                    } else {
+                        log.info("SamhandlerPraksis is Legevakt, subscription_emottak is not created, {}", fields(loggingMeta))
+                    }
+                }
+
+                try {
+                    val redisSha256String = jedis.get(sha256String)
+                    val redisEdiloggid = jedis.get(ediLoggId)
+
+                    if (redisSha256String != null) {
+                        log.warn("Message with {} marked as duplicate {}", keyValue("originalEdiLoggId", redisSha256String), fields(loggingMeta))
+                        sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
+                                createApprecError("Duplikat! - Denne sykmeldingen er mottatt tidligere. " +
+                                        "Skal ikke sendes på nytt.")))
+                        log.info("Apprec Receipt sent to {}, {}", env.apprecQueueName, fields(loggingMeta))
+                        continue
+                    } else if (redisEdiloggid != null) {
+                        log.warn("Message with {} marked as duplicate {}", keyValue("originalEdiLoggId", redisEdiloggid), fields(loggingMeta))
+                        sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
+                                createApprecError("Duplikat! - Denne sykmeldingen er mottatt tidligere. " +
+                                        "Skal ikke sendes på nytt.")))
+                        log.info("Apprec Receipt sent to {}, {}", env.apprecQueueName, fields(loggingMeta))
+                        continue
+                    } else {
+                        jedis.setex(ediLoggId, TimeUnit.DAYS.toSeconds(7).toInt(), ediLoggId)
+                        jedis.setex(sha256String, TimeUnit.DAYS.toSeconds(7).toInt(), ediLoggId)
+                    }
+                } catch (connectionException: JedisConnectionException) {
+                    log.warn("Unable to contact redis, will allow possible duplicates.", connectionException)
+                }
+
+                val aktoerIds = aktoerIdsDeferred.await()
+                val patientIdents = aktoerIds[personNumberPatient]
+                val doctorIdents = aktoerIds[personNumberDoctor]
+
+                if (patientIdents == null || patientIdents.feilmelding != null) {
+                    log.info("Patient not found i aktorRegister error: {}, {}",
+                            keyValue("errorMessage", patientIdents?.feilmelding ?: "No response for FNR"),
+                            fields(loggingMeta))
                     sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
-                            createApprecError("Duplikat! - Denne sykmeldingen er mottatt tidligere. " +
-                                    "Skal ikke sendes på nytt.")))
+                            createApprecError("Pasienten er ikkje registrert i folkeregisteret")))
                     log.info("Apprec Receipt sent to {}, {}", env.apprecQueueName, fields(loggingMeta))
-                    continue
-                } else if (redisEdiloggid != null) {
-                    log.warn("Message with {} marked as duplicate {}", keyValue("originalEdiLoggId", redisEdiloggid), fields(loggingMeta))
+                    INVALID_MESSAGE_NO_NOTICE.inc()
+                    continue@loop
+                }
+                if (doctorIdents == null || doctorIdents.feilmelding != null) {
+                    log.info("Doctor not found i aktorRegister error: {}, {}",
+                            keyValue("errorMessage", doctorIdents?.feilmelding ?: "No response for FNR"),
+                            fields(loggingMeta))
                     sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
-                            createApprecError("Duplikat! - Denne sykmeldingen er mottatt tidligere. " +
-                                    "Skal ikke sendes på nytt.")))
+                            createApprecError("Behandler er ikkje registrert i folkeregisteret")))
                     log.info("Apprec Receipt sent to {}, {}", env.apprecQueueName, fields(loggingMeta))
-                    continue
+                    INVALID_MESSAGE_NO_NOTICE.inc()
+                    continue@loop
+                }
+
+                if (healthInformation.aktivitet == null || healthInformation.aktivitet.periode.isNullOrEmpty()) {
+                    log.info("Periode is missing {}", fields(loggingMeta))
+                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
+                            createApprecError("Ingen perioder er oppgitt i sykmeldingen.")))
+                    log.info("Apprec Receipt sent to {}, {}", env.apprecQueueName, fields(loggingMeta))
+                    INVALID_MESSAGE_NO_NOTICE.inc()
+                    continue@loop
+                }
+
+                if (healthInformation.medisinskVurdering?.biDiagnoser != null && healthInformation.medisinskVurdering.biDiagnoser.diagnosekode.any { it.v.isNullOrEmpty() }) {
+                    log.info("diagnosekode is missing {}", fields(loggingMeta))
+                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
+                            createApprecError("Diagnosekode på bidiagnose mangler")))
+                    log.info("Apprec Receipt sent to {}, {}", env.apprecQueueName, fields(loggingMeta))
+                    INVALID_MESSAGE_NO_NOTICE.inc()
+                    continue@loop
+                }
+
+                if (healthInformation.behandler.id.find { it.typeId.v == "FNR" }?.id ?: healthInformation.behandler.id.first { it.typeId.v == "DNR" }.id == null) {
+                    log.info("FNR or DNR is missing on behandler {}", fields(loggingMeta))
+                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
+                            createApprecError("Fødselsnummer/d-nummer på behandler mangler")))
+                    log.info("Apprec Receipt sent to {}, {}", env.apprecQueueName, fields(loggingMeta))
+                    INVALID_MESSAGE_NO_NOTICE.inc()
+                    continue@loop
+                }
+
+                val sykmelding = healthInformation.toSykmelding(
+                        sykmeldingId = UUID.randomUUID().toString(),
+                        pasientAktoerId = patientIdents.identer!!.first().ident,
+                        legeAktoerId = doctorIdents.identer!!.first().ident,
+                        msgId = msgId,
+                        signaturDato = msgHead.msgInfo.genDate
+                )
+                val receivedSykmelding = ReceivedSykmelding(
+                        sykmelding = sykmelding,
+                        personNrPasient = personNumberPatient,
+                        tlfPasient = healthInformation.pasient.kontaktInfo.firstOrNull()?.teleAddress?.v,
+                        personNrLege = personNumberDoctor,
+                        navLogId = ediLoggId,
+                        msgId = msgId,
+                        legekontorOrgNr = legekontorOrgNr,
+                        legekontorOrgName = legekontorOrgName,
+                        legekontorHerId = legekontorHerId,
+                        legekontorReshId = legekontorReshId,
+                        mottattDato = receiverBlock.mottattDatotid.toGregorianCalendar().toZonedDateTime().toLocalDateTime(),
+                        rulesetVersion = healthInformation.regelSettVersjon,
+                        fellesformat = inputMessageText,
+                        tssid = samhandlerPraksis?.tss_ident ?: ""
+                )
+
+                log.info("Validating against rules, sykmeldingId {},  {}", keyValue("sykmeldingId", sykmelding.id), fields(loggingMeta))
+                val validationResult = syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding)
+
+                if (validationResult.status in arrayOf(Status.OK, Status.MANUAL_PROCESSING)) {
+                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
+                    log.info("Apprec Receipt sent to {}, {}", env.apprecQueueName, fields(loggingMeta))
+
+                    notifySyfoService(session, syfoserviceProducer, ediLoggId, msgId, healthInformation)
+                    log.info("Message send to syfoService {}, {}", env.syfoserviceQueueName, fields(loggingMeta))
                 } else {
-                    jedis.setex(ediLoggId, TimeUnit.DAYS.toSeconds(7).toInt(), ediLoggId)
-                    jedis.setex(sha256String, TimeUnit.DAYS.toSeconds(7).toInt(), ediLoggId)
+                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, validationResult.ruleHits.map { it.toApprecCV() })
+                    log.info("Apprec Receipt sent to {}, {}", env.apprecQueueName, fields(loggingMeta))
                 }
-            } catch (connectionException: JedisConnectionException) {
-                log.warn("Unable to contact redis, will allow possible duplicates.", connectionException)
-            }
 
-            val aktoerIds = aktoerIdsDeferred.await()
-            val patientIdents = aktoerIds[personNumberPatient]
-            val doctorIdents = aktoerIds[personNumberDoctor]
-
-            if (patientIdents == null || patientIdents.feilmelding != null) {
-                log.info("Patient not found i aktorRegister error: {}, {}",
-                        keyValue("errorMessage", patientIdents?.feilmelding ?: "No response for FNR"),
-                        fields(loggingMeta))
-                sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
-                        createApprecError("Pasienten er ikkje registrert i folkeregisteret")))
-                log.info("Apprec Receipt sent to {}, {}", env.apprecQueueName, fields(loggingMeta))
-                INVALID_MESSAGE_NO_NOTICE.inc()
-                continue@loop
-            }
-            if (doctorIdents == null || doctorIdents.feilmelding != null) {
-                log.info("Doctor not found i aktorRegister error: {}, {}",
-                        keyValue("errorMessage", doctorIdents?.feilmelding ?: "No response for FNR"),
-                        fields(loggingMeta))
-                sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
-                        createApprecError("Behandler er ikkje registrert i folkeregisteret")))
-                log.info("Apprec Receipt sent to {}, {}", env.apprecQueueName, fields(loggingMeta))
-                INVALID_MESSAGE_NO_NOTICE.inc()
-                continue@loop
-            }
-
-            if (healthInformation.aktivitet == null || healthInformation.aktivitet.periode.isNullOrEmpty()) {
-                log.info("Periode is missing {}", fields(loggingMeta))
-                sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
-                        createApprecError("Ingen perioder er oppgitt i sykmeldingen.")))
-                log.info("Apprec Receipt sent to {}, {}", env.apprecQueueName, fields(loggingMeta))
-                INVALID_MESSAGE_NO_NOTICE.inc()
-                continue@loop
-            }
-
-            if (healthInformation.medisinskVurdering?.biDiagnoser != null && healthInformation.medisinskVurdering.biDiagnoser.diagnosekode.any { it.v.isNullOrEmpty() }) {
-                log.info("diagnosekode is missing {}", fields(loggingMeta))
-                sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
-                        createApprecError("Diagnosekode på bidiagnose mangler")))
-                log.info("Apprec Receipt sent to {}, {}", env.apprecQueueName, fields(loggingMeta))
-                INVALID_MESSAGE_NO_NOTICE.inc()
-                continue@loop
-            }
-
-            if (healthInformation.behandler.id.find { it.typeId.v == "FNR" }?.id ?: healthInformation.behandler.id.first { it.typeId.v == "DNR" }.id == null) {
-                log.info("FNR or DNR is missing on behandler {}", fields(loggingMeta))
-                sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
-                        createApprecError("Fødselsnummer/d-nummer på behandler mangler")))
-                log.info("Apprec Receipt sent to {}, {}", env.apprecQueueName, fields(loggingMeta))
-                INVALID_MESSAGE_NO_NOTICE.inc()
-                continue@loop
-            }
-
-            val sykmelding = healthInformation.toSykmelding(
-                    sykmeldingId = UUID.randomUUID().toString(),
-                    pasientAktoerId = patientIdents.identer!!.first().ident,
-                    legeAktoerId = doctorIdents.identer!!.first().ident,
-                    msgId = msgId,
-                    signaturDato = msgHead.msgInfo.genDate
-            )
-            val receivedSykmelding = ReceivedSykmelding(
-                    sykmelding = sykmelding,
-                    personNrPasient = personNumberPatient,
-                    tlfPasient = healthInformation.pasient.kontaktInfo.firstOrNull()?.teleAddress?.v,
-                    personNrLege = personNumberDoctor,
-                    navLogId = ediLoggId,
-                    msgId = msgId,
-                    legekontorOrgNr = legekontorOrgNr,
-                    legekontorOrgName = legekontorOrgName,
-                    legekontorHerId = legekontorHerId,
-                    legekontorReshId = legekontorReshId,
-                    mottattDato = receiverBlock.mottattDatotid.toGregorianCalendar().toZonedDateTime().toLocalDateTime(),
-                    rulesetVersion = healthInformation.regelSettVersjon,
-                    fellesformat = inputMessageText,
-                    tssid = samhandlerPraksis?.tss_ident ?: ""
-            )
-
-            log.info("Validating against rules, sykmeldingId {},  {}", keyValue("sykmeldingId", sykmelding.id), fields(loggingMeta))
-            val validationResult = syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding)
-
-            if (validationResult.status in arrayOf(Status.OK, Status.MANUAL_PROCESSING)) {
-                sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
-                log.info("Apprec Receipt sent to {}, {}", env.apprecQueueName, fields(loggingMeta))
-
-                notifySyfoService(session, syfoserviceProducer, ediLoggId, msgId, healthInformation)
-                log.info("Message send to syfoService {}, {}", env.syfoserviceQueueName, fields(loggingMeta))
-            } else {
-                sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, validationResult.ruleHits.map { it.toApprecCV() })
-                log.info("Apprec Receipt sent to {}, {}", env.apprecQueueName, fields(loggingMeta))
-            }
-
-            val topicName = when (validationResult.status) {
-                Status.OK -> env.sm2013AutomaticHandlingTopic
-                Status.MANUAL_PROCESSING -> env.sm2013ManualHandlingTopic
-                Status.INVALID -> env.sm2013InvalidHandlingTopic
-            }
-
-            if (validationResult.status == Status.MANUAL_PROCESSING) {
-                val geografiskTilknytning = fetchGeografiskTilknytning(personV3, receivedSykmelding)
-                val patientDiskresjonsKode = fetchDiskresjonsKode(personV3, receivedSykmelding)
-                val finnBehandlendeEnhetListeResponse = fetchBehandlendeEnhet(arbeidsfordelingV1, geografiskTilknytning.geografiskTilknytning, patientDiskresjonsKode)
-                if (finnBehandlendeEnhetListeResponse?.behandlendeEnhetListe?.firstOrNull()?.enhetId == null) {
-                    log.error("arbeidsfordeling fant ingen nav-enheter {}", fields(loggingMeta))
+                val topicName = when (validationResult.status) {
+                    Status.OK -> env.sm2013AutomaticHandlingTopic
+                    Status.MANUAL_PROCESSING -> env.sm2013ManualHandlingTopic
+                    Status.INVALID -> env.sm2013InvalidHandlingTopic
                 }
-                createTask(kafkaManuelTaskProducer, receivedSykmelding, validationResult, finnBehandlendeEnhetListeResponse?.behandlendeEnhetListe?.firstOrNull()?.enhetId
-                        ?: NAV_OPPFOLGING_UTLAND_KONTOR_NR, loggingMeta)
+
+                if (validationResult.status == Status.MANUAL_PROCESSING) {
+                    val geografiskTilknytning = fetchGeografiskTilknytning(personV3, receivedSykmelding)
+                    val patientDiskresjonsKode = fetchDiskresjonsKode(personV3, receivedSykmelding)
+                    val finnBehandlendeEnhetListeResponse = fetchBehandlendeEnhet(arbeidsfordelingV1, geografiskTilknytning.geografiskTilknytning, patientDiskresjonsKode)
+                    if (finnBehandlendeEnhetListeResponse?.behandlendeEnhetListe?.firstOrNull()?.enhetId == null) {
+                        log.error("arbeidsfordeling fant ingen nav-enheter {}", fields(loggingMeta))
+                    }
+                    createTask(kafkaManuelTaskProducer, receivedSykmelding, validationResult, finnBehandlendeEnhetListeResponse?.behandlendeEnhetListe?.firstOrNull()?.enhetId
+                            ?: NAV_OPPFOLGING_UTLAND_KONTOR_NR, loggingMeta)
+                }
+
+                kafkaproducerreceivedSykmelding.send(ProducerRecord(topicName, receivedSykmelding.sykmelding.id, receivedSykmelding))
+                log.info("Message send to kafka {}, {}", topicName, fields(loggingMeta))
+                if (validationResult.status == Status.MANUAL_PROCESSING || validationResult.status == Status.INVALID) {
+                    sendValidationResult(validationResult, kafkaproducervalidationResult, env, receivedSykmelding, loggingMeta)
+                }
+
+                val currentRequestLatency = requestLatency.observeDuration()
+
+                log.info("Message got outcome {}, {}, processing took {}s",
+                        keyValue("status", validationResult.status),
+                        keyValue("ruleHits", validationResult.ruleHits.joinToString(", ", "(", ")") { it.ruleName }),
+                        keyValue("latency", currentRequestLatency),
+                        fields(loggingMeta))
+            } catch (e: Exception) {
+                log.error("Exception caught while handling message, sending to backout", e)
+                backoutProducer.send(message)
             }
-
-            kafkaproducerreceivedSykmelding.send(ProducerRecord(topicName, receivedSykmelding.sykmelding.id, receivedSykmelding))
-            log.info("Message send to kafka {}, {}", topicName, fields(loggingMeta))
-            if (validationResult.status == Status.MANUAL_PROCESSING || validationResult.status == Status.INVALID) {
-                sendValidationResult(validationResult, kafkaproducervalidationResult, env, receivedSykmelding, loggingMeta)
-            }
-
-            val currentRequestLatency = requestLatency.observeDuration()
-
-            log.info("Message got outcome {}, {}, processing took {}s",
-                    keyValue("status", validationResult.status),
-                    keyValue("ruleHits", validationResult.ruleHits.joinToString(", ", "(", ")") { it.ruleName }),
-                    keyValue("latency", currentRequestLatency),
-                    fields(loggingMeta))
-        } catch (e: Exception) {
-            log.error("Exception caught while handling message, sending to backout", e)
-            backoutProducer.send(message)
         }
     }
 }
