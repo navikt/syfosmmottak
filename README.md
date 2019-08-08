@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/navikt/syfosmmottak.svg?style=svg)](https://circleci.com/gh/navikt/syfosmmottak)
+
 # SYFO sm mottak
 This project contains just the receving a sykmelding2013 message
 
