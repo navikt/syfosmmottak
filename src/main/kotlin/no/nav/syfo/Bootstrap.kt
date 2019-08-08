@@ -532,8 +532,6 @@ fun sendReceipt(
     kafkaproducerApprec.send(ProducerRecord(sm2013ApprecTopic, apprec))
 }
 
-fun serializeAppRec(fellesformat: XMLEIFellesformat) = apprecFFJaxbMarshaller.toString(fellesformat)
-
 fun Marshaller.toString(input: Any): String = StringWriter().use {
     marshal(input, it)
     it.toString()
