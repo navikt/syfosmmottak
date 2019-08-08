@@ -33,7 +33,8 @@ fun HelseOpplysningerArbeidsuforhet.toSykmelding(
         behandler = behandler.toBehandler(legeAktoerId),
         avsenderSystem = avsenderSystem.toAvsenderSystem(),
         syketilfelleStartDato = syketilfelleStartDato,
-        signaturDato = signaturDato
+        signaturDato = signaturDato,
+        navnFastlege = pasient?.navnFastlege
 )
 
 fun HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.toPeriode() = Periode(
