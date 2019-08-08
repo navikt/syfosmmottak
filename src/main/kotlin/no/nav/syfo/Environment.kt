@@ -28,9 +28,9 @@ data class Environment(
     override val mqChannelName: String = getEnvVar("MQ_CHANNEL_NAME"),
     val syfoserviceQueueName: String = getEnvVar("MQ_SYFOSERVICE_QUEUE_NAME"),
     val inputQueueName: String = getEnvVar("MQ_INPUT_QUEUE_NAME"),
-    val apprecQueueName: String = getEnvVar("MQ_APPREC_QUEUE_NAME"),
     val inputBackoutQueueName: String = getEnvVar("MQ_INPUT_BOQ_QUEUE_NAME"),
-    val redishost: String = getEnvVar("REDIS_HOST", "syfosmmottak-redis.default.svc.nais.local")
+    val redishost: String = getEnvVar("REDIS_HOST", "syfosmmottak-redis.default.svc.nais.local"),
+    val sm2013Apprec: String = getEnvVar("KAFKA_SM2013_BEHANDLING_TOPIC", "privat-syfo-sm2013-apprec")
 ) : MqConfig, KafkaConfig
 
 data class VaultCredentials(

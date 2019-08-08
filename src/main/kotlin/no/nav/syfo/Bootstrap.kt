@@ -26,7 +26,6 @@ import net.logstash.logback.argument.StructuredArguments.fields
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.emottak.subscription.StartSubscriptionRequest
 import no.nav.emottak.subscription.SubscriptionPort
-import no.nav.helse.apprecV1.XMLCV
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.eiFellesformat.XMLMottakenhetBlokk
 import no.nav.helse.msgHead.XMLIdent
@@ -34,10 +33,8 @@ import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.helse.msgHead.XMLSender
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 import no.nav.syfo.api.registerNaisApi
+import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.apprec.ApprecStatus
-import no.nav.syfo.apprec.createApprec
-import no.nav.syfo.apprec.createApprecError
-import no.nav.syfo.apprec.toApprecCV
 import no.nav.syfo.client.AktoerIdClient
 import no.nav.syfo.client.SamhandlerPraksis
 import no.nav.syfo.client.SarClient
@@ -47,7 +44,6 @@ import no.nav.syfo.client.findBestSamhandlerPraksis
 import no.nav.syfo.helpers.retry
 import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toProducerConfig
-import no.nav.syfo.metrics.APPREC_COUNTER
 import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
 import no.nav.syfo.metrics.INVALID_MESSAGE_NO_NOTICE
 import no.nav.syfo.metrics.REQUEST_TIME
@@ -141,7 +137,6 @@ fun main() = runBlocking(coroutineContext) {
             val session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)
 
             val inputconsumer = session.consumerForQueue(env.inputQueueName)
-            val receiptProducer = session.producerForQueue(env.apprecQueueName)
             val syfoserviceProducer = session.producerForQueue(env.syfoserviceQueueName)
             val backoutProducer = session.producerForQueue(env.inputBackoutQueueName)
 
@@ -152,6 +147,8 @@ fun main() = runBlocking(coroutineContext) {
             val kafkaproducerreceivedSykmelding = KafkaProducer<String, ReceivedSykmelding>(producerProperties)
 
             val kafkaproducervalidationResult = KafkaProducer<String, ValidationResult>(producerProperties)
+
+            val kafkaproducerApprec = KafkaProducer<String, Apprec>(producerProperties)
 
             val manualTaskproducerProperties = kafkaBaseConfig.toProducerConfig(env.applicationName, valueSerializer = KafkaAvroSerializer::class)
             val manualTaskkafkaproducer = KafkaProducer<String, ProduceTask>(manualTaskproducerProperties)
@@ -176,11 +173,11 @@ fun main() = runBlocking(coroutineContext) {
                 port { withSTS(credentials.serviceuserUsername, credentials.serviceuserPassword, env.securityTokenServiceUrl) }
             }
 
-            launchListeners(env, applicationState, inputconsumer, receiptProducer, syfoserviceProducer, backoutProducer,
+            launchListeners(env, applicationState, inputconsumer, syfoserviceProducer, backoutProducer,
                     subscriptionEmottak, kafkaproducerreceivedSykmelding, kafkaproducervalidationResult,
                     syfoSykemeldingRuleClient, sarClient, aktoerIdClient,
                     credentials, jedis, manualTaskkafkaproducer,
-                    personV3, session, arbeidsfordelingV1)
+                    personV3, session, arbeidsfordelingV1, kafkaproducerApprec)
 
             Runtime.getRuntime().addShutdownHook(Thread {
                 connection.close()
@@ -206,7 +203,6 @@ suspend fun CoroutineScope.launchListeners(
     env: Environment,
     applicationState: ApplicationState,
     inputconsumer: MessageConsumer,
-    receiptProducer: MessageProducer,
     syfoserviceProducer: MessageProducer,
     backoutProducer: MessageProducer,
     subscriptionEmottak: SubscriptionPort,
@@ -220,15 +216,16 @@ suspend fun CoroutineScope.launchListeners(
     kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
     personV3: PersonV3,
     session: Session,
-    arbeidsfordelingV1: ArbeidsfordelingV1
+    arbeidsfordelingV1: ArbeidsfordelingV1,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>
 ) {
     val listeners = (0.until(env.applicationThreads)).map {
         createListener(applicationState) {
-            blockingApplicationLogic(inputconsumer, receiptProducer, syfoserviceProducer, backoutProducer,
+            blockingApplicationLogic(inputconsumer, syfoserviceProducer, backoutProducer,
                     subscriptionEmottak, kafkaproducerreceivedSykmelding, kafkaproducervalidationResult,
                     syfoSykemeldingRuleClient, kuhrSarClient, aktoerIdClient, env,
                     credentials, applicationState, jedis, kafkaManuelTaskProducer,
-                    personV3, session, arbeidsfordelingV1)
+                    personV3, session, arbeidsfordelingV1, kafkaproducerApprec)
         }
     }.toList()
 
@@ -245,7 +242,6 @@ fun Application.initRouting(applicationState: ApplicationState) {
 @KtorExperimentalAPI
 suspend fun blockingApplicationLogic(
     inputconsumer: MessageConsumer,
-    receiptProducer: MessageProducer,
     syfoserviceProducer: MessageProducer,
     backoutProducer: MessageProducer,
     subscriptionEmottak: SubscriptionPort,
@@ -261,7 +257,8 @@ suspend fun blockingApplicationLogic(
     kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
     personV3: PersonV3,
     session: Session,
-    arbeidsfordelingV1: ArbeidsfordelingV1
+    arbeidsfordelingV1: ArbeidsfordelingV1,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>
 ) = coroutineScope {
     wrapExceptions {
         loop@ while (applicationState.running) {
@@ -330,17 +327,25 @@ suspend fun blockingApplicationLogic(
 
                     if (redisSha256String != null) {
                         log.warn("Message with {} marked as duplicate {}", keyValue("originalEdiLoggId", redisSha256String), fields(loggingMeta))
-                        sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
-                                createApprecError("Duplikat! - Denne sykmeldingen er mottatt tidligere. " +
-                                        "Skal ikke sendes på nytt.")))
-                        log.info("Apprec Receipt sent to {}, {}", env.apprecQueueName, fields(loggingMeta))
+                        val apprec = Apprec(
+                                fellesformat,
+                                ApprecStatus.AVVIST,
+                                "Duplikat! - Denne sykmeldingen er mottatt tidligere. " +
+                                        "Skal ikke sendes på nytt")
+
+                        sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
+                        log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
                         continue
                     } else if (redisEdiloggid != null) {
                         log.warn("Message with {} marked as duplicate {}", keyValue("originalEdiLoggId", redisEdiloggid), fields(loggingMeta))
-                        sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
-                                createApprecError("Duplikat! - Denne sykmeldingen er mottatt tidligere. " +
-                                        "Skal ikke sendes på nytt.")))
-                        log.info("Apprec Receipt sent to {}, {}", env.apprecQueueName, fields(loggingMeta))
+                        val apprec = Apprec(
+                                fellesformat,
+                                ApprecStatus.AVVIST,
+                                "Duplikat! - Denne sykmeldingen er mottatt tidligere. " +
+                                        "Skal ikke sendes på nytt")
+
+                        sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
+                        log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
                         continue
                     } else {
                         jedis.setex(ediLoggId, TimeUnit.DAYS.toSeconds(7).toInt(), ediLoggId)
@@ -358,9 +363,13 @@ suspend fun blockingApplicationLogic(
                     log.info("Patient not found i aktorRegister error: {}, {}",
                             keyValue("errorMessage", patientIdents?.feilmelding ?: "No response for FNR"),
                             fields(loggingMeta))
-                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
-                            createApprecError("Pasienten er ikkje registrert i folkeregisteret")))
-                    log.info("Apprec Receipt sent to {}, {}", env.apprecQueueName, fields(loggingMeta))
+
+                    val apprec = Apprec(
+                            fellesformat,
+                            ApprecStatus.AVVIST,
+                            "Pasienten er ikkje registrert i folkeregisteret", null)
+                    sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
+                    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
                     INVALID_MESSAGE_NO_NOTICE.inc()
                     continue@loop
                 }
@@ -368,36 +377,48 @@ suspend fun blockingApplicationLogic(
                     log.info("Doctor not found i aktorRegister error: {}, {}",
                             keyValue("errorMessage", doctorIdents?.feilmelding ?: "No response for FNR"),
                             fields(loggingMeta))
-                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
-                            createApprecError("Behandler er ikkje registrert i folkeregisteret")))
-                    log.info("Apprec Receipt sent to {}, {}", env.apprecQueueName, fields(loggingMeta))
+                    val apprec = Apprec(
+                            fellesformat,
+                            ApprecStatus.AVVIST,
+                            "Behandler er ikkje registrert i folkeregisteret", null)
+                    sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
+                    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
                     INVALID_MESSAGE_NO_NOTICE.inc()
                     continue@loop
                 }
 
                 if (healthInformation.aktivitet == null || healthInformation.aktivitet.periode.isNullOrEmpty()) {
                     log.info("Periode is missing {}", fields(loggingMeta))
-                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
-                            createApprecError("Ingen perioder er oppgitt i sykmeldingen.")))
-                    log.info("Apprec Receipt sent to {}, {}", env.apprecQueueName, fields(loggingMeta))
+                    val apprec = Apprec(
+                            fellesformat,
+                            ApprecStatus.AVVIST,
+                            "Ingen perioder er oppgitt i sykmeldingen.")
+                    sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
+                    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
                     INVALID_MESSAGE_NO_NOTICE.inc()
                     continue@loop
                 }
 
                 if (healthInformation.medisinskVurdering?.biDiagnoser != null && healthInformation.medisinskVurdering.biDiagnoser.diagnosekode.any { it.v.isNullOrEmpty() }) {
                     log.info("diagnosekode is missing {}", fields(loggingMeta))
-                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
-                            createApprecError("Diagnosekode på bidiagnose mangler")))
-                    log.info("Apprec Receipt sent to {}, {}", env.apprecQueueName, fields(loggingMeta))
+                    val apprec = Apprec(
+                            fellesformat,
+                            ApprecStatus.AVVIST,
+                            "Diagnosekode på bidiagnose mangler")
+                    sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
+                    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
                     INVALID_MESSAGE_NO_NOTICE.inc()
                     continue@loop
                 }
 
                 if (healthInformation.behandler.id.find { it.typeId.v == "FNR" }?.id ?: healthInformation.behandler.id.first { it.typeId.v == "DNR" }.id == null) {
                     log.info("FNR or DNR is missing on behandler {}", fields(loggingMeta))
-                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, listOf(
-                            createApprecError("Fødselsnummer/d-nummer på behandler mangler")))
-                    log.info("Apprec Receipt sent to {}, {}", env.apprecQueueName, fields(loggingMeta))
+                    val apprec = Apprec(
+                            fellesformat,
+                            ApprecStatus.AVVIST,
+                            "Fødselsnummer/d-nummer på behandler mangler")
+                    sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
+                    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
                     INVALID_MESSAGE_NO_NOTICE.inc()
                     continue@loop
                 }
@@ -430,14 +451,22 @@ suspend fun blockingApplicationLogic(
                 val validationResult = syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding)
 
                 if (validationResult.status in arrayOf(Status.OK, Status.MANUAL_PROCESSING)) {
-                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.ok)
-                    log.info("Apprec Receipt sent to {}, {}", env.apprecQueueName, fields(loggingMeta))
+                    val apprec = Apprec(
+                            fellesformat,
+                            ApprecStatus.OK)
+                    sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
+                    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
 
                     notifySyfoService(session, syfoserviceProducer, ediLoggId, msgId, healthInformation)
                     log.info("Message send to syfoService {}, {}", env.syfoserviceQueueName, fields(loggingMeta))
                 } else {
-                    sendReceipt(session, receiptProducer, fellesformat, ApprecStatus.avvist, validationResult.ruleHits.map { it.toApprecCV() })
-                    log.info("Apprec Receipt sent to {}, {}", env.apprecQueueName, fields(loggingMeta))
+                    val apprec = Apprec(
+                            fellesformat,
+                            ApprecStatus.AVVIST,
+                            null,
+                            validationResult)
+                    sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
+                    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
                 }
 
                 val topicName = when (validationResult.status) {
@@ -496,20 +525,12 @@ fun extractOrganisationHerNumberFromSender(fellesformat: XMLEIFellesformat): XML
         }
 
 fun sendReceipt(
-    session: Session,
-    receiptProducer: MessageProducer,
-    fellesformat: XMLEIFellesformat,
-    apprecStatus: ApprecStatus,
-    apprecErrors: List<XMLCV> = listOf()
+    apprec: Apprec,
+    sm2013ApprecTopic: String,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>
 ) {
-    APPREC_COUNTER.inc()
-    receiptProducer.send(session.createTextMessage().apply {
-        val apprec = createApprec(fellesformat, apprecStatus, apprecErrors)
-        text = serializeAppRec(apprec)
-    })
+    kafkaproducerApprec.send(ProducerRecord(sm2013ApprecTopic, apprec))
 }
-
-fun serializeAppRec(fellesformat: XMLEIFellesformat) = apprecFFJaxbMarshaller.toString(fellesformat)
 
 fun Marshaller.toString(input: Any): String = StringWriter().use {
     marshal(input, it)

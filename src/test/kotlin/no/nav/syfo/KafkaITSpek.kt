@@ -31,12 +31,12 @@ object KafkaITSpek : Spek({
     val config = Environment(mqHostname = "mqhost", mqPort = getRandomPort(),
             mqGatewayName = "mqGateway", kafkaBootstrapServers = embeddedEnvironment.brokersURL,
             mqChannelName = "syfomottak", aktoerregisterV1Url = "localhost-aktor", subscriptionEndpointURL = "localhost-emottak",
-            apprecQueueName = "apprequeue", inputBackoutQueueName = "inputbackqueue", inputQueueName = "inputqueue",
+            inputBackoutQueueName = "inputbackqueue", inputQueueName = "inputqueue",
             syfoserviceQueueName = "syfoserviequeue", applicationPort = 1, applicationThreads = 2, arbeidsfordelingV1EndpointURL =
             "arbeidsfordelingV1", sm2013OppgaveTopic = "oppgaveTopic", securityTokenServiceUrl = "sts", personV3EndpointURL = "personv3",
             kuhrSarApiUrl = "kuhrsarApi", syfosmreglerApiUrl = "syfosmreglerApi", sm2013ManualHandlingTopic = "sm2013ManualHandlingTopic",
             sm2013AutomaticHandlingTopic = "sm2013AutomaticHandlingTopic", sm2013InvalidHandlingTopic = "sm2013InvalidHandlingTopic",
-            applicationName = "syfosmmottak"
+            applicationName = "syfosmmottak", sm2013Apprec = "syfoSmApprecTopic"
     )
 
     fun Properties.overrideForTest(): Properties = apply {
