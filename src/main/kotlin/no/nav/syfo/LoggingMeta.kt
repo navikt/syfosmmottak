@@ -6,12 +6,12 @@ data class LoggingMeta(
     val msgId: String
 )
 
-class TrackableException(override val cause: Throwable, val loggingMeta: LoggingMeta) : RuntimeException()
+class TrackableException(override val cause: Throwable) : RuntimeException()
 
-suspend fun <O> wrapExceptions(loggingMeta: LoggingMeta, block: suspend () -> O): O {
+suspend fun <O> wrapExceptions(block: suspend () -> O): O {
     try {
         return block()
     } catch (e: Exception) {
-        throw TrackableException(e, loggingMeta)
+        throw TrackableException(e)
     }
 }
