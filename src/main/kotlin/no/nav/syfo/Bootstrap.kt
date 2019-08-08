@@ -328,7 +328,7 @@ suspend fun blockingApplicationLogic(
                     if (redisSha256String != null) {
                         log.warn("Message with {} marked as duplicate {}", keyValue("originalEdiLoggId", redisSha256String), fields(loggingMeta))
                         val apprec = Apprec(
-                                fellesformat,
+                                inputMessageText,
                                 ApprecStatus.AVVIST,
                                 "Duplikat! - Denne sykmeldingen er mottatt tidligere. " +
                                         "Skal ikke sendes på nytt")
@@ -339,7 +339,7 @@ suspend fun blockingApplicationLogic(
                     } else if (redisEdiloggid != null) {
                         log.warn("Message with {} marked as duplicate {}", keyValue("originalEdiLoggId", redisEdiloggid), fields(loggingMeta))
                         val apprec = Apprec(
-                                fellesformat,
+                                inputMessageText,
                                 ApprecStatus.AVVIST,
                                 "Duplikat! - Denne sykmeldingen er mottatt tidligere. " +
                                         "Skal ikke sendes på nytt")
@@ -365,7 +365,7 @@ suspend fun blockingApplicationLogic(
                             fields(loggingMeta))
 
                     val apprec = Apprec(
-                            fellesformat,
+                            inputMessageText,
                             ApprecStatus.AVVIST,
                             "Pasienten er ikkje registrert i folkeregisteret", null)
                     sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
@@ -378,7 +378,7 @@ suspend fun blockingApplicationLogic(
                             keyValue("errorMessage", doctorIdents?.feilmelding ?: "No response for FNR"),
                             fields(loggingMeta))
                     val apprec = Apprec(
-                            fellesformat,
+                            inputMessageText,
                             ApprecStatus.AVVIST,
                             "Behandler er ikkje registrert i folkeregisteret", null)
                     sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
@@ -390,7 +390,7 @@ suspend fun blockingApplicationLogic(
                 if (healthInformation.aktivitet == null || healthInformation.aktivitet.periode.isNullOrEmpty()) {
                     log.info("Periode is missing {}", fields(loggingMeta))
                     val apprec = Apprec(
-                            fellesformat,
+                            inputMessageText,
                             ApprecStatus.AVVIST,
                             "Ingen perioder er oppgitt i sykmeldingen.")
                     sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
@@ -402,7 +402,7 @@ suspend fun blockingApplicationLogic(
                 if (healthInformation.medisinskVurdering?.biDiagnoser != null && healthInformation.medisinskVurdering.biDiagnoser.diagnosekode.any { it.v.isNullOrEmpty() }) {
                     log.info("diagnosekode is missing {}", fields(loggingMeta))
                     val apprec = Apprec(
-                            fellesformat,
+                            inputMessageText,
                             ApprecStatus.AVVIST,
                             "Diagnosekode på bidiagnose mangler")
                     sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
@@ -414,7 +414,7 @@ suspend fun blockingApplicationLogic(
                 if (healthInformation.behandler.id.find { it.typeId.v == "FNR" }?.id ?: healthInformation.behandler.id.first { it.typeId.v == "DNR" }.id == null) {
                     log.info("FNR or DNR is missing on behandler {}", fields(loggingMeta))
                     val apprec = Apprec(
-                            fellesformat,
+                            inputMessageText,
                             ApprecStatus.AVVIST,
                             "Fødselsnummer/d-nummer på behandler mangler")
                     sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
@@ -452,7 +452,7 @@ suspend fun blockingApplicationLogic(
 
                 if (validationResult.status in arrayOf(Status.OK, Status.MANUAL_PROCESSING)) {
                     val apprec = Apprec(
-                            fellesformat,
+                            inputMessageText,
                             ApprecStatus.OK)
                     sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
                     log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
@@ -461,7 +461,7 @@ suspend fun blockingApplicationLogic(
                     log.info("Message send to syfoService {}, {}", env.syfoserviceQueueName, fields(loggingMeta))
                 } else {
                     val apprec = Apprec(
-                            fellesformat,
+                            inputMessageText,
                             ApprecStatus.AVVIST,
                             null,
                             validationResult)
