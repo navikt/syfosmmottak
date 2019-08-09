@@ -146,10 +146,15 @@ fun findBestSamhandlerPraksis(
                 StructuredArguments.fields(loggingMeta))
     }
 
-    if (!herId.isNullOrEmpty()) {
-        val samhandlerByHerId = aktiveSamhandlere.firstOrNull { samhandler -> samhandler.her_id == herId }
-        if (samhandlerByHerId != null)
+    if (!herId.isNullOrEmpty() && aktiveSamhandlere.isNotEmpty()) {
+        val samhandlerByHerId = aktiveSamhandlere.find {
+            it.her_id == herId
+        }
+        if (samhandlerByHerId != null) {
+            log.info("Fant samhandler basert på herid. herid: $herId  Meta: ${samhandlere.formaterPraksis()}, {}",
+                    StructuredArguments.fields(loggingMeta))
             return SamhandlerPraksisMatch(samhandlerByHerId, 100.0)
+        }
     }
 
     return aktiveSamhandlere
