@@ -309,9 +309,13 @@ suspend fun blockingApplicationLogic(
                 }
                 log.info("Aktorid kall gjennonført")
 
-                val samhandlerInfo = kuhrSarClient.getSamhandler(personNumberDoctor)
+                val samhandlerInfoDeferred =
+                        async {
+                            kuhrSarClient.getSamhandler(personNumberDoctor)
+                        }
                 log.info("kuhrsar kall gjennonført")
-                val samhandlerPraksis = findBestSamhandlerPraksis(samhandlerInfo, legekontorOrgName, legekontorHerId,
+
+                val samhandlerPraksis = findBestSamhandlerPraksis(samhandlerInfoDeferred.await(), legekontorOrgName, legekontorHerId,
                         loggingMeta)?.samhandlerPraksis
 
                 when (samhandlerPraksis) {
