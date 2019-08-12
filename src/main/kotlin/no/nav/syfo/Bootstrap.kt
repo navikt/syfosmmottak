@@ -17,7 +17,6 @@ import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -301,21 +300,33 @@ suspend fun blockingApplicationLogic(
 
                 log.info("Received message, {}", fields(loggingMeta))
 
-                val aktoerIdsDeferred = async {
-                    aktoerIdClient.getAktoerIds(
+                if (personNumberDoctor.isNotBlank()) {
+                    log.info("Person nummer lege finnes")
+                }
+
+                if (personNumberPatient.isNotBlank()) {
+                    log.info("Person nummer pasient finnes")
+                }
+
+                if (msgId.isNotBlank()) {
+                    log.info("msgid finnes")
+                }
+
+                val aktoerIds = aktoerIdClient.getAktoerIds(
                             listOf(personNumberDoctor,
                                     personNumberPatient),
                             msgId, credentials.serviceuserUsername)
-                }
+
                 log.info("Aktorid kall gjennonført")
 
-                val samhandlerInfoDeferred =
-                        async {
-                            kuhrSarClient.getSamhandler(personNumberDoctor)
-                        }
+                val samhandlerInfo = kuhrSarClient.getSamhandler(personNumberDoctor)
                 log.info("kuhrsar kall gjennonført")
 
-                val samhandlerPraksis = findBestSamhandlerPraksis(samhandlerInfoDeferred.await(), legekontorOrgName, legekontorHerId,
+                if (samhandlerInfo.isNotEmpty()) {
+                    log.info("Samhandler info finnes")
+                }
+
+                val samhandlerPraksis = findBestSamhandlerPraksis(samhandlerInfo, legekontorOrgName, legekontorHerId,
                         loggingMeta)?.samhandlerPraksis
 
                 when (samhandlerPraksis) {
@@ -361,7 +372,6 @@ suspend fun blockingApplicationLogic(
                     log.warn("Unable to contact redis, will allow possible duplicates.", connectionException)
                 }
 
-                val aktoerIds = aktoerIdsDeferred.await()
                 val patientIdents = aktoerIds[personNumberPatient]
                 val doctorIdents = aktoerIds[personNumberDoctor]
 
