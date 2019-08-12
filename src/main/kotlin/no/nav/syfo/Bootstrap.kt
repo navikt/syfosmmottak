@@ -299,33 +299,12 @@ suspend fun blockingApplicationLogic(
                 val personNumberDoctor = receiverBlock.avsenderFnrFraDigSignatur
 
                 log.info("Received message, {}", fields(loggingMeta))
-
-                if (personNumberDoctor.isNotBlank()) {
-                    log.info("Person nummer lege finnes")
-                }
-
-                if (personNumberPatient.isNotBlank()) {
-                    log.info("Person nummer pasient finnes")
-                }
-
-                if (msgId.isNotBlank()) {
-                    log.info("msgid finnes")
-                }
-
                 val aktoerIds = aktoerIdClient.getAktoerIds(
                             listOf(personNumberDoctor,
                                     personNumberPatient),
                             msgId, credentials.serviceuserUsername)
 
-                log.info("Aktorid kall gjennonført")
-
                 val samhandlerInfo = kuhrSarClient.getSamhandler(personNumberDoctor)
-                log.info("kuhrsar kall gjennonført")
-
-                if (samhandlerInfo.isNotEmpty()) {
-                    log.info("Samhandler info finnes")
-                }
-
                 val samhandlerPraksis = findBestSamhandlerPraksis(samhandlerInfo, legekontorOrgName, legekontorHerId,
                         loggingMeta)?.samhandlerPraksis
 
