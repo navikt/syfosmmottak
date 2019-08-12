@@ -307,8 +307,10 @@ suspend fun blockingApplicationLogic(
                                     personNumberPatient),
                             msgId, credentials.serviceuserUsername)
                 }
+                log.info("Aktorid kall gjennonført")
 
                 val samhandlerInfo = kuhrSarClient.getSamhandler(personNumberDoctor)
+                log.info("kuhrsar kall gjennonført")
                 val samhandlerPraksis = findBestSamhandlerPraksis(samhandlerInfo, legekontorOrgName, legekontorHerId,
                         loggingMeta)?.samhandlerPraksis
 
