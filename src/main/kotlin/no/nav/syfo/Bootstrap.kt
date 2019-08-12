@@ -308,6 +308,10 @@ suspend fun blockingApplicationLogic(
                     log.info("Person nummer pasient finnes")
                 }
 
+                if (msgId.isNotBlank()) {
+                    log.info("msgid finnes")
+                }
+
                 val aktoerIds = aktoerIdClient.getAktoerIds(
                             listOf(personNumberDoctor,
                                     personNumberPatient),
