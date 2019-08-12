@@ -130,6 +130,7 @@ fun findBestSamhandlerPraksis(
     herId: String?,
     loggingMeta: LoggingMeta
 ): SamhandlerPraksisMatch? {
+    log.info("Er i metoden findBestSamhandlerPraksis")
     val aktiveSamhandlere = samhandlere.flatMap { it.samh_praksis }
             .filter { praksis -> praksis.samh_praksis_status_kode == "aktiv" }
             .filter {
