@@ -55,5 +55,16 @@ object KuhrSarClientSpek : Spek({
 
             match shouldEqual null
         }
+
+        it("Sjekker at vi logger korrekt om samhandlerPraksis") {
+
+           val samhandlerPraksisMeta =  samhandlerIngenAktive.formaterPraksis()
+
+            println(samhandlerPraksisMeta)
+
+            samhandlerPraksisMeta shouldEqual "praksis(Testlegesenteret: aktiv periode(Thu Dec 12 13:00:00 CET 2999 -> null) ,Denneharikkedetsammenavnet: ikke_aktiv periode(Sun Dec 12 13:00:00 CET 1999 -> null) ) "
+
+        }
+
     }
 })
