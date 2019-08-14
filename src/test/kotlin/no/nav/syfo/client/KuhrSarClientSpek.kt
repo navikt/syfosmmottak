@@ -56,11 +56,5 @@ object KuhrSarClientSpek : Spek({
 
             match shouldEqual null
         }
-
-        it("Sjekker at vi logger korrekt om samhandlerPraksis") {
-            val samhandlerPraksisMeta = samhandlerIngenAktive.formaterPraksis()
-
-            samhandlerPraksisMeta shouldContain "praksis(Testlegesenteret: -> null)"
-        }
     }
 })
