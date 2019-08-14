@@ -141,8 +141,9 @@ fun findBestSamhandlerPraksis(
             .filter { !it.navn.isNullOrEmpty() }
 
     if (aktiveSamhandlere.isEmpty()) {
-        log.info("Fant ingen aktive samhandlere. antallPraksiser: {}  Meta: ${samhandlere.formaterPraksis()} {}, {} ",
-                keyValue("antallPraksiser", samhandlere.size),
+        log.info("Fant ingen aktive samhandlere. {}  Meta: {}, {} ",
+                keyValue("praksis Informasjo", samhandlere.formaterPraksis()),
+                keyValue("antall praksiser", samhandlere.size),
                 StructuredArguments.fields(loggingMeta))
     }
 
@@ -151,7 +152,8 @@ fun findBestSamhandlerPraksis(
             it.her_id == herId
         }
         if (samhandlerByHerId != null) {
-            log.info("Fant samhandler basert på herid. herid: $herId  Meta: ${samhandlere.formaterPraksis()}, {}",
+            log.info("Fant samhandler basert på herid. herid: $herId, {}, {}",
+                    keyValue("praksis Informasjo", samhandlere.formaterPraksis()),
                     StructuredArguments.fields(loggingMeta))
             return SamhandlerPraksisMatch(samhandlerByHerId, 100.0)
         }
