@@ -7,6 +7,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import no.nav.syfo.LoggingMeta
 import org.amshove.kluent.shouldBeLessThan
+import org.amshove.kluent.shouldContain
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -57,14 +58,9 @@ object KuhrSarClientSpek : Spek({
         }
 
         it("Sjekker at vi logger korrekt om samhandlerPraksis") {
+            val samhandlerPraksisMeta = samhandlerIngenAktive.formaterPraksis()
 
-           val samhandlerPraksisMeta =  samhandlerIngenAktive.formaterPraksis()
-
-            println(samhandlerPraksisMeta)
-
-            samhandlerPraksisMeta shouldEqual "praksis(Testlegesenteret: aktiv periode(Thu Dec 12 13:00:00 CET 2999 -> null) ,Denneharikkedetsammenavnet: ikke_aktiv periode(Sun Dec 12 13:00:00 CET 1999 -> null) ) "
-
+            samhandlerPraksisMeta shouldContain "praksis(Testlegesenteret: aktiv periode(Thu Dec 12 13:00:00 CET 2999 -> null) ,Denneharikkedetsammenavnet: ikke_aktiv periode(Sun Dec 12 13:00:00 CET 1999 -> null) ) "
         }
-
     }
 })
