@@ -51,7 +51,7 @@
       "numPartitions": 3
     },
     {
-      "topicName": "privat-syfo-sm2013-apprec",
+      "topicName": "privat-syfo-sm2013-apprec-v1",
       "members": [
         {"member":"srvsyfosmmottak", "role":"PRODUCER"},
         {"member":"srvsyfosmapprec", "role":"CONSUMER"}
