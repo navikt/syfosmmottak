@@ -34,6 +34,7 @@ import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 import no.nav.syfo.api.registerNaisApi
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.apprec.ApprecStatus
+import no.nav.syfo.apprec.toApprec
 import no.nav.syfo.client.AktoerIdClient
 import no.nav.syfo.client.SamhandlerPraksis
 import no.nav.syfo.client.SarClient
@@ -323,22 +324,32 @@ suspend fun blockingApplicationLogic(
 
                     if (redisSha256String != null) {
                         log.warn("Message with {} marked as duplicate {}", keyValue("originalEdiLoggId", redisSha256String), fields(loggingMeta))
-                        val apprec = Apprec(
-                                inputMessageText,
+                        val apprec = fellesformat.toApprec(
+                                ediLoggId,
+                                msgId,
+                                msgHead,
                                 ApprecStatus.AVVIST,
                                 "Duplikat! - Denne sykmeldingen er mottatt tidligere. " +
-                                        "Skal ikke sendes på nytt")
+                                        "Skal ikke sendes på nytt",
+                                msgHead.msgInfo.receiver.organisation,
+                                msgHead.msgInfo.sender.organisation
+                            )
 
                         sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
                         log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
                         continue
                     } else if (redisEdiloggid != null) {
                         log.warn("Message with {} marked as duplicate {}", keyValue("originalEdiLoggId", redisEdiloggid), fields(loggingMeta))
-                        val apprec = Apprec(
-                                inputMessageText,
+                        val apprec = fellesformat.toApprec(
+                                ediLoggId,
+                                msgId,
+                                msgHead,
                                 ApprecStatus.AVVIST,
                                 "Duplikat! - Denne sykmeldingen er mottatt tidligere. " +
-                                        "Skal ikke sendes på nytt")
+                                        "Skal ikke sendes på nytt",
+                                msgHead.msgInfo.receiver.organisation,
+                                msgHead.msgInfo.sender.organisation
+                        )
 
                         sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
                         log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
@@ -359,10 +370,15 @@ suspend fun blockingApplicationLogic(
                             keyValue("errorMessage", patientIdents?.feilmelding ?: "No response for FNR"),
                             fields(loggingMeta))
 
-                    val apprec = Apprec(
-                            inputMessageText,
+                    val apprec = fellesformat.toApprec(
+                            ediLoggId,
+                            msgId,
+                            msgHead,
                             ApprecStatus.AVVIST,
-                            "Pasienten er ikkje registrert i folkeregisteret", null)
+                            "Pasienten er ikkje registrert i folkeregisteret",
+                            msgHead.msgInfo.receiver.organisation,
+                            msgHead.msgInfo.sender.organisation
+                    )
                     sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
                     log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
                     INVALID_MESSAGE_NO_NOTICE.inc()
@@ -372,10 +388,16 @@ suspend fun blockingApplicationLogic(
                     log.info("Doctor not found i aktorRegister error: {}, {}",
                             keyValue("errorMessage", doctorIdents?.feilmelding ?: "No response for FNR"),
                             fields(loggingMeta))
-                    val apprec = Apprec(
-                            inputMessageText,
+                    val apprec = fellesformat.toApprec(
+                            ediLoggId,
+                            msgId,
+                            msgHead,
                             ApprecStatus.AVVIST,
-                            "Behandler er ikkje registrert i folkeregisteret", null)
+                            "Behandler er ikkje registrert i folkeregisteret",
+                            msgHead.msgInfo.receiver.organisation,
+                            msgHead.msgInfo.sender.organisation
+                    )
+
                     sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
                     log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
                     INVALID_MESSAGE_NO_NOTICE.inc()
@@ -384,10 +406,15 @@ suspend fun blockingApplicationLogic(
 
                 if (healthInformation.aktivitet == null || healthInformation.aktivitet.periode.isNullOrEmpty()) {
                     log.info("Periode is missing {}", fields(loggingMeta))
-                    val apprec = Apprec(
-                            inputMessageText,
+                    val apprec = fellesformat.toApprec(
+                            ediLoggId,
+                            msgId,
+                            msgHead,
                             ApprecStatus.AVVIST,
-                            "Ingen perioder er oppgitt i sykmeldingen.")
+                            "Ingen perioder er oppgitt i sykmeldingen.",
+                            msgHead.msgInfo.receiver.organisation,
+                            msgHead.msgInfo.sender.organisation
+                    )
                     sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
                     log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
                     INVALID_MESSAGE_NO_NOTICE.inc()
@@ -396,10 +423,15 @@ suspend fun blockingApplicationLogic(
 
                 if (healthInformation.medisinskVurdering?.biDiagnoser != null && healthInformation.medisinskVurdering.biDiagnoser.diagnosekode.any { it.v.isNullOrEmpty() }) {
                     log.info("diagnosekode is missing {}", fields(loggingMeta))
-                    val apprec = Apprec(
-                            inputMessageText,
+                    val apprec = fellesformat.toApprec(
+                            ediLoggId,
+                            msgId,
+                            msgHead,
                             ApprecStatus.AVVIST,
-                            "Diagnosekode på bidiagnose mangler")
+                            "Diagnosekode på bidiagnose mangler",
+                            msgHead.msgInfo.receiver.organisation,
+                            msgHead.msgInfo.sender.organisation
+                    )
                     sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
                     log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
                     INVALID_MESSAGE_NO_NOTICE.inc()
@@ -408,10 +440,15 @@ suspend fun blockingApplicationLogic(
 
                 if (healthInformation.behandler.id.find { it.typeId.v == "FNR" }?.id ?: healthInformation.behandler.id.first { it.typeId.v == "DNR" }.id == null) {
                     log.info("FNR or DNR is missing on behandler {}", fields(loggingMeta))
-                    val apprec = Apprec(
-                            inputMessageText,
+                    val apprec = fellesformat.toApprec(
+                            ediLoggId,
+                            msgId,
+                            msgHead,
                             ApprecStatus.AVVIST,
-                            "Fødselsnummer/d-nummer på behandler mangler")
+                            "Fødselsnummer/d-nummer på behandler mangler",
+                            msgHead.msgInfo.receiver.organisation,
+                            msgHead.msgInfo.sender.organisation
+                    )
                     sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
                     log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
                     INVALID_MESSAGE_NO_NOTICE.inc()
@@ -446,20 +483,31 @@ suspend fun blockingApplicationLogic(
                 val validationResult = syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding)
 
                 if (validationResult.status in arrayOf(Status.OK, Status.MANUAL_PROCESSING)) {
-                    val apprec = Apprec(
-                            inputMessageText,
-                            ApprecStatus.OK)
+                    val apprec = fellesformat.toApprec(
+                                    ediLoggId,
+                                    msgId,
+                                    msgHead,
+                                    ApprecStatus.OK,
+                                    null,
+                                    msgHead.msgInfo.receiver.organisation,
+                                    msgHead.msgInfo.sender.organisation
+                            )
                     sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
                     log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
 
                     notifySyfoService(session, syfoserviceProducer, ediLoggId, msgId, healthInformation)
                     log.info("Message send to syfoService {}, {}", env.syfoserviceQueueName, fields(loggingMeta))
                 } else {
-                    val apprec = Apprec(
-                            inputMessageText,
+                    val apprec = fellesformat.toApprec(
+                            ediLoggId,
+                            msgId,
+                            msgHead,
                             ApprecStatus.AVVIST,
                             null,
-                            validationResult)
+                            msgHead.msgInfo.receiver.organisation,
+                            msgHead.msgInfo.sender.organisation,
+                            validationResult
+                    )
                     sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
                     log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
                 }
