@@ -6,8 +6,8 @@ import no.nav.syfo.model.ValidationResult
 data class Apprec(
     val ediloggid: String,
     val msgId: String,
-    val msgTypeV: String,
-    val msgTypeDN: String,
+    val msgTypeVerdi: String,
+    val msgTypeBeskrivelse: String,
     val genDate: LocalDateTime,
     val apprecStatus: ApprecStatus,
     val tekstTilSykmelder: String? = null,
@@ -19,24 +19,24 @@ data class Apprec(
 data class Organisation(
     val houvedIdent: Ident,
     val navn: String,
-    val tillegsIdenter: List<Ident>? = listOf(),
+    val tilleggsIdenter: List<Ident>? = listOf(),
     val helsepersonell: Helsepersonell? = null
 )
 
 data class Helsepersonell(
     val navn: String,
     val houvedIdent: Ident,
-    val typeId: CS,
-    val tillegsIdenter: List<Ident>?
+    val typeId: Kodeverdier,
+    val tilleggsIdenter: List<Ident>?
 
 )
 
 data class Ident(
     val id: String,
-    val typeId: CS
+    val typeId: Kodeverdier
 )
 
-data class CS(
-    val dn: String,
-    val v: String
+data class Kodeverdier(
+    val beskrivelse: String,
+    val verdi: String
 )

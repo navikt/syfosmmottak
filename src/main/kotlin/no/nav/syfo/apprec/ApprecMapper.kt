@@ -20,8 +20,8 @@ fun XMLEIFellesformat.toApprec(
 ) = Apprec(
         ediloggid = ediloggid,
         msgId = msgId,
-        msgTypeV = xmlMsgHead.msgInfo.type.v,
-        msgTypeDN = xmlMsgHead.msgInfo.type.dn,
+        msgTypeVerdi = xmlMsgHead.msgInfo.type.v,
+        msgTypeBeskrivelse = xmlMsgHead.msgInfo.type.dn,
         genDate = xmlMsgHead.msgInfo.genDate,
         apprecStatus = apprecStatus,
         tekstTilSykmelder = tekstTilSykmelder,
@@ -35,17 +35,17 @@ fun XMLHealthcareProfessional.intoHCPerson(): Helsepersonell =
         Helsepersonell(
                 navn = if (middleName == null) "$familyName $givenName" else "$familyName $givenName $middleName",
                 houvedIdent = ident.first().intoInst(),
-                typeId = ident.first().typeId.intoCS(),
-                tillegsIdenter = ident.drop(1).map {
-                    Ident(it.id, it.typeId.intoCS())
+                typeId = ident.first().typeId.intoKodeverdier(),
+                tilleggsIdenter = ident.drop(1).map {
+                    Ident(it.id, it.typeId.intoKodeverdier())
                 }
         )
 
 fun XMLOrganisation.intoHCP(): Organisation = Organisation(
         houvedIdent = ident.first().intoInst(),
         navn = organisationName,
-        tillegsIdenter = ident.drop(1).map {
-            Ident(it.id, it.typeId.intoCS())
+        tilleggsIdenter = ident.drop(1).map {
+            Ident(it.id, it.typeId.intoKodeverdier())
         },
 
         helsepersonell = when (healthcareProfessional != null) {
@@ -56,12 +56,12 @@ fun XMLOrganisation.intoHCP(): Organisation = Organisation(
 
 fun XMLIdent.intoInst(): Ident {
     val ident = this
-    return Ident(ident.id, ident.typeId.intoCS())
+    return Ident(ident.id, ident.typeId.intoKodeverdier())
     }
 
-fun MsgHeadCV.intoCS(): CS {
+fun MsgHeadCV.intoKodeverdier(): Kodeverdier {
     val msgHeadCV = this
-    return CS(msgHeadCV.dn, msgHeadCV.v)
+    return Kodeverdier(msgHeadCV.dn, msgHeadCV.v)
 }
 
 operator fun MutableList<Ident>.plusAssign(idents: Iterable<Ident>) {
