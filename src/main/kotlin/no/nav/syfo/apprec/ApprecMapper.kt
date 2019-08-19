@@ -34,7 +34,7 @@ fun XMLEIFellesformat.toApprec(
 fun XMLHealthcareProfessional.intoHCPerson(): Helsepersonell =
         Helsepersonell(
                 navn = if (middleName == null) "$familyName $givenName" else "$familyName $givenName $middleName",
-                houvedIdent = ident.first().intoInst(),
+                hovedIdent = ident.first().intoInst(),
                 typeId = ident.first().typeId.intoKodeverdier(),
                 tilleggsIdenter = ident.drop(1).map {
                     Ident(it.id, it.typeId.intoKodeverdier())
@@ -42,7 +42,7 @@ fun XMLHealthcareProfessional.intoHCPerson(): Helsepersonell =
         )
 
 fun XMLOrganisation.intoHCP(): Organisation = Organisation(
-        houvedIdent = ident.first().intoInst(),
+        hovedIdent = ident.first().intoInst(),
         navn = organisationName,
         tilleggsIdenter = ident.drop(1).map {
             Ident(it.id, it.typeId.intoKodeverdier())

@@ -58,15 +58,15 @@ object ApprecMapperSpek : Spek({
             apprec.tekstTilSykmelder shouldEqual tekstTilSykmelder
         }
         it("Has the same id on the sender organisation") {
-            apprec.mottakerOrganisasjon.houvedIdent.id shouldEqual
+            apprec.mottakerOrganisasjon.hovedIdent.id shouldEqual
                     fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.first().id
         }
         it("Has the same id.typeid.dn on the sender organisation") {
-            apprec.mottakerOrganisasjon.houvedIdent.typeId.beskrivelse shouldEqual
+            apprec.mottakerOrganisasjon.hovedIdent.typeId.beskrivelse shouldEqual
                     fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.first().typeId.dn
         }
         it("Has the same id.typeid.v on the sender organisation") {
-            apprec.mottakerOrganisasjon.houvedIdent.typeId.verdi shouldEqual
+            apprec.mottakerOrganisasjon.hovedIdent.typeId.verdi shouldEqual
                     fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.first().typeId.v
         }
         it("Has the same organisationName on the sender organisation") {
@@ -89,15 +89,15 @@ object ApprecMapperSpek : Spek({
             apprec.mottakerOrganisasjon.helsepersonell?.navn shouldEqual "Sødal Ingvild Fos"
         }
         it("Has the same healthcareProfessional ident on the sender organisation") {
-            apprec.mottakerOrganisasjon.helsepersonell?.houvedIdent?.id shouldEqual
+            apprec.mottakerOrganisasjon.helsepersonell?.hovedIdent?.id shouldEqual
                     fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.healthcareProfessional.ident?.first()?.id
         }
         it("Has the same id.typeid.dn on the receiver organisation") {
-            apprec.senderOrganisasjon.houvedIdent.typeId.beskrivelse shouldEqual
+            apprec.senderOrganisasjon.hovedIdent.typeId.beskrivelse shouldEqual
                     fellesformat.get<XMLMsgHead>().msgInfo.receiver.organisation.ident.first().typeId.dn
         }
         it("Has the same id.typeid.v on the receiver organisation") {
-            apprec.senderOrganisasjon.houvedIdent.typeId.verdi shouldEqual
+            apprec.senderOrganisasjon.hovedIdent.typeId.verdi shouldEqual
                     fellesformat.get<XMLMsgHead>().msgInfo.receiver.organisation.ident.first().typeId.v
         }
         it("Has the same organisationName on the receiver organisation") {
@@ -120,7 +120,7 @@ object ApprecMapperSpek : Spek({
             apprec.senderOrganisasjon.helsepersonell?.navn shouldEqual null
         }
         it("Has the same healthcareProfessional ident on the receiver organisation") {
-            apprec.senderOrganisasjon.helsepersonell?.houvedIdent?.id shouldEqual null
+            apprec.senderOrganisasjon.helsepersonell?.hovedIdent?.id shouldEqual null
         }
     }
 
@@ -159,15 +159,15 @@ object ApprecMapperSpek : Spek({
             apprec.tekstTilSykmelder shouldEqual null
         }
         it("Has the same id on the sender organisation") {
-            apprec.mottakerOrganisasjon.houvedIdent.id shouldEqual
+            apprec.mottakerOrganisasjon.hovedIdent.id shouldEqual
                     fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.first().id
         }
         it("Has the same id.typeid.dn on the sender organisation") {
-            apprec.mottakerOrganisasjon.houvedIdent.typeId.beskrivelse shouldEqual
+            apprec.mottakerOrganisasjon.hovedIdent.typeId.beskrivelse shouldEqual
                     fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.first().typeId.dn
         }
         it("Has the same id.typeid.v on the sender organisation") {
-            apprec.mottakerOrganisasjon.houvedIdent.typeId.verdi shouldEqual
+            apprec.mottakerOrganisasjon.hovedIdent.typeId.verdi shouldEqual
                     fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.first().typeId.v
         }
         it("Has the same organisationName on the sender organisation") {
@@ -190,15 +190,15 @@ object ApprecMapperSpek : Spek({
             apprec.mottakerOrganisasjon.helsepersonell?.navn shouldEqual "Sødal Ingvild Fos"
         }
         it("Has the same healthcareProfessional ident on the sender organisation") {
-            apprec.mottakerOrganisasjon.helsepersonell?.houvedIdent?.id shouldEqual
+            apprec.mottakerOrganisasjon.helsepersonell?.hovedIdent?.id shouldEqual
                     fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.healthcareProfessional.ident?.first()?.id
         }
         it("Has the same id.typeid.dn on the receiver organisation") {
-            apprec.senderOrganisasjon.houvedIdent.typeId.beskrivelse shouldEqual
+            apprec.senderOrganisasjon.hovedIdent.typeId.beskrivelse shouldEqual
                     fellesformat.get<XMLMsgHead>().msgInfo.receiver.organisation.ident.first().typeId.dn
         }
         it("Has the same id.typeid.v on the receiver organisation") {
-            apprec.senderOrganisasjon.houvedIdent.typeId.verdi shouldEqual
+            apprec.senderOrganisasjon.hovedIdent.typeId.verdi shouldEqual
                     fellesformat.get<XMLMsgHead>().msgInfo.receiver.organisation.ident.first().typeId.v
         }
         it("Has the same organisationName on the receiver organisation") {
@@ -221,7 +221,7 @@ object ApprecMapperSpek : Spek({
             apprec.senderOrganisasjon.helsepersonell?.navn shouldEqual null
         }
         it("Has the same healthcareProfessional ident on the receiver organisation") {
-            apprec.senderOrganisasjon.helsepersonell?.houvedIdent?.id shouldEqual null
+            apprec.senderOrganisasjon.helsepersonell?.hovedIdent?.id shouldEqual null
         }
     }
 
@@ -278,15 +278,15 @@ object ApprecMapperSpek : Spek({
             apprec.tekstTilSykmelder shouldEqual null
         }
         it("Has the same id on the sender organisation") {
-            apprec.mottakerOrganisasjon.houvedIdent.id shouldEqual
+            apprec.mottakerOrganisasjon.hovedIdent.id shouldEqual
                     fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.first().id
         }
         it("Has the same id.typeid.dn on the sender organisation") {
-            apprec.mottakerOrganisasjon.houvedIdent.typeId.beskrivelse shouldEqual
+            apprec.mottakerOrganisasjon.hovedIdent.typeId.beskrivelse shouldEqual
                     fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.first().typeId.dn
         }
         it("Has the same id.typeid.v on the sender organisation") {
-            apprec.mottakerOrganisasjon.houvedIdent.typeId.verdi shouldEqual
+            apprec.mottakerOrganisasjon.hovedIdent.typeId.verdi shouldEqual
                     fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.first().typeId.v
         }
         it("Has the same organisationName on the sender organisation") {
@@ -309,15 +309,15 @@ object ApprecMapperSpek : Spek({
             apprec.mottakerOrganisasjon.helsepersonell?.navn shouldEqual "Sødal Ingvild Fos"
         }
         it("Has the same healthcareProfessional ident on the sender organisation") {
-            apprec.mottakerOrganisasjon.helsepersonell?.houvedIdent?.id shouldEqual
+            apprec.mottakerOrganisasjon.helsepersonell?.hovedIdent?.id shouldEqual
                     fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.healthcareProfessional.ident?.first()?.id
         }
         it("Has the same id.typeid.dn on the receiver organisation") {
-            apprec.senderOrganisasjon.houvedIdent.typeId.beskrivelse shouldEqual
+            apprec.senderOrganisasjon.hovedIdent.typeId.beskrivelse shouldEqual
                     fellesformat.get<XMLMsgHead>().msgInfo.receiver.organisation.ident.first().typeId.dn
         }
         it("Has the same id.typeid.v on the receiver organisation") {
-            apprec.senderOrganisasjon.houvedIdent.typeId.verdi shouldEqual
+            apprec.senderOrganisasjon.hovedIdent.typeId.verdi shouldEqual
                     fellesformat.get<XMLMsgHead>().msgInfo.receiver.organisation.ident.first().typeId.v
         }
         it("Has the same organisationName on the receiver organisation") {
@@ -340,7 +340,7 @@ object ApprecMapperSpek : Spek({
             apprec.senderOrganisasjon.helsepersonell?.navn shouldEqual null
         }
         it("Has the same healthcareProfessional ident on the receiver organisation") {
-            apprec.senderOrganisasjon.helsepersonell?.houvedIdent?.id shouldEqual null
+            apprec.senderOrganisasjon.helsepersonell?.hovedIdent?.id shouldEqual null
         }
     }
 })
