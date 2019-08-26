@@ -21,7 +21,7 @@ fun XMLEIFellesformat.toApprec(
         ediloggid = ediloggid,
         msgId = msgId,
         msgTypeVerdi = xmlMsgHead.msgInfo.type.v,
-        msgTypeBeskrivelse = xmlMsgHead.msgInfo.type.dn,
+        msgTypeBeskrivelse = xmlMsgHead.msgInfo.type?.dn ?: "",
         genDate = xmlMsgHead.msgInfo.genDate,
         apprecStatus = apprecStatus,
         tekstTilSykmelder = tekstTilSykmelder,
