@@ -61,7 +61,7 @@ fun XMLIdent.intoInst(): Ident {
 
 fun MsgHeadCV.intoKodeverdier(): Kodeverdier {
     val msgHeadCV = this
-    return Kodeverdier(msgHeadCV.dn, msgHeadCV.v)
+    return Kodeverdier(msgHeadCV?.dn ?: "", msgHeadCV.v)
 }
 
 operator fun MutableList<Ident>.plusAssign(idents: Iterable<Ident>) {
