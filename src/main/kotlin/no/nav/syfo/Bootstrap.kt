@@ -44,6 +44,7 @@ import no.nav.syfo.client.findBestSamhandlerPraksis
 import no.nav.syfo.helpers.retry
 import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toProducerConfig
+import no.nav.syfo.metrics.AVVIST_ULIK_SENDER_OG_BEHANDLER
 import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
 import no.nav.syfo.metrics.INVALID_MESSAGE_NO_NOTICE
 import no.nav.syfo.metrics.REQUEST_TIME
@@ -478,6 +479,10 @@ suspend fun blockingApplicationLogic(
                         fellesformat = inputMessageText,
                         tssid = samhandlerPraksis?.tss_ident ?: ""
                 )
+
+                if (receivedSykmelding.sykmelding.behandler.fnr != personNumberDoctor) {
+                    AVVIST_ULIK_SENDER_OG_BEHANDLER.inc()
+                }
 
                 log.info("Validating against rules, sykmeldingId {},  {}", keyValue("sykmeldingId", sykmelding.id), fields(loggingMeta))
                 val validationResult = syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding)
