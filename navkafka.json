@@ -12,7 +12,8 @@
         {"member":"srvsyfosmmottak", "role":"PRODUCER"},
         {"member":"srvspsak", "role": "CONSUMER"},
         {"member":"srvsyfoprediksjoner", "role": "CONSUMER"},
-        {"member":"srvsyfosmvarsel", "role":"CONSUMER"}
+        {"member":"srvsyfosmvarsel", "role":"CONSUMER"},
+        {"member":"srvsyfostorebror", "role":"CONSUMER"}
       ],
       "numPartitions": 3
     },
@@ -26,7 +27,8 @@
         {"member":"srvsykmkonsument", "role":"CONSUMER"},
         {"member":"srvsyfosmmottak", "role":"PRODUCER"},
         {"member":"srvsyfoprediksjoner", "role": "CONSUMER"},
-        {"member":"srvsyfosmvarsel", "role":"CONSUMER"}
+        {"member":"srvsyfosmvarsel", "role":"CONSUMER"},
+        {"member":"srvsyfostorebror", "role":"CONSUMER"}
       ],
       "numPartitions": 3
     },
@@ -36,7 +38,8 @@
         {"member":"srvsyfosmsak", "role":"CONSUMER"},
         {"member":"srvsyfosmregister", "role":"CONSUMER"},
         {"member":"srvsyfosmmottak", "role":"PRODUCER"},
-        {"member":"srvsyfosmvarsel", "role":"CONSUMER"}
+        {"member":"srvsyfosmvarsel", "role":"CONSUMER"},
+        {"member":"srvsyfostorebror", "role":"CONSUMER"}
       ],
       "numPartitions": 3
     },
