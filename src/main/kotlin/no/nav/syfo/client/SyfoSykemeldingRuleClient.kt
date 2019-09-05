@@ -6,7 +6,8 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.engine.config
-import io.ktor.client.features.auth.basic.BasicAuth
+import io.ktor.client.features.auth.Auth
+import io.ktor.client.features.auth.providers.basic
 import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.request.accept
@@ -26,9 +27,12 @@ class SyfoSykemeldingRuleClient(private val endpointUrl: String, credentials: Va
         endpoint.pipelineMaxSize = 1
         endpoint.connectRetryAttempts = 1
     }) {
-        install(BasicAuth) {
-            username = credentials.serviceuserUsername
-            password = credentials.serviceuserPassword
+
+        install(Auth) {
+            basic {
+                username = credentials.serviceuserUsername
+                password = credentials.serviceuserPassword
+            }
         }
         install(JsonFeature) {
             serializer = JacksonSerializer {
