@@ -6,7 +6,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.apache.Apache
-import io.ktor.client.features.auth.basic.BasicAuth
+import io.ktor.client.features.auth.Auth
+import io.ktor.client.features.auth.providers.basic
 import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.request.accept
@@ -39,9 +40,12 @@ class SarClient(
                 configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             }
         }
-        install(BasicAuth) {
-            this.username = credentials.serviceuserUsername
-            this.password = credentials.serviceuserPassword
+
+        install(Auth) {
+            basic {
+                this.username = credentials.serviceuserUsername
+                this.password = credentials.serviceuserPassword
+            }
         }
     }
 
