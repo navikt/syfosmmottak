@@ -45,6 +45,7 @@ class SarClient(
             basic {
                 this.username = credentials.serviceuserUsername
                 this.password = credentials.serviceuserPassword
+                this.sendWithoutRequest = true
             }
         }
     }
