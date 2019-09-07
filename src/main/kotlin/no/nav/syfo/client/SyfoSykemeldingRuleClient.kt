@@ -32,6 +32,7 @@ class SyfoSykemeldingRuleClient(private val endpointUrl: String, credentials: Va
             basic {
                 username = credentials.serviceuserUsername
                 password = credentials.serviceuserPassword
+                sendWithoutRequest = true
             }
         }
         install(JsonFeature) {
