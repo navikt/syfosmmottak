@@ -60,6 +60,14 @@
         {"member":"srvsyfosmapprec", "role":"CONSUMER"}
       ],
       "numPartitions": 3
+    },
+    {
+      "topicName": "privat-syfo-sm2013-manuell",
+      "members": [
+        {"member":"srvsyfosmmottak", "role":"PRODUCER"},
+        {"member":"srvsyfosmmanuell-b", "role":"CONSUMER"}
+      ],
+      "numPartitions": 3
     }
   ]
 }
