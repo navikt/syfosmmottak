@@ -91,6 +91,8 @@ import java.security.MessageDigest
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Base64
 import java.util.UUID
@@ -474,7 +476,7 @@ suspend fun blockingApplicationLogic(
                         legekontorOrgName = legekontorOrgName,
                         legekontorHerId = legekontorHerId,
                         legekontorReshId = legekontorReshId,
-                        mottattDato = receiverBlock.mottattDatotid.toGregorianCalendar().toZonedDateTime().toLocalDateTime(),
+                        mottattDato = receiverBlock.mottattDatotid.toGregorianCalendar().toZonedDateTime().withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime(),
                         rulesetVersion = healthInformation.regelSettVersjon,
                         fellesformat = inputMessageText,
                         tssid = samhandlerPraksis?.tss_ident ?: ""
