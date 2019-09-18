@@ -32,8 +32,6 @@ Creating a docker image should be as simple as `docker build -t syfosmmottak .`
 ## Contact us
 ### Code/project related questions can be sent to
 * Joakim Kartveit, `joakim.kartveit@nav.no`
-* Kevin Sillerud, `kevin.sillerud@nav.no`
-* Anders Østby, `anders.ostby@nav.no`
 
 ### For NAV employees
-We are available at the Slack channel #barken
+We are available at the Slack channel #team-sykmelding
