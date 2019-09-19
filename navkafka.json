@@ -57,7 +57,8 @@
       "topicName": "privat-syfo-sm2013-apprec-v1",
       "members": [
         {"member":"srvsyfosmmottak", "role":"PRODUCER"},
-        {"member":"srvsyfosmapprec", "role":"CONSUMER"}
+        {"member":"srvsyfosmapprec", "role":"CONSUMER"},
+        {"member":"srvsyfosmmanuell-b", "role":"PRODUCER"}
       ],
       "numPartitions": 3
     },
