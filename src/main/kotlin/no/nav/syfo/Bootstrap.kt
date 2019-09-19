@@ -1,6 +1,7 @@
 package no.nav.syfo
 
 import com.ctc.wstx.exc.WstxException
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement
@@ -9,6 +10,12 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.confluent.kafka.serializers.KafkaAvroSerializer
 import io.ktor.application.Application
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.apache.Apache
+import io.ktor.client.features.auth.Auth
+import io.ktor.client.features.auth.providers.basic
+import io.ktor.client.features.json.JacksonSerializer
+import io.ktor.client.features.json.JsonFeature
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
@@ -91,7 +98,6 @@ import java.security.MessageDigest
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Base64
@@ -156,12 +162,38 @@ fun main() = runBlocking(coroutineContext) {
             val manualTaskproducerProperties = kafkaBaseConfig.toProducerConfig(env.applicationName, valueSerializer = KafkaAvroSerializer::class)
             val manualTaskkafkaproducer = KafkaProducer<String, ProduceTask>(manualTaskproducerProperties)
 
-            val syfoSykemeldingRuleClient = SyfoSykemeldingRuleClient(env.syfosmreglerApiUrl, credentials)
+            val simpleHttpClient = HttpClient(Apache) {
+                install(JsonFeature) {
+                    serializer = JacksonSerializer {
+                        registerKotlinModule()
+                        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                    }
+                }
+            }
 
-            val sarClient = SarClient(env.kuhrSarApiUrl, credentials)
+            val httpClientMedBasicAuth = HttpClient(Apache) {
+                install(Auth) {
+                    basic {
+                        username = credentials.serviceuserUsername
+                        password = credentials.serviceuserPassword
+                        sendWithoutRequest = true
+                    }
+                }
+                install(JsonFeature) {
+                    serializer = JacksonSerializer {
+                        registerKotlinModule()
+                        registerModule(JavaTimeModule())
+                        configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                    }
+                }
+            }
+            val syfoSykemeldingRuleClient = SyfoSykemeldingRuleClient(env.syfosmreglerApiUrl, httpClientMedBasicAuth)
+
+            val sarClient = SarClient(env.kuhrSarApiUrl, httpClientMedBasicAuth)
 
             val oidcClient = StsOidcClient(credentials.serviceuserUsername, credentials.serviceuserPassword)
-            val aktoerIdClient = AktoerIdClient(env.aktoerregisterV1Url, oidcClient)
+            val aktoerIdClient = AktoerIdClient(env.aktoerregisterV1Url, oidcClient, simpleHttpClient)
 
             val subscriptionEmottak = createPort<SubscriptionPort>(env.subscriptionEndpointURL) {
                 proxy { features.add(WSAddressingFeature()) }
