@@ -1,15 +1,6 @@
 package no.nav.syfo.client
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.apache.Apache
-import io.ktor.client.features.auth.Auth
-import io.ktor.client.features.auth.providers.basic
-import io.ktor.client.features.json.JacksonSerializer
-import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.request.accept
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
@@ -18,40 +9,19 @@ import io.ktor.util.KtorExperimentalAPI
 import net.logstash.logback.argument.StructuredArguments
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.syfo.LoggingMeta
-import no.nav.syfo.VaultCredentials
 import no.nav.syfo.helpers.retry
 import no.nav.syfo.log
 import org.apache.commons.text.similarity.LevenshteinDistance
-import java.util.Date
+import java.util.*
 import kotlin.math.max
 
 @KtorExperimentalAPI
 class SarClient(
     private val endpointUrl: String,
-    private val credentials: VaultCredentials
+    private val httpClient: HttpClient
 ) {
-
-    private val kuhrSarClient = HttpClient(Apache) {
-        install(JsonFeature) {
-            serializer = JacksonSerializer {
-                registerKotlinModule()
-                registerModule(JavaTimeModule())
-                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-            }
-        }
-
-        install(Auth) {
-            basic {
-                this.username = credentials.serviceuserUsername
-                this.password = credentials.serviceuserPassword
-                this.sendWithoutRequest = true
-            }
-        }
-    }
-
     suspend fun getSamhandler(ident: String): List<Samhandler> = retry("get_samhandler") {
-        kuhrSarClient.get<List<Samhandler>>("$endpointUrl/rest/sar/samh") {
+        httpClient.get<List<Samhandler>>("$endpointUrl/rest/sar/samh") {
             accept(ContentType.Application.Json)
             parameter("ident", ident)
         }
