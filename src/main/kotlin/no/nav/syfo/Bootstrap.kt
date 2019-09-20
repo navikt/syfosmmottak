@@ -55,6 +55,7 @@ import no.nav.syfo.metrics.AVVIST_ULIK_SENDER_OG_BEHANDLER
 import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
 import no.nav.syfo.metrics.INVALID_MESSAGE_NO_NOTICE
 import no.nav.syfo.metrics.REQUEST_TIME
+import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
@@ -159,6 +160,8 @@ fun main() = runBlocking(coroutineContext) {
 
             val kafkaproducerApprec = KafkaProducer<String, Apprec>(producerProperties)
 
+            val kafkaproducerManuellOppgave = KafkaProducer<String, ManuellOppgave>(producerProperties)
+
             val manualTaskproducerProperties = kafkaBaseConfig.toProducerConfig(env.applicationName, valueSerializer = KafkaAvroSerializer::class)
             val manualTaskkafkaproducer = KafkaProducer<String, ProduceTask>(manualTaskproducerProperties)
 
@@ -212,7 +215,7 @@ fun main() = runBlocking(coroutineContext) {
                     subscriptionEmottak, kafkaproducerreceivedSykmelding, kafkaproducervalidationResult,
                     syfoSykemeldingRuleClient, sarClient, aktoerIdClient,
                     credentials, jedis, manualTaskkafkaproducer,
-                    personV3, session, arbeidsfordelingV1, kafkaproducerApprec)
+                    personV3, session, arbeidsfordelingV1, kafkaproducerApprec, kafkaproducerManuellOppgave)
 
             Runtime.getRuntime().addShutdownHook(Thread {
                 connection.close()
@@ -252,7 +255,8 @@ suspend fun CoroutineScope.launchListeners(
     personV3: PersonV3,
     session: Session,
     arbeidsfordelingV1: ArbeidsfordelingV1,
-    kafkaproducerApprec: KafkaProducer<String, Apprec>
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>
 ) {
     val listeners = (0.until(env.applicationThreads)).map {
         createListener(applicationState) {
@@ -260,7 +264,7 @@ suspend fun CoroutineScope.launchListeners(
                     subscriptionEmottak, kafkaproducerreceivedSykmelding, kafkaproducervalidationResult,
                     syfoSykemeldingRuleClient, kuhrSarClient, aktoerIdClient, env,
                     credentials, applicationState, jedis, kafkaManuelTaskProducer,
-                    personV3, session, arbeidsfordelingV1, kafkaproducerApprec)
+                    personV3, session, arbeidsfordelingV1, kafkaproducerApprec, kafkaproducerManuellOppgave)
         }
     }.toList()
 
@@ -293,7 +297,8 @@ suspend fun blockingApplicationLogic(
     personV3: PersonV3,
     session: Session,
     arbeidsfordelingV1: ArbeidsfordelingV1,
-    kafkaproducerApprec: KafkaProducer<String, Apprec>
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>
 ) = coroutineScope {
     wrapExceptions {
         loop@ while (applicationState.running) {
@@ -554,7 +559,18 @@ suspend fun blockingApplicationLogic(
 
                 val topicName = when (validationResult.status) {
                     Status.OK -> env.sm2013AutomaticHandlingTopic
-                    Status.MANUAL_PROCESSING -> env.sm2013ManualHandlingTopic
+                    Status.MANUAL_PROCESSING -> env.sm2013ManualHandlingTopic.also {
+                        val apprec = fellesformat.toApprec(
+                                ediLoggId,
+                                msgId,
+                                msgHead,
+                                ApprecStatus.OK,
+                                null,
+                                msgHead.msgInfo.receiver.organisation,
+                                msgHead.msgInfo.sender.organisation
+                        )
+                        sendManuellTask(receivedSykmelding, validationResult,apprec, env.syfoSmManuellTopic, kafkaproducerManuellOppgave)
+                    }
                     Status.INVALID -> env.sm2013InvalidHandlingTopic
                 }
 
@@ -613,6 +629,21 @@ fun sendReceipt(
     kafkaproducerApprec: KafkaProducer<String, Apprec>
 ) {
     kafkaproducerApprec.send(ProducerRecord(sm2013ApprecTopic, apprec))
+}
+
+fun sendManuellTask(
+        receivedSykmelding: ReceivedSykmelding,
+        validationResult: ValidationResult,
+        apprec: Apprec,
+        sm2013ManeullTopic: String,
+        kafkaproducerApprec: KafkaProducer<String, ManuellOppgave>
+) {
+    val manuellOppgave= ManuellOppgave(
+            receivedSykmelding,
+            validationResult,
+            apprec
+    )
+    kafkaproducerApprec.send(ProducerRecord(sm2013ManeullTopic, manuellOppgave))
 }
 
 fun Marshaller.toString(input: Any): String = StringWriter().use {
