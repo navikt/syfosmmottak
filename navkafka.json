@@ -13,7 +13,8 @@
         {"member":"srvspsak", "role": "CONSUMER"},
         {"member":"srvsyfoprediksjoner", "role": "CONSUMER"},
         {"member":"srvsyfosmvarsel", "role":"CONSUMER"},
-        {"member":"srvsyfostorebror", "role":"CONSUMER"}
+        {"member":"srvsyfostorebror", "role":"CONSUMER"},
+        {"member":"srvsyfosmmanuell-b", "role":"PRODUCER"}
       ],
       "numPartitions": 3
     },
@@ -57,7 +58,8 @@
       "topicName": "privat-syfo-sm2013-apprec-v1",
       "members": [
         {"member":"srvsyfosmmottak", "role":"PRODUCER"},
-        {"member":"srvsyfosmapprec", "role":"CONSUMER"}
+        {"member":"srvsyfosmapprec", "role":"CONSUMER"},
+        {"member":"srvsyfosmmanuell-b", "role":"PRODUCER"}
       ],
       "numPartitions": 3
     }
