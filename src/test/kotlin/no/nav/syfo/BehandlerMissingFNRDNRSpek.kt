@@ -6,7 +6,6 @@ import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.io.StringReader
 
-
 object BehandlerMissingFNRDNRSpek : Spek({
     describe("Should check find if fnr or dnr is missing") {
         it("FNR is Not missing") {
