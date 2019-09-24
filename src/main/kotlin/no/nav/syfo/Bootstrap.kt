@@ -468,7 +468,7 @@ suspend fun blockingApplicationLogic(
                             continue@loop
                         }
 
-                        if (healthInformation.behandler.id.find { it.typeId.v == "FNR" }?.id ?: healthInformation.behandler.id.first { it.typeId.v == "DNR" }.id == null) {
+                        if (fnrAndDnrIsmissingFromBehandler(healthInformation)) {
                             log.info("FNR or DNR is missing on behandler {}", fields(loggingMeta))
                             val apprec = fellesformat.toApprec(
                                     ediLoggId,
@@ -778,3 +778,6 @@ fun updateRedis(jedis: Jedis, ediLoggId: String, sha256String: String) {
     jedis.setex(ediLoggId, TimeUnit.DAYS.toSeconds(7).toInt(), ediLoggId)
     jedis.setex(sha256String, TimeUnit.DAYS.toSeconds(7).toInt(), ediLoggId)
 }
+
+fun fnrAndDnrIsmissingFromBehandler(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean =
+        healthInformation.behandler.id.find { it.typeId.v == "FNR" }?.id == null && healthInformation.behandler.id.find { it.typeId.v == "DNR" }?.id == null
