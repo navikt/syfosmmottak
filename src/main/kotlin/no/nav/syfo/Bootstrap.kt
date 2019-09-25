@@ -55,6 +55,7 @@ import no.nav.syfo.metrics.AVVIST_ULIK_SENDER_OG_BEHANDLER
 import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
 import no.nav.syfo.metrics.INVALID_MESSAGE_NO_NOTICE
 import no.nav.syfo.metrics.REQUEST_TIME
+import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
@@ -207,11 +208,13 @@ fun main() = runBlocking(coroutineContext) {
                 port { withSTS(credentials.serviceuserUsername, credentials.serviceuserPassword, env.securityTokenServiceUrl) }
             }
 
+            val kafkaproducerManuellOppgave = KafkaProducer<String, ManuellOppgave>(producerProperties)
+
             launchListeners(env, applicationState, inputconsumer, syfoserviceProducer, backoutProducer,
                     subscriptionEmottak, kafkaproducerreceivedSykmelding, kafkaproducervalidationResult,
                     syfoSykemeldingRuleClient, sarClient, aktoerIdClient,
                     credentials, jedis, manualTaskkafkaproducer,
-                    personV3, session, arbeidsfordelingV1, kafkaproducerApprec)
+                    personV3, session, arbeidsfordelingV1, kafkaproducerApprec, kafkaproducerManuellOppgave)
 
             Runtime.getRuntime().addShutdownHook(Thread {
                 connection.close()
@@ -251,7 +254,8 @@ suspend fun CoroutineScope.launchListeners(
     personV3: PersonV3,
     session: Session,
     arbeidsfordelingV1: ArbeidsfordelingV1,
-    kafkaproducerApprec: KafkaProducer<String, Apprec>
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>
 ) {
     val listeners = (0.until(env.applicationThreads)).map {
         createListener(applicationState) {
@@ -259,7 +263,7 @@ suspend fun CoroutineScope.launchListeners(
                     subscriptionEmottak, kafkaproducerreceivedSykmelding, kafkaproducervalidationResult,
                     syfoSykemeldingRuleClient, kuhrSarClient, aktoerIdClient, env,
                     credentials, applicationState, jedis, kafkaManuelTaskProducer,
-                    personV3, session, arbeidsfordelingV1, kafkaproducerApprec)
+                    personV3, session, arbeidsfordelingV1, kafkaproducerApprec, kafkaproducerManuellOppgave)
         }
     }.toList()
 
@@ -292,7 +296,8 @@ suspend fun blockingApplicationLogic(
     personV3: PersonV3,
     session: Session,
     arbeidsfordelingV1: ArbeidsfordelingV1,
-    kafkaproducerApprec: KafkaProducer<String, Apprec>
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>
 ) = coroutineScope {
     wrapExceptions {
         loop@ while (applicationState.running) {
@@ -518,57 +523,59 @@ suspend fun blockingApplicationLogic(
                         log.info("Validating against rules, sykmeldingId {},  {}", keyValue("sykmeldingId", sykmelding.id), fields(loggingMeta))
                         val validationResult = syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding)
 
-                        if (validationResult.status in arrayOf(Status.OK, Status.MANUAL_PROCESSING)) {
-                            val apprec = fellesformat.toApprec(
+                        when (validationResult.status) {
+                            Status.OK -> handleStatusOK(
+                                    fellesformat,
                                     ediLoggId,
                                     msgId,
                                     msgHead,
-                                    ApprecStatus.OK,
-                                    null,
-                                    msgHead.msgInfo.receiver.organisation,
-                                    msgHead.msgInfo.sender.organisation
-                            )
-                            sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
-                            log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
-
-                            notifySyfoService(session, syfoserviceProducer, ediLoggId, msgId, healthInformation)
-                            log.info("Message send to syfoService {}, {}", env.syfoserviceQueueName, fields(loggingMeta))
-                        } else {
-                            val apprec = fellesformat.toApprec(
+                                    env.sm2013Apprec,
+                                    kafkaproducerApprec,
+                                    loggingMeta,
+                                    session,
+                                    syfoserviceProducer,
+                                    healthInformation,
+                                    env.syfoserviceQueueName,
+                                    env.sm2013AutomaticHandlingTopic,
+                                    receivedSykmelding,
+                                    kafkaproducerreceivedSykmelding
+                                    )
+                            Status.MANUAL_PROCESSING -> handleStatusMANUALPROCESSING(
+                                    personV3,
+                                    receivedSykmelding,
+                                    arbeidsfordelingV1,
+                                    loggingMeta,
+                                    fellesformat,
                                     ediLoggId,
                                     msgId,
                                     msgHead,
-                                    ApprecStatus.AVVIST,
-                                    null,
-                                    msgHead.msgInfo.receiver.organisation,
-                                    msgHead.msgInfo.sender.organisation,
-                                    validationResult
-                            )
-                            sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
-                            log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
-                        }
+                                    env.sm2013Apprec,
+                                    kafkaproducerApprec,
+                                    session,
+                                    syfoserviceProducer,
+                                    healthInformation,
+                                    env.syfoserviceQueueName,
+                                    validationResult,
+                                    env.syfoSmManuellTopic,
+                                    kafkaproducerManuellOppgave,
+                                    kafkaManuelTaskProducer,
+                                    kafkaproducerreceivedSykmelding,
+                                    env.sm2013ManualHandlingTopic)
 
-                        val topicName = when (validationResult.status) {
-                            Status.OK -> env.sm2013AutomaticHandlingTopic
-                            Status.MANUAL_PROCESSING -> env.sm2013ManualHandlingTopic
-                            Status.INVALID -> env.sm2013InvalidHandlingTopic
-                        }
-
-                        if (validationResult.status == Status.MANUAL_PROCESSING) {
-                            val geografiskTilknytning = fetchGeografiskTilknytning(personV3, receivedSykmelding)
-                            val patientDiskresjonsKode = fetchDiskresjonsKode(personV3, receivedSykmelding)
-                            val finnBehandlendeEnhetListeResponse = fetchBehandlendeEnhet(arbeidsfordelingV1, geografiskTilknytning.geografiskTilknytning, patientDiskresjonsKode)
-                            if (finnBehandlendeEnhetListeResponse?.behandlendeEnhetListe?.firstOrNull()?.enhetId == null) {
-                                log.error("arbeidsfordeling fant ingen nav-enheter {}", fields(loggingMeta))
-                            }
-                            createTask(kafkaManuelTaskProducer, receivedSykmelding, validationResult, finnBehandlendeEnhetListeResponse?.behandlendeEnhetListe?.firstOrNull()?.enhetId
-                                    ?: NAV_OPPFOLGING_UTLAND_KONTOR_NR, loggingMeta)
-                        }
-
-                        kafkaproducerreceivedSykmelding.send(ProducerRecord(topicName, receivedSykmelding.sykmelding.id, receivedSykmelding))
-                        log.info("Message send to kafka {}, {}", topicName, fields(loggingMeta))
-                        if (validationResult.status == Status.MANUAL_PROCESSING || validationResult.status == Status.INVALID) {
-                            sendValidationResult(validationResult, kafkaproducervalidationResult, env, receivedSykmelding, loggingMeta)
+                            Status.INVALID -> handleStatusINVALID(
+                                    validationResult,
+                                    kafkaproducerreceivedSykmelding,
+                                    kafkaproducervalidationResult,
+                                    env.sm2013BehandlingsUtfallToipic,
+                                    env.sm2013InvalidHandlingTopic,
+                                    receivedSykmelding,
+                                    loggingMeta,
+                                    fellesformat,
+                                    env.sm2013Apprec,
+                                    kafkaproducerApprec,
+                                    ediLoggId,
+                                    msgId,
+                                    msgHead)
                         }
 
                         val currentRequestLatency = requestLatency.observeDuration()
@@ -768,10 +775,16 @@ fun convertSenderToBase64(sender: XMLSender): ByteArray =
             it
         }.toByteArray()
 
-fun sendValidationResult(validationResult: ValidationResult, kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>, env: Environment, receivedSykmelding: ReceivedSykmelding, loggingMeta: LoggingMeta) {
+fun sendValidationResult(
+    validationResult: ValidationResult,
+    kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
+    sm2013BehandlingsUtfallToipic: String,
+    receivedSykmelding: ReceivedSykmelding,
+    loggingMeta: LoggingMeta
+) {
 
-    kafkaproducervalidationResult.send(ProducerRecord(env.sm2013BehandlingsUtfallToipic, receivedSykmelding.sykmelding.id, validationResult))
-    log.info("Validation results send to kafka {}, {}", env.sm2013BehandlingsUtfallToipic, fields(loggingMeta))
+    kafkaproducervalidationResult.send(ProducerRecord(sm2013BehandlingsUtfallToipic, receivedSykmelding.sykmelding.id, validationResult))
+    log.info("Validation results send to kafka {}, {}", sm2013BehandlingsUtfallToipic, fields(loggingMeta))
 }
 
 fun updateRedis(jedis: Jedis, ediLoggId: String, sha256String: String) {
@@ -781,3 +794,158 @@ fun updateRedis(jedis: Jedis, ediLoggId: String, sha256String: String) {
 
 fun fnrAndDnrIsmissingFromBehandler(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean =
         healthInformation.behandler.id.find { it.typeId.v == "FNR" }?.id == null && healthInformation.behandler.id.find { it.typeId.v == "DNR" }?.id == null
+
+fun handleStatusOK(
+    fellesformat: XMLEIFellesformat,
+    ediLoggId: String,
+    msgId: String,
+    msgHead: XMLMsgHead,
+    sm2013ApprecTopic: String,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    loggingMeta: LoggingMeta,
+    session: Session,
+    syfoserviceProducer: MessageProducer,
+    healthInformation: HelseOpplysningerArbeidsuforhet,
+    syfoserviceQueueName: String,
+    sm2013AutomaticHandlingTopic: String,
+    receivedSykmelding: ReceivedSykmelding,
+    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>
+) {
+
+    kafkaproducerreceivedSykmelding.send(ProducerRecord(sm2013AutomaticHandlingTopic, receivedSykmelding.sykmelding.id, receivedSykmelding))
+    log.info("Message send to kafka {}, {}", sm2013AutomaticHandlingTopic, fields(loggingMeta))
+
+    notifySyfoService(session, syfoserviceProducer, ediLoggId, msgId, healthInformation)
+    log.info("Message send to syfoService {}, {}", syfoserviceQueueName, fields(loggingMeta))
+
+    val apprec = fellesformat.toApprec(
+            ediLoggId,
+            msgId,
+            msgHead,
+            ApprecStatus.OK,
+            null,
+            msgHead.msgInfo.receiver.organisation,
+            msgHead.msgInfo.sender.organisation
+    )
+    sendReceipt(apprec, sm2013ApprecTopic, kafkaproducerApprec)
+    log.info("Apprec receipt sent to kafka topic {}, {}", sm2013ApprecTopic, fields(loggingMeta))
+}
+
+suspend fun handleStatusMANUALPROCESSING(
+    personV3: PersonV3,
+    receivedSykmelding: ReceivedSykmelding,
+    arbeidsfordelingV1: ArbeidsfordelingV1,
+    loggingMeta: LoggingMeta,
+    fellesformat: XMLEIFellesformat,
+    ediLoggId: String,
+    msgId: String,
+    msgHead: XMLMsgHead,
+    sm2013ApprecTopic: String,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    session: Session,
+    syfoserviceProducer: MessageProducer,
+    healthInformation: HelseOpplysningerArbeidsuforhet,
+    syfoserviceQueueName: String,
+    validationResult: ValidationResult,
+    syfoSmManuellTopic: String,
+    kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
+    kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
+    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
+    sm2013ManualHandlingTopic: String
+) {
+
+    val geografiskTilknytning = fetchGeografiskTilknytning(personV3, receivedSykmelding)
+    val patientDiskresjonsKode = fetchDiskresjonsKode(personV3, receivedSykmelding)
+    val finnBehandlendeEnhetListeResponse = fetchBehandlendeEnhet(arbeidsfordelingV1, geografiskTilknytning.geografiskTilknytning, patientDiskresjonsKode)
+    if (finnBehandlendeEnhetListeResponse?.behandlendeEnhetListe?.firstOrNull()?.enhetId == null) {
+        log.error("arbeidsfordeling fant ingen nav-enheter {}", fields(loggingMeta))
+    }
+
+    val behandlendeEnhet = finnBehandlendeEnhetListeResponse?.behandlendeEnhetListe?.firstOrNull()?.enhetId
+            ?: NAV_OPPFOLGING_UTLAND_KONTOR_NR
+
+    if (behandlendeEnhet == NAV_OPPFOLGING_UTLAND_KONTOR_NR) {
+        val apprec = fellesformat.toApprec(
+                ediLoggId,
+                msgId,
+                msgHead,
+                ApprecStatus.OK,
+                null,
+                msgHead.msgInfo.receiver.organisation,
+                msgHead.msgInfo.sender.organisation
+        )
+        sendReceipt(apprec, sm2013ApprecTopic, kafkaproducerApprec)
+        log.info("Apprec receipt sent to kafka topic {}, {}", sm2013ApprecTopic, fields(loggingMeta))
+
+        sendManuellTask(receivedSykmelding, validationResult, apprec, syfoSmManuellTopic, kafkaproducerManuellOppgave)
+    } else {
+        createTask(kafkaManuelTaskProducer, receivedSykmelding, validationResult, behandlendeEnhet, loggingMeta)
+
+        notifySyfoService(session, syfoserviceProducer, ediLoggId, msgId, healthInformation)
+        log.info("Message send to syfoService {}, {}", syfoserviceQueueName, fields(loggingMeta))
+
+        kafkaproducerreceivedSykmelding.send(ProducerRecord(sm2013ManualHandlingTopic, receivedSykmelding.sykmelding.id, receivedSykmelding))
+        log.info("Message send to kafka {}, {}", sm2013ManualHandlingTopic, fields(loggingMeta))
+
+        val apprec = fellesformat.toApprec(
+                ediLoggId,
+                msgId,
+                msgHead,
+                ApprecStatus.OK,
+                null,
+                msgHead.msgInfo.receiver.organisation,
+                msgHead.msgInfo.sender.organisation
+        )
+        sendReceipt(apprec, sm2013ApprecTopic, kafkaproducerApprec)
+        log.info("Apprec receipt sent to kafka topic {}, {}", sm2013ApprecTopic, fields(loggingMeta))
+    }
+}
+
+fun sendManuellTask(
+    receivedSykmelding: ReceivedSykmelding,
+    validationResult: ValidationResult,
+    apprec: Apprec,
+    sm2013ManeullTopic: String,
+    kafkaproducerApprec: KafkaProducer<String, ManuellOppgave>
+) {
+    val manuellOppgave = ManuellOppgave(
+            receivedSykmelding,
+            validationResult,
+            apprec
+    )
+    kafkaproducerApprec.send(ProducerRecord(sm2013ManeullTopic, manuellOppgave))
+}
+
+fun handleStatusINVALID(
+    validationResult: ValidationResult,
+    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
+    kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
+    sm2013BehandlingsUtfallToipic: String,
+    sm2013InvalidHandlingTopic: String,
+    receivedSykmelding: ReceivedSykmelding,
+    loggingMeta: LoggingMeta,
+    fellesformat: XMLEIFellesformat,
+    sm2013ApprecTopic: String,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    ediLoggId: String,
+    msgId: String,
+    msgHead: XMLMsgHead
+) {
+    sendValidationResult(validationResult, kafkaproducervalidationResult, sm2013BehandlingsUtfallToipic, receivedSykmelding, loggingMeta)
+
+    kafkaproducerreceivedSykmelding.send(ProducerRecord(sm2013InvalidHandlingTopic, receivedSykmelding.sykmelding.id, receivedSykmelding))
+    log.info("Message send to kafka {}, {}", sm2013InvalidHandlingTopic, fields(loggingMeta))
+
+    val apprec = fellesformat.toApprec(
+            ediLoggId,
+            msgId,
+            msgHead,
+            ApprecStatus.AVVIST,
+            null,
+            msgHead.msgInfo.receiver.organisation,
+            msgHead.msgInfo.sender.organisation,
+            validationResult
+    )
+    sendReceipt(apprec, sm2013ApprecTopic, kafkaproducerApprec)
+    log.info("Apprec receipt sent to kafka topic {}, {}", sm2013ApprecTopic, fields(loggingMeta))
+}
