@@ -864,7 +864,8 @@ suspend fun handleStatusMANUALPROCESSING(
     val behandlendeEnhet = finnBehandlendeEnhetListeResponse?.behandlendeEnhetListe?.firstOrNull()?.enhetId
             ?: NAV_OPPFOLGING_UTLAND_KONTOR_NR
 
-    if (behandlendeEnhet == NAV_OPPFOLGING_UTLAND_KONTOR_NR) {
+    // TODO finn ut hvilke navenheter som skal på
+    if (true) {
         val apprec = fellesformat.toApprec(
                 ediLoggId,
                 msgId,
@@ -877,7 +878,7 @@ suspend fun handleStatusMANUALPROCESSING(
         sendReceipt(apprec, sm2013ApprecTopic, kafkaproducerApprec)
         log.info("Apprec receipt sent to kafka topic {}, {}", sm2013ApprecTopic, fields(loggingMeta))
 
-        sendManuellTask(receivedSykmelding, validationResult, apprec, syfoSmManuellTopic, kafkaproducerManuellOppgave)
+        sendManuellTask(receivedSykmelding, validationResult, apprec, syfoSmManuellTopic, behandlendeEnhet, kafkaproducerManuellOppgave)
     } else {
         createTask(kafkaManuelTaskProducer, receivedSykmelding, validationResult, behandlendeEnhet, loggingMeta)
 
@@ -906,12 +907,14 @@ fun sendManuellTask(
     validationResult: ValidationResult,
     apprec: Apprec,
     sm2013ManeullTopic: String,
+    behandlendeEnhet: String,
     kafkaproducerApprec: KafkaProducer<String, ManuellOppgave>
 ) {
     val manuellOppgave = ManuellOppgave(
             receivedSykmelding,
             validationResult,
-            apprec
+            apprec,
+            behandlendeEnhet
     )
     kafkaproducerApprec.send(ProducerRecord(sm2013ManeullTopic, manuellOppgave))
 }
