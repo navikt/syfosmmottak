@@ -35,7 +35,6 @@ spec:
       memory: 128Mi
   vault:
     enabled: true
-  webproxy: true
   env:
     - name: ARBEIDSFORDELING_V1_ENDPOINT_URL
       value: https://app-q1.adeo.no/norg2/ws/Arbeidsfordeling/v1
