@@ -487,6 +487,25 @@ suspend fun blockingApplicationLogic(
                             continue@loop
                         }
 
+                        if (healthInformation.medisinskVurdering?.hovedDiagnose?.diagnosekode != null &&
+                                healthInformation.medisinskVurdering.hovedDiagnose.diagnosekode.v == null) {
+                            log.info("Houveddiagnose diagnosekode V mangler", fields(loggingMeta))
+                            val apprec = fellesformat.toApprec(
+                                    ediLoggId,
+                                    msgId,
+                                    msgHead,
+                                    ApprecStatus.AVVIST,
+                                    "Houveddiagnose diagnosekode mangler i sykmeldingen kontaktdin EPJ-levrandør",
+                                    msgHead.msgInfo.receiver.organisation,
+                                    msgHead.msgInfo.sender.organisation
+                            )
+                            sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
+                            log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
+                            INVALID_MESSAGE_NO_NOTICE.inc()
+                            updateRedis(jedis, ediLoggId, sha256String)
+                            continue@loop
+                        }
+
                         val sykmelding = healthInformation.toSykmelding(
                                 sykmeldingId = UUID.randomUUID().toString(),
                                 pasientAktoerId = patientIdents.identer!!.first().ident,
