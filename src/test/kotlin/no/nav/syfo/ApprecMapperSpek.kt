@@ -227,15 +227,17 @@ object ApprecMapperSpek : Spek({
 
     describe("Avisst AppRec with validationResult") {
 
-        val validationResult = ValidationResult(status = Status.MANUAL_PROCESSING, ruleHits = listOf(
+        val validationResult = ValidationResult(status = Status.INVALID, ruleHits = listOf(
             RuleInfo(ruleName = "BEHANDLER_KI_NOT_USING_VALID_DIAGNOSECODE_TYPE",
                     messageForUser = "Den som skrev sykmeldingen mangler autorisasjon.",
                     messageForSender = "Behandler er manuellterapeut/kiropraktor eller fysioterapeut med " +
-                            "autorisasjon har angitt annen diagnose enn kapitel L (muskel og skjelettsykdommer)"
+                            "autorisasjon har angitt annen diagnose enn kapitel L (muskel og skjelettsykdommer)",
+                    ruleStatus = Status.INVALID
             ),
             RuleInfo(ruleName = "NUMBER_OF_TREATMENT_DAYS_SET",
                     messageForUser = "Hvis behandlingsdager er angitt sendes meldingen til manuell behandling.",
-                    messageForSender = "Hvis behandlingsdager er angitt sendes meldingen til manuell behandling."
+                    messageForSender = "Hvis behandlingsdager er angitt sendes meldingen til manuell behandling.",
+                    ruleStatus = Status.INVALID
             )))
 
         val apprec = fellesformat.toApprec(
