@@ -14,7 +14,12 @@
         {"member":"srvsyfoprediksjoner", "role": "CONSUMER"},
         {"member":"srvsyfosmvarsel", "role":"CONSUMER"},
         {"member":"srvsyfostorebror", "role":"CONSUMER"},
-        {"member":"srvsyfosmmanuell-b", "role":"PRODUCER"}
+        {"member":"srvsyfosmmanuell-b", "role":"PRODUCER"},
+        {"member":"s151890", "role":"MANAGER"},
+        {"member":"k143566", "role":"MANAGER"},
+        {"member":"f133008", "role":"MANAGER"},
+        {"member":"n157016", "role":"MANAGER"},
+        {"member":"k157140", "role":"MANAGER"}
       ],
       "numPartitions": 3
     },
@@ -29,7 +34,12 @@
         {"member":"srvsyfosmmottak", "role":"PRODUCER"},
         {"member":"srvsyfoprediksjoner", "role": "CONSUMER"},
         {"member":"srvsyfosmvarsel", "role":"CONSUMER"},
-        {"member":"srvsyfostorebror", "role":"CONSUMER"}
+        {"member":"srvsyfostorebror", "role":"CONSUMER"},
+        {"member":"s151890", "role":"MANAGER"},
+        {"member":"k143566", "role":"MANAGER"},
+        {"member":"f133008", "role":"MANAGER"},
+        {"member":"n157016", "role":"MANAGER"},
+        {"member":"k157140", "role":"MANAGER"}
       ],
       "numPartitions": 3
     },
@@ -40,7 +50,12 @@
         {"member":"srvsyfosmregister", "role":"CONSUMER"},
         {"member":"srvsyfosmmottak", "role":"PRODUCER"},
         {"member":"srvsyfosmvarsel", "role":"CONSUMER"},
-        {"member":"srvsyfostorebror", "role":"CONSUMER"}
+        {"member":"srvsyfostorebror", "role":"CONSUMER"},
+        {"member":"s151890", "role":"MANAGER"},
+        {"member":"k143566", "role":"MANAGER"},
+        {"member":"f133008", "role":"MANAGER"},
+        {"member":"n157016", "role":"MANAGER"},
+        {"member":"k157140", "role":"MANAGER"}
       ],
       "numPartitions": 3
     },
@@ -50,7 +65,12 @@
         {"member":"srvsyfosmregister", "role":"CONSUMER"},
         {"member":"srvsyfosmmottak", "role":"PRODUCER"},
         {"member":"srvsyfosminfotrygd", "role":"PRODUCER"},
-        {"member":"srvsyfosmsak", "role":"CONSUMER"}
+        {"member":"srvsyfosmsak", "role":"CONSUMER"},
+        {"member":"s151890", "role":"MANAGER"},
+        {"member":"k143566", "role":"MANAGER"},
+        {"member":"f133008", "role":"MANAGER"},
+        {"member":"n157016", "role":"MANAGER"},
+        {"member":"k157140", "role":"MANAGER"}
       ],
       "numPartitions": 3
     },
@@ -59,7 +79,12 @@
       "members": [
         {"member":"srvsyfosmmottak", "role":"PRODUCER"},
         {"member":"srvsyfosmapprec", "role":"CONSUMER"},
-        {"member":"srvsyfosmmanuell-b", "role":"PRODUCER"}
+        {"member":"srvsyfosmmanuell-b", "role":"PRODUCER"},
+        {"member":"s151890", "role":"MANAGER"},
+        {"member":"k143566", "role":"MANAGER"},
+        {"member":"f133008", "role":"MANAGER"},
+        {"member":"n157016", "role":"MANAGER"},
+        {"member":"k157140", "role":"MANAGER"}
       ],
       "numPartitions": 3
     },
@@ -67,7 +92,12 @@
       "topicName": "privat-syfo-sm2013-manuell",
       "members": [
         {"member":"srvsyfosmmottak", "role":"PRODUCER"},
-        {"member":"srvsyfosmmanuell-b", "role":"CONSUMER"}
+        {"member":"srvsyfosmmanuell-b", "role":"CONSUMER"},
+        {"member":"s151890", "role":"MANAGER"},
+        {"member":"k143566", "role":"MANAGER"},
+        {"member":"f133008", "role":"MANAGER"},
+        {"member":"n157016", "role":"MANAGER"},
+        {"member":"k157140", "role":"MANAGER"}
       ],
       "numPartitions": 3
     }
