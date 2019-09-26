@@ -1,5 +1,4 @@
-[![CircleCI](https://circleci.com/gh/navikt/syfosmmottak.svg?style=svg)](https://circleci.com/gh/navikt/syfosmmottak)
-
+![https://github.com/navikt/syfosmmottak/workflows/Deploy%20to%20dev%20and%20prod/badge.svg](Build status)
 # SYFO sm mottak
 This project contains just the receving a sykmelding2013 message
 
