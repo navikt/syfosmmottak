@@ -800,4 +800,5 @@ fun updateRedis(jedis: Jedis, ediLoggId: String, sha256String: String) {
 }
 
 fun fnrAndDnrIsmissingFromBehandler(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean =
-        healthInformation.behandler.id.find { it.typeId.v == "FNR" }?.id == null && healthInformation.behandler.id.find { it.typeId.v == "DNR" }?.id == null
+        healthInformation.behandler.id.find { it.typeId.v == "FNR" }?.id.isNullOrBlank() &&
+        healthInformation.behandler.id.find { it.typeId.v == "DNR" }?.id.isNullOrBlank()

@@ -19,5 +19,11 @@ object BehandlerMissingFNRDNRSpek : Spek({
 
             fnrAndDnrIsmissingFromBehandler(healthInformation) shouldEqual true
         }
+
+        it("FNR is empty string") {
+            val healthInformation = fellesformatUnmarshaller.unmarshal(StringReader(BootstrapSpek::class.java.getResourceAsStream("/generated_sm_7.xml").readAllBytes().toString(Charsets.UTF_8))) as HelseOpplysningerArbeidsuforhet
+
+            fnrAndDnrIsmissingFromBehandler(healthInformation) shouldEqual true
+        }
     }
 })
