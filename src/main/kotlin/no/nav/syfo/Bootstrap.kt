@@ -495,7 +495,7 @@ suspend fun blockingApplicationLogic(
                                     msgId,
                                     msgHead,
                                     ApprecStatus.AVVIST,
-                                    "Houveddiagnose diagnosekode mangler i sykmeldingen kontaktdin EPJ-levrandør",
+                                    "Diagnosekode for hoveddiagnose mangler i sykmeldingen. Kontakt din EPJ-leverandør",
                                     msgHead.msgInfo.receiver.organisation,
                                     msgHead.msgInfo.sender.organisation
                             )
