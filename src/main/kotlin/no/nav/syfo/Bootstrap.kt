@@ -356,7 +356,7 @@ suspend fun blockingApplicationLogic(
                     val redisSha256String = jedis.get(sha256String)
                     val redisEdiloggid = jedis.get(ediLoggId)
 
-                    if (redisSha256String != null) {
+                    if (false) {
                         log.warn("Message with {} marked as duplicate, has same redisSha256String {}", keyValue("originalEdiLoggId", redisSha256String), fields(loggingMeta))
                         val apprec = fellesformat.toApprec(
                                 ediLoggId,
@@ -372,7 +372,7 @@ suspend fun blockingApplicationLogic(
                         sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
                         log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
                         continue
-                    } else if (redisEdiloggid != null) {
+                    } else if (false) {
                         log.warn("Message with {} marked as duplicate, has same redisEdiloggid {}", keyValue("originalEdiLoggId", redisEdiloggid), fields(loggingMeta))
                         val apprec = fellesformat.toApprec(
                                 ediLoggId,
