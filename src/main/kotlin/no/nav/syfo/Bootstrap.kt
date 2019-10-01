@@ -593,7 +593,7 @@ suspend fun blockingApplicationLogic(
 
                         val currentRequestLatency = requestLatency.observeDuration()
 
-                        updateRedis(jedis, ediLoggId, sha256String)
+                        //updateRedis(jedis, ediLoggId, sha256String)
                         log.info("Message got outcome {}, {}, processing took {}s",
                                 keyValue("status", validationResult.status),
                                 keyValue("ruleHits", validationResult.ruleHits.joinToString(", ", "(", ")") { it.ruleName }),
