@@ -469,6 +469,24 @@ suspend fun blockingApplicationLogic(
                             continue@loop
                         }
 
+                        if (healthInformation.medisinskVurdering?.biDiagnoser != null && healthInformation.medisinskVurdering.biDiagnoser.diagnosekode.any { it.s.isNullOrEmpty() }) {
+                            log.info("diagnosekodeverk is missing {}", fields(loggingMeta))
+                            val apprec = fellesformat.toApprec(
+                                    ediLoggId,
+                                    msgId,
+                                    msgHead,
+                                    ApprecStatus.AVVIST,
+                                    "Diagnosekodeverk på bidiagnose mangler",
+                                    msgHead.msgInfo.receiver.organisation,
+                                    msgHead.msgInfo.sender.organisation
+                            )
+                            sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
+                            log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
+                            INVALID_MESSAGE_NO_NOTICE.inc()
+                            updateRedis(jedis, ediLoggId, sha256String)
+                            continue@loop
+                        }
+
                         if (fnrAndDnrIsmissingFromBehandler(healthInformation)) {
                             log.info("FNR or DNR is missing on behandler {}", fields(loggingMeta))
                             val apprec = fellesformat.toApprec(
