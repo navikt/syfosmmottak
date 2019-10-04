@@ -898,7 +898,8 @@ suspend fun handleStatusMANUALPROCESSING(
             ?: NAV_OPPFOLGING_UTLAND_KONTOR_NR
 
     // TODO snakke med veden hvilke nav kontor skal først få testete ut syfosmmanuell
-    if (behandlendeEnhet == NAV_OPPFOLGING_UTLAND_KONTOR_NR) {
+    // behandlendeEnhet == NAV_OPPFOLGING_UTLAND_KONTOR_NR
+    if (true) {
         val apprec = fellesformat.toApprec(
                 ediLoggId,
                 msgId,
