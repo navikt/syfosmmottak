@@ -675,16 +675,17 @@ fun notifySyfoService(
     session: Session,
     receiptProducer: MessageProducer,
     ediLoggId: String,
+    sykmeldingId: String,
     msgId: String,
     healthInformation: HelseOpplysningerArbeidsuforhet
-
 ) {
     receiptProducer.send(session.createTextMessage().apply {
 
         val syketilfelleStartDato = extractSyketilfelleStartDato(healthInformation)
         val sykmelding = convertSykemeldingToBase64(healthInformation)
         val syfo = Syfo(
-                tilleggsdata = Tilleggsdata(ediLoggId = ediLoggId, msgId = msgId, syketilfelleStartDato = syketilfelleStartDato),
+                tilleggsdata = Tilleggsdata(ediLoggId = ediLoggId, msgId = msgId, sykmeldingId = sykmeldingId,
+                syketilfelleStartDato = syketilfelleStartDato),
                 sykmelding = Base64.getEncoder().encodeToString(sykmelding))
         text = xmlObjectWriter.writeValueAsString(syfo)
     })
@@ -698,6 +699,7 @@ data class Syfo(
 
 data class Tilleggsdata(
     val ediLoggId: String,
+    val sykmeldingId: String,
     val msgId: String,
     val syketilfelleStartDato: LocalDateTime
 )
@@ -848,7 +850,8 @@ fun handleStatusOK(
     kafkaproducerreceivedSykmelding.send(ProducerRecord(sm2013AutomaticHandlingTopic, receivedSykmelding.sykmelding.id, receivedSykmelding))
     log.info("Message send to kafka {}, {}", sm2013AutomaticHandlingTopic, fields(loggingMeta))
 
-    notifySyfoService(session, syfoserviceProducer, ediLoggId, msgId, healthInformation)
+    notifySyfoService(session = session, receiptProducer = syfoserviceProducer, ediLoggId = ediLoggId,
+            sykmeldingId = receivedSykmelding.sykmelding.id, msgId = msgId, healthInformation = healthInformation)
     log.info("Message send to syfoService {}, {}", syfoserviceQueueName, fields(loggingMeta))
 
     val apprec = fellesformat.toApprec(
@@ -913,7 +916,8 @@ suspend fun handleStatusMANUALPROCESSING(
     } else {
         createTask(kafkaManuelTaskProducer, receivedSykmelding, validationResult, behandlendeEnhet, loggingMeta)
 
-        notifySyfoService(session, syfoserviceProducer, ediLoggId, msgId, healthInformation)
+        notifySyfoService(session = session, receiptProducer = syfoserviceProducer, ediLoggId = ediLoggId,
+                sykmeldingId = receivedSykmelding.sykmelding.id, msgId = msgId, healthInformation = healthInformation)
         log.info("Message send to syfoService {}, {}", syfoserviceQueueName, fields(loggingMeta))
 
         kafkaproducerreceivedSykmelding.send(ProducerRecord(sm2013ManualHandlingTopic, receivedSykmelding.sykmelding.id, receivedSykmelding))
