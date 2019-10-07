@@ -569,7 +569,7 @@ suspend fun blockingApplicationLogic(
                             sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
                             log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
 
-                            notifySyfoService(session, syfoserviceProducer, ediLoggId, msgId, healthInformation)
+                            notifySyfoService(session = session, receiptProducer = syfoserviceProducer, ediLoggId = ediLoggId, sykmeldingId = sykmelding.id, msgId = msgId, healthInformation = healthInformation)
                             log.info("Message send to syfoService {}, {}", env.syfoserviceQueueName, fields(loggingMeta))
                         } else {
                             val apprec = fellesformat.toApprec(
@@ -668,6 +668,7 @@ fun notifySyfoService(
     session: Session,
     receiptProducer: MessageProducer,
     ediLoggId: String,
+    sykmeldingId: String,
     msgId: String,
     healthInformation: HelseOpplysningerArbeidsuforhet
 
@@ -677,7 +678,7 @@ fun notifySyfoService(
         val syketilfelleStartDato = extractSyketilfelleStartDato(healthInformation)
         val sykmelding = convertSykemeldingToBase64(healthInformation)
         val syfo = Syfo(
-                tilleggsdata = Tilleggsdata(ediLoggId = ediLoggId, msgId = msgId, syketilfelleStartDato = syketilfelleStartDato),
+                tilleggsdata = Tilleggsdata(ediLoggId = ediLoggId, sykmeldingId = sykmeldingId, msgId = msgId, syketilfelleStartDato = syketilfelleStartDato),
                 sykmelding = Base64.getEncoder().encodeToString(sykmelding))
         text = xmlObjectWriter.writeValueAsString(syfo)
     })
@@ -691,6 +692,7 @@ data class Syfo(
 
 data class Tilleggsdata(
     val ediLoggId: String,
+    val sykmeldingId: String,
     val msgId: String,
     val syketilfelleStartDato: LocalDateTime
 )
