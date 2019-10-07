@@ -49,11 +49,5 @@ object KuhrSarClientSpek : Spek({
             match.percentageMatch shouldEqual 100.0
             match.samhandlerPraksis.samh_praksis_id shouldEqual "1000456789"
         }
-
-        it("Returnerer ingen samhandler praksiser om det ikke er noen aktive med aktive praksis perioder") {
-            val match = findBestSamhandlerPraksis(samhandlerIngenAktive, "", "12345", LoggingMeta("", "", ""))
-
-            match shouldEqual null
-        }
     }
 })

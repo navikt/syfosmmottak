@@ -107,12 +107,6 @@ fun findBestSamhandlerPraksis(
 ): SamhandlerPraksisMatch? {
     val aktiveSamhandlere = samhandlere.flatMap { it.samh_praksis }
             .filter { praksis -> praksis.samh_praksis_status_kode == "aktiv" }
-            .filter {
-                it.samh_praksis_periode
-                        .filter { periode -> periode.gyldig_fra <= Date() }
-                        .filter { periode -> periode.gyldig_til == null || periode.gyldig_til >= Date() }
-                        .any()
-            }
             .filter { !it.navn.isNullOrEmpty() }
 
     if (aktiveSamhandlere.isEmpty()) {
