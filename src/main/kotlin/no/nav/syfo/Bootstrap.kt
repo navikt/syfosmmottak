@@ -524,6 +524,24 @@ suspend fun blockingApplicationLogic(
                             continue@loop
                         }
 
+                        if (arsakskodeIsmissing(healthInformation)) {
+                            log.info("MedisinskeArsaker Arsakskode V mangler", fields(loggingMeta))
+                            val apprec = fellesformat.toApprec(
+                                    ediLoggId,
+                                    msgId,
+                                    msgHead,
+                                    ApprecStatus.AVVIST,
+                                    "MedisinskeArsaker Arsakskode V mangler i sykmeldingen. Kontakt din EPJ-leverandør",
+                                    msgHead.msgInfo.receiver.organisation,
+                                    msgHead.msgInfo.sender.organisation
+                            )
+                            sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
+                            log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
+                            INVALID_MESSAGE_NO_NOTICE.inc()
+                            updateRedis(jedis, ediLoggId, sha256String)
+                            continue@loop
+                        }
+
                         val sykmelding = healthInformation.toSykmelding(
                                 sykmeldingId = UUID.randomUUID().toString(),
                                 pasientAktoerId = patientIdents.identer!!.first().ident,
@@ -822,3 +840,10 @@ fun updateRedis(jedis: Jedis, ediLoggId: String, sha256String: String) {
 fun fnrAndDnrIsmissingFromBehandler(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean =
         healthInformation.behandler.id.find { it.typeId.v == "FNR" }?.id.isNullOrBlank() &&
         healthInformation.behandler.id.find { it.typeId.v == "DNR" }?.id.isNullOrBlank()
+
+fun arsakskodeIsmissing(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean =
+    healthInformation.aktivitet.periode.any { periode -> aktivitetIkkeMuligMissingArsakskode(periode.aktivitetIkkeMulig) }
+
+fun aktivitetIkkeMuligMissingArsakskode(aktivitetIkkeMulig: HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig?): Boolean =
+        aktivitetIkkeMulig != null &&
+        aktivitetIkkeMulig.let { it.medisinskeArsaker.let { it.arsakskode.any { it.v.isNullOrEmpty() } } }
