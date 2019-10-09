@@ -844,6 +844,11 @@ fun fnrAndDnrIsmissingFromBehandler(healthInformation: HelseOpplysningerArbeidsu
 fun arsakskodeIsmissing(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean =
     healthInformation.aktivitet.periode.any { periode -> aktivitetIkkeMuligMissingArsakskode(periode.aktivitetIkkeMulig) }
 
-fun aktivitetIkkeMuligMissingArsakskode(aktivitetIkkeMulig: HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig?): Boolean =
-        aktivitetIkkeMulig != null &&
-        aktivitetIkkeMulig.let { it.medisinskeArsaker.let { it.arsakskode.any { it.v.isNullOrEmpty() } } }
+fun aktivitetIkkeMuligMissingArsakskode(aktivitetIkkeMulig: HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig?): Boolean {
+    if(aktivitetIkkeMulig == null)
+        return false
+    else if(aktivitetIkkeMulig.medisinskeArsaker != null && aktivitetIkkeMulig.medisinskeArsaker.arsakskode == null)
+            return true
+    else return aktivitetIkkeMulig.medisinskeArsaker != null && aktivitetIkkeMulig.medisinskeArsaker.arsakskode.any{ it.v.isNullOrEmpty()}
+}
+

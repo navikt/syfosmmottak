@@ -25,5 +25,11 @@ object ArsakKodeMissingSpek : Spek({
 
             arsakskodeIsmissing(healthInformation) shouldEqual true
         }
+
+        it("Validate arsakskodeIsmissing is true") {
+            val aktivitetIkkeMulig = HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig()
+
+            aktivitetIkkeMuligMissingArsakskode(aktivitetIkkeMulig) shouldEqual false
+        }
     }
 })
