@@ -8,7 +8,7 @@ import io.ktor.http.ContentType
 import io.ktor.util.KtorExperimentalAPI
 import net.logstash.logback.argument.StructuredArguments
 import net.logstash.logback.argument.StructuredArguments.keyValue
-import no.nav.syfo.LoggingMeta
+import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.helpers.retry
 import no.nav.syfo.log
 import org.apache.commons.text.similarity.LevenshteinDistance

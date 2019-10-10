@@ -9,6 +9,7 @@ import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.toSykmelding
 import no.nav.syfo.utils.getFileAsString
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
+import no.nav.syfo.util.fellesformatUnmarshaller
 import java.io.StringReader
 import java.time.LocalDateTime
 
