@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<HelseOpplysningerArbeidsuforhet xmlns="http://www.kith.no/xmlstds/HelseOpplysningerArbeidsuforhet/2013-10-01" xmlns:ns2="http://www.kith.no/xmlstds/felleskomponent1">
+    <RegelSettVersjon>1</RegelSettVersjon>
+    <SyketilfelleStartDato>2018-10-11+02:00</SyketilfelleStartDato>
+    <Pasient>
+        <Navn>
+            <Etternavn>Hagen</Etternavn>
+            <Fornavn>Sigurd</Fornavn>
+        </Navn>
+        <Fodselsnummer>
+            <ns2:Id>21077811165</ns2:Id>
+            <ns2:TypeId V="FNR" S="2.16.578.1.12.4.1.1.8116" DN="Fødselsnummer"/>
+        </Fodselsnummer>
+        <KontaktInfo>
+            <ns2:TypeTelecom V="MC" DN="Mobiltelefon"/>
+            <ns2:TeleAddress V="928 15 818"/>
+        </KontaktInfo>
+        <NavnFastlege>Vilde Solheim</NavnFastlege>
+        <NAVKontor>5801</NAVKontor>
+    </Pasient>
+    <Arbeidsgiver>
+        <HarArbeidsgiver V="1" DN="Én arbeidsgiver"/>
+        <NavnArbeidsgiver>NAV IT</NavnArbeidsgiver>
+        <Yrkesbetegnelse>utvikler</Yrkesbetegnelse>
+        <Stillingsprosent>100</Stillingsprosent>
+    </Arbeidsgiver>
+    <MedisinskVurdering>
+        <HovedDiagnose>
+            <Diagnosekode V="K24" S="2.16.578.1.12.4.1.1.7170" DN="Engstelig for hjertesykdom"/>
+        </HovedDiagnose>
+        <BiDiagnoser>
+            <Diagnosekode V="-57" S="2.16.578.1.12.4.1.1.7170" DN="Fysikalsk behandling/rehabilitering"/>
+        </BiDiagnoser>
+        <AnnenFraversArsak>
+            <Arsakskode V="5" DN="Når vedkommende er til nødvendig kontrollundersøkelse som krever minst 24 timers fravær, reisetid medregnet"/>
+            <Beskriv>word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word</Beskriv>
+        </AnnenFraversArsak>
+        <Svangerskap>true</Svangerskap>
+        <Yrkesskade>false</Yrkesskade>
+        <SkjermesForPasient>false</SkjermesForPasient>
+    </MedisinskVurdering>
+    <Aktivitet>
+        <Periode>
+            <PeriodeFOMDato>2018-10-19+02:00</PeriodeFOMDato>
+            <PeriodeTOMDato>2018-11-13+01:00</PeriodeTOMDato>
+            <AktivitetIkkeMulig>
+                <MedisinskeArsaker>
+                    <Arsakskode DN="Helsetilstanden hindrer pasienten i å være i aktivitet" V="1" />
+                </MedisinskeArsaker>
+                <Arbeidsplassen />
+            </AktivitetIkkeMulig>
+        </Periode>
+    </Aktivitet>
+    <Prognose>
+        <BeskrivHensynArbeidsplassen>word word word word word word word word word word word word word word word word word word word word word word word word word word word word word</BeskrivHensynArbeidsplassen>
+        <ErIArbeid>
+            <EgetArbeidPaSikt>false</EgetArbeidPaSikt>
+            <ArbeidFraDato>2018-11-22+01:00</ArbeidFraDato>
+            <AnnetArbeidPaSikt>true</AnnetArbeidPaSikt>
+            <VurderingDato>2018-10-31+01:00</VurderingDato>
+        </ErIArbeid>
+    </Prognose>
+    <UtdypendeOpplysninger>
+        <SpmGruppe>
+            <SpmGruppeId>6.3</SpmGruppeId>
+            <SpmGruppeTekst>Opplysninger ved vurdering av aktivitetskravet</SpmGruppeTekst>
+            <SpmSvar>
+                <SpmId>6.3.1</SpmId>
+                <SpmTekst>Beskriv kort sykehistorie, symptomer og funn i dagens situasjon</SpmTekst>
+                <Restriksjon>
+                    <Restriksjonskode V="A" DN="Informasjonen skal ikke vises arbeidsgiver"/>
+                </Restriksjon>
+                <SvarTekst>word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word</SvarTekst>
+            </SpmSvar>
+            <SpmSvar>
+                <SpmId>6.3.2</SpmId>
+                <SpmTekst>Beskriv pågående og planlagt henvisning, utredning og/eller behandling. Lar dette seg kombinere med delvis arbeid?</SpmTekst>
+                <Restriksjon>
+                    <Restriksjonskode V="A" DN="Informasjonen skal ikke vises arbeidsgiver"/>
+                </Restriksjon>
+                <SvarTekst>word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word</SvarTekst>
+            </SpmSvar>
+        </SpmGruppe>
+    </UtdypendeOpplysninger>
+    <Tiltak>
+        <TiltakArbeidsplassen>word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word</TiltakArbeidsplassen>
+        <TiltakNAV>word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word</TiltakNAV>
+        <AndreTiltak>word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word</AndreTiltak>
+    </Tiltak>
+    <Oppfolgingsplan>
+        <MottattOppfolgingsplan>true</MottattOppfolgingsplan>
+        <InnkaltDialogmote1>false</InnkaltDialogmote1>
+        <DeltattDialogmote1>false</DeltattDialogmote1>
+    </Oppfolgingsplan>
+    <MeldingTilNav>
+        <BistandNAVUmiddelbart>false</BistandNAVUmiddelbart>
+    </MeldingTilNav>
+    <KontaktMedPasient>
+        <BehandletDato>2018-10-14T16:52:35.000+02:00</BehandletDato>
+        <KontaktDato>2018-10-05+02:00</KontaktDato>
+        <BegrunnIkkeKontakt>word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word</BegrunnIkkeKontakt>
+    </KontaktMedPasient>
+    <Behandler>
+        <Navn>
+            <Etternavn>Solheim</Etternavn>
+            <Fornavn>Vilde</Fornavn>
+        </Navn>
+        <Id>
+            <ns2:Id>21077811165</ns2:Id>
+            <ns2:TypeId V="FNR" S="2.16.578.1.12.4.1.1.8116" DN="Fødselsnummer"/>
+        </Id>
+        <Id>
+            <ns2:Id>1626297</ns2:Id>
+            <ns2:TypeId V="HER" S="2.16.578.1.12.4.1.1.8116" DN="HER-id"/>
+        </Id>
+        <Id>
+            <ns2:Id>5105283</ns2:Id>
+            <ns2:TypeId V="HPR" S="2.16.578.1.12.4.1.1.8116" DN="HPR-nummer"/>
+        </Id>
+        <Adresse>
+            <ns2:StreetAdr>Skoleveien 4</ns2:StreetAdr>
+            <ns2:PostalCode>5401</ns2:PostalCode>
+            <ns2:City>STORD</ns2:City>
+            <ns2:Postbox>19065 Kirkeveien</ns2:Postbox>
+            <ns2:Country V="NO"/>
+        </Adresse>
+        <KontaktInfo>
+            <ns2:TypeTelecom V="MC" DN="Mobiltelefon"/>
+            <ns2:TeleAddress V="416 84 370"/>
+        </KontaktInfo>
+    </Behandler>
+    <AvsenderSystem>
+        <SystemNavn>NAV Test generator</SystemNavn>
+        <SystemVersjon>1.0</SystemVersjon>
+    </AvsenderSystem>
+</HelseOpplysningerArbeidsuforhet>
