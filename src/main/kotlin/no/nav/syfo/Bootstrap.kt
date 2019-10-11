@@ -21,9 +21,7 @@ import java.io.IOException
 import java.io.StringReader
 import java.nio.file.Paths
 import java.security.MessageDigest
-import java.time.LocalDate
 import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 import java.util.UUID
 import javax.jms.MessageConsumer
 import javax.jms.MessageProducer
@@ -39,22 +37,26 @@ import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.emottak.subscription.SubscriptionPort
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.eiFellesformat.XMLMottakenhetBlokk
-import no.nav.helse.msgHead.XMLIdent
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.apprec.Apprec
-import no.nav.syfo.apprec.ApprecStatus
-import no.nav.syfo.apprec.toApprec
 import no.nav.syfo.client.AktoerIdClient
 import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.client.findBestSamhandlerPraksis
+import no.nav.syfo.handlestatus.handleAktivitetOrPeriodeIsMissing
+import no.nav.syfo.handlestatus.handleArsakskodeIsmissing
+import no.nav.syfo.handlestatus.handleBiDiagnoserDiagnosekodeIsMissing
+import no.nav.syfo.handlestatus.handleBiDiagnoserDiagnosekodeVerkIsMissing
+import no.nav.syfo.handlestatus.handleDoctorNotFoundInAktorRegister
 import no.nav.syfo.handlestatus.handleDuplicateEdiloggid
 import no.nav.syfo.handlestatus.handleDuplicateSM2013Content
+import no.nav.syfo.handlestatus.handleFnrAndDnrIsmissingFromBehandler
+import no.nav.syfo.handlestatus.handleHouvedDiagnoseDiagnosekodeMissing
 import no.nav.syfo.handlestatus.handlePatientNotFoundInAktorRegister
 import no.nav.syfo.handlestatus.handleStatusINVALID
 import no.nav.syfo.handlestatus.handleStatusMANUALPROCESSING
@@ -64,7 +66,6 @@ import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.metrics.AVVIST_ULIK_SENDER_OG_BEHANDLER
 import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
-import no.nav.syfo.metrics.INVALID_MESSAGE_NO_NOTICE
 import no.nav.syfo.metrics.REQUEST_TIME
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.Status
@@ -73,9 +74,7 @@ import no.nav.syfo.model.toSykmelding
 import no.nav.syfo.mq.connectionFactory
 import no.nav.syfo.mq.consumerForQueue
 import no.nav.syfo.mq.producerForQueue
-import no.nav.syfo.sak.avro.PrioritetType
 import no.nav.syfo.sak.avro.ProduceTask
-import no.nav.syfo.service.notifySyfoService
 import no.nav.syfo.service.samhandlerParksisisLegevakt
 import no.nav.syfo.service.startSubscription
 import no.nav.syfo.service.updateRedis
@@ -83,7 +82,11 @@ import no.nav.syfo.util.JacksonKafkaSerializer
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.TrackableException
 import no.nav.syfo.util.extractHelseOpplysningerArbeidsuforhet
+import no.nav.syfo.util.extractOrganisationHerNumberFromSender
+import no.nav.syfo.util.extractOrganisationNumberFromSender
+import no.nav.syfo.util.extractOrganisationRashNumberFromSender
 import no.nav.syfo.util.fellesformatUnmarshaller
+import no.nav.syfo.util.get
 import no.nav.syfo.util.sykmeldingMarshaller
 import no.nav.syfo.util.wrapExceptions
 import no.nav.syfo.ws.createPort
@@ -123,7 +126,7 @@ const val NAV_OPPFOLGING_UTLAND_KONTOR_NR = "0393"
 fun main() {
     val env = Environment()
     val credentials = objectMapper.readValue<VaultCredentials>(Paths.get("/var/run/secrets/nais.io/vault/credentials.json").toFile())
-    val applicationState = no.nav.syfo.application.ApplicationState()
+    val applicationState = ApplicationState()
     val applicationEngine = createApplicationEngine(
             env,
             applicationState)
@@ -208,6 +211,8 @@ fun main() {
                     credentials, jedis, manualTaskkafkaproducer,
                     personV3, session, arbeidsfordelingV1, kafkaproducerApprec)
         }
+
+        applicationState.ready = true
     }
 }
 
@@ -352,132 +357,47 @@ suspend fun blockingApplicationLogic(
                         continue@loop
                     }
                     if (doctorIdents == null || doctorIdents.feilmelding != null) {
-                        log.info("Doctor not found i aktorRegister error: {}, {}",
-                                keyValue("errorMessage", doctorIdents?.feilmelding ?: "No response for FNR"),
-                                fields(loggingMeta))
-                        val apprec = fellesformat.toApprec(
-                                ediLoggId,
-                                msgId,
-                                msgHead,
-                                ApprecStatus.AVVIST,
-                                "Behandler er ikkje registrert i folkeregisteret",
-                                msgHead.msgInfo.receiver.organisation,
-                                msgHead.msgInfo.sender.organisation
-                        )
-
-                        sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
-                        log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
-                        INVALID_MESSAGE_NO_NOTICE.inc()
-                        updateRedis(jedis, ediLoggId, sha256String)
+                        handleDoctorNotFoundInAktorRegister(doctorIdents, loggingMeta, fellesformat,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, redisSha256String)
                         continue@loop
                     }
 
                     if (healthInformation.aktivitet == null || healthInformation.aktivitet.periode.isNullOrEmpty()) {
-                        log.info("Periode is missing {}", fields(loggingMeta))
-                        val apprec = fellesformat.toApprec(
-                                ediLoggId,
-                                msgId,
-                                msgHead,
-                                ApprecStatus.AVVIST,
-                                "Ingen perioder er oppgitt i sykmeldingen.",
-                                msgHead.msgInfo.receiver.organisation,
-                                msgHead.msgInfo.sender.organisation
-                        )
-                        sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
-                        log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
-                        INVALID_MESSAGE_NO_NOTICE.inc()
-                        updateRedis(jedis, ediLoggId, sha256String)
+                        handleAktivitetOrPeriodeIsMissing(loggingMeta, fellesformat,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, redisSha256String)
                         continue@loop
                     }
 
-                    if (healthInformation.medisinskVurdering?.biDiagnoser != null && healthInformation.medisinskVurdering.biDiagnoser.diagnosekode.any { it.v.isNullOrEmpty() }) {
-                        log.info("diagnosekode is missing {}", fields(loggingMeta))
-                        val apprec = fellesformat.toApprec(
-                                ediLoggId,
-                                msgId,
-                                msgHead,
-                                ApprecStatus.AVVIST,
-                                "Diagnosekode på bidiagnose mangler",
-                                msgHead.msgInfo.receiver.organisation,
-                                msgHead.msgInfo.sender.organisation
-                        )
-                        sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
-                        log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
-                        INVALID_MESSAGE_NO_NOTICE.inc()
-                        updateRedis(jedis, ediLoggId, sha256String)
+                    if (healthInformation.medisinskVurdering?.biDiagnoser != null &&
+                            healthInformation.medisinskVurdering.biDiagnoser.diagnosekode.any { it.v.isNullOrEmpty() }) {
+                        handleBiDiagnoserDiagnosekodeIsMissing(loggingMeta, fellesformat,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, redisSha256String)
                         continue@loop
                     }
 
-                    if (healthInformation.medisinskVurdering?.biDiagnoser != null && healthInformation.medisinskVurdering.biDiagnoser.diagnosekode.any { it.s.isNullOrEmpty() }) {
-                        log.info("diagnosekodeverk is missing {}", fields(loggingMeta))
-                        val apprec = fellesformat.toApprec(
-                                ediLoggId,
-                                msgId,
-                                msgHead,
-                                ApprecStatus.AVVIST,
-                                "Diagnosekodeverk på bidiagnose mangler",
-                                msgHead.msgInfo.receiver.organisation,
-                                msgHead.msgInfo.sender.organisation
-                        )
-                        sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
-                        log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
-                        INVALID_MESSAGE_NO_NOTICE.inc()
-                        updateRedis(jedis, ediLoggId, sha256String)
+                    if (healthInformation.medisinskVurdering?.biDiagnoser != null &&
+                            healthInformation.medisinskVurdering.biDiagnoser.diagnosekode.any { it.s.isNullOrEmpty() }) {
+                        handleBiDiagnoserDiagnosekodeVerkIsMissing(loggingMeta, fellesformat,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, redisSha256String)
                         continue@loop
                     }
 
                     if (fnrAndDnrIsmissingFromBehandler(healthInformation)) {
-                        log.info("FNR or DNR is missing on behandler {}", fields(loggingMeta))
-                        val apprec = fellesformat.toApprec(
-                                ediLoggId,
-                                msgId,
-                                msgHead,
-                                ApprecStatus.AVVIST,
-                                "Fødselsnummer/d-nummer på behandler mangler",
-                                msgHead.msgInfo.receiver.organisation,
-                                msgHead.msgInfo.sender.organisation
-                        )
-                        sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
-                        log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
-                        INVALID_MESSAGE_NO_NOTICE.inc()
-                        updateRedis(jedis, ediLoggId, sha256String)
+                        handleFnrAndDnrIsmissingFromBehandler(loggingMeta, fellesformat,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, redisSha256String)
                         continue@loop
                     }
 
                     if (healthInformation.medisinskVurdering?.hovedDiagnose?.diagnosekode != null &&
                             healthInformation.medisinskVurdering.hovedDiagnose.diagnosekode.v == null) {
-                        log.info("Houveddiagnose diagnosekode V mangler", fields(loggingMeta))
-                        val apprec = fellesformat.toApprec(
-                                ediLoggId,
-                                msgId,
-                                msgHead,
-                                ApprecStatus.AVVIST,
-                                "Diagnosekode for hoveddiagnose mangler i sykmeldingen. Kontakt din EPJ-leverandør",
-                                msgHead.msgInfo.receiver.organisation,
-                                msgHead.msgInfo.sender.organisation
-                        )
-                        sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
-                        log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
-                        INVALID_MESSAGE_NO_NOTICE.inc()
-                        updateRedis(jedis, ediLoggId, sha256String)
+                        handleHouvedDiagnoseDiagnosekodeMissing(loggingMeta, fellesformat,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, redisSha256String)
                         continue@loop
                     }
 
                     if (arsakskodeIsmissing(healthInformation)) {
-                        log.info("MedisinskeArsaker Arsakskode V mangler", fields(loggingMeta))
-                        val apprec = fellesformat.toApprec(
-                                ediLoggId,
-                                msgId,
-                                msgHead,
-                                ApprecStatus.AVVIST,
-                                "MedisinskeArsaker Arsakskode V mangler i sykmeldingen. Kontakt din EPJ-leverandør",
-                                msgHead.msgInfo.receiver.organisation,
-                                msgHead.msgInfo.sender.organisation
-                        )
-                        sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
-                        log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
-                        INVALID_MESSAGE_NO_NOTICE.inc()
-                        updateRedis(jedis, ediLoggId, sha256String)
+                        handleArsakskodeIsmissing(loggingMeta, fellesformat,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, redisSha256String)
                         continue@loop
                     }
 
@@ -512,36 +432,6 @@ suspend fun blockingApplicationLogic(
 
                     log.info("Validating against rules, sykmeldingId {},  {}", keyValue("sykmeldingId", sykmelding.id), fields(loggingMeta))
                     val validationResult = syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding)
-
-                    if (validationResult.status in arrayOf(Status.OK, Status.MANUAL_PROCESSING)) {
-                        val apprec = fellesformat.toApprec(
-                                ediLoggId,
-                                msgId,
-                                msgHead,
-                                ApprecStatus.OK,
-                                null,
-                                msgHead.msgInfo.receiver.organisation,
-                                msgHead.msgInfo.sender.organisation
-                        )
-                        sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
-                        log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
-
-                        notifySyfoService(session = session, receiptProducer = syfoserviceProducer, ediLoggId = ediLoggId, sykmeldingId = sykmelding.id, msgId = msgId, healthInformation = healthInformation)
-                        log.info("Message send to syfoService {}, {}", env.syfoserviceQueueName, fields(loggingMeta))
-                    } else {
-                        val apprec = fellesformat.toApprec(
-                                ediLoggId,
-                                msgId,
-                                msgHead,
-                                ApprecStatus.AVVIST,
-                                null,
-                                msgHead.msgInfo.receiver.organisation,
-                                msgHead.msgInfo.sender.organisation,
-                                validationResult
-                        )
-                        sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
-                        log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
-                    }
 
                     when (validationResult.status) {
                         Status.OK -> handleStatusOK(
@@ -578,7 +468,10 @@ suspend fun blockingApplicationLogic(
                                 validationResult,
                                 kafkaManuelTaskProducer,
                                 kafkaproducerreceivedSykmelding,
-                                env.sm2013ManualHandlingTopic)
+                                env.sm2013ManualHandlingTopic,
+                                kafkaproducervalidationResult,
+                                env.sm2013BehandlingsUtfallToipic
+                                )
 
                         Status.INVALID -> handleStatusINVALID(
                                 validationResult,
@@ -612,23 +505,6 @@ suspend fun blockingApplicationLogic(
         }
     }
 }
-
-inline fun <reified T> XMLEIFellesformat.get() = this.any.find { it is T } as T
-
-fun extractOrganisationNumberFromSender(fellesformat: XMLEIFellesformat): XMLIdent? =
-        fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.find {
-            it.typeId.v == "ENH"
-        }
-
-fun extractOrganisationRashNumberFromSender(fellesformat: XMLEIFellesformat): XMLIdent? =
-        fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.find {
-            it.typeId.v == "RSH"
-        }
-
-fun extractOrganisationHerNumberFromSender(fellesformat: XMLEIFellesformat): XMLIdent? =
-        fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.find {
-            it.typeId.v == "HER"
-        }
 
 fun sendReceipt(
     apprec: Apprec,
@@ -687,49 +563,6 @@ suspend fun fetchBehandlendeEnhet(arbeidsfordelingV1: ArbeidsfordelingV1, geogra
                 arbeidsfordelingKriterier = afk
             })
         }
-
-suspend fun fetchDiskresjonsKode(personV3: PersonV3, receivedSykmelding: ReceivedSykmelding): String? =
-        retry(callName = "tps_hent_person",
-                retryIntervals = arrayOf(500L, 1000L, 3000L, 5000L, 10000L),
-                legalExceptions = *arrayOf(IOException::class, WstxException::class)) {
-            personV3.hentPerson(HentPersonRequest()
-                    .withAktoer(PersonIdent().withIdent(NorskIdent().withIdent(receivedSykmelding.personNrPasient)))
-            ).person?.diskresjonskode?.value
-        }
-
-fun createTask(
-    kafkaProducer: KafkaProducer<String, ProduceTask>,
-    receivedSykmelding: ReceivedSykmelding,
-    results: ValidationResult,
-    navKontor: String,
-    loggingMeta: LoggingMeta
-) {
-    kafkaProducer.send(
-            ProducerRecord(
-                    "aapen-syfo-oppgave-produserOppgave",
-                    receivedSykmelding.sykmelding.id,
-                    ProduceTask().apply {
-                        messageId = receivedSykmelding.msgId
-                        aktoerId = receivedSykmelding.sykmelding.pasientAktoerId
-                        tildeltEnhetsnr = navKontor
-                        opprettetAvEnhetsnr = "9999"
-                        behandlesAvApplikasjon = "FS22" // Gosys
-                        orgnr = receivedSykmelding.legekontorOrgNr ?: ""
-                        beskrivelse = "Manuell behandling av sykmelding grunnet følgende regler: ${results.ruleHits.joinToString(", ", "(", ")") { it.messageForSender }}"
-                        temagruppe = "ANY"
-                        tema = "SYM"
-                        behandlingstema = "ANY"
-                        oppgavetype = "BEH_EL_SYM"
-                        behandlingstype = "ANY"
-                        mappeId = 1
-                        aktivDato = DateTimeFormatter.ISO_DATE.format(LocalDate.now())
-                        fristFerdigstillelse = DateTimeFormatter.ISO_DATE.format(LocalDate.now())
-                        prioritet = PrioritetType.NORM
-                        metadata = mapOf()
-                    }))
-
-    log.info("Message sendt to topic: aapen-syfo-oppgave-produserOppgave {}", fields(loggingMeta))
-}
 
 fun sendValidationResult(
     validationResult: ValidationResult,

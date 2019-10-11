@@ -1,6 +1,8 @@
 package no.nav.syfo.handlestatus
 
 import net.logstash.logback.argument.StructuredArguments
+import net.logstash.logback.argument.StructuredArguments.fields
+import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.syfo.Environment
@@ -38,7 +40,7 @@ fun handleStatusINVALID(
     sendValidationResult(validationResult, kafkaproducervalidationResult, sm2013BehandlingsUtfallToipic, receivedSykmelding, loggingMeta)
 
     kafkaproducerreceivedSykmelding.send(ProducerRecord(sm2013InvalidHandlingTopic, receivedSykmelding.sykmelding.id, receivedSykmelding))
-    log.info("Message send to kafka {}, {}", sm2013InvalidHandlingTopic, StructuredArguments.fields(loggingMeta))
+    log.info("Message send to kafka {}, {}", sm2013InvalidHandlingTopic, fields(loggingMeta))
 
     val apprec = fellesformat.toApprec(
             ediLoggId,
@@ -51,7 +53,7 @@ fun handleStatusINVALID(
             validationResult
     )
     sendReceipt(apprec, sm2013ApprecTopic, kafkaproducerApprec)
-    log.info("Apprec receipt sent to kafka topic {}, {}", sm2013ApprecTopic, StructuredArguments.fields(loggingMeta))
+    log.info("Apprec receipt sent to kafka topic {}, {}", sm2013ApprecTopic, fields(loggingMeta))
 }
 
 fun handleDuplicateSM2013Content(
@@ -65,18 +67,11 @@ fun handleDuplicateSM2013Content(
     kafkaproducerApprec: KafkaProducer<String, Apprec>
 ) {
     log.warn("Message with {} marked as duplicate, has same redisSha256String {}",
-            StructuredArguments.keyValue("originalEdiLoggId", redisSha256String), StructuredArguments.fields(loggingMeta))
+            keyValue("originalEdiLoggId", redisSha256String), fields(loggingMeta))
 
-    val apprec = fellesformat.toApprec(
-            ediLoggId,
-            msgId,
-            msgHead,
-            ApprecStatus.AVVIST,
-            "Duplikat! - Denne sykmeldingen er mottatt tidligere. " +
-                    "Skal ikke sendes på nytt",
-            msgHead.msgInfo.receiver.organisation,
-            msgHead.msgInfo.sender.organisation
-    )
+    val apprec = fellesformatToAppprec(fellesformat, "Duplikat! - Denne sykmeldingen er mottatt tidligere. " +
+            "Skal ikke sendes på nytt",
+            ediLoggId, msgId, msgHead)
 
     sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
     log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, StructuredArguments.fields(loggingMeta))
@@ -93,16 +88,10 @@ fun handleDuplicateEdiloggid(
     kafkaproducerApprec: KafkaProducer<String, Apprec>
 ) {
     log.warn("Message with {} marked as duplicate, has same redisEdiloggid {}", StructuredArguments.keyValue("originalEdiLoggId", redisEdiloggid), StructuredArguments.fields(loggingMeta))
-    val apprec = fellesformat.toApprec(
-            ediLoggId,
-            msgId,
-            msgHead,
-            ApprecStatus.AVVIST,
-            "Duplikat! - Denne sykmeldingen er mottatt tidligere. " +
-                    "Skal ikke sendes på nytt",
-            msgHead.msgInfo.receiver.organisation,
-            msgHead.msgInfo.sender.organisation
-    )
+
+    val apprec = fellesformatToAppprec(fellesformat, "Duplikat! - Denne sykmeldingen er mottatt tidligere. " +
+            "Skal ikke sendes på nytt",
+            ediLoggId, msgId, msgHead)
 
     sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
     log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, StructuredArguments.fields(loggingMeta))
@@ -122,20 +111,188 @@ fun handlePatientNotFoundInAktorRegister(
     sha256String: String
 ) {
     log.info("Patient not found i aktorRegister error: {}, {}",
-            StructuredArguments.keyValue("errorMessage", patientIdents?.feilmelding ?: "No response for FNR"),
-            StructuredArguments.fields(loggingMeta))
+            keyValue("errorMessage", patientIdents?.feilmelding ?: "No response for FNR"),
+            fields(loggingMeta))
 
-    val apprec = fellesformat.toApprec(
-            ediLoggId,
-            msgId,
-            msgHead,
-            ApprecStatus.AVVIST,
-            "Pasienten er ikkje registrert i folkeregisteret",
-            msgHead.msgInfo.receiver.organisation,
-            msgHead.msgInfo.sender.organisation
-    )
+    val apprec = fellesformatToAppprec(fellesformat, "Pasienten er ikkje registrert i folkeregisteret",
+            ediLoggId, msgId, msgHead)
+
     sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
     log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, StructuredArguments.fields(loggingMeta))
     INVALID_MESSAGE_NO_NOTICE.inc()
     updateRedis(jedis, ediLoggId, sha256String)
 }
+
+fun handleDoctorNotFoundInAktorRegister(
+    doctorIdents: IdentInfoResult?,
+    loggingMeta: LoggingMeta,
+    fellesformat: XMLEIFellesformat,
+    ediLoggId: String,
+    msgId: String,
+    msgHead: XMLMsgHead,
+    env: Environment,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    jedis: Jedis,
+    sha256String: String
+) {
+    log.info("Doctor not found i aktorRegister error: {}, {}",
+            keyValue("errorMessage", doctorIdents?.feilmelding ?: "No response for FNR"),
+            fields(loggingMeta))
+
+    val apprec = fellesformatToAppprec(fellesformat, "Behandler er ikkje registrert i folkeregisteret",
+            ediLoggId, msgId, msgHead)
+
+    sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
+    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
+    INVALID_MESSAGE_NO_NOTICE.inc()
+    updateRedis(jedis, ediLoggId, sha256String)
+}
+
+fun handleAktivitetOrPeriodeIsMissing(
+    loggingMeta: LoggingMeta,
+    fellesformat: XMLEIFellesformat,
+    ediLoggId: String,
+    msgId: String,
+    msgHead: XMLMsgHead,
+    env: Environment,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    jedis: Jedis,
+    sha256String: String
+) {
+    log.info("Periode is missing {}", fields(loggingMeta))
+
+    val apprec = fellesformatToAppprec(fellesformat, "Ingen perioder er oppgitt i sykmeldingen.",
+            ediLoggId, msgId, msgHead)
+
+    sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
+    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
+    INVALID_MESSAGE_NO_NOTICE.inc()
+    updateRedis(jedis, ediLoggId, sha256String)
+}
+
+fun handleBiDiagnoserDiagnosekodeIsMissing(
+    loggingMeta: LoggingMeta,
+    fellesformat: XMLEIFellesformat,
+    ediLoggId: String,
+    msgId: String,
+    msgHead: XMLMsgHead,
+    env: Environment,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    jedis: Jedis,
+    sha256String: String
+) {
+    log.info("diagnosekode is missing {}", fields(loggingMeta))
+
+    val apprec = fellesformatToAppprec(fellesformat, "Diagnosekode på bidiagnose mangler",
+            ediLoggId, msgId, msgHead)
+
+    sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
+    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
+    INVALID_MESSAGE_NO_NOTICE.inc()
+    updateRedis(jedis, ediLoggId, sha256String)
+}
+
+fun handleBiDiagnoserDiagnosekodeVerkIsMissing(
+    loggingMeta: LoggingMeta,
+    fellesformat: XMLEIFellesformat,
+    ediLoggId: String,
+    msgId: String,
+    msgHead: XMLMsgHead,
+    env: Environment,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    jedis: Jedis,
+    sha256String: String
+) {
+    log.info("diagnosekodeverk is missing {}", fields(loggingMeta))
+
+    val apprec = fellesformatToAppprec(fellesformat, "Diagnosekodeverk på bidiagnose mangler",
+            ediLoggId, msgId, msgHead)
+
+    sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
+    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
+    INVALID_MESSAGE_NO_NOTICE.inc()
+    updateRedis(jedis, ediLoggId, sha256String)
+}
+
+fun handleFnrAndDnrIsmissingFromBehandler(
+    loggingMeta: LoggingMeta,
+    fellesformat: XMLEIFellesformat,
+    ediLoggId: String,
+    msgId: String,
+    msgHead: XMLMsgHead,
+    env: Environment,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    jedis: Jedis,
+    sha256String: String
+) {
+    log.info("FNR or DNR is missing on behandler {}", fields(loggingMeta))
+
+    val apprec = fellesformatToAppprec(fellesformat, "Fødselsnummer/d-nummer på behandler mangler",
+            ediLoggId, msgId, msgHead)
+
+    sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
+    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
+    INVALID_MESSAGE_NO_NOTICE.inc()
+    updateRedis(jedis, ediLoggId, sha256String)
+}
+
+fun handleHouvedDiagnoseDiagnosekodeMissing(
+    loggingMeta: LoggingMeta,
+    fellesformat: XMLEIFellesformat,
+    ediLoggId: String,
+    msgId: String,
+    msgHead: XMLMsgHead,
+    env: Environment,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    jedis: Jedis,
+    sha256String: String
+) {
+    log.info("Houveddiagnose diagnosekode V mangler", fields(loggingMeta))
+
+    val apprec = fellesformatToAppprec(fellesformat, "Diagnosekode for hoveddiagnose mangler i sykmeldingen. Kontakt din EPJ-leverandør",
+            ediLoggId, msgId, msgHead)
+
+    sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
+    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
+    INVALID_MESSAGE_NO_NOTICE.inc()
+    updateRedis(jedis, ediLoggId, sha256String)
+}
+
+fun handleArsakskodeIsmissing(
+    loggingMeta: LoggingMeta,
+    fellesformat: XMLEIFellesformat,
+    ediLoggId: String,
+    msgId: String,
+    msgHead: XMLMsgHead,
+    env: Environment,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    jedis: Jedis,
+    sha256String: String
+) {
+    log.info("MedisinskeArsaker Arsakskode V mangler", fields(loggingMeta))
+
+    val apprec = fellesformatToAppprec(fellesformat, "MedisinskeArsaker Arsakskode V mangler i sykmeldingen. Kontakt din EPJ-leverandør",
+            ediLoggId, msgId, msgHead)
+
+    sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
+    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
+    INVALID_MESSAGE_NO_NOTICE.inc()
+    updateRedis(jedis, ediLoggId, sha256String)
+}
+
+fun fellesformatToAppprec(
+    fellesformat: XMLEIFellesformat,
+    tekstTilSykmelder: String,
+    ediLoggId: String,
+    msgId: String,
+    msgHead: XMLMsgHead
+): Apprec =
+        fellesformat.toApprec(
+                ediLoggId,
+                msgId,
+                msgHead,
+                ApprecStatus.AVVIST,
+                tekstTilSykmelder,
+                msgHead.msgInfo.receiver.organisation,
+                msgHead.msgInfo.sender.organisation
+        )

@@ -21,7 +21,6 @@ object KuhrSarClientSpek : Spek({
 
     describe("KuhrSarClient") {
         val samhandler: List<Samhandler> = objectMapper.readValue(KuhrSarClientSpek::class.java.getResourceAsStream("/kuhr_sahr_response.json").readBytes().toString(Charsets.UTF_8))
-        val samhandlerIngenAktive: List<Samhandler> = objectMapper.readValue(KuhrSarClientSpek::class.java.getResourceAsStream("/kuhr_sahr_ingen_aktive_response.json").readBytes().toString(Charsets.UTF_8))
 
         it("Finner en aktiv samhandler praksis") {
             val match = findBestSamhandlerPraksis(samhandler, "SomeInvalidName", null, LoggingMeta("", "", ""))
