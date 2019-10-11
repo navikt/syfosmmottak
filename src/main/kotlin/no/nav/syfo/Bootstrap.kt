@@ -135,84 +135,72 @@ fun main() {
 
     DefaultExports.initialize()
 
-    connectionFactory(env).createConnection(credentials.mqUsername, credentials.mqPassword).use { connection ->
-        connection.start()
+    val kafkaBaseConfig = loadBaseConfig(env, credentials)
 
-        Jedis(env.redishost, 6379).use { jedis ->
-            val session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)
+    val producerProperties = kafkaBaseConfig.toProducerConfig(env.applicationName, valueSerializer = JacksonKafkaSerializer::class)
 
-            val inputconsumer = session.consumerForQueue(env.inputQueueName)
-            val syfoserviceProducer = session.producerForQueue(env.syfoserviceQueueName)
-            val backoutProducer = session.producerForQueue(env.inputBackoutQueueName)
+    val kafkaproducerreceivedSykmelding = KafkaProducer<String, ReceivedSykmelding>(producerProperties)
 
-            val kafkaBaseConfig = loadBaseConfig(env, credentials)
+    val kafkaproducervalidationResult = KafkaProducer<String, ValidationResult>(producerProperties)
 
-            val producerProperties = kafkaBaseConfig.toProducerConfig(env.applicationName, valueSerializer = JacksonKafkaSerializer::class)
+    val kafkaproducerApprec = KafkaProducer<String, Apprec>(producerProperties)
 
-            val kafkaproducerreceivedSykmelding = KafkaProducer<String, ReceivedSykmelding>(producerProperties)
+    val manualTaskproducerProperties = kafkaBaseConfig.toProducerConfig(env.applicationName, valueSerializer = KafkaAvroSerializer::class)
+    val manualTaskkafkaproducer = KafkaProducer<String, ProduceTask>(manualTaskproducerProperties)
 
-            val kafkaproducervalidationResult = KafkaProducer<String, ValidationResult>(producerProperties)
-
-            val kafkaproducerApprec = KafkaProducer<String, Apprec>(producerProperties)
-
-            val manualTaskproducerProperties = kafkaBaseConfig.toProducerConfig(env.applicationName, valueSerializer = KafkaAvroSerializer::class)
-            val manualTaskkafkaproducer = KafkaProducer<String, ProduceTask>(manualTaskproducerProperties)
-
-            val simpleHttpClient = HttpClient(Apache) {
-                install(JsonFeature) {
-                    serializer = JacksonSerializer {
-                        registerKotlinModule()
-                        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                    }
-                }
+    val simpleHttpClient = HttpClient(Apache) {
+        install(JsonFeature) {
+            serializer = JacksonSerializer {
+                registerKotlinModule()
+                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             }
-
-            val httpClientMedBasicAuth = HttpClient(Apache) {
-                install(Auth) {
-                    basic {
-                        username = credentials.serviceuserUsername
-                        password = credentials.serviceuserPassword
-                        sendWithoutRequest = true
-                    }
-                }
-                install(JsonFeature) {
-                    serializer = JacksonSerializer {
-                        registerKotlinModule()
-                        registerModule(JavaTimeModule())
-                        configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                    }
-                }
-            }
-            val syfoSykemeldingRuleClient = SyfoSykemeldingRuleClient(env.syfosmreglerApiUrl, httpClientMedBasicAuth)
-
-            val sarClient = SarClient(env.kuhrSarApiUrl, httpClientMedBasicAuth)
-
-            val oidcClient = StsOidcClient(credentials.serviceuserUsername, credentials.serviceuserPassword)
-            val aktoerIdClient = AktoerIdClient(env.aktoerregisterV1Url, oidcClient, simpleHttpClient)
-
-            val subscriptionEmottak = createPort<SubscriptionPort>(env.subscriptionEndpointURL) {
-                proxy { features.add(WSAddressingFeature()) }
-                port { withBasicAuth(credentials.serviceuserUsername, credentials.serviceuserPassword) }
-            }
-
-            val arbeidsfordelingV1 = createPort<ArbeidsfordelingV1>(env.arbeidsfordelingV1EndpointURL) {
-                port { withSTS(credentials.serviceuserUsername, credentials.serviceuserPassword, env.securityTokenServiceUrl) }
-            }
-
-            val personV3 = createPort<PersonV3>(env.personV3EndpointURL) {
-                port { withSTS(credentials.serviceuserUsername, credentials.serviceuserPassword, env.securityTokenServiceUrl) }
-            }
-
-            launchListeners(env, applicationState, inputconsumer, syfoserviceProducer, backoutProducer,
-                    subscriptionEmottak, kafkaproducerreceivedSykmelding, kafkaproducervalidationResult,
-                    syfoSykemeldingRuleClient, sarClient, aktoerIdClient,
-                    credentials, jedis, manualTaskkafkaproducer,
-                    personV3, session, arbeidsfordelingV1, kafkaproducerApprec)
         }
-
-        applicationState.ready = true
     }
+
+    val httpClientMedBasicAuth = HttpClient(Apache) {
+        install(Auth) {
+            basic {
+                username = credentials.serviceuserUsername
+                password = credentials.serviceuserPassword
+                sendWithoutRequest = true
+            }
+        }
+        install(JsonFeature) {
+            serializer = JacksonSerializer {
+                registerKotlinModule()
+                registerModule(JavaTimeModule())
+                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            }
+        }
+    }
+    val syfoSykemeldingRuleClient = SyfoSykemeldingRuleClient(env.syfosmreglerApiUrl, httpClientMedBasicAuth)
+
+    val sarClient = SarClient(env.kuhrSarApiUrl, httpClientMedBasicAuth)
+
+    val oidcClient = StsOidcClient(credentials.serviceuserUsername, credentials.serviceuserPassword)
+    val aktoerIdClient = AktoerIdClient(env.aktoerregisterV1Url, oidcClient, simpleHttpClient)
+
+    val subscriptionEmottak = createPort<SubscriptionPort>(env.subscriptionEndpointURL) {
+        proxy { features.add(WSAddressingFeature()) }
+        port { withBasicAuth(credentials.serviceuserUsername, credentials.serviceuserPassword) }
+    }
+
+    val arbeidsfordelingV1 = createPort<ArbeidsfordelingV1>(env.arbeidsfordelingV1EndpointURL) {
+        port { withSTS(credentials.serviceuserUsername, credentials.serviceuserPassword, env.securityTokenServiceUrl) }
+    }
+
+    val personV3 = createPort<PersonV3>(env.personV3EndpointURL) {
+        port { withSTS(credentials.serviceuserUsername, credentials.serviceuserPassword, env.securityTokenServiceUrl) }
+    }
+
+    launchListeners(env, applicationState,
+            subscriptionEmottak, kafkaproducerreceivedSykmelding, kafkaproducervalidationResult,
+            syfoSykemeldingRuleClient, sarClient, aktoerIdClient,
+            credentials, manualTaskkafkaproducer,
+            personV3, arbeidsfordelingV1, kafkaproducerApprec)
+
+    applicationState.ready = true
 }
 
 fun createListener(applicationState: ApplicationState, action: suspend CoroutineScope.() -> Unit): Job =
@@ -230,9 +218,6 @@ fun createListener(applicationState: ApplicationState, action: suspend Coroutine
 fun launchListeners(
     env: Environment,
     applicationState: ApplicationState,
-    inputconsumer: MessageConsumer,
-    syfoserviceProducer: MessageProducer,
-    backoutProducer: MessageProducer,
     subscriptionEmottak: SubscriptionPort,
     kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
     kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
@@ -240,19 +225,28 @@ fun launchListeners(
     kuhrSarClient: SarClient,
     aktoerIdClient: AktoerIdClient,
     credentials: VaultCredentials,
-    jedis: Jedis,
     kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
     personV3: PersonV3,
-    session: Session,
     arbeidsfordelingV1: ArbeidsfordelingV1,
     kafkaproducerApprec: KafkaProducer<String, Apprec>
 ) {
     createListener(applicationState) {
-        blockingApplicationLogic(inputconsumer, syfoserviceProducer, backoutProducer,
-                subscriptionEmottak, kafkaproducerreceivedSykmelding, kafkaproducervalidationResult,
-                syfoSykemeldingRuleClient, kuhrSarClient, aktoerIdClient, env,
-                credentials, applicationState, jedis, kafkaManuelTaskProducer,
-                personV3, session, arbeidsfordelingV1, kafkaproducerApprec)
+        connectionFactory(env).createConnection(credentials.mqUsername, credentials.mqPassword).use { connection ->
+            Jedis(env.redishost, 6379).use { jedis ->
+                connection.start()
+                val session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)
+
+                val inputconsumer = session.consumerForQueue(env.inputQueueName)
+                val syfoserviceProducer = session.producerForQueue(env.syfoserviceQueueName)
+                val backoutProducer = session.producerForQueue(env.inputBackoutQueueName)
+
+                blockingApplicationLogic(inputconsumer, syfoserviceProducer, backoutProducer,
+                        subscriptionEmottak, kafkaproducerreceivedSykmelding, kafkaproducervalidationResult,
+                        syfoSykemeldingRuleClient, kuhrSarClient, aktoerIdClient, env,
+                        credentials, applicationState, jedis, kafkaManuelTaskProducer,
+                        personV3, session, arbeidsfordelingV1, kafkaproducerApprec)
+            }
+        }
     }
 }
 
@@ -470,7 +464,7 @@ suspend fun blockingApplicationLogic(
                                 env.sm2013ManualHandlingTopic,
                                 kafkaproducervalidationResult,
                                 env.sm2013BehandlingsUtfallToipic
-                                )
+                        )
 
                         Status.INVALID -> handleStatusINVALID(
                                 validationResult,
