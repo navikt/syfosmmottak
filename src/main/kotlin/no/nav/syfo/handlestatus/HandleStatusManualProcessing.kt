@@ -1,5 +1,7 @@
 package no.nav.syfo.handlestatus
 
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import javax.jms.MessageProducer
 import javax.jms.Session
 import net.logstash.logback.argument.StructuredArguments
@@ -26,8 +28,6 @@ import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.binding.ArbeidsfordelingV1
 import no.nav.tjeneste.virksomhet.person.v3.binding.PersonV3
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 suspend fun handleStatusMANUALPROCESSING(
     personV3: PersonV3,
@@ -85,11 +85,11 @@ suspend fun handleStatusMANUALPROCESSING(
 }
 
 fun createTask(
-        kafkaProducer: KafkaProducer<String, ProduceTask>,
-        receivedSykmelding: ReceivedSykmelding,
-        results: ValidationResult,
-        navKontor: String,
-        loggingMeta: LoggingMeta
+    kafkaProducer: KafkaProducer<String, ProduceTask>,
+    receivedSykmelding: ReceivedSykmelding,
+    results: ValidationResult,
+    navKontor: String,
+    loggingMeta: LoggingMeta
 ) {
     kafkaProducer.send(
             ProducerRecord(

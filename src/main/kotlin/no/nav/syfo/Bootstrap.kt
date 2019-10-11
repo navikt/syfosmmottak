@@ -104,7 +104,6 @@ import no.nav.tjeneste.virksomhet.person.v3.informasjon.PersonIdent
 import no.nav.tjeneste.virksomhet.person.v3.informasjon.Personidenter
 import no.nav.tjeneste.virksomhet.person.v3.meldinger.HentGeografiskTilknytningRequest
 import no.nav.tjeneste.virksomhet.person.v3.meldinger.HentGeografiskTilknytningResponse
-import no.nav.tjeneste.virksomhet.person.v3.meldinger.HentPersonRequest
 import org.apache.cxf.ws.addressing.WSAddressingFeature
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord

@@ -14,7 +14,6 @@ data class Environment(
     val personV3EndpointURL: String = getEnvVar("PERSON_V3_ENDPOINT_URL"),
     val aktoerregisterV1Url: String = getEnvVar("AKTOR_REGISTER_V1_URL"),
     val applicationPort: Int = getEnvVar("APPLICATION_PORT", "8080").toInt(),
-    val applicationThreads: Int = getEnvVar("APPLICATION_THREADS", "4").toInt(),
     val applicationName: String = getEnvVar("NAIS_APP_NAME", "syfosmmottak"),
     override val kafkaBootstrapServers: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS_URL"),
     val sm2013ManualHandlingTopic: String = getEnvVar("KAFKA_SM2013_MANUAL_TOPIC", "privat-syfo-sm2013-manuellBehandling"),
