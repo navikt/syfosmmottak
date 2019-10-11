@@ -1,5 +1,7 @@
 package no.nav.syfo
 
+import java.time.LocalDate
+import java.time.LocalDateTime
 import no.nav.helse.sm2013.Address
 import no.nav.helse.sm2013.ArsakType
 import no.nav.helse.sm2013.CS
@@ -13,8 +15,6 @@ import no.nav.syfo.model.toSykmelding
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.time.LocalDate
-import java.time.LocalDateTime
 
 object SykmeldingMapperSpek : Spek({
 

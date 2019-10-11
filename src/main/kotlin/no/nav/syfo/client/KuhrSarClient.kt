@@ -6,14 +6,14 @@ import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.http.ContentType
 import io.ktor.util.KtorExperimentalAPI
+import java.util.Date
+import kotlin.math.max
 import net.logstash.logback.argument.StructuredArguments
 import net.logstash.logback.argument.StructuredArguments.keyValue
-import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.helpers.retry
 import no.nav.syfo.log
+import no.nav.syfo.util.LoggingMeta
 import org.apache.commons.text.similarity.LevenshteinDistance
-import java.util.*
-import kotlin.math.max
 
 @KtorExperimentalAPI
 class SarClient(

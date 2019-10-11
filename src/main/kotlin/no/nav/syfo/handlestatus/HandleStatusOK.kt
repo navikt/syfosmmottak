@@ -1,5 +1,7 @@
 package no.nav.syfo.handlestatus
 
+import javax.jms.MessageProducer
+import javax.jms.Session
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.msgHead.XMLMsgHead
@@ -14,24 +16,22 @@ import no.nav.syfo.service.notifySyfoService
 import no.nav.syfo.util.LoggingMeta
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
-import javax.jms.MessageProducer
-import javax.jms.Session
 
 fun handleStatusOK(
-        fellesformat: XMLEIFellesformat,
-        ediLoggId: String,
-        msgId: String,
-        msgHead: XMLMsgHead,
-        sm2013ApprecTopic: String,
-        kafkaproducerApprec: KafkaProducer<String, Apprec>,
-        loggingMeta: LoggingMeta,
-        session: Session,
-        syfoserviceProducer: MessageProducer,
-        healthInformation: HelseOpplysningerArbeidsuforhet,
-        syfoserviceQueueName: String,
-        sm2013AutomaticHandlingTopic: String,
-        receivedSykmelding: ReceivedSykmelding,
-        kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>
+    fellesformat: XMLEIFellesformat,
+    ediLoggId: String,
+    msgId: String,
+    msgHead: XMLMsgHead,
+    sm2013ApprecTopic: String,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    loggingMeta: LoggingMeta,
+    session: Session,
+    syfoserviceProducer: MessageProducer,
+    healthInformation: HelseOpplysningerArbeidsuforhet,
+    syfoserviceQueueName: String,
+    sm2013AutomaticHandlingTopic: String,
+    receivedSykmelding: ReceivedSykmelding,
+    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>
 ) {
 
     kafkaproducerreceivedSykmelding.send(ProducerRecord(sm2013AutomaticHandlingTopic, receivedSykmelding.sykmelding.id, receivedSykmelding))

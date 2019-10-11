@@ -1,11 +1,11 @@
 package no.nav.syfo
 
+import java.io.StringReader
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 import no.nav.syfo.util.fellesformatUnmarshaller
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.io.StringReader
 
 object BehandlerMissingFNRDNRSpek : Spek({
     describe("Should check find if fnr or dnr is missing") {

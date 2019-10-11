@@ -1,5 +1,7 @@
 package no.nav.syfo.handlestatus
 
+import javax.jms.MessageProducer
+import javax.jms.Session
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.msgHead.XMLMsgHead
@@ -23,28 +25,26 @@ import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.binding.ArbeidsfordelingV1
 import no.nav.tjeneste.virksomhet.person.v3.binding.PersonV3
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
-import javax.jms.MessageProducer
-import javax.jms.Session
 
 suspend fun handleStatusMANUALPROCESSING(
-        personV3: PersonV3,
-        receivedSykmelding: ReceivedSykmelding,
-        arbeidsfordelingV1: ArbeidsfordelingV1,
-        loggingMeta: LoggingMeta,
-        fellesformat: XMLEIFellesformat,
-        ediLoggId: String,
-        msgId: String,
-        msgHead: XMLMsgHead,
-        sm2013ApprecTopic: String,
-        kafkaproducerApprec: KafkaProducer<String, Apprec>,
-        session: Session,
-        syfoserviceProducer: MessageProducer,
-        healthInformation: HelseOpplysningerArbeidsuforhet,
-        syfoserviceQueueName: String,
-        validationResult: ValidationResult,
-        kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
-        kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
-        sm2013ManualHandlingTopic: String
+    personV3: PersonV3,
+    receivedSykmelding: ReceivedSykmelding,
+    arbeidsfordelingV1: ArbeidsfordelingV1,
+    loggingMeta: LoggingMeta,
+    fellesformat: XMLEIFellesformat,
+    ediLoggId: String,
+    msgId: String,
+    msgHead: XMLMsgHead,
+    sm2013ApprecTopic: String,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    session: Session,
+    syfoserviceProducer: MessageProducer,
+    healthInformation: HelseOpplysningerArbeidsuforhet,
+    syfoserviceQueueName: String,
+    validationResult: ValidationResult,
+    kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
+    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
+    sm2013ManualHandlingTopic: String
 ) {
     val geografiskTilknytning = fetchGeografiskTilknytning(personV3, receivedSykmelding)
     val patientDiskresjonsKode = fetchDiskresjonsKode(personV3, receivedSykmelding)

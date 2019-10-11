@@ -4,7 +4,7 @@ import no.nils.wsdl2java.Wsdl2JavaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "no.nav.syfo"
-version = "1.0.29"
+version = "1.0.0"
 
 val artemisVersion = "2.6.4"
 val coroutinesVersion = "1.0.1"
@@ -20,7 +20,7 @@ val kafkaEmbeddedVersion = "1.0.0"
 val kithHodemeldingVersion = "2019.07.30-12-26-5c924ef4f04022bbb850aaf299eb8e4464c1ca6a"
 val kithApprecVersion = "2019.07.30-04-23-2a0d1388209441ec05d2e92a821eed4f796a3ae2"
 val kluentVersion = "1.39"
-val ktorVersion = "1.2.3"
+val ktorVersion = "1.2.5"
 val logbackVersion = "1.2.3"
 val logstashEncoderVersion = "5.1"
 val prometheusVersion = "0.6.0"
@@ -42,8 +42,8 @@ val javaTimeAdapterVersion = "1.1.3"
 plugins {
     java
     id("no.nils.wsdl2java") version "0.10"
-    kotlin("jvm") version "1.3.40"
-    id("org.jmailen.kotlinter") version "1.26.0"
+    kotlin("jvm") version "1.3.50"
+    id("org.jmailen.kotlinter") version "2.1.1"
     id("com.diffplug.gradle.spotless") version "3.23.1"
     id("com.github.johnrengelman.shadow") version "4.0.4"
 }

@@ -7,9 +7,10 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import no.nav.syfo.client.KuhrSarClientSpek
 import no.nav.syfo.client.Samhandler
-import org.amshove.kluent.shouldEqualTo
+import no.nav.syfo.service.samhandlerParksisisLegevakt
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import org.amshove.kluent.shouldEqualTo
 
 object StartSubscription : Spek({
 

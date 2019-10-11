@@ -5,13 +5,13 @@ import java.time.LocalDateTime
 
 @JacksonXmlRootElement(localName = "syfo")
 data class Syfo(
-        val tilleggsdata: Tilleggsdata,
-        val sykmelding: String
+    val tilleggsdata: Tilleggsdata,
+    val sykmelding: String
 )
 
 data class Tilleggsdata(
-        val ediLoggId: String,
-        val sykmeldingId: String,
-        val msgId: String,
-        val syketilfelleStartDato: LocalDateTime
+    val ediLoggId: String,
+    val sykmeldingId: String,
+    val msgId: String,
+    val syketilfelleStartDato: LocalDateTime
 )

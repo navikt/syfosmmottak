@@ -16,6 +16,19 @@ import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.hotspot.DefaultExports
+import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.io.StringReader
+import java.nio.file.Paths
+import java.security.MessageDigest
+import java.time.LocalDate
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+import java.util.UUID
+import javax.jms.MessageConsumer
+import javax.jms.MessageProducer
+import javax.jms.Session
+import javax.jms.TextMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
@@ -40,6 +53,9 @@ import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.client.findBestSamhandlerPraksis
+import no.nav.syfo.handlestatus.handleDuplicateEdiloggid
+import no.nav.syfo.handlestatus.handleDuplicateSM2013Content
+import no.nav.syfo.handlestatus.handlePatientNotFoundInAktorRegister
 import no.nav.syfo.handlestatus.handleStatusINVALID
 import no.nav.syfo.handlestatus.handleStatusMANUALPROCESSING
 import no.nav.syfo.handlestatus.handleStatusOK
@@ -88,23 +104,10 @@ import no.nav.tjeneste.virksomhet.person.v3.meldinger.HentGeografiskTilknytningR
 import no.nav.tjeneste.virksomhet.person.v3.meldinger.HentPersonRequest
 import org.apache.cxf.ws.addressing.WSAddressingFeature
 import org.apache.kafka.clients.producer.KafkaProducer
-import org.slf4j.LoggerFactory
-import javax.jms.Session
-import javax.jms.TextMessage
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import redis.clients.jedis.Jedis
-import java.io.ByteArrayOutputStream
-import java.io.IOException
-import java.io.StringReader
-import java.nio.file.Paths
-import java.security.MessageDigest
-import java.time.LocalDate
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
-import java.util.UUID
-import javax.jms.MessageConsumer
-import javax.jms.MessageProducer
 
 val objectMapper: ObjectMapper = ObjectMapper()
         .registerModule(JavaTimeModule())
@@ -221,24 +224,24 @@ fun createListener(applicationState: ApplicationState, action: suspend Coroutine
 
 @KtorExperimentalAPI
 fun launchListeners(
-        env: Environment,
-        applicationState: ApplicationState,
-        inputconsumer: MessageConsumer,
-        syfoserviceProducer: MessageProducer,
-        backoutProducer: MessageProducer,
-        subscriptionEmottak: SubscriptionPort,
-        kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
-        kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
-        syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
-        kuhrSarClient: SarClient,
-        aktoerIdClient: AktoerIdClient,
-        credentials: VaultCredentials,
-        jedis: Jedis,
-        kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
-        personV3: PersonV3,
-        session: Session,
-        arbeidsfordelingV1: ArbeidsfordelingV1,
-        kafkaproducerApprec: KafkaProducer<String, Apprec>
+    env: Environment,
+    applicationState: ApplicationState,
+    inputconsumer: MessageConsumer,
+    syfoserviceProducer: MessageProducer,
+    backoutProducer: MessageProducer,
+    subscriptionEmottak: SubscriptionPort,
+    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
+    kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
+    syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
+    kuhrSarClient: SarClient,
+    aktoerIdClient: AktoerIdClient,
+    credentials: VaultCredentials,
+    jedis: Jedis,
+    kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
+    personV3: PersonV3,
+    session: Session,
+    arbeidsfordelingV1: ArbeidsfordelingV1,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>
 ) {
     createListener(applicationState) {
         blockingApplicationLogic(inputconsumer, syfoserviceProducer, backoutProducer,
@@ -251,24 +254,24 @@ fun launchListeners(
 
 @KtorExperimentalAPI
 suspend fun blockingApplicationLogic(
-        inputconsumer: MessageConsumer,
-        syfoserviceProducer: MessageProducer,
-        backoutProducer: MessageProducer,
-        subscriptionEmottak: SubscriptionPort,
-        kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
-        kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
-        syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
-        kuhrSarClient: SarClient,
-        aktoerIdClient: AktoerIdClient,
-        env: Environment,
-        credentials: VaultCredentials,
-        applicationState: ApplicationState,
-        jedis: Jedis,
-        kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
-        personV3: PersonV3,
-        session: Session,
-        arbeidsfordelingV1: ArbeidsfordelingV1,
-        kafkaproducerApprec: KafkaProducer<String, Apprec>
+    inputconsumer: MessageConsumer,
+    syfoserviceProducer: MessageProducer,
+    backoutProducer: MessageProducer,
+    subscriptionEmottak: SubscriptionPort,
+    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
+    kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
+    syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
+    kuhrSarClient: SarClient,
+    aktoerIdClient: AktoerIdClient,
+    env: Environment,
+    credentials: VaultCredentials,
+    applicationState: ApplicationState,
+    jedis: Jedis,
+    kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
+    personV3: PersonV3,
+    session: Session,
+    arbeidsfordelingV1: ArbeidsfordelingV1,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>
 ) {
     wrapExceptions {
         loop@ while (applicationState.ready) {
@@ -286,7 +289,6 @@ suspend fun blockingApplicationLogic(
                 INCOMING_MESSAGE_COUNTER.inc()
                 val requestLatency = REQUEST_TIME.startTimer()
                 val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(inputMessageText)) as XMLEIFellesformat
-
                 val receiverBlock = fellesformat.get<XMLMottakenhetBlokk>()
                 val msgHead = fellesformat.get<XMLMsgHead>()
 
@@ -310,6 +312,7 @@ suspend fun blockingApplicationLogic(
                 val personNumberDoctor = receiverBlock.avsenderFnrFraDigSignatur
 
                 log.info("Received message, {}", fields(loggingMeta))
+
                 val aktoerIds = aktoerIdClient.getAktoerIds(
                         listOf(personNumberDoctor,
                                 personNumberPatient),
@@ -332,59 +335,20 @@ suspend fun blockingApplicationLogic(
                 val redisEdiloggid = jedis.get(ediLoggId)
 
                 if (redisSha256String != null) {
-                    log.warn("Message with {} marked as duplicate, has same redisSha256String {}", keyValue("originalEdiLoggId", redisSha256String), fields(loggingMeta))
-                    val apprec = fellesformat.toApprec(
-                            ediLoggId,
-                            msgId,
-                            msgHead,
-                            ApprecStatus.AVVIST,
-                            "Duplikat! - Denne sykmeldingen er mottatt tidligere. " +
-                                    "Skal ikke sendes på nytt",
-                            msgHead.msgInfo.receiver.organisation,
-                            msgHead.msgInfo.sender.organisation
-                    )
-
-                    sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
-                    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
-                    continue
+                    handleDuplicateSM2013Content(redisSha256String, loggingMeta, fellesformat,
+                            ediLoggId, msgId, msgHead, env, kafkaproducerApprec)
+                    continue@loop
                 } else if (redisEdiloggid != null) {
-                    log.warn("Message with {} marked as duplicate, has same redisEdiloggid {}", keyValue("originalEdiLoggId", redisEdiloggid), fields(loggingMeta))
-                    val apprec = fellesformat.toApprec(
-                            ediLoggId,
-                            msgId,
-                            msgHead,
-                            ApprecStatus.AVVIST,
-                            "Duplikat! - Denne sykmeldingen er mottatt tidligere. " +
-                                    "Skal ikke sendes på nytt",
-                            msgHead.msgInfo.receiver.organisation,
-                            msgHead.msgInfo.sender.organisation
-                    )
-
-                    sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
-                    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
-                    continue
+                    handleDuplicateEdiloggid(redisEdiloggid, loggingMeta, fellesformat,
+                            ediLoggId, msgId, msgHead, env, kafkaproducerApprec)
+                    continue@loop
                 } else {
                     val patientIdents = aktoerIds[personNumberPatient]
                     val doctorIdents = aktoerIds[personNumberDoctor]
 
                     if (patientIdents == null || patientIdents.feilmelding != null) {
-                        log.info("Patient not found i aktorRegister error: {}, {}",
-                                keyValue("errorMessage", patientIdents?.feilmelding ?: "No response for FNR"),
-                                fields(loggingMeta))
-
-                        val apprec = fellesformat.toApprec(
-                                ediLoggId,
-                                msgId,
-                                msgHead,
-                                ApprecStatus.AVVIST,
-                                "Pasienten er ikkje registrert i folkeregisteret",
-                                msgHead.msgInfo.receiver.organisation,
-                                msgHead.msgInfo.sender.organisation
-                        )
-                        sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
-                        log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
-                        INVALID_MESSAGE_NO_NOTICE.inc()
-                        updateRedis(jedis, ediLoggId, sha256String)
+                        handlePatientNotFoundInAktorRegister(patientIdents, loggingMeta, fellesformat,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, redisSha256String)
                         continue@loop
                     }
                     if (doctorIdents == null || doctorIdents.feilmelding != null) {
@@ -667,9 +631,9 @@ fun extractOrganisationHerNumberFromSender(fellesformat: XMLEIFellesformat): XML
         }
 
 fun sendReceipt(
-        apprec: Apprec,
-        sm2013ApprecTopic: String,
-        kafkaproducerApprec: KafkaProducer<String, Apprec>
+    apprec: Apprec,
+    sm2013ApprecTopic: String,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>
 ) {
     kafkaproducerApprec.send(ProducerRecord(sm2013ApprecTopic, apprec))
 }
@@ -678,7 +642,6 @@ fun sha256hashstring(helseOpplysningerArbeidsuforhet: HelseOpplysningerArbeidsuf
         MessageDigest.getInstance("SHA-256")
                 .digest(objectMapper.writeValueAsBytes(helseOpplysningerArbeidsuforhet))
                 .fold("") { str, it -> str + "%02x".format(it) }
-
 
 fun convertSykemeldingToBase64(helseOpplysningerArbeidsuforhet: HelseOpplysningerArbeidsuforhet): ByteArray =
         ByteArrayOutputStream().use {
@@ -735,11 +698,11 @@ suspend fun fetchDiskresjonsKode(personV3: PersonV3, receivedSykmelding: Receive
         }
 
 fun createTask(
-        kafkaProducer: KafkaProducer<String, ProduceTask>,
-        receivedSykmelding: ReceivedSykmelding,
-        results: ValidationResult,
-        navKontor: String,
-        loggingMeta: LoggingMeta
+    kafkaProducer: KafkaProducer<String, ProduceTask>,
+    receivedSykmelding: ReceivedSykmelding,
+    results: ValidationResult,
+    navKontor: String,
+    loggingMeta: LoggingMeta
 ) {
     kafkaProducer.send(
             ProducerRecord(
@@ -769,11 +732,11 @@ fun createTask(
 }
 
 fun sendValidationResult(
-        validationResult: ValidationResult,
-        kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
-        sm2013BehandlingsUtfallToipic: String,
-        receivedSykmelding: ReceivedSykmelding,
-        loggingMeta: LoggingMeta
+    validationResult: ValidationResult,
+    kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
+    sm2013BehandlingsUtfallToipic: String,
+    receivedSykmelding: ReceivedSykmelding,
+    loggingMeta: LoggingMeta
 ) {
 
     kafkaproducervalidationResult.send(

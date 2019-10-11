@@ -1,19 +1,19 @@
 package no.nav.syfo
 
-import no.nav.helse.msgHead.XMLMsgHead
-import no.nav.syfo.utils.getFileAsString
+import java.io.StringReader
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.eiFellesformat.XMLMottakenhetBlokk
+import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.syfo.apprec.ApprecStatus
 import no.nav.syfo.apprec.toApprec
 import no.nav.syfo.model.RuleInfo
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.util.fellesformatUnmarshaller
+import no.nav.syfo.utils.getFileAsString
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.io.StringReader
 
 object ApprecMapperSpek : Spek({
     val stringInput = getFileAsString("src/test/resources/sykemelding2013Regelsettversjon2.xml")

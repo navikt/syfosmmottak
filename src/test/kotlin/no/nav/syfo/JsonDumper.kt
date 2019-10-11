@@ -4,14 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import java.io.StringReader
+import java.time.LocalDateTime
+import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.toSykmelding
-import no.nav.syfo.utils.getFileAsString
-import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.syfo.util.fellesformatUnmarshaller
-import java.io.StringReader
-import java.time.LocalDateTime
+import no.nav.syfo.utils.getFileAsString
 
 fun main() {
 
