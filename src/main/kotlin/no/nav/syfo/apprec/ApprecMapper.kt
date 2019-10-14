@@ -1,11 +1,11 @@
 package no.nav.syfo.apprec
 
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
+import no.nav.helse.msgHead.XMLCV as MsgHeadCV
 import no.nav.helse.msgHead.XMLHealthcareProfessional
 import no.nav.helse.msgHead.XMLIdent
-import no.nav.helse.msgHead.XMLOrganisation
-import no.nav.helse.msgHead.XMLCV as MsgHeadCV
 import no.nav.helse.msgHead.XMLMsgHead
+import no.nav.helse.msgHead.XMLOrganisation
 import no.nav.syfo.model.ValidationResult
 
 fun XMLEIFellesformat.toApprec(

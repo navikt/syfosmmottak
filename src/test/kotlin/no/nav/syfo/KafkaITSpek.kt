@@ -1,5 +1,8 @@
 package no.nav.syfo
 
+import java.net.ServerSocket
+import java.time.Duration
+import java.util.Properties
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toConsumerConfig
@@ -12,9 +15,6 @@ import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.net.ServerSocket
-import java.time.Duration
-import java.util.Properties
 
 object KafkaITSpek : Spek({
     val topic = "aapen-test-topic"
@@ -32,7 +32,7 @@ object KafkaITSpek : Spek({
             mqGatewayName = "mqGateway", kafkaBootstrapServers = embeddedEnvironment.brokersURL,
             mqChannelName = "syfomottak", aktoerregisterV1Url = "localhost-aktor", subscriptionEndpointURL = "localhost-emottak",
             inputBackoutQueueName = "inputbackqueue", inputQueueName = "inputqueue",
-            syfoserviceQueueName = "syfoserviequeue", applicationPort = 1, applicationThreads = 2, arbeidsfordelingV1EndpointURL =
+            syfoserviceQueueName = "syfoserviequeue", applicationPort = 1, arbeidsfordelingV1EndpointURL =
             "arbeidsfordelingV1", sm2013OppgaveTopic = "oppgaveTopic", securityTokenServiceUrl = "sts", personV3EndpointURL = "personv3",
             kuhrSarApiUrl = "kuhrsarApi", syfosmreglerApiUrl = "syfosmreglerApi", sm2013ManualHandlingTopic = "sm2013ManualHandlingTopic",
             sm2013AutomaticHandlingTopic = "sm2013AutomaticHandlingTopic", sm2013InvalidHandlingTopic = "sm2013InvalidHandlingTopic",

@@ -5,12 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import no.nav.syfo.LoggingMeta
+import kotlin.test.fail
+import no.nav.syfo.util.LoggingMeta
 import org.amshove.kluent.shouldBeLessThan
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import kotlin.test.fail
 
 object KuhrSarClientSpek : Spek({
 
@@ -21,7 +21,6 @@ object KuhrSarClientSpek : Spek({
 
     describe("KuhrSarClient") {
         val samhandler: List<Samhandler> = objectMapper.readValue(KuhrSarClientSpek::class.java.getResourceAsStream("/kuhr_sahr_response.json").readBytes().toString(Charsets.UTF_8))
-        val samhandlerIngenAktive: List<Samhandler> = objectMapper.readValue(KuhrSarClientSpek::class.java.getResourceAsStream("/kuhr_sahr_ingen_aktive_response.json").readBytes().toString(Charsets.UTF_8))
 
         it("Finner en aktiv samhandler praksis") {
             val match = findBestSamhandlerPraksis(samhandler, "SomeInvalidName", null, LoggingMeta("", "", ""))

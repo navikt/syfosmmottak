@@ -1,11 +1,11 @@
 package no.nav.syfo.model
 
+import java.time.LocalDateTime
 import no.nav.helse.sm2013.Address
 import no.nav.helse.sm2013.ArsakType
 import no.nav.helse.sm2013.CS
 import no.nav.helse.sm2013.CV
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
-import java.time.LocalDateTime
 
 fun HelseOpplysningerArbeidsuforhet.toSykmelding(
     sykmeldingId: String,

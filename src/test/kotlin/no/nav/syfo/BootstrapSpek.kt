@@ -1,13 +1,19 @@
 package no.nav.syfo
 
+import java.io.StringReader
+import java.time.LocalDateTime
+import java.util.Base64
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
+import no.nav.syfo.model.Syfo
+import no.nav.syfo.model.Tilleggsdata
+import no.nav.syfo.util.extractHelseOpplysningerArbeidsuforhet
+import no.nav.syfo.util.fellesformatUnmarshaller
+import no.nav.syfo.util.fellesformatUnmarshaller
+import no.nav.syfo.util.xmlObjectWriter
 import no.nav.syfo.utils.getFileAsString
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.io.StringReader
-import java.time.LocalDateTime
-import java.util.Base64
 
 object BootstrapSpek : Spek({
     val stringInput = getFileAsString("src/test/resources/sykemelding2013Regelsettversjon2.xml")
