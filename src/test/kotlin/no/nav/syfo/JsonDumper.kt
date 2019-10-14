@@ -20,7 +20,7 @@ fun main() {
             .registerKotlinModule()
             .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
 
-    val sm = fellesformatUnmarshaller.unmarshal(StringReader(BootstrapSpek::class.java.getResourceAsStream("/generated_sm.xml").readAllBytes().toString(Charsets.UTF_8))) as HelseOpplysningerArbeidsuforhet
+    val sm = fellesformatUnmarshaller.unmarshal(StringReader(getFileAsString("src/test/resources/generated_sm.xml"))) as HelseOpplysningerArbeidsuforhet
     println(objectMapper.writeValueAsString(sm.toSykmelding("detteerensykmeldingid", "41234123", "12890371", "123124334", LocalDateTime.now())))
 
     val stringInput = getFileAsString("src/test/resources/sykemelding2013Regelsettversjon2.xml")
