@@ -329,51 +329,51 @@ suspend fun blockingApplicationLogic(
 
                     if (patientIdents == null || patientIdents.feilmelding != null) {
                         handlePatientNotFoundInAktorRegister(patientIdents, loggingMeta, fellesformat,
-                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, redisSha256String)
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
                         continue@loop
                     }
                     if (doctorIdents == null || doctorIdents.feilmelding != null) {
                         handleDoctorNotFoundInAktorRegister(doctorIdents, loggingMeta, fellesformat,
-                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, redisSha256String)
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
                         continue@loop
                     }
 
                     if (healthInformation.aktivitet == null || healthInformation.aktivitet.periode.isNullOrEmpty()) {
                         handleAktivitetOrPeriodeIsMissing(loggingMeta, fellesformat,
-                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, redisSha256String)
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
                         continue@loop
                     }
 
                     if (healthInformation.medisinskVurdering?.biDiagnoser != null &&
                             healthInformation.medisinskVurdering.biDiagnoser.diagnosekode.any { it.v.isNullOrEmpty() }) {
                         handleBiDiagnoserDiagnosekodeIsMissing(loggingMeta, fellesformat,
-                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, redisSha256String)
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
                         continue@loop
                     }
 
                     if (healthInformation.medisinskVurdering?.biDiagnoser != null &&
                             healthInformation.medisinskVurdering.biDiagnoser.diagnosekode.any { it.s.isNullOrEmpty() }) {
                         handleBiDiagnoserDiagnosekodeVerkIsMissing(loggingMeta, fellesformat,
-                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, redisSha256String)
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
                         continue@loop
                     }
 
                     if (fnrAndDnrIsmissingFromBehandler(healthInformation)) {
                         handleFnrAndDnrIsmissingFromBehandler(loggingMeta, fellesformat,
-                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, redisSha256String)
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
                         continue@loop
                     }
 
                     if (healthInformation.medisinskVurdering?.hovedDiagnose?.diagnosekode != null &&
                             healthInformation.medisinskVurdering.hovedDiagnose.diagnosekode.v == null) {
                         handleHouvedDiagnoseDiagnosekodeMissing(loggingMeta, fellesformat,
-                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, redisSha256String)
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
                         continue@loop
                     }
 
                     if (arsakskodeIsmissing(healthInformation)) {
                         handleArsakskodeIsmissing(loggingMeta, fellesformat,
-                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, redisSha256String)
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
                         continue@loop
                     }
 
