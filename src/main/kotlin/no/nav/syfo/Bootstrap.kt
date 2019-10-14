@@ -145,8 +145,8 @@ fun main() {
 
     val kafkaproducerApprec = KafkaProducer<String, Apprec>(producerProperties)
 
-    val manualTaskproducerProperties = kafkaBaseConfig.toProducerConfig(env.applicationName, valueSerializer = KafkaAvroSerializer::class)
-    val manualTaskkafkaproducer = KafkaProducer<String, ProduceTask>(manualTaskproducerProperties)
+    val manuelOppgaveproducerProperties = kafkaBaseConfig.toProducerConfig(env.applicationName, valueSerializer = KafkaAvroSerializer::class)
+    val manuelOppgavekafkaproducer = KafkaProducer<String, ProduceTask>(manuelOppgaveproducerProperties)
 
     val simpleHttpClient = HttpClient(Apache) {
         install(JsonFeature) {
@@ -197,7 +197,7 @@ fun main() {
     launchListeners(env, applicationState,
             subscriptionEmottak, kafkaproducerreceivedSykmelding, kafkaproducervalidationResult,
             syfoSykemeldingRuleClient, sarClient, aktoerIdClient,
-            credentials, manualTaskkafkaproducer,
+            credentials, manuelOppgavekafkaproducer,
             personV3, arbeidsfordelingV1, kafkaproducerApprec)
 
     applicationState.ready = true

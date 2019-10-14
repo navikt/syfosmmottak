@@ -60,7 +60,7 @@ suspend fun handleStatusMANUALPROCESSING(
     val behandlendeEnhet = finnBehandlendeEnhetListeResponse?.behandlendeEnhetListe?.firstOrNull()?.enhetId
             ?: NAV_OPPFOLGING_UTLAND_KONTOR_NR
 
-    createTask(kafkaManuelTaskProducer, receivedSykmelding, validationResult, behandlendeEnhet, loggingMeta)
+    opprettOppgave(kafkaManuelTaskProducer, receivedSykmelding, validationResult, behandlendeEnhet, loggingMeta)
 
     notifySyfoService(session = session, receiptProducer = syfoserviceProducer, ediLoggId = ediLoggId,
             sykmeldingId = receivedSykmelding.sykmelding.id, msgId = msgId, healthInformation = healthInformation)
@@ -84,7 +84,7 @@ suspend fun handleStatusMANUALPROCESSING(
     log.info("Apprec receipt sent to kafka topic {}, {}", sm2013ApprecTopic, StructuredArguments.fields(loggingMeta))
 }
 
-fun createTask(
+fun opprettOppgave(
     kafkaProducer: KafkaProducer<String, ProduceTask>,
     receivedSykmelding: ReceivedSykmelding,
     results: ValidationResult,
