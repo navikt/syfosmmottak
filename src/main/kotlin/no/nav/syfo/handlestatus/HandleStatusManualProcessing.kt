@@ -14,8 +14,6 @@ import no.nav.syfo.NAV_OPPFOLGING_UTLAND_KONTOR_NR
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.apprec.ApprecStatus
 import no.nav.syfo.apprec.toApprec
-import no.nav.syfo.fetchBehandlendeEnhet
-import no.nav.syfo.fetchGeografiskTilknytning
 import no.nav.syfo.helpers.retry
 import no.nav.syfo.log
 import no.nav.syfo.model.ReceivedSykmelding

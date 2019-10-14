@@ -5,7 +5,6 @@ import java.util.Base64
 import javax.jms.MessageProducer
 import javax.jms.Session
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
-import no.nav.syfo.convertSykemeldingToBase64
 import no.nav.syfo.model.Syfo
 import no.nav.syfo.model.Tilleggsdata
 import no.nav.syfo.util.extractSyketilfelleStartDato
