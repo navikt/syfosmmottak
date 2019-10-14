@@ -1,6 +1,5 @@
 package no.nav.syfo
 
-import com.ctc.wstx.exc.WstxException
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -16,11 +15,8 @@ import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.hotspot.DefaultExports
-import java.io.ByteArrayOutputStream
-import java.io.IOException
 import java.io.StringReader
 import java.nio.file.Paths
-import java.security.MessageDigest
 import java.time.ZoneOffset
 import java.util.UUID
 import javax.jms.MessageConsumer
@@ -61,7 +57,6 @@ import no.nav.syfo.handlestatus.handlePatientNotFoundInAktorRegister
 import no.nav.syfo.handlestatus.handleStatusINVALID
 import no.nav.syfo.handlestatus.handleStatusMANUALPROCESSING
 import no.nav.syfo.handlestatus.handleStatusOK
-import no.nav.syfo.helpers.retry
 import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.metrics.AVVIST_ULIK_SENDER_OG_BEHANDLER
@@ -76,6 +71,7 @@ import no.nav.syfo.mq.consumerForQueue
 import no.nav.syfo.mq.producerForQueue
 import no.nav.syfo.sak.avro.ProduceTask
 import no.nav.syfo.service.samhandlerParksisisLegevakt
+import no.nav.syfo.service.sha256hashstring
 import no.nav.syfo.service.startSubscription
 import no.nav.syfo.service.updateRedis
 import no.nav.syfo.util.JacksonKafkaSerializer
@@ -87,23 +83,10 @@ import no.nav.syfo.util.extractOrganisationNumberFromSender
 import no.nav.syfo.util.extractOrganisationRashNumberFromSender
 import no.nav.syfo.util.fellesformatUnmarshaller
 import no.nav.syfo.util.get
-import no.nav.syfo.util.sykmeldingMarshaller
 import no.nav.syfo.util.wrapExceptions
 import no.nav.syfo.ws.createPort
 import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.binding.ArbeidsfordelingV1
-import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.informasjon.ArbeidsfordelingKriterier
-import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.informasjon.Diskresjonskoder
-import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.informasjon.Oppgavetyper
-import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.informasjon.Tema
-import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.meldinger.FinnBehandlendeEnhetListeRequest
-import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.meldinger.FinnBehandlendeEnhetListeResponse
 import no.nav.tjeneste.virksomhet.person.v3.binding.PersonV3
-import no.nav.tjeneste.virksomhet.person.v3.informasjon.GeografiskTilknytning
-import no.nav.tjeneste.virksomhet.person.v3.informasjon.NorskIdent
-import no.nav.tjeneste.virksomhet.person.v3.informasjon.PersonIdent
-import no.nav.tjeneste.virksomhet.person.v3.informasjon.Personidenter
-import no.nav.tjeneste.virksomhet.person.v3.meldinger.HentGeografiskTilknytningRequest
-import no.nav.tjeneste.virksomhet.person.v3.meldinger.HentGeografiskTilknytningResponse
 import org.apache.cxf.ws.addressing.WSAddressingFeature
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -506,56 +489,6 @@ fun sendReceipt(
 ) {
     kafkaproducerApprec.send(ProducerRecord(sm2013ApprecTopic, apprec))
 }
-
-fun sha256hashstring(helseOpplysningerArbeidsuforhet: HelseOpplysningerArbeidsuforhet): String =
-        MessageDigest.getInstance("SHA-256")
-                .digest(objectMapper.writeValueAsBytes(helseOpplysningerArbeidsuforhet))
-                .fold("") { str, it -> str + "%02x".format(it) }
-
-fun convertSykemeldingToBase64(helseOpplysningerArbeidsuforhet: HelseOpplysningerArbeidsuforhet): ByteArray =
-        ByteArrayOutputStream().use {
-            sykmeldingMarshaller.marshal(helseOpplysningerArbeidsuforhet, it)
-            it
-        }.toByteArray()
-
-suspend fun fetchGeografiskTilknytning(personV3: PersonV3, receivedSykmelding: ReceivedSykmelding): HentGeografiskTilknytningResponse =
-        retry(callName = "tps_hent_geografisktilknytning",
-                retryIntervals = arrayOf(500L, 1000L, 3000L, 5000L, 10000L),
-                legalExceptions = *arrayOf(IOException::class, WstxException::class)) {
-            personV3.hentGeografiskTilknytning(HentGeografiskTilknytningRequest().withAktoer(PersonIdent().withIdent(
-                    NorskIdent()
-                            .withIdent(receivedSykmelding.personNrPasient)
-                            .withType(Personidenter().withValue("FNR")))))
-        }
-
-suspend fun fetchBehandlendeEnhet(arbeidsfordelingV1: ArbeidsfordelingV1, geografiskTilknytning: GeografiskTilknytning?, patientDiskresjonsKode: String?): FinnBehandlendeEnhetListeResponse? =
-        retry(callName = "finn_nav_kontor",
-                retryIntervals = arrayOf(500L, 1000L, 3000L, 5000L, 10000L),
-                legalExceptions = *arrayOf(IOException::class, WstxException::class)) {
-            arbeidsfordelingV1.finnBehandlendeEnhetListe(FinnBehandlendeEnhetListeRequest().apply {
-                val afk = ArbeidsfordelingKriterier()
-                if (geografiskTilknytning?.geografiskTilknytning != null) {
-                    afk.geografiskTilknytning = no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.informasjon.Geografi().apply {
-                        value = geografiskTilknytning.geografiskTilknytning
-                    }
-                }
-                afk.tema = Tema().apply {
-                    value = "SYM"
-                }
-
-                afk.oppgavetype = Oppgavetyper().apply {
-                    value = "BEH_EL_SYM"
-                }
-
-                if (!patientDiskresjonsKode.isNullOrBlank()) {
-                    afk.diskresjonskode = Diskresjonskoder().apply {
-                        value = patientDiskresjonsKode
-                    }
-                }
-
-                arbeidsfordelingKriterier = afk
-            })
-        }
 
 fun sendValidationResult(
     validationResult: ValidationResult,

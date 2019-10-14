@@ -1,5 +1,6 @@
 package no.nav.syfo.service
 
+import java.io.ByteArrayOutputStream
 import java.util.Base64
 import javax.jms.MessageProducer
 import javax.jms.Session
@@ -8,6 +9,7 @@ import no.nav.syfo.convertSykemeldingToBase64
 import no.nav.syfo.model.Syfo
 import no.nav.syfo.model.Tilleggsdata
 import no.nav.syfo.util.extractSyketilfelleStartDato
+import no.nav.syfo.util.sykmeldingMarshaller
 import no.nav.syfo.util.xmlObjectWriter
 
 fun notifySyfoService(
@@ -29,3 +31,9 @@ fun notifySyfoService(
         text = xmlObjectWriter.writeValueAsString(syfo)
     })
 }
+
+fun convertSykemeldingToBase64(helseOpplysningerArbeidsuforhet: HelseOpplysningerArbeidsuforhet): ByteArray =
+        ByteArrayOutputStream().use {
+            sykmeldingMarshaller.marshal(helseOpplysningerArbeidsuforhet, it)
+            it
+        }.toByteArray()
