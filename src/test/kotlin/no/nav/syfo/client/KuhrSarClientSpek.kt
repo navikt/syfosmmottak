@@ -48,5 +48,12 @@ object KuhrSarClientSpek : Spek({
             match.percentageMatch shouldEqual 100.0
             match.samhandlerPraksis.samh_praksis_id shouldEqual "1000456789"
         }
+
+        it("Finner en samhandler som har navn på praksis når noen mangler navn") {
+            val samhandler: List<Samhandler> = objectMapper.readValue(KuhrSarClientSpek::class.java.getResourceAsStream("/kuhr_sahr_response_falo.json").readBytes().toString(Charsets.UTF_8))
+            val match = findBestSamhandlerPraksis(samhandler, "Testlegesenteret", "23456", LoggingMeta("", "", ""))
+                    ?: fail("Unable to find samhandler praksis")
+            match.samhandlerPraksis.samh_praksis_id shouldEqual "1000456788"
+        }
     }
 })
