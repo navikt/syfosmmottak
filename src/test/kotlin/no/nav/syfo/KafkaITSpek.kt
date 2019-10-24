@@ -24,7 +24,7 @@ object KafkaITSpek : Spek({
 
     val embeddedEnvironment = KafkaEnvironment(
             autoStart = false,
-            topics = listOf(topic)
+            topicNames = listOf(topic)
     )
 
     val credentials = VaultCredentials("", "", "", "")
