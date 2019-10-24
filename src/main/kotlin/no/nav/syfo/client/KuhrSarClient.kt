@@ -10,6 +10,7 @@ import java.util.Date
 import kotlin.math.max
 import net.logstash.logback.argument.StructuredArguments
 import net.logstash.logback.argument.StructuredArguments.keyValue
+import no.nav.syfo.SamhandlerPraksisType
 import no.nav.syfo.helpers.retry
 import no.nav.syfo.log
 import no.nav.syfo.util.LoggingMeta
@@ -107,7 +108,6 @@ fun findBestSamhandlerPraksis(
 ): SamhandlerPraksisMatch? {
     val aktiveSamhandlere = samhandlere.flatMap { it.samh_praksis }
             .filter { praksis -> praksis.samh_praksis_status_kode == "aktiv" }
-            .filter { !it.navn.isNullOrEmpty() }
 
     if (aktiveSamhandlere.isEmpty()) {
         log.info("Fant ingen aktive samhandlere. {}  Meta: {}, {} ",
@@ -128,7 +128,23 @@ fun findBestSamhandlerPraksis(
         }
     }
 
-    return aktiveSamhandlere
+    val aktiveSamhandlereMedNavn = samhandlere.flatMap { it.samh_praksis }
+            .filter { praksis -> praksis.samh_praksis_status_kode == "aktiv" }
+            .filter { !it.navn.isNullOrEmpty() }
+
+    if (aktiveSamhandlereMedNavn.isNullOrEmpty() && !aktiveSamhandlere.isNullOrEmpty()) {
+        val samhandlerFALEOrFALO = aktiveSamhandlere.find {
+            it.samh_praksis_type_kode == SamhandlerPraksisType.FASTLEGE.string ||
+                    it.samh_praksis_type_kode == SamhandlerPraksisType.FASTLONNET.string
+        }
+        if (samhandlerFALEOrFALO != null) {
+            return SamhandlerPraksisMatch(samhandlerFALEOrFALO, 100.0)
+        }
+    } else if (aktiveSamhandlere.isNullOrEmpty()) {
+        return null
+    }
+
+    return aktiveSamhandlereMedNavn
             .map { samhandlerPraksis ->
                 SamhandlerPraksisMatch(samhandlerPraksis, calculatePercentageStringMatch(samhandlerPraksis.navn, orgName) * 100)
             }.maxBy { it.percentageMatch }
