@@ -134,8 +134,8 @@ fun findBestSamhandlerPraksis(
 
     if (aktiveSamhandlereMedNavn.isNullOrEmpty() && !aktiveSamhandlere.isNullOrEmpty()) {
         val samhandlerFALEOrFALO = aktiveSamhandlere.find {
-            it.samh_praksis_type_kode == SamhandlerPraksisType.FASTLEGE.string ||
-                    it.samh_praksis_type_kode == SamhandlerPraksisType.FASTLONNET.string
+            it.samh_praksis_type_kode == SamhandlerPraksisType.FASTLEGE.kodeVerdi ||
+                    it.samh_praksis_type_kode == SamhandlerPraksisType.FASTLONNET.kodeVerdi
         }
         if (samhandlerFALEOrFALO != null) {
             return SamhandlerPraksisMatch(samhandlerFALEOrFALO, 100.0)
