@@ -53,6 +53,7 @@
         {"member":"srvsyfosmmottak", "role":"PRODUCER"},
         {"member":"srvsyfosmvarsel", "role":"CONSUMER"},
         {"member":"srvsyfostorebror", "role":"CONSUMER"},
+        {"member":"srvsyfosmmanuell-b", "role":"PRODUCER"},
         {"member":"s151890", "role":"MANAGER"},
         {"member":"k143566", "role":"MANAGER"},
         {"member":"f133008", "role":"MANAGER"},
