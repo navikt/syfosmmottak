@@ -258,7 +258,7 @@ fun handleHouvedDiagnoseDiagnosekodeMissing(
     updateRedis(jedis, ediLoggId, sha256String)
 }
 
-fun handleArsakskodeIsmissing(
+fun handleMedisinskeArsakskodeIsmissing(
     loggingMeta: LoggingMeta,
     fellesformat: XMLEIFellesformat,
     ediLoggId: String,
@@ -272,6 +272,28 @@ fun handleArsakskodeIsmissing(
     log.info("MedisinskeArsaker Arsakskode V mangler", fields(loggingMeta))
 
     val apprec = fellesformatToAppprec(fellesformat, "MedisinskeArsaker Arsakskode V mangler i sykmeldingen. Kontakt din EPJ-leverandør",
+            ediLoggId, msgId, msgHead)
+
+    sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
+    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
+    INVALID_MESSAGE_NO_NOTICE.inc()
+    updateRedis(jedis, ediLoggId, sha256String)
+}
+
+fun handleArbeidsplassenArsakskodeIsmissing(
+    loggingMeta: LoggingMeta,
+    fellesformat: XMLEIFellesformat,
+    ediLoggId: String,
+    msgId: String,
+    msgHead: XMLMsgHead,
+    env: Environment,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    jedis: Jedis,
+    sha256String: String
+) {
+    log.info("Arbeidsplassen Arsakskode V mangler", fields(loggingMeta))
+
+    val apprec = fellesformatToAppprec(fellesformat, "ArbeidsplassenArsaker Arsakskode V mangler i sykmeldingen. Kontakt din EPJ-leverandør",
             ediLoggId, msgId, msgHead)
 
     sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)

@@ -45,7 +45,7 @@ import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.client.findBestSamhandlerPraksis
 import no.nav.syfo.handlestatus.handleAktivitetOrPeriodeIsMissing
-import no.nav.syfo.handlestatus.handleArsakskodeIsmissing
+import no.nav.syfo.handlestatus.handleArbeidsplassenArsakskodeIsmissing
 import no.nav.syfo.handlestatus.handleBiDiagnoserDiagnosekodeIsMissing
 import no.nav.syfo.handlestatus.handleBiDiagnoserDiagnosekodeVerkIsMissing
 import no.nav.syfo.handlestatus.handleDoctorNotFoundInAktorRegister
@@ -53,6 +53,7 @@ import no.nav.syfo.handlestatus.handleDuplicateEdiloggid
 import no.nav.syfo.handlestatus.handleDuplicateSM2013Content
 import no.nav.syfo.handlestatus.handleFnrAndDnrIsmissingFromBehandler
 import no.nav.syfo.handlestatus.handleHouvedDiagnoseDiagnosekodeMissing
+import no.nav.syfo.handlestatus.handleMedisinskeArsakskodeIsmissing
 import no.nav.syfo.handlestatus.handlePatientNotFoundInAktorRegister
 import no.nav.syfo.handlestatus.handleStatusINVALID
 import no.nav.syfo.handlestatus.handleStatusMANUALPROCESSING
@@ -371,8 +372,14 @@ suspend fun blockingApplicationLogic(
                         continue@loop
                     }
 
-                    if (arsakskodeIsmissing(healthInformation)) {
-                        handleArsakskodeIsmissing(loggingMeta, fellesformat,
+                    if (medisinskeArsakskodeIsmissing(healthInformation)) {
+                        handleMedisinskeArsakskodeIsmissing(loggingMeta, fellesformat,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
+                        continue@loop
+                    }
+
+                    if (arbeidsplassenArsakskodeIsmissing(healthInformation)) {
+                        handleArbeidsplassenArsakskodeIsmissing(loggingMeta, fellesformat,
                                 ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
                         continue@loop
                     }
@@ -508,13 +515,24 @@ fun fnrAndDnrIsmissingFromBehandler(healthInformation: HelseOpplysningerArbeidsu
         healthInformation.behandler.id.find { it.typeId.v == "FNR" }?.id.isNullOrBlank() &&
                 healthInformation.behandler.id.find { it.typeId.v == "DNR" }?.id.isNullOrBlank()
 
-fun arsakskodeIsmissing(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean =
-        healthInformation.aktivitet.periode.any { periode -> aktivitetIkkeMuligMissingArsakskode(periode.aktivitetIkkeMulig) }
+fun medisinskeArsakskodeIsmissing(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean =
+        healthInformation.aktivitet.periode.any { periode -> aktivitetIkkeMuligMissingMedisinskeArsakskode(periode.aktivitetIkkeMulig) }
 
-fun aktivitetIkkeMuligMissingArsakskode(aktivitetIkkeMulig: HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig?): Boolean {
+fun arbeidsplassenArsakskodeIsmissing(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean =
+        healthInformation.aktivitet.periode.any { periode -> aktivitetIkkeMuligMissingArbeidsplassenArsakskode(periode.aktivitetIkkeMulig) }
+
+fun aktivitetIkkeMuligMissingMedisinskeArsakskode(aktivitetIkkeMulig: HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig?): Boolean {
     return if (aktivitetIkkeMulig == null)
         false
     else if (aktivitetIkkeMulig.medisinskeArsaker != null && aktivitetIkkeMulig.medisinskeArsaker.arsakskode == null)
         true
     else aktivitetIkkeMulig.medisinskeArsaker != null && aktivitetIkkeMulig.medisinskeArsaker.arsakskode.any { it.v.isNullOrEmpty() }
+}
+
+fun aktivitetIkkeMuligMissingArbeidsplassenArsakskode(aktivitetIkkeMulig: HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig?): Boolean {
+    return if (aktivitetIkkeMulig == null)
+        false
+    else if (aktivitetIkkeMulig.arbeidsplassen != null && aktivitetIkkeMulig.arbeidsplassen.arsakskode == null)
+        true
+    else aktivitetIkkeMulig.arbeidsplassen != null && aktivitetIkkeMulig.arbeidsplassen.arsakskode.any { it.v.isNullOrEmpty() }
 }
