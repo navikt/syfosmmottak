@@ -519,7 +519,7 @@ fun medisinskeArsakskodeIsmissing(healthInformation: HelseOpplysningerArbeidsufo
         healthInformation.aktivitet.periode.any { periode -> aktivitetIkkeMuligMissingMedisinskeArsakskode(periode.aktivitetIkkeMulig) }
 
 fun arbeidsplassenArsakskodeIsmissing(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean =
-        healthInformation.aktivitet.periode.any { periode -> aktivitetIkkeMuligMissingMedisinskeArsakskode(periode.aktivitetIkkeMulig) }
+        healthInformation.aktivitet.periode.any { periode -> aktivitetIkkeMuligMissingArbeidsplassenArsakskode(periode.aktivitetIkkeMulig) }
 
 fun aktivitetIkkeMuligMissingMedisinskeArsakskode(aktivitetIkkeMulig: HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig?): Boolean {
     return if (aktivitetIkkeMulig == null)
