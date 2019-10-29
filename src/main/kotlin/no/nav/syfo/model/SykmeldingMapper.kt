@@ -73,7 +73,7 @@ fun HelseOpplysningerArbeidsuforhet.MedisinskVurdering.toMedisinskVurdering() = 
         annenFraversArsak = annenFraversArsak?.toAnnenFraversArsak()
 )
 
-fun CV.toDiagnose() = Diagnose(s, v)
+fun CV.toDiagnose() = Diagnose(s, v, dn)
 
 fun ArsakType.toAnnenFraversArsak() = AnnenFraversArsak(
         beskrivelse = beskriv,
@@ -91,7 +91,7 @@ fun ArsakType.toAnnenFraversArsak() = AnnenFraversArsak(
 fun CS.toMedisinskArsakType() = if (v == "0") { null } else { MedisinskArsakType.values().first { it.codeValue == v.trim() } }
 
 // TODO: Remove if-wrapping whenever the EPJ systems stops sending garbage data
-fun CS.toArbeidsrelatertArsak() = if (v == "0") { null } else { ArbeidsrelatertArsakType.values().first { it.codeValue == v } }
+fun CS.toArbeidsrelatertArsakType() = if (v == "0") { null } else { ArbeidsrelatertArsakType.values().first { it.codeValue == v } }
 
 fun HelseOpplysningerArbeidsuforhet.Prognose.toPrognose() = Prognose(
         arbeidsforEtterPeriode = isArbeidsforEtterEndtPeriode == true,
@@ -135,7 +135,7 @@ fun Address.toAdresse() = Adresse(
 // TODO: Remove mapNotNull whenever the EPJ systems stops sending garbage data
 fun ArsakType.toArbeidsrelatertArsak() = ArbeidsrelatertArsak(
         beskrivelse = beskriv,
-        arsak = arsakskode.mapNotNull(CS::toArbeidsrelatertArsak)
+        arsak = arsakskode.mapNotNull(CS::toArbeidsrelatertArsakType)
 )
 
 // TODO: Remove mapNotNull whenever the EPJ systems stops sending garbage data
