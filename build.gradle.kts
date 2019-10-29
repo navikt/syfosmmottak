@@ -24,7 +24,7 @@ val ktorVersion = "1.2.5"
 val logbackVersion = "1.2.3"
 val logstashEncoderVersion = "5.1"
 val prometheusVersion = "0.6.0"
-val smCommonVersion = "1.0438b66"
+val smCommonVersion = "1.bba46d9"
 val spekVersion = "2.0.8"
 val sykmeldingVersion = "2019.07.29-02-53-86b22e73f7843e422ee500b486dac387a582f2d1"
 val cxfVersion = "3.2.7"
@@ -174,7 +174,7 @@ tasks {
     withType<KotlinCompile> {
         dependsOn("wsdl2java")
 
-        kotlinOptions.jvmTarget = "11"
+        kotlinOptions.jvmTarget = "1.8"
     }
 
     withType<Wsdl2JavaTask> {
