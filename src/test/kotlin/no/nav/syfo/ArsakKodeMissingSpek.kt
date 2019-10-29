@@ -14,24 +14,30 @@ object ArsakKodeMissingSpek : Spek({
         it("Validate MedisinskeArsaker Arsakskode is mapped") {
             val healthInformation = fellesformatUnmarshaller.unmarshal(StringReader(getFileAsString("src/test/resources/generated_sm_8.xml"))) as HelseOpplysningerArbeidsuforhet
 
-            arsakskodeIsmissing(healthInformation) shouldEqual false
+            medisinskeArsakskodeIsmissing(healthInformation) shouldEqual false
         }
         it("Validate arsakskodeIsmissing is false") {
             val healthInformation = fellesformatUnmarshaller.unmarshal(StringReader(getFileAsString("src/test/resources/generated_sm.xml"))) as HelseOpplysningerArbeidsuforhet
 
-            arsakskodeIsmissing(healthInformation) shouldEqual false
+            medisinskeArsakskodeIsmissing(healthInformation) shouldEqual false
         }
 
         it("Validate arsakskodeIsmissing is true") {
             val healthInformation = fellesformatUnmarshaller.unmarshal(StringReader(getFileAsString("src/test/resources/generated_sm_9.xml"))) as HelseOpplysningerArbeidsuforhet
 
-            arsakskodeIsmissing(healthInformation) shouldEqual true
+            medisinskeArsakskodeIsmissing(healthInformation) shouldEqual true
         }
 
-        it("Validate arsakskodeIsmissing is true") {
+        it("Validate medisinskearsakskodeIsmissing is true") {
             val aktivitetIkkeMulig = HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig()
 
-            aktivitetIkkeMuligMissingArsakskode(aktivitetIkkeMulig) shouldEqual false
+            aktivitetIkkeMuligMissingMedisinskeArsakskode(aktivitetIkkeMulig) shouldEqual false
+        }
+
+        it("Validate arbeidsplassenarsakskodeIsmissing is true") {
+            val aktivitetIkkeMulig = HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig()
+
+            aktivitetIkkeMuligMissingArbeidsplassenArsakskode(aktivitetIkkeMulig) shouldEqual false
         }
     }
 })
