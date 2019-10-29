@@ -30,7 +30,6 @@ repositories {
     }
 }
 ```
-
 `githubUser` and `githubPassword` can be put into a separate file `~/.gradle/gradle.properties` with the following content:
    
 ```                                                     
