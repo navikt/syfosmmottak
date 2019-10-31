@@ -46,12 +46,14 @@ import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.client.findBestSamhandlerPraksis
 import no.nav.syfo.handlestatus.handleAktivitetOrPeriodeIsMissing
 import no.nav.syfo.handlestatus.handleArbeidsplassenArsakskodeIsmissing
+import no.nav.syfo.handlestatus.handleBiDiagnoserDiagnosekodeBeskrivelseMissing
 import no.nav.syfo.handlestatus.handleBiDiagnoserDiagnosekodeIsMissing
 import no.nav.syfo.handlestatus.handleBiDiagnoserDiagnosekodeVerkIsMissing
 import no.nav.syfo.handlestatus.handleDoctorNotFoundInAktorRegister
 import no.nav.syfo.handlestatus.handleDuplicateEdiloggid
 import no.nav.syfo.handlestatus.handleDuplicateSM2013Content
 import no.nav.syfo.handlestatus.handleFnrAndDnrIsmissingFromBehandler
+import no.nav.syfo.handlestatus.handleHouvedDiagnoseDiagnoseBeskrivelseMissing
 import no.nav.syfo.handlestatus.handleHouvedDiagnoseDiagnosekodeMissing
 import no.nav.syfo.handlestatus.handleMedisinskeArsakskodeIsmissing
 import no.nav.syfo.handlestatus.handlePatientNotFoundInAktorRegister
@@ -359,6 +361,13 @@ suspend fun blockingApplicationLogic(
                         continue@loop
                     }
 
+                    if (healthInformation.medisinskVurdering?.biDiagnoser != null &&
+                            healthInformation.medisinskVurdering.biDiagnoser.diagnosekode.any { it.dn.isNullOrEmpty() }) {
+                        handleBiDiagnoserDiagnosekodeBeskrivelseMissing(loggingMeta, fellesformat,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
+                        continue@loop
+                    }
+
                     if (fnrAndDnrIsmissingFromBehandler(healthInformation)) {
                         handleFnrAndDnrIsmissingFromBehandler(loggingMeta, fellesformat,
                                 ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
@@ -368,6 +377,13 @@ suspend fun blockingApplicationLogic(
                     if (healthInformation.medisinskVurdering?.hovedDiagnose?.diagnosekode != null &&
                             healthInformation.medisinskVurdering.hovedDiagnose.diagnosekode.v == null) {
                         handleHouvedDiagnoseDiagnosekodeMissing(loggingMeta, fellesformat,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
+                        continue@loop
+                    }
+
+                    if (healthInformation.medisinskVurdering?.hovedDiagnose?.diagnosekode != null &&
+                            healthInformation.medisinskVurdering.hovedDiagnose.diagnosekode.dn == null) {
+                        handleHouvedDiagnoseDiagnoseBeskrivelseMissing(loggingMeta, fellesformat,
                                 ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
                         continue@loop
                     }

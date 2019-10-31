@@ -203,9 +203,31 @@ fun handleBiDiagnoserDiagnosekodeVerkIsMissing(
     jedis: Jedis,
     sha256String: String
 ) {
-    log.info("diagnosekodeverk is missing {}", fields(loggingMeta))
+    log.info("Diagnosekodeverk S is missing {}", fields(loggingMeta))
 
-    val apprec = fellesformatToAppprec(fellesformat, "Diagnosekodeverk på bidiagnose mangler",
+    val apprec = fellesformatToAppprec(fellesformat, "Diagnosekodeverk på bidiagnose mangler. Kontakt din EPJ-leverandør",
+            ediLoggId, msgId, msgHead)
+
+    sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
+    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
+    INVALID_MESSAGE_NO_NOTICE.inc()
+    updateRedis(jedis, ediLoggId, sha256String)
+}
+
+fun handleBiDiagnoserDiagnosekodeBeskrivelseMissing(
+    loggingMeta: LoggingMeta,
+    fellesformat: XMLEIFellesformat,
+    ediLoggId: String,
+    msgId: String,
+    msgHead: XMLMsgHead,
+    env: Environment,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    jedis: Jedis,
+    sha256String: String
+) {
+    log.info("Diagnosekodebeskrivelse DN is missing {}", fields(loggingMeta))
+
+    val apprec = fellesformatToAppprec(fellesformat, "Diagnosekode beskrivelse på bidiagnose mangler. Kontakt din EPJ-leverandør",
             ediLoggId, msgId, msgHead)
 
     sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
@@ -250,6 +272,28 @@ fun handleHouvedDiagnoseDiagnosekodeMissing(
     log.info("Houveddiagnose diagnosekode V mangler", fields(loggingMeta))
 
     val apprec = fellesformatToAppprec(fellesformat, "Diagnosekode for hoveddiagnose mangler i sykmeldingen. Kontakt din EPJ-leverandør",
+            ediLoggId, msgId, msgHead)
+
+    sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
+    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
+    INVALID_MESSAGE_NO_NOTICE.inc()
+    updateRedis(jedis, ediLoggId, sha256String)
+}
+
+fun handleHouvedDiagnoseDiagnoseBeskrivelseMissing(
+    loggingMeta: LoggingMeta,
+    fellesformat: XMLEIFellesformat,
+    ediLoggId: String,
+    msgId: String,
+    msgHead: XMLMsgHead,
+    env: Environment,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    jedis: Jedis,
+    sha256String: String
+) {
+    log.info("Houveddiagnose diagnosekode beskrivelse DN mangler", fields(loggingMeta))
+
+    val apprec = fellesformatToAppprec(fellesformat, "Diagnosekode beskrivelse for hoveddiagnose mangler i sykmeldingen. Kontakt din EPJ-leverandør",
             ediLoggId, msgId, msgHead)
 
     sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
