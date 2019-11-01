@@ -303,13 +303,14 @@ suspend fun blockingApplicationLogic(
                         msgId, credentials.serviceuserUsername)
 
                 val samhandlerInfo = kuhrSarClient.getSamhandler(personNumberDoctor)
-                val samhandlerPraksis = findBestSamhandlerPraksis(samhandlerInfo, legekontorOrgName, legekontorHerId,
-                        loggingMeta)?.samhandlerPraksis
+                val samhandlerPraksisMatch = findBestSamhandlerPraksis(
+                        samhandlerInfo,
+                        legekontorOrgName,
+                        legekontorHerId,
+                        loggingMeta)
+                val samhandlerPraksis = samhandlerPraksisMatch?.samhandlerPraksis
 
-                if (findBestSamhandlerPraksis(samhandlerInfo, legekontorOrgName, legekontorHerId,
-                                loggingMeta)?.percentageMatch != null &&
-                        findBestSamhandlerPraksis(samhandlerInfo, legekontorOrgName, legekontorHerId,
-                                loggingMeta)?.percentageMatch == 999.0) {
+                if (samhandlerPraksisMatch?.percentageMatch != null && samhandlerPraksisMatch.percentageMatch == 999.0) {
                     log.info("SamhandlerPraksis is found, subscription_emottak is not created, {}", fields(loggingMeta))
                 } else {
                     when (samhandlerPraksis) {
