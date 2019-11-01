@@ -138,7 +138,7 @@ fun findBestSamhandlerPraksis(
                     it.samh_praksis_type_kode == SamhandlerPraksisType.FASTLONNET.kodeVerdi
         }
         if (samhandlerFALEOrFALO != null) {
-            return SamhandlerPraksisMatch(samhandlerFALEOrFALO, 100.0)
+            return SamhandlerPraksisMatch(samhandlerFALEOrFALO, 999.0)
         }
     } else if (aktiveSamhandlere.isNullOrEmpty()) {
         return null

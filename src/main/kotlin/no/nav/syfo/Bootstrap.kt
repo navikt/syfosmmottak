@@ -306,12 +306,19 @@ suspend fun blockingApplicationLogic(
                 val samhandlerPraksis = findBestSamhandlerPraksis(samhandlerInfo, legekontorOrgName, legekontorHerId,
                         loggingMeta)?.samhandlerPraksis
 
-                when (samhandlerPraksis) {
-                    null -> log.info("SamhandlerPraksis is Not found, {}", fields(loggingMeta))
-                    else -> if (!samhandlerParksisisLegevakt(samhandlerPraksis)) {
-                        startSubscription(subscriptionEmottak, samhandlerPraksis, msgHead, receiverBlock, loggingMeta)
-                    } else {
-                        log.info("SamhandlerPraksis is Legevakt, subscription_emottak is not created, {}", fields(loggingMeta))
+                if (findBestSamhandlerPraksis(samhandlerInfo, legekontorOrgName, legekontorHerId,
+                                loggingMeta)?.percentageMatch != null &&
+                        findBestSamhandlerPraksis(samhandlerInfo, legekontorOrgName, legekontorHerId,
+                                loggingMeta)?.percentageMatch == 999.0) {
+                    log.info("SamhandlerPraksis is found, subscription_emottak is not created, {}", fields(loggingMeta))
+                } else {
+                    when (samhandlerPraksis) {
+                        null -> log.info("SamhandlerPraksis is Not found, {}", fields(loggingMeta))
+                        else -> if (!samhandlerParksisisLegevakt(samhandlerPraksis)) {
+                            startSubscription(subscriptionEmottak, samhandlerPraksis, msgHead, receiverBlock, loggingMeta)
+                        } else {
+                            log.info("SamhandlerPraksis is Legevakt, subscription_emottak is not created, {}", fields(loggingMeta))
+                        }
                     }
                 }
 
