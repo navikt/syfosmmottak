@@ -346,6 +346,28 @@ fun handleArbeidsplassenArsakskodeIsmissing(
     updateRedis(jedis, ediLoggId, sha256String)
 }
 
+fun handleTestFnrInProd(
+    loggingMeta: LoggingMeta,
+    fellesformat: XMLEIFellesformat,
+    ediLoggId: String,
+    msgId: String,
+    msgHead: XMLMsgHead,
+    env: Environment,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    jedis: Jedis,
+    sha256String: String
+) {
+    log.info("Test fødselsnummer er kommet inn i produksjon", fields(loggingMeta))
+
+    val apprec = fellesformatToAppprec(fellesformat, "Test fødselsnummer er kommet inn i produksjon, dette er ikkje lov. Kontakt din EPJ-leverandør",
+            ediLoggId, msgId, msgHead)
+
+    sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
+    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
+    INVALID_MESSAGE_NO_NOTICE.inc()
+    updateRedis(jedis, ediLoggId, sha256String)
+}
+
 fun fellesformatToAppprec(
     fellesformat: XMLEIFellesformat,
     tekstTilSykmelder: String,
