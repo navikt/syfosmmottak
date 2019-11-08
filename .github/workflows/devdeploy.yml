@@ -41,18 +41,18 @@ jobs:
       - name: Push Docker image
         run: "docker push $(cat .docker_image):$(cat .docker_tag)"
       - name: deploy app to dev-fss
-        uses: navikt/deployment-cli/action@a260e84
+        uses: navikt/deployment-cli/action@0.4.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           cluster: dev-fss
           team: teamsykefravr
-          resource: naiserator-dev.yaml
-      #- name: deploy redis to dev-fss
-      #  uses: navikt/deployment-cli/action@a260e84
-      #  env:
-      #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #  with:
-      #    cluster: dev-fss
-      #    team: teamsykefravr
-      #    resource: redis.yaml
+          resources: naiserator-dev.yaml
+      - name: deploy redis to dev-fss
+        uses: navikt/deployment-cli/action@0.4.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          cluster: dev-fss
+          team: teamsykefravr
+          resources: redis.yaml

@@ -69,12 +69,12 @@ fun handleDuplicateSM2013Content(
     log.warn("Message with {} marked as duplicate, has same redisSha256String {}",
             keyValue("originalEdiLoggId", redisSha256String), fields(loggingMeta))
 
-    val apprec = fellesformatToAppprec(fellesformat, "Duplikat! - Denne sykmeldingen er mottatt tidligere. " +
-            "Skal ikke sendes på nytt",
-            ediLoggId, msgId, msgHead)
+    val apprec = fellesformatToAppprec(
+            fellesformat, "Duplikat! - Denne sykmeldingen er mottatt tidligere. " +
+                            "Skal ikke sendes på nytt", ediLoggId, msgId, msgHead)
 
     sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
-    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, StructuredArguments.fields(loggingMeta))
+    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
 }
 
 fun handleDuplicateEdiloggid(
@@ -87,7 +87,8 @@ fun handleDuplicateEdiloggid(
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>
 ) {
-    log.warn("Message with {} marked as duplicate, has same redisEdiloggid {}", StructuredArguments.keyValue("originalEdiLoggId", redisEdiloggid), StructuredArguments.fields(loggingMeta))
+    log.warn("Message with {} marked as duplicate, has same redisEdiloggid {}",
+            keyValue("originalEdiLoggId", redisEdiloggid), fields(loggingMeta))
 
     val apprec = fellesformatToAppprec(fellesformat, "Duplikat! - Denne sykmeldingen er mottatt tidligere. " +
             "Skal ikke sendes på nytt",
