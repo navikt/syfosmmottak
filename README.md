@@ -63,6 +63,15 @@ Creating a docker image should be as simple as `docker build -t syfosmmottak .`
 #### Running a docker image
 `docker run --rm -it -p 8080:8080 syfosmmottak`
 
+
+### Deploy redis to dev:
+Deploying redis can be done with the following command:
+`kubectl apply --context dev-fss --namespace default -f redis.yaml`
+
+### Deploy redis to prod:
+Deploying redis can be done with the following command:
+`kubectl apply --context prod-fss --namespace default -f redis.yaml`
+
 ## Contact us
 ### Code/project related questions can be sent to
 * Joakim Kartveit, `joakim.kartveit@nav.no`
