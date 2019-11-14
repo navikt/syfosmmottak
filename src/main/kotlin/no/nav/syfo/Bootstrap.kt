@@ -117,7 +117,7 @@ fun main() {
             env,
             applicationState)
 
-    val applicationServer = ApplicationServer(applicationEngine)
+    val applicationServer = ApplicationServer(applicationEngine, applicationState)
     applicationServer.start()
 
     DefaultExports.initialize()
@@ -181,13 +181,13 @@ fun main() {
         port { withSTS(credentials.serviceuserUsername, credentials.serviceuserPassword, env.securityTokenServiceUrl) }
     }
 
+    applicationState.ready = true
+
     launchListeners(env, applicationState,
             subscriptionEmottak, kafkaproducerreceivedSykmelding, kafkaproducervalidationResult,
             syfoSykemeldingRuleClient, sarClient, aktoerIdClient,
             credentials, manuelOppgavekafkaproducer,
             personV3, arbeidsfordelingV1, kafkaproducerApprec)
-
-    applicationState.ready = true
 }
 
 fun createListener(applicationState: ApplicationState, action: suspend CoroutineScope.() -> Unit): Job =
