@@ -11,6 +11,7 @@ import no.nav.syfo.apprec.ApprecStatus
 import no.nav.syfo.apprec.toApprec
 import no.nav.syfo.log
 import no.nav.syfo.metrics.INVALID_MESSAGE_NO_NOTICE
+import no.nav.syfo.metrics.TEST_FNR_IN_PROD
 import no.nav.syfo.model.IdentInfoResult
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
@@ -71,7 +72,7 @@ fun handleDuplicateSM2013Content(
 
     val apprec = fellesformatToAppprec(
             fellesformat, "Duplikat! - Denne sykmeldingen er mottatt tidligere. " +
-                            "Skal ikke sendes på nytt", ediLoggId, msgId, msgHead)
+            "Skal ikke sendes på nytt", ediLoggId, msgId, msgHead)
 
     sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
     log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
@@ -366,6 +367,7 @@ fun handleTestFnrInProd(
     sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
     log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
     INVALID_MESSAGE_NO_NOTICE.inc()
+    TEST_FNR_IN_PROD.inc()
     updateRedis(jedis, ediLoggId, sha256String)
 }
 
