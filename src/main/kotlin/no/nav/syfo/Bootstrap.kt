@@ -181,8 +181,6 @@ fun main() {
         port { withSTS(credentials.serviceuserUsername, credentials.serviceuserPassword, env.securityTokenServiceUrl) }
     }
 
-    applicationState.ready = true
-
     launchListeners(env, applicationState,
             subscriptionEmottak, kafkaproducerreceivedSykmelding, kafkaproducervalidationResult,
             syfoSykemeldingRuleClient, sarClient, aktoerIdClient,
@@ -226,6 +224,8 @@ fun launchListeners(
                 val inputconsumer = session.consumerForQueue(env.inputQueueName)
                 val syfoserviceProducer = session.producerForQueue(env.syfoserviceQueueName)
                 val backoutProducer = session.producerForQueue(env.inputBackoutQueueName)
+
+                applicationState.ready = true
 
                 blockingApplicationLogic(inputconsumer, syfoserviceProducer, backoutProducer,
                         subscriptionEmottak, kafkaproducerreceivedSykmelding, kafkaproducervalidationResult,
