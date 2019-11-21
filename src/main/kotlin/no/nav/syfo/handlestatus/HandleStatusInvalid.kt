@@ -112,7 +112,7 @@ fun handlePatientNotFoundInAktorRegister(
     jedis: Jedis,
     sha256String: String
 ) {
-    log.info("Patient not found i aktorRegister error: {}, {}",
+    log.warn("Patient not found i aktorRegister error: {}, {}",
             keyValue("errorMessage", patientIdents?.feilmelding ?: "No response for FNR"),
             fields(loggingMeta))
 
@@ -137,7 +137,7 @@ fun handleDoctorNotFoundInAktorRegister(
     jedis: Jedis,
     sha256String: String
 ) {
-    log.info("Doctor not found i aktorRegister error: {}, {}",
+    log.warn("Doctor not found i aktorRegister error: {}, {}",
             keyValue("errorMessage", doctorIdents?.feilmelding ?: "No response for FNR"),
             fields(loggingMeta))
 
@@ -161,7 +161,7 @@ fun handleAktivitetOrPeriodeIsMissing(
     jedis: Jedis,
     sha256String: String
 ) {
-    log.info("Periode is missing {}", fields(loggingMeta))
+    log.warn("Periode is missing {}", fields(loggingMeta))
 
     val apprec = fellesformatToAppprec(fellesformat, "Ingen perioder er oppgitt i sykmeldingen.",
             ediLoggId, msgId, msgHead)
@@ -183,7 +183,7 @@ fun handleBiDiagnoserDiagnosekodeIsMissing(
     jedis: Jedis,
     sha256String: String
 ) {
-    log.info("diagnosekode is missing {}", fields(loggingMeta))
+    log.warn("diagnosekode is missing {}", fields(loggingMeta))
 
     val apprec = fellesformatToAppprec(fellesformat, "Diagnosekode på bidiagnose mangler",
             ediLoggId, msgId, msgHead)
@@ -205,7 +205,7 @@ fun handleBiDiagnoserDiagnosekodeVerkIsMissing(
     jedis: Jedis,
     sha256String: String
 ) {
-    log.info("Diagnosekodeverk S is missing {}", fields(loggingMeta))
+    log.warn("Diagnosekodeverk S is missing {}", fields(loggingMeta))
 
     val apprec = fellesformatToAppprec(fellesformat, "Diagnosekodeverk på bidiagnose mangler. Kontakt din EPJ-leverandør",
             ediLoggId, msgId, msgHead)
@@ -227,7 +227,7 @@ fun handleBiDiagnoserDiagnosekodeBeskrivelseMissing(
     jedis: Jedis,
     sha256String: String
 ) {
-    log.info("Diagnosekodebeskrivelse DN is missing {}", fields(loggingMeta))
+    log.warn("Diagnosekodebeskrivelse DN is missing {}", fields(loggingMeta))
 
     val apprec = fellesformatToAppprec(fellesformat, "Diagnosekode beskrivelse på bidiagnose mangler. Kontakt din EPJ-leverandør",
             ediLoggId, msgId, msgHead)
@@ -249,7 +249,7 @@ fun handleFnrAndDnrIsmissingFromBehandler(
     jedis: Jedis,
     sha256String: String
 ) {
-    log.info("FNR or DNR is missing on behandler {}", fields(loggingMeta))
+    log.warn("FNR or DNR is missing on behandler {}", fields(loggingMeta))
 
     val apprec = fellesformatToAppprec(fellesformat, "Fødselsnummer/d-nummer på behandler mangler",
             ediLoggId, msgId, msgHead)
@@ -271,7 +271,7 @@ fun handleHouvedDiagnoseDiagnosekodeMissing(
     jedis: Jedis,
     sha256String: String
 ) {
-    log.info("Houveddiagnose diagnosekode V mangler", fields(loggingMeta))
+    log.warn("Houveddiagnose diagnosekode V mangler", fields(loggingMeta))
 
     val apprec = fellesformatToAppprec(fellesformat, "Diagnosekode for hoveddiagnose mangler i sykmeldingen. Kontakt din EPJ-leverandør",
             ediLoggId, msgId, msgHead)
@@ -293,7 +293,7 @@ fun handleHouvedDiagnoseDiagnoseBeskrivelseMissing(
     jedis: Jedis,
     sha256String: String
 ) {
-    log.info("Houveddiagnose diagnosekode beskrivelse DN mangler", fields(loggingMeta))
+    log.warn("Houveddiagnose diagnosekode beskrivelse DN mangler", fields(loggingMeta))
 
     val apprec = fellesformatToAppprec(fellesformat, "Diagnosekode beskrivelse for hoveddiagnose mangler i sykmeldingen. Kontakt din EPJ-leverandør",
             ediLoggId, msgId, msgHead)
@@ -315,7 +315,7 @@ fun handleMedisinskeArsakskodeIsmissing(
     jedis: Jedis,
     sha256String: String
 ) {
-    log.info("MedisinskeArsaker Arsakskode V mangler", fields(loggingMeta))
+    log.warn("MedisinskeArsaker Arsakskode V mangler", fields(loggingMeta))
 
     val apprec = fellesformatToAppprec(fellesformat, "MedisinskeArsaker Arsakskode V mangler i sykmeldingen. Kontakt din EPJ-leverandør",
             ediLoggId, msgId, msgHead)
@@ -337,7 +337,7 @@ fun handleArbeidsplassenArsakskodeIsmissing(
     jedis: Jedis,
     sha256String: String
 ) {
-    log.info("Arbeidsplassen Arsakskode V mangler", fields(loggingMeta))
+    log.warn("Arbeidsplassen Arsakskode V mangler", fields(loggingMeta))
 
     val apprec = fellesformatToAppprec(fellesformat, "ArbeidsplassenArsaker Arsakskode V mangler i sykmeldingen. Kontakt din EPJ-leverandør",
             ediLoggId, msgId, msgHead)
@@ -359,7 +359,7 @@ fun handleTestFnrInProd(
     jedis: Jedis,
     sha256String: String
 ) {
-    log.info("Test fødselsnummer er kommet inn i produksjon", fields(loggingMeta))
+    log.warn("Test fødselsnummer er kommet inn i produksjon", fields(loggingMeta))
 
     val apprec = fellesformatToAppprec(fellesformat, "Test fødselsnummer er kommet inn i produksjon, dette er ikkje lov. Kontakt din EPJ-leverandør",
             ediLoggId, msgId, msgHead)
