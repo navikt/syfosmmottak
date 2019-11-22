@@ -97,6 +97,7 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import redis.clients.jedis.Jedis
+import redis.clients.jedis.exceptions.JedisConnectionException
 
 val objectMapper: ObjectMapper = ObjectMapper()
         .registerModule(JavaTimeModule())
@@ -512,6 +513,11 @@ suspend fun blockingApplicationLogic(
                             keyValue("latency", currentRequestLatency),
                             fields(loggingMeta))
                 }
+            } catch (jedisException: JedisConnectionException) {
+                log.error("Exception caught, redis issue while handling message, sending to backout", jedisException)
+                backoutProducer.send(message)
+                log.error("Setting applicationState.alive to false")
+                applicationState.alive = false
             } catch (e: Exception) {
                 log.error("Exception caught while handling message, sending to backout", e)
                 backoutProducer.send(message)
