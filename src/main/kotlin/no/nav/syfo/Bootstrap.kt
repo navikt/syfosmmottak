@@ -442,7 +442,7 @@ suspend fun blockingApplicationLogic(
 
                     if (receivedSykmelding.sykmelding.behandler.fnr != personNumberDoctor) {
                         AVVIST_ULIK_SENDER_OG_BEHANDLER.inc()
-                        log.warn("Behandlers fnr og avsendres fnr stemmer ikkje {}", fields(loggingMeta))
+                        log.info("Behandlers fnr og avsendres fnr stemmer ikkje {}", fields(loggingMeta))
                     }
 
                     log.info("Validating against rules, sykmeldingId {},  {}", keyValue("sykmeldingId", sykmelding.id), fields(loggingMeta))

@@ -76,6 +76,7 @@ fun handleDuplicateSM2013Content(
 
     sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
     log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
+    INVALID_MESSAGE_NO_NOTICE.inc()
 }
 
 fun handleDuplicateEdiloggid(
