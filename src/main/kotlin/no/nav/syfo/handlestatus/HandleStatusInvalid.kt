@@ -271,7 +271,7 @@ fun handleHouvedDiagnoseDiagnosekodeMissing(
     jedis: Jedis,
     sha256String: String
 ) {
-    log.warn("Houveddiagnose diagnosekode V mangler", fields(loggingMeta))
+    log.warn("Houveddiagnose diagnosekode V mangler {}", fields(loggingMeta))
 
     val apprec = fellesformatToAppprec(fellesformat, "Diagnosekode for hoveddiagnose mangler i sykmeldingen. Kontakt din EPJ-leverandør",
             ediLoggId, msgId, msgHead)
@@ -293,7 +293,7 @@ fun handleHouvedDiagnoseDiagnoseBeskrivelseMissing(
     jedis: Jedis,
     sha256String: String
 ) {
-    log.warn("Houveddiagnose diagnosekode beskrivelse DN mangler", fields(loggingMeta))
+    log.warn("Houveddiagnose diagnosekode beskrivelse DN mangler {}", fields(loggingMeta))
 
     val apprec = fellesformatToAppprec(fellesformat, "Diagnosekode beskrivelse for hoveddiagnose mangler i sykmeldingen. Kontakt din EPJ-leverandør",
             ediLoggId, msgId, msgHead)
@@ -315,7 +315,7 @@ fun handleMedisinskeArsakskodeIsmissing(
     jedis: Jedis,
     sha256String: String
 ) {
-    log.warn("MedisinskeArsaker Arsakskode V mangler", fields(loggingMeta))
+    log.warn("MedisinskeArsaker Arsakskode V mangler {}", fields(loggingMeta))
 
     val apprec = fellesformatToAppprec(fellesformat, "MedisinskeArsaker Arsakskode V mangler i sykmeldingen. Kontakt din EPJ-leverandør",
             ediLoggId, msgId, msgHead)
@@ -337,7 +337,7 @@ fun handleArbeidsplassenArsakskodeIsmissing(
     jedis: Jedis,
     sha256String: String
 ) {
-    log.warn("Arbeidsplassen Arsakskode V mangler", fields(loggingMeta))
+    log.warn("Arbeidsplassen Arsakskode V mangler {}", fields(loggingMeta))
 
     val apprec = fellesformatToAppprec(fellesformat, "ArbeidsplassenArsaker Arsakskode V mangler i sykmeldingen. Kontakt din EPJ-leverandør",
             ediLoggId, msgId, msgHead)
@@ -359,7 +359,7 @@ fun handleTestFnrInProd(
     jedis: Jedis,
     sha256String: String
 ) {
-    log.warn("Test fødselsnummer er kommet inn i produksjon", fields(loggingMeta))
+    log.warn("Test fødselsnummer er kommet inn i produksjon {}", fields(loggingMeta))
 
     val apprec = fellesformatToAppprec(fellesformat, "Test fødselsnummer er kommet inn i produksjon, dette er ikkje lov. Kontakt din EPJ-leverandør",
             ediLoggId, msgId, msgHead)
