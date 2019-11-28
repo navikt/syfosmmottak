@@ -202,19 +202,19 @@ fun createListener(applicationState: ApplicationState, action: suspend Coroutine
 
 @KtorExperimentalAPI
 fun launchListeners(
-        env: Environment,
-        applicationState: ApplicationState,
-        subscriptionEmottak: SubscriptionPort,
-        kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
-        kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
-        syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
-        kuhrSarClient: SarClient,
-        aktoerIdClient: AktoerIdClient,
-        credentials: VaultCredentials,
-        kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
-        personV3: PersonV3,
-        arbeidsfordelingV1: ArbeidsfordelingV1,
-        kafkaproducerApprec: KafkaProducer<String, Apprec>
+    env: Environment,
+    applicationState: ApplicationState,
+    subscriptionEmottak: SubscriptionPort,
+    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
+    kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
+    syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
+    kuhrSarClient: SarClient,
+    aktoerIdClient: AktoerIdClient,
+    credentials: VaultCredentials,
+    kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
+    personV3: PersonV3,
+    arbeidsfordelingV1: ArbeidsfordelingV1,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>
 ) {
     createListener(applicationState) {
         connectionFactory(env).createConnection(credentials.mqUsername, credentials.mqPassword).use { connection ->
@@ -240,24 +240,24 @@ fun launchListeners(
 
 @KtorExperimentalAPI
 suspend fun blockingApplicationLogic(
-        inputconsumer: MessageConsumer,
-        syfoserviceProducer: MessageProducer,
-        backoutProducer: MessageProducer,
-        subscriptionEmottak: SubscriptionPort,
-        kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
-        kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
-        syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
-        kuhrSarClient: SarClient,
-        aktoerIdClient: AktoerIdClient,
-        env: Environment,
-        credentials: VaultCredentials,
-        applicationState: ApplicationState,
-        jedis: Jedis,
-        kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
-        personV3: PersonV3,
-        session: Session,
-        arbeidsfordelingV1: ArbeidsfordelingV1,
-        kafkaproducerApprec: KafkaProducer<String, Apprec>
+    inputconsumer: MessageConsumer,
+    syfoserviceProducer: MessageProducer,
+    backoutProducer: MessageProducer,
+    subscriptionEmottak: SubscriptionPort,
+    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
+    kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
+    syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
+    kuhrSarClient: SarClient,
+    aktoerIdClient: AktoerIdClient,
+    env: Environment,
+    credentials: VaultCredentials,
+    applicationState: ApplicationState,
+    jedis: Jedis,
+    kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
+    personV3: PersonV3,
+    session: Session,
+    arbeidsfordelingV1: ArbeidsfordelingV1,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>
 ) {
     wrapExceptions {
         loop@ while (applicationState.ready) {
@@ -529,19 +529,19 @@ suspend fun blockingApplicationLogic(
 }
 
 fun sendReceipt(
-        apprec: Apprec,
-        sm2013ApprecTopic: String,
-        kafkaproducerApprec: KafkaProducer<String, Apprec>
+    apprec: Apprec,
+    sm2013ApprecTopic: String,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>
 ) {
     kafkaproducerApprec.send(ProducerRecord(sm2013ApprecTopic, apprec))
 }
 
 fun sendValidationResult(
-        validationResult: ValidationResult,
-        kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
-        sm2013BehandlingsUtfallToipic: String,
-        receivedSykmelding: ReceivedSykmelding,
-        loggingMeta: LoggingMeta
+    validationResult: ValidationResult,
+    kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
+    sm2013BehandlingsUtfallToipic: String,
+    receivedSykmelding: ReceivedSykmelding,
+    loggingMeta: LoggingMeta
 ) {
 
     kafkaproducervalidationResult.send(
