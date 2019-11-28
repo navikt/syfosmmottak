@@ -202,19 +202,19 @@ fun createListener(applicationState: ApplicationState, action: suspend Coroutine
 
 @KtorExperimentalAPI
 fun launchListeners(
-    env: Environment,
-    applicationState: ApplicationState,
-    subscriptionEmottak: SubscriptionPort,
-    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
-    kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
-    syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
-    kuhrSarClient: SarClient,
-    aktoerIdClient: AktoerIdClient,
-    credentials: VaultCredentials,
-    kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
-    personV3: PersonV3,
-    arbeidsfordelingV1: ArbeidsfordelingV1,
-    kafkaproducerApprec: KafkaProducer<String, Apprec>
+        env: Environment,
+        applicationState: ApplicationState,
+        subscriptionEmottak: SubscriptionPort,
+        kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
+        kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
+        syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
+        kuhrSarClient: SarClient,
+        aktoerIdClient: AktoerIdClient,
+        credentials: VaultCredentials,
+        kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
+        personV3: PersonV3,
+        arbeidsfordelingV1: ArbeidsfordelingV1,
+        kafkaproducerApprec: KafkaProducer<String, Apprec>
 ) {
     createListener(applicationState) {
         connectionFactory(env).createConnection(credentials.mqUsername, credentials.mqPassword).use { connection ->
@@ -240,24 +240,24 @@ fun launchListeners(
 
 @KtorExperimentalAPI
 suspend fun blockingApplicationLogic(
-    inputconsumer: MessageConsumer,
-    syfoserviceProducer: MessageProducer,
-    backoutProducer: MessageProducer,
-    subscriptionEmottak: SubscriptionPort,
-    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
-    kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
-    syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
-    kuhrSarClient: SarClient,
-    aktoerIdClient: AktoerIdClient,
-    env: Environment,
-    credentials: VaultCredentials,
-    applicationState: ApplicationState,
-    jedis: Jedis,
-    kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
-    personV3: PersonV3,
-    session: Session,
-    arbeidsfordelingV1: ArbeidsfordelingV1,
-    kafkaproducerApprec: KafkaProducer<String, Apprec>
+        inputconsumer: MessageConsumer,
+        syfoserviceProducer: MessageProducer,
+        backoutProducer: MessageProducer,
+        subscriptionEmottak: SubscriptionPort,
+        kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
+        kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
+        syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
+        kuhrSarClient: SarClient,
+        aktoerIdClient: AktoerIdClient,
+        env: Environment,
+        credentials: VaultCredentials,
+        applicationState: ApplicationState,
+        jedis: Jedis,
+        kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
+        personV3: PersonV3,
+        session: Session,
+        arbeidsfordelingV1: ArbeidsfordelingV1,
+        kafkaproducerApprec: KafkaProducer<String, Apprec>
 ) {
     wrapExceptions {
         loop@ while (applicationState.ready) {
@@ -332,6 +332,8 @@ suspend fun blockingApplicationLogic(
                     handleDuplicateSM2013Content(redisSha256String, loggingMeta, fellesformat,
                             ediLoggId, msgId, msgHead, env, kafkaproducerApprec)
                     continue@loop
+                } else if (redisEdiloggid != null && redisEdiloggid.length != 21) {
+                    throw RuntimeException("Redis has some issues with geting the redisEdiloggid")
                 } else if (redisEdiloggid != null) {
                     handleDuplicateEdiloggid(redisEdiloggid, loggingMeta, fellesformat,
                             ediLoggId, msgId, msgHead, env, kafkaproducerApprec)
@@ -527,19 +529,19 @@ suspend fun blockingApplicationLogic(
 }
 
 fun sendReceipt(
-    apprec: Apprec,
-    sm2013ApprecTopic: String,
-    kafkaproducerApprec: KafkaProducer<String, Apprec>
+        apprec: Apprec,
+        sm2013ApprecTopic: String,
+        kafkaproducerApprec: KafkaProducer<String, Apprec>
 ) {
     kafkaproducerApprec.send(ProducerRecord(sm2013ApprecTopic, apprec))
 }
 
 fun sendValidationResult(
-    validationResult: ValidationResult,
-    kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
-    sm2013BehandlingsUtfallToipic: String,
-    receivedSykmelding: ReceivedSykmelding,
-    loggingMeta: LoggingMeta
+        validationResult: ValidationResult,
+        kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
+        sm2013BehandlingsUtfallToipic: String,
+        receivedSykmelding: ReceivedSykmelding,
+        loggingMeta: LoggingMeta
 ) {
 
     kafkaproducervalidationResult.send(
@@ -576,11 +578,11 @@ fun aktivitetIkkeMuligMissingArbeidsplassenArsakskode(aktivitetIkkeMulig: HelseO
 
 fun erTestFnr(fnr: String): Boolean {
     val testFnr = listOf("14077700162", "23077200290", "19095800273", "19079800468", "09090950972", "16126800464",
-    "19128600143", "22047800106", "21016400952", "07070750710", "12119000465", "15040650560", "28027000608",
-    "13031353453", "15045400112", "04129700489", "12050050295", "02117800213", "18118500284", "03117000205",
-    "08077000292", "20086600138", "02039000183", "11028600374", "13046700125", "28096900254", "14076800236",
-    "03117800252", "11079500412", "15076500565", "15051555535", "21030550231", "13116900216", "04056600324",
-    "14019800513", "05073500186", "12057900499", "24048600332", "17108300566", "01017112364", "11064700342",
-    "29019900248", "25047039315")
+            "19128600143", "22047800106", "21016400952", "07070750710", "12119000465", "15040650560", "28027000608",
+            "13031353453", "15045400112", "04129700489", "12050050295", "02117800213", "18118500284", "03117000205",
+            "08077000292", "20086600138", "02039000183", "11028600374", "13046700125", "28096900254", "14076800236",
+            "03117800252", "11079500412", "15076500565", "15051555535", "21030550231", "13116900216", "04056600324",
+            "14019800513", "05073500186", "12057900499", "24048600332", "17108300566", "01017112364", "11064700342",
+            "29019900248", "25047039315")
     return testFnr.contains(fnr)
 }
