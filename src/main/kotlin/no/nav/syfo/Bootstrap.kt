@@ -333,6 +333,8 @@ suspend fun blockingApplicationLogic(
                             ediLoggId, msgId, msgHead, env, kafkaproducerApprec)
                     continue@loop
                 } else if (redisEdiloggid != null && redisEdiloggid.length != 21) {
+                    log.error("Redis returned a redisEdiloggid that is longer than 21" +
+                            "characters redisEdiloggid: {} {}", redisEdiloggid, fields(loggingMeta))
                     throw RuntimeException("Redis has some issues with geting the redisEdiloggid")
                 } else if (redisEdiloggid != null) {
                     handleDuplicateEdiloggid(redisEdiloggid, loggingMeta, fellesformat,
