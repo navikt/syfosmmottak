@@ -496,7 +496,7 @@ suspend fun blockingApplicationLogic(
                                 kafkaproducervalidationResult,
                                 env.sm2013BehandlingsUtfallToipic,
                                 kafkaproducerManuellOppgave,
-                                env.sm2013OppgaveTopic
+                                env.syfoSmManuellTopic
                         )
 
                         Status.INVALID -> handleStatusINVALID(
