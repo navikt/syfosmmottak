@@ -16,6 +16,7 @@ import no.nav.syfo.apprec.ApprecStatus
 import no.nav.syfo.apprec.toApprec
 import no.nav.syfo.helpers.retry
 import no.nav.syfo.log
+import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.sak.avro.PrioritetType
@@ -63,7 +64,9 @@ suspend fun handleStatusMANUALPROCESSING(
     kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
     sm2013ManualHandlingTopic: String,
     kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
-    sm2013BehandlingsUtfallToipic: String
+    sm2013BehandlingsUtfallToipic: String,
+    kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
+    syfoSmManuellTopic: String
 ) {
     val geografiskTilknytning = fetchGeografiskTilknytning(personV3, receivedSykmelding)
     val patientDiskresjonsKode = fetchDiskresjonsKode(personV3, receivedSykmelding)
@@ -74,28 +77,44 @@ suspend fun handleStatusMANUALPROCESSING(
     val behandlendeEnhet = finnBehandlendeEnhetListeResponse?.behandlendeEnhetListe?.firstOrNull()?.enhetId
             ?: NAV_OPPFOLGING_UTLAND_KONTOR_NR
 
-    opprettOppgave(kafkaManuelTaskProducer, receivedSykmelding, validationResult, behandlendeEnhet, loggingMeta)
+    // TODO snakke med veden hvilke nav kontor skal først få testete ut syfosmmanuell
+    // behandlendeEnhet == NAV_OPPFOLGING_UTLAND_KONTOR_NR
+    if (true) {
+        val apprec = fellesformat.toApprec(
+                ediLoggId,
+                msgId,
+                msgHead,
+                ApprecStatus.OK,
+                null,
+                msgHead.msgInfo.receiver.organisation,
+                msgHead.msgInfo.sender.organisation
+        )
+        sendManuellTask(receivedSykmelding, validationResult, apprec, syfoSmManuellTopic, kafkaproducerManuellOppgave, behandlendeEnhet)
+    } else {
 
-    notifySyfoService(session = session, receiptProducer = syfoserviceProducer, ediLoggId = ediLoggId,
-            sykmeldingId = receivedSykmelding.sykmelding.id, msgId = msgId, healthInformation = healthInformation)
-    log.info("Message send to syfoService {}, {}", syfoserviceQueueName, StructuredArguments.fields(loggingMeta))
+        opprettOppgave(kafkaManuelTaskProducer, receivedSykmelding, validationResult, behandlendeEnhet, loggingMeta)
 
-    kafkaproducerreceivedSykmelding.send(ProducerRecord(sm2013ManualHandlingTopic, receivedSykmelding.sykmelding.id, receivedSykmelding))
-    log.info("Message send to kafka {}, {}", sm2013ManualHandlingTopic, StructuredArguments.fields(loggingMeta))
+        notifySyfoService(session = session, receiptProducer = syfoserviceProducer, ediLoggId = ediLoggId,
+                sykmeldingId = receivedSykmelding.sykmelding.id, msgId = msgId, healthInformation = healthInformation)
+        log.info("Message send to syfoService {}, {}", syfoserviceQueueName, StructuredArguments.fields(loggingMeta))
 
-    sendValidationResult(validationResult, kafkaproducervalidationResult, sm2013BehandlingsUtfallToipic, receivedSykmelding, loggingMeta)
+        kafkaproducerreceivedSykmelding.send(ProducerRecord(sm2013ManualHandlingTopic, receivedSykmelding.sykmelding.id, receivedSykmelding))
+        log.info("Message send to kafka {}, {}", sm2013ManualHandlingTopic, StructuredArguments.fields(loggingMeta))
 
-    val apprec = fellesformat.toApprec(
-            ediLoggId,
-            msgId,
-            msgHead,
-            ApprecStatus.OK,
-            null,
-            msgHead.msgInfo.receiver.organisation,
-            msgHead.msgInfo.sender.organisation
-    )
-    sendReceipt(apprec, sm2013ApprecTopic, kafkaproducerApprec)
-    log.info("Apprec receipt sent to kafka topic {}, {}", sm2013ApprecTopic, StructuredArguments.fields(loggingMeta))
+        sendValidationResult(validationResult, kafkaproducervalidationResult, sm2013BehandlingsUtfallToipic, receivedSykmelding, loggingMeta)
+
+        val apprec = fellesformat.toApprec(
+                ediLoggId,
+                msgId,
+                msgHead,
+                ApprecStatus.OK,
+                null,
+                msgHead.msgInfo.receiver.organisation,
+                msgHead.msgInfo.sender.organisation
+        )
+        sendReceipt(apprec, sm2013ApprecTopic, kafkaproducerApprec)
+        log.info("Apprec receipt sent to kafka topic {}, {}", sm2013ApprecTopic, StructuredArguments.fields(loggingMeta))
+    }
 }
 
 fun opprettOppgave(
@@ -170,3 +189,19 @@ suspend fun fetchBehandlendeEnhet(arbeidsfordelingV1: ArbeidsfordelingV1, geogra
                 arbeidsfordelingKriterier = afk
             })
         }
+
+fun sendManuellTask(
+    receivedSykmelding: ReceivedSykmelding,
+    validationResult: ValidationResult,
+    apprec: Apprec,
+    sm2013ManeullTopic: String,
+    kafkaproducerApprec: KafkaProducer<String, ManuellOppgave>,
+    behandlendeEnhet: String
+) {
+    val manuellOppgave = ManuellOppgave(
+            receivedSykmelding,
+            validationResult,
+            apprec,
+            behandlendeEnhet)
+    kafkaproducerApprec.send(ProducerRecord(sm2013ManeullTopic, manuellOppgave))
+}

@@ -66,6 +66,7 @@ import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.metrics.AVVIST_ULIK_SENDER_OG_BEHANDLER
 import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
 import no.nav.syfo.metrics.REQUEST_TIME
+import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
@@ -136,6 +137,8 @@ fun main() {
     val manuelOppgaveproducerProperties = kafkaBaseConfig.toProducerConfig(env.applicationName, valueSerializer = KafkaAvroSerializer::class)
     val manuelOppgavekafkaproducer = KafkaProducer<String, ProduceTask>(manuelOppgaveproducerProperties)
 
+    val kafkaproducerManuellOppgave = KafkaProducer<String, ManuellOppgave>(producerProperties)
+
     val simpleHttpClient = HttpClient(Apache) {
         install(JsonFeature) {
             serializer = JacksonSerializer {
@@ -186,7 +189,7 @@ fun main() {
             subscriptionEmottak, kafkaproducerreceivedSykmelding, kafkaproducervalidationResult,
             syfoSykemeldingRuleClient, sarClient, aktoerIdClient,
             credentials, manuelOppgavekafkaproducer,
-            personV3, arbeidsfordelingV1, kafkaproducerApprec)
+            personV3, arbeidsfordelingV1, kafkaproducerApprec, kafkaproducerManuellOppgave)
 }
 
 fun createListener(applicationState: ApplicationState, action: suspend CoroutineScope.() -> Unit): Job =
@@ -214,7 +217,8 @@ fun launchListeners(
     kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
     personV3: PersonV3,
     arbeidsfordelingV1: ArbeidsfordelingV1,
-    kafkaproducerApprec: KafkaProducer<String, Apprec>
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>
 ) {
     createListener(applicationState) {
         connectionFactory(env).createConnection(credentials.mqUsername, credentials.mqPassword).use { connection ->
@@ -232,7 +236,7 @@ fun launchListeners(
                         subscriptionEmottak, kafkaproducerreceivedSykmelding, kafkaproducervalidationResult,
                         syfoSykemeldingRuleClient, kuhrSarClient, aktoerIdClient, env,
                         credentials, applicationState, jedis, kafkaManuelTaskProducer,
-                        personV3, session, arbeidsfordelingV1, kafkaproducerApprec)
+                        personV3, session, arbeidsfordelingV1, kafkaproducerApprec, kafkaproducerManuellOppgave)
             }
         }
     }
@@ -257,7 +261,8 @@ suspend fun blockingApplicationLogic(
     personV3: PersonV3,
     session: Session,
     arbeidsfordelingV1: ArbeidsfordelingV1,
-    kafkaproducerApprec: KafkaProducer<String, Apprec>
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>
 ) {
     wrapExceptions {
         loop@ while (applicationState.ready) {
@@ -489,7 +494,9 @@ suspend fun blockingApplicationLogic(
                                 kafkaproducerreceivedSykmelding,
                                 env.sm2013ManualHandlingTopic,
                                 kafkaproducervalidationResult,
-                                env.sm2013BehandlingsUtfallToipic
+                                env.sm2013BehandlingsUtfallToipic,
+                                kafkaproducerManuellOppgave,
+                                env.sm2013OppgaveTopic
                         )
 
                         Status.INVALID -> handleStatusINVALID(
