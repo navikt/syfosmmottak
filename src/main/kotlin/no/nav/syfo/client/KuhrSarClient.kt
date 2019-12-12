@@ -160,8 +160,8 @@ fun findBestSamhandlerPraksis(
 // TODO only check if we should implement this rule or not
 fun testSamhandlerMatching(samhandlere: List<Samhandler>, orgName: String): SamhandlerPraksisMatch? {
         val inaktiveSamhandlereMedNavn = samhandlere.flatMap { it.samh_praksis }
-                .filter { praksis -> praksis.samh_praksis_status_kode == "inaktiv" }
-                .filter { !it.navn.isNullOrEmpty() }
+                .filter { samhandlerPraksis -> samhandlerPraksis.samh_praksis_status_kode == "inaktiv" }
+                .filter { samhandlerPraksis -> !samhandlerPraksis.navn.isNullOrEmpty() }
     return if (!inaktiveSamhandlereMedNavn.isNullOrEmpty()) {
         log.info("Tester samhandler matching")
         inaktiveSamhandlereMedNavn
