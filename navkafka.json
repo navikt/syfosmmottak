@@ -23,7 +23,10 @@
         {"member":"k157140", "role":"MANAGER"},
         {"member":"g153850", "role":"MANAGER"}
       ],
-      "numPartitions": 3
+      "numPartitions": 3,
+      "configEntries": {
+        "retention.ms": "-1"
+      }
     },
     {
       "topicName": "privat-syfo-sm2013-manuellBehandling",
@@ -45,7 +48,10 @@
         {"member":"k157140", "role":"MANAGER"},
         {"member":"g153850", "role":"MANAGER"}
       ],
-      "numPartitions": 3
+      "numPartitions": 3,
+      "configEntries": {
+        "retention.ms": "-1"
+      }
     },
     {
       "topicName": "privat-syfo-sm2013-avvistBehandling",
@@ -64,7 +70,10 @@
         {"member":"k157140", "role":"MANAGER"},
         {"member":"g153850", "role":"MANAGER"}
       ],
-      "numPartitions": 3
+      "numPartitions": 3,
+      "configEntries": {
+        "retention.ms": "-1"
+      }
     },
     {
       "topicName": "privat-syfo-sm2013-behandlingsUtfall",
@@ -81,7 +90,10 @@
         {"member":"k157140", "role":"MANAGER"},
         {"member":"g153850", "role":"MANAGER"}
       ],
-      "numPartitions": 3
+      "numPartitions": 3,
+      "configEntries": {
+        "retention.ms": "-1"
+      }
     },
     {
       "topicName": "privat-syfo-sm2013-apprec-v1",
@@ -110,7 +122,10 @@
         {"member":"k157140", "role":"MANAGER"},
         {"member":"g153850", "role":"MANAGER"}
       ],
-      "numPartitions": 3
+      "numPartitions": 3,
+      "configEntries": {
+        "retention.ms": "-1"
+      }
     }
   ]
 }
