@@ -55,5 +55,14 @@ object KuhrSarClientSpek : Spek({
                     ?: fail("Unable to find samhandler praksis")
             match.samhandlerPraksis.samh_praksis_id shouldEqual "1000456788"
         }
+
+        it("Finner en samhandler når det bare er inaktivte samhandlere") {
+            val samhandlerMedNavn: List<Samhandler> = objectMapper.readValue(KuhrSarClientSpek::class.java.getResourceAsStream("/kuhr_sahr_response_inaktive.json").readBytes().toString(Charsets.UTF_8))
+
+            val match = testSamhandlerMatching(samhandlerMedNavn, "Testlegesenteret")
+
+            match?.samhandlerPraksis?.navn shouldEqual "Testlegesenteret - org nr"
+        }
+
     }
 })
