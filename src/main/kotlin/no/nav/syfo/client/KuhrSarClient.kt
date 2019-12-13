@@ -141,6 +141,13 @@ fun findBestSamhandlerPraksis(
             return SamhandlerPraksisMatch(samhandlerFALEOrFALO, 999.0)
         }
     } else if (aktiveSamhandlere.isNullOrEmpty()) {
+        // Start test block
+        val testSamhandlerMatch = testSamhandlerMatching(samhandlere, orgName)
+        if (testSamhandlerMatch != null) {
+            log.info("Beste match ble: samhandlerPraksis: ${testSamhandlerMatch.samhandlerPraksis} " +
+                    "med prosent match:${testSamhandlerMatch.percentageMatch} ")
+        }
+        // End test block
         return null
     }
 
@@ -148,4 +155,20 @@ fun findBestSamhandlerPraksis(
             .map { samhandlerPraksis ->
                 SamhandlerPraksisMatch(samhandlerPraksis, calculatePercentageStringMatch(samhandlerPraksis.navn, orgName) * 100)
             }.maxBy { it.percentageMatch }
+}
+
+// TODO only check if we should implement this rule or not
+fun testSamhandlerMatching(samhandlere: List<Samhandler>, orgName: String): SamhandlerPraksisMatch? {
+        val inaktiveSamhandlereMedNavn = samhandlere.flatMap { it.samh_praksis }
+                .filter { samhandlerPraksis -> samhandlerPraksis.samh_praksis_status_kode == "inaktiv" }
+                .filter { samhandlerPraksis -> !samhandlerPraksis.navn.isNullOrEmpty() }
+    return if (!inaktiveSamhandlereMedNavn.isNullOrEmpty()) {
+        log.info("Tester samhandler matching")
+        inaktiveSamhandlereMedNavn
+                .map { samhandlerPraksis ->
+                    SamhandlerPraksisMatch(samhandlerPraksis, calculatePercentageStringMatch(samhandlerPraksis.navn, orgName) * 100)
+                }.maxBy { it.percentageMatch }
+    } else {
+        null
+    }
 }
