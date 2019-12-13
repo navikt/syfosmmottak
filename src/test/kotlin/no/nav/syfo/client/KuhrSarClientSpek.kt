@@ -63,6 +63,5 @@ object KuhrSarClientSpek : Spek({
 
             match?.samhandlerPraksis?.navn shouldEqual "Testlegesenteret - org nr"
         }
-
     }
 })

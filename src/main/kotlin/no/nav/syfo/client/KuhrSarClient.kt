@@ -145,7 +145,7 @@ fun findBestSamhandlerPraksis(
         val testSamhandlerMatch = testSamhandlerMatching(samhandlere, orgName)
         if (testSamhandlerMatch != null) {
             log.info("Beste match ble: samhandlerPraksis: ${testSamhandlerMatch.samhandlerPraksis} " +
-                    "med prosent match:${testSamhandlerMatch.percentageMatch} ")
+                    " med prosent match:${testSamhandlerMatch.percentageMatch}, basert på sykmelding organisjons navn: $orgName")
         }
         // End test block
         return null
@@ -166,7 +166,7 @@ fun testSamhandlerMatching(samhandlere: List<Samhandler>, orgName: String): Samh
         log.info("Tester samhandler matching")
         inaktiveSamhandlereMedNavn
                 .map { samhandlerPraksis ->
-                    SamhandlerPraksisMatch(samhandlerPraksis, calculatePercentageStringMatch(samhandlerPraksis.navn, orgName) * 100)
+                    SamhandlerPraksisMatch(samhandlerPraksis, calculatePercentageStringMatch(samhandlerPraksis.navn?.toLowerCase(), orgName.toLowerCase()) * 100)
                 }.maxBy { it.percentageMatch }
     } else {
         null
