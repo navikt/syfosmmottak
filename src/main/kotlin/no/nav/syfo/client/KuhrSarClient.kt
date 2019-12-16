@@ -9,6 +9,7 @@ import io.ktor.util.KtorExperimentalAPI
 import java.util.Date
 import kotlin.math.max
 import net.logstash.logback.argument.StructuredArguments
+import net.logstash.logback.argument.StructuredArguments.fields
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.syfo.SamhandlerPraksisType
 import no.nav.syfo.helpers.retry
@@ -44,6 +45,7 @@ data class Samhandler(
 )
 
 data class SamhandlerPraksis(
+    val org_id: String?,
     val refusjon_type_kode: String,
     val laerer: String?,
     val lege_i_spesialisering: String?,
@@ -144,8 +146,14 @@ fun findBestSamhandlerPraksis(
         // Start test block
         val testSamhandlerMatch = testSamhandlerMatching(samhandlere, orgName)
         if (testSamhandlerMatch != null) {
-            log.info("Beste match ble: samhandlerPraksis: ${testSamhandlerMatch.samhandlerPraksis} " +
-                    " med prosent match:${testSamhandlerMatch.percentageMatch}, basert på sykmelding organisjons navn: $orgName")
+            log.info("Beste match ble: samhandler praksis: " +
+                    "Orgnumer: ${testSamhandlerMatch.samhandlerPraksis.org_id} " +
+                    "Navn: ${testSamhandlerMatch.samhandlerPraksis.navn} " +
+                    "Tssid: ${testSamhandlerMatch.samhandlerPraksis.tss_ident} " +
+                    "Adresselinje1: ${testSamhandlerMatch.samhandlerPraksis.arbeids_adresse_linje_1} " +
+                    "Samhandler praksis type: ${testSamhandlerMatch.samhandlerPraksis.samh_praksis_type_kode} " +
+                    "Prosent match:${testSamhandlerMatch.percentageMatch}, basert på sykmelding organisjons navn: $orgName " +
+                    "{}", fields(loggingMeta))
         }
         // End test block
         return null
