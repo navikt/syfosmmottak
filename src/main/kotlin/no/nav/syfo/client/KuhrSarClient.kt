@@ -152,7 +152,7 @@ fun findBestSamhandlerPraksis(
                     "Tssid: ${testSamhandlerMatch.samhandlerPraksis.tss_ident} " +
                     "Adresselinje1: ${testSamhandlerMatch.samhandlerPraksis.arbeids_adresse_linje_1} " +
                     "Samhandler praksis type: ${testSamhandlerMatch.samhandlerPraksis.samh_praksis_type_kode} " +
-                    "Prosent match:${testSamhandlerMatch.percentageMatch}, basert på sykmelding organisjons navn: $orgName " +
+                    "Prosent match:${testSamhandlerMatch.percentageMatch} %, basert på sykmelding organisjons navn: $orgName " +
                     "{}", fields(loggingMeta))
         }
         // End test block
