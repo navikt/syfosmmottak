@@ -59,7 +59,7 @@ object KuhrSarClientSpek : Spek({
         it("Finner en samhandler når det bare er inaktivte samhandlere") {
             val samhandlerMedNavn: List<Samhandler> = objectMapper.readValue(KuhrSarClientSpek::class.java.getResourceAsStream("/kuhr_sahr_response_inaktive.json").readBytes().toString(Charsets.UTF_8))
 
-            val match = testSamhandlerMatching(samhandlerMedNavn, "Testlegesenteret")
+            val match = samhandlerMatchingPaaOrganisjonsNavn(samhandlerMedNavn, "Testlegesenteret")
 
             match?.samhandlerPraksis?.navn shouldEqual "Testlegesenteret - org nr"
         }

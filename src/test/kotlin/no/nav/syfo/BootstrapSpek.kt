@@ -8,7 +8,6 @@ import no.nav.syfo.model.Syfo
 import no.nav.syfo.model.Tilleggsdata
 import no.nav.syfo.util.extractHelseOpplysningerArbeidsuforhet
 import no.nav.syfo.util.fellesformatUnmarshaller
-import no.nav.syfo.util.fellesformatUnmarshaller
 import no.nav.syfo.util.xmlObjectWriter
 import no.nav.syfo.utils.getFileAsString
 import org.amshove.kluent.shouldEqual

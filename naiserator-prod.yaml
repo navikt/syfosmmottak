@@ -4,11 +4,11 @@ metadata:
   name: syfosmmottak
   namespace: default
   labels:
-    team: {{team}}
+    team: teamsykefravr
 spec:
-  image: "docker.pkg.github.com/navikt/syfosmmottak:{{tag}}"
+  image: {{ image }}
   replicas:
-    min: 2
+    min: 1
     max: 4
     cpuThresholdPercentage: 90
   port: 8080
@@ -64,5 +64,3 @@ spec:
       value: QA.P414.IU03_UTSENDING
     - name: MQ_INPUT_BOQ_QUEUE_NAME
       value: P_SYFOSMMOTTAK.INPUT_BOQ
-    - name: APPLICATION_THREADS
-      value: '1'
