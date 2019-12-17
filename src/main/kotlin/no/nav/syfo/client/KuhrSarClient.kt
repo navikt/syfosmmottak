@@ -177,7 +177,7 @@ fun filtererBortSamhanlderPraksiserPaaProsentMatch(
     orgName: String,
     loggingMeta: LoggingMeta
 ): SamhandlerPraksisMatch? {
-    if (samhandlerPraksis != null && samhandlerPraksis.percentageMatch * 100 >= prosentMatch) {
+    return if (samhandlerPraksis != null && samhandlerPraksis.percentageMatch >= prosentMatch) {
         log.info("Beste match ble samhandler praksis: " +
                 "Orgnumer: ${samhandlerPraksis.samhandlerPraksis.org_id} " +
                 "Navn: ${samhandlerPraksis.samhandlerPraksis.navn} " +
@@ -186,8 +186,8 @@ fun filtererBortSamhanlderPraksiserPaaProsentMatch(
                 "Samhandler praksis type: ${samhandlerPraksis.samhandlerPraksis.samh_praksis_type_kode} " +
                 "Prosent match:${samhandlerPraksis.percentageMatch} %, basert på sykmeldingens organisjons navn: $orgName " +
                 "{}", fields(loggingMeta))
-        return samhandlerPraksis
+        samhandlerPraksis
     } else {
-        return null
+        null
     }
 }
