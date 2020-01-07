@@ -78,20 +78,7 @@ suspend fun handleStatusMANUALPROCESSING(
             ?: NAV_OPPFOLGING_UTLAND_KONTOR_NR
 
     // TODO snakke med veden hvilke nav kontor skal først få testete ut syfosmmanuell
-    // behandlendeEnhet == NAV_OPPFOLGING_UTLAND_KONTOR_NR
-    if (true) {
-        val apprec = fellesformat.toApprec(
-                ediLoggId,
-                msgId,
-                msgHead,
-                ApprecStatus.OK,
-                null,
-                msgHead.msgInfo.receiver.organisation,
-                msgHead.msgInfo.sender.organisation
-        )
-        sendManuellTask(receivedSykmelding, validationResult, apprec, syfoSmManuellTopic, kafkaproducerManuellOppgave, behandlendeEnhet)
-    } else {
-
+    if (validationResult.ruleHits.find { it.ruleName == "PASIENTEN_HAR_KODE_6" } != null) {
         opprettOppgave(kafkaManuelTaskProducer, receivedSykmelding, validationResult, behandlendeEnhet, loggingMeta)
 
         notifySyfoService(session = session, receiptProducer = syfoserviceProducer, ediLoggId = ediLoggId,
@@ -114,6 +101,17 @@ suspend fun handleStatusMANUALPROCESSING(
         )
         sendReceipt(apprec, sm2013ApprecTopic, kafkaproducerApprec)
         log.info("Apprec receipt sent to kafka topic {}, {}", sm2013ApprecTopic, StructuredArguments.fields(loggingMeta))
+    } else {
+        val apprec = fellesformat.toApprec(
+                ediLoggId,
+                msgId,
+                msgHead,
+                ApprecStatus.OK,
+                null,
+                msgHead.msgInfo.receiver.organisation,
+                msgHead.msgInfo.sender.organisation
+        )
+        sendManuellTask(receivedSykmelding, validationResult, apprec, syfoSmManuellTopic, kafkaproducerManuellOppgave, behandlendeEnhet)
     }
 }
 
