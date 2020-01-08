@@ -72,9 +72,9 @@ fun handleDuplicateSM2013Content(
 
     val apprec = fellesformatToAppprec(
             fellesformat, "Sykmeldingen kan ikke rettes, det må skrives en ny." +
-            "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
+            "Pasienten har ikke fått beskjed. Sykmeldingen ble avvist grunnet følgende:" +
             "Denne sykmeldingen er identisk med ein sykmelding som er mottatt tidligere, og er derfor ein duplikat." +
-            "og skal ikke sendes på nytt. Dersom dette ikke stemmer, kontakt din EPJ-leverandør", ediLoggId, msgId, msgHead)
+            "Og skal ikke sendes på nytt. Dersom dette ikke stemmer, kontakt din EPJ-leverandør", ediLoggId, msgId, msgHead)
 
     sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
     log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
