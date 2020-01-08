@@ -71,7 +71,7 @@ fun handleDuplicateSM2013Content(
             keyValue("originalEdiLoggId", redisSha256String), fields(loggingMeta))
 
     val apprec = fellesformatToAppprec(
-            fellesformat, "Sykmeldingen kan ikke rettes, det må skrives en ny." +
+            fellesformat, "Sykmeldingen kan ikke rettes" +
             "Pasienten har ikke fått beskjed. Sykmeldingen ble avvist grunnet følgende:" +
             "Denne sykmeldingen er identisk med ein sykmelding som er mottatt tidligere, og er derfor ein duplikat." +
             "Og skal ikke sendes på nytt. Dersom dette ikke stemmer, kontakt din EPJ-leverandør", ediLoggId, msgId, msgHead)
