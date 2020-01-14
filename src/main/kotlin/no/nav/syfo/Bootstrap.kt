@@ -317,7 +317,9 @@ suspend fun blockingApplicationLogic(
                 } else {
                     when (samhandlerPraksis) {
                         null -> log.info("SamhandlerPraksis is Not found, {}", fields(loggingMeta))
-                        else -> if (!samhandlerParksisisLegevakt(samhandlerPraksis)) {
+                        else -> if (!samhandlerParksisisLegevakt(samhandlerPraksis) &&
+                                !receiverBlock.partnerReferanse.isNullOrEmpty() &&
+                                receiverBlock.partnerReferanse.isNotBlank()) {
                             startSubscription(subscriptionEmottak, samhandlerPraksis, msgHead, receiverBlock, loggingMeta)
                         } else {
                             log.info("SamhandlerPraksis is Legevakt, subscription_emottak is not created, {}", fields(loggingMeta))
