@@ -322,7 +322,7 @@ suspend fun blockingApplicationLogic(
                                 receiverBlock.partnerReferanse.isNotBlank()) {
                             startSubscription(subscriptionEmottak, samhandlerPraksis, msgHead, receiverBlock, loggingMeta)
                         } else {
-                            log.info("SamhandlerPraksis is Legevakt, subscription_emottak is not created, {}", fields(loggingMeta))
+                            log.info("SamhandlerPraksis is Legevakt or partnerReferanse is empty or blank, subscription_emottak is not created, {}", fields(loggingMeta))
                         }
                     }
                 }
