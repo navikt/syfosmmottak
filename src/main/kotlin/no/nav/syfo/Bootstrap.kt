@@ -45,6 +45,7 @@ import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.client.findBestSamhandlerPraksis
 import no.nav.syfo.handlestatus.handleAktivitetOrPeriodeIsMissing
+import no.nav.syfo.handlestatus.handleAnnenFraversArsakkodeVIsmissing
 import no.nav.syfo.handlestatus.handleArbeidsplassenArsakskodeIsmissing
 import no.nav.syfo.handlestatus.handleBiDiagnoserDiagnosekodeBeskrivelseMissing
 import no.nav.syfo.handlestatus.handleBiDiagnoserDiagnosekodeIsMissing
@@ -422,6 +423,12 @@ suspend fun blockingApplicationLogic(
                         continue@loop
                     }
 
+                    if (annenFraversArsakkodeVIsmissing(healthInformation)) {
+                        handleAnnenFraversArsakkodeVIsmissing(loggingMeta, fellesformat,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
+                        continue@loop
+                    }
+
                     val sykmelding = healthInformation.toSykmelding(
                             sykmeldingId = UUID.randomUUID().toString(),
                             pasientAktoerId = patientIdents.identer!!.first().ident,
@@ -589,4 +596,12 @@ fun erTestFnr(fnr: String): Boolean {
             "14019800513", "05073500186", "12057900499", "24048600332", "17108300566", "01017112364", "11064700342",
             "29019900248", "25047039315")
     return testFnr.contains(fnr)
+}
+
+fun annenFraversArsakkodeVIsmissing(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean {
+    return if (healthInformation.medisinskVurdering == null)
+        false
+    else if (healthInformation.medisinskVurdering.annenFraversArsak != null && healthInformation.medisinskVurdering.annenFraversArsak.arsakskode == null)
+        true
+    else healthInformation.medisinskVurdering.annenFraversArsak.arsakskode.any { it.v.isNullOrEmpty() }
 }

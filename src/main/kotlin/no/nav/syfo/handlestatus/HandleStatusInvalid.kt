@@ -401,6 +401,30 @@ fun handleTestFnrInProd(
     updateRedis(jedis, ediLoggId, sha256String)
 }
 
+fun handleAnnenFraversArsakkodeVIsmissing(
+    loggingMeta: LoggingMeta,
+    fellesformat: XMLEIFellesformat,
+    ediLoggId: String,
+    msgId: String,
+    msgHead: XMLMsgHead,
+    env: Environment,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    jedis: Jedis,
+    sha256String: String
+) {
+    log.warn("AnnenFravers Arsakskode V mangler {}", fields(loggingMeta))
+
+    val apprec = fellesformatToAppprec(fellesformat, "Sykmeldingen kan ikke rettes, det må skrives en ny." +
+            "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
+            "AnnenFravers Arsakskode V mangler i sykmeldingen. Kontakt din EPJ-leverandør",
+            ediLoggId, msgId, msgHead)
+
+    sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
+    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
+    INVALID_MESSAGE_NO_NOTICE.inc()
+    updateRedis(jedis, ediLoggId, sha256String)
+}
+
 fun fellesformatToAppprec(
     fellesformat: XMLEIFellesformat,
     tekstTilSykmelder: String,
