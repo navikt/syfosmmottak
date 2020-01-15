@@ -601,7 +601,9 @@ fun erTestFnr(fnr: String): Boolean {
 fun annenFraversArsakkodeVIsmissing(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean {
     return if (healthInformation.medisinskVurdering == null)
         false
-    else if (healthInformation.medisinskVurdering.annenFraversArsak != null && healthInformation.medisinskVurdering.annenFraversArsak.arsakskode == null)
+    else if (healthInformation.medisinskVurdering.annenFraversArsak == null)
+        false
+    else if (healthInformation.medisinskVurdering.annenFraversArsak.arsakskode == null)
         true
     else healthInformation.medisinskVurdering.annenFraversArsak.arsakskode.any { it.v.isNullOrEmpty() }
 }
