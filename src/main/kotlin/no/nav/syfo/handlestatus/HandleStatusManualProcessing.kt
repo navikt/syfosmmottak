@@ -78,7 +78,7 @@ suspend fun handleStatusMANUALPROCESSING(
             ?: NAV_OPPFOLGING_UTLAND_KONTOR_NR
 
     // TODO snakke med veden hvilke nav kontor skal først få testete ut syfosmmanuell
-    if (validationResult.ruleHits.find { it.ruleName == "PASIENTEN_HAR_KODE_6" } != null) {
+    if (validationResult.ruleHits.find { it.ruleName == "PASIENTEN_HAR_KODE_6" || it.ruleName == "BEHANDLER_KI_FT_MT_BENYTTER_ANNEN_DIAGNOSEKODE_ENN_L" } != null) {
         opprettOppgave(kafkaManuelTaskProducer, receivedSykmelding, validationResult, behandlendeEnhet, loggingMeta)
 
         notifySyfoService(session = session, receiptProducer = syfoserviceProducer, ediLoggId = ediLoggId,
