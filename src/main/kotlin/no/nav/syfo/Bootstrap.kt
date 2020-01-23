@@ -315,6 +315,8 @@ suspend fun blockingApplicationLogic(
                         loggingMeta)
                 val samhandlerPraksis = samhandlerPraksisMatch?.samhandlerPraksis
 
+                log.info("Ferdig med kuhrSarClient kallet, {}", fields(loggingMeta))
+
                 if (samhandlerPraksisMatch?.percentageMatch != null && samhandlerPraksisMatch.percentageMatch == 999.0) {
                     log.info("SamhandlerPraksis is found, subscription_emottak is not created, {}", fields(loggingMeta))
                 } else {
@@ -332,6 +334,8 @@ suspend fun blockingApplicationLogic(
 
                 val redisSha256String = jedis.get(sha256String)
                 val redisEdiloggid = jedis.get(ediLoggId)
+
+                log.info("Ferdig med redisbiten {}", fields(loggingMeta))
 
                 if (redisSha256String != null) {
                     handleDuplicateSM2013Content(redisSha256String, loggingMeta, fellesformat,
