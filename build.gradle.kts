@@ -7,7 +7,7 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 val artemisVersion = "2.6.4"
-val coroutinesVersion = "1.0.1"
+val coroutinesVersion = "1.3.3"
 val fellesformatVersion = "2019.07.30-12-26-5c924ef4f04022bbb850aaf299eb8e4464c1ca6a"
 val ibmMqVersion = "9.1.0.0"
 val javaxActivationVersion = "1.1.1"
@@ -20,11 +20,11 @@ val kafkaEmbeddedVersion = "2.2.3"
 val kithHodemeldingVersion = "2019.07.30-12-26-5c924ef4f04022bbb850aaf299eb8e4464c1ca6a"
 val kithApprecVersion = "2019.07.30-04-23-2a0d1388209441ec05d2e92a821eed4f796a3ae2"
 val kluentVersion = "1.39"
-val ktorVersion = "1.2.6"
+val ktorVersion = "1.3.0"
 val logbackVersion = "1.2.3"
 val logstashEncoderVersion = "5.1"
 val prometheusVersion = "0.6.0"
-val smCommonVersion = "1.7bf5e6f"
+val smCommonVersion = "1.84cb553"
 val spekVersion = "2.0.8"
 val sykmeldingVersion = "2019.07.29-02-53-86b22e73f7843e422ee500b486dac387a582f2d1"
 val cxfVersion = "3.2.7"
@@ -44,7 +44,7 @@ plugins {
     id("no.nils.wsdl2java") version "0.10"
     kotlin("jvm") version "1.3.61"
     id("org.jmailen.kotlinter") version "2.2.0"
-    id("com.diffplug.gradle.spotless") version "3.23.1"
+    id("com.diffplug.gradle.spotless") version "3.24.0"
     id("com.github.johnrengelman.shadow") version "5.2.0"
 }
 
@@ -173,7 +173,7 @@ tasks {
     withType<KotlinCompile> {
         dependsOn("wsdl2java")
 
-        kotlinOptions.jvmTarget = "1.8"
+        kotlinOptions.jvmTarget = "12"
     }
 
     withType<Wsdl2JavaTask> {
