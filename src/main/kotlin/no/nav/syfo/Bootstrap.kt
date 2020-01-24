@@ -339,8 +339,6 @@ suspend fun blockingApplicationLogic(
                 val redisSha256String = jedis.get(sha256String)
                 val redisEdiloggid = jedis.get(ediLoggId)
 
-                log.info("Ferdig med redisbiten {}", fields(loggingMeta))
-
                 if (redisSha256String != null) {
                     handleDuplicateSM2013Content(redisSha256String, loggingMeta, fellesformat,
                             ediLoggId, msgId, msgHead, env, kafkaproducerApprec)
