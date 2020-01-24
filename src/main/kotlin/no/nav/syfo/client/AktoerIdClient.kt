@@ -25,7 +25,6 @@ class AktoerIdClient(
 ) {
     suspend fun getAktoerIds(
         personNumbers: List<String>,
-        trackingId: String,
         username: String,
         loggingMeta: LoggingMeta
     ): Map<String, IdentInfoResult> =
@@ -36,7 +35,7 @@ class AktoerIdClient(
                     headers {
                         append("Authorization", "Bearer ${oidcToken.access_token}")
                         append("Nav-Consumer-Id", username)
-                        append("Nav-Call-Id", trackingId)
+                        append("Nav-Call-Id", loggingMeta.msgId)
                         append("Nav-Personidenter", personNumbers.joinToString(","))
                     }
                     parameter("gjeldende", "true")

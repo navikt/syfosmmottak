@@ -309,22 +309,17 @@ suspend fun blockingApplicationLogic(
                 log.info("Received message, {}", fields(loggingMeta))
 
                 val aktoerIds = aktoerIdClient.getAktoerIds(
-                        listOf(personNumberDoctor,
-                                personNumberPatient),
-                        msgId, credentials.serviceuserUsername, loggingMeta)
-
-                log.info("Ferdig med aktoerIdClient.getAktoerIds, {}", fields(loggingMeta))
+                        listOf(personNumberDoctor, personNumberPatient),
+                        credentials.serviceuserUsername,
+                        loggingMeta)
 
                 val samhandlerInfo = kuhrSarClient.getSamhandler(personNumberDoctor, loggingMeta)
-                log.info("Ferdig med kuhrSarClient.getSamhandler, {}", fields(loggingMeta))
                 val samhandlerPraksisMatch = findBestSamhandlerPraksis(
                         samhandlerInfo,
                         legekontorOrgName,
                         legekontorHerId,
                         loggingMeta)
                 val samhandlerPraksis = samhandlerPraksisMatch?.samhandlerPraksis
-
-                log.info("Ferdig med kuhrSarClient kallet, {}", fields(loggingMeta))
 
                 if (samhandlerPraksisMatch?.percentageMatch != null && samhandlerPraksisMatch.percentageMatch == 999.0) {
                     log.info("SamhandlerPraksis is found, subscription_emottak is not created, {}", fields(loggingMeta))
