@@ -67,7 +67,7 @@ repositories {
     mavenCentral()
     jcenter()
     maven(url= "https://dl.bintray.com/spekframework/spek-dev")
-    maven(url= "http://packages.confluent.io/maven/")
+    maven(url= "https://packages.confluent.io/maven/")
     maven(url= "https://kotlin.bintray.com/kotlinx")
     maven {
         url = uri("https://maven.pkg.github.com/navikt/syfosm-common")

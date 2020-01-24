@@ -8,7 +8,9 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.confluent.kafka.serializers.KafkaAvroSerializer
 import io.ktor.client.HttpClient
+import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.apache.Apache
+import io.ktor.client.engine.apache.ApacheEngineConfig
 import io.ktor.client.features.auth.Auth
 import io.ktor.client.features.auth.providers.basic
 import io.ktor.client.features.json.JacksonSerializer
@@ -137,14 +139,19 @@ fun main() {
     val manuelOppgaveproducerProperties = kafkaBaseConfig.toProducerConfig(env.applicationName, valueSerializer = KafkaAvroSerializer::class)
     val manuelOppgavekafkaproducer = KafkaProducer<String, ProduceTask>(manuelOppgaveproducerProperties)
 
-    val simpleHttpClient = HttpClient(Apache) {
+    val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
         install(JsonFeature) {
             serializer = JacksonSerializer {
                 registerKotlinModule()
+                registerModule(JavaTimeModule())
+                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
                 configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             }
         }
+        expectSuccess = false
     }
+
+    val simpleHttpClient = HttpClient(Apache, config)
 
     val httpClientMedBasicAuth = HttpClient(Apache) {
         install(Auth) {
@@ -162,10 +169,11 @@ fun main() {
                 configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             }
         }
+        expectSuccess = false
     }
     val syfoSykemeldingRuleClient = SyfoSykemeldingRuleClient(env.syfosmreglerApiUrl, httpClientMedBasicAuth)
 
-    val sarClient = SarClient(env.kuhrSarApiUrl, httpClientMedBasicAuth)
+    val sarClient = SarClient(env.kuhrSarApiUrl, simpleHttpClient)
 
     val oidcClient = StsOidcClient(credentials.serviceuserUsername, credentials.serviceuserPassword)
     val aktoerIdClient = AktoerIdClient(env.aktoerregisterV1Url, oidcClient, simpleHttpClient)
@@ -305,8 +313,7 @@ suspend fun blockingApplicationLogic(
                                 personNumberPatient),
                         msgId, credentials.serviceuserUsername)
 
-
-                val samhandlerInfo = kuhrSarClient.getSamhandler(personNumberDoctor)
+                val samhandlerInfo = kuhrSarClient.getSamhandler(personNumberDoctor, loggingMeta)
                 log.info("Ferdig med kuhrSarClient.getSamhandler, {}", fields(loggingMeta))
                 val samhandlerPraksisMatch = findBestSamhandlerPraksis(
                         samhandlerInfo,
@@ -605,11 +612,10 @@ fun erTestFnr(fnr: String): Boolean {
 }
 
 fun annenFraversArsakkodeVIsmissing(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean {
-    return if (healthInformation.medisinskVurdering == null)
-        false
-    else if (healthInformation.medisinskVurdering.annenFraversArsak == null)
-        false
-    else if (healthInformation.medisinskVurdering.annenFraversArsak.arsakskode == null)
-        true
-    else healthInformation.medisinskVurdering.annenFraversArsak.arsakskode.any { it.v.isNullOrEmpty() }
+    return when {
+        healthInformation.medisinskVurdering == null -> false
+        healthInformation.medisinskVurdering.annenFraversArsak == null -> false
+        healthInformation.medisinskVurdering.annenFraversArsak.arsakskode == null -> true
+        else -> healthInformation.medisinskVurdering.annenFraversArsak.arsakskode.any { it.v.isNullOrEmpty() }
+    }
 }
