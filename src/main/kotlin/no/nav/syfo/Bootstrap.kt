@@ -313,7 +313,7 @@ suspend fun blockingApplicationLogic(
                                 personNumberPatient),
                         msgId, credentials.serviceuserUsername)
 
-                val samhandlerInfo = kuhrSarClient.getSamhandler(personNumberDoctor)
+                val samhandlerInfo = kuhrSarClient.getSamhandler(personNumberDoctor, loggingMeta)
                 log.info("Ferdig med kuhrSarClient.getSamhandler, {}", fields(loggingMeta))
                 val samhandlerPraksisMatch = findBestSamhandlerPraksis(
                         samhandlerInfo,
