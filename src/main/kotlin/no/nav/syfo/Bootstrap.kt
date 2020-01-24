@@ -311,7 +311,7 @@ suspend fun blockingApplicationLogic(
                 val aktoerIds = aktoerIdClient.getAktoerIds(
                         listOf(personNumberDoctor,
                                 personNumberPatient),
-                        msgId, credentials.serviceuserUsername)
+                        msgId, credentials.serviceuserUsername, loggingMeta)
 
                 log.info("Ferdig med aktoerIdClient.getAktoerIds, {}", fields(loggingMeta))
 
