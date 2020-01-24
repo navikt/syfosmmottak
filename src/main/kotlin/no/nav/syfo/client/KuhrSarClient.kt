@@ -37,7 +37,7 @@ class SarClient(
                 throw IOException("KuhrSar svarte med feilmelding for msgid ${loggingMeta.msgId}")
             }
             else -> {
-                log.info("Http response status er {}", httpResponse.status)
+                log.info("KuhrSar gav ein Http responsen kode er {}, for {}", httpResponse.status, fields(loggingMeta))
                 log.info("Henter samhandlerinformasjon for {}", fields(loggingMeta))
                 httpResponse.call.response.receive<List<Samhandler>>()
             }

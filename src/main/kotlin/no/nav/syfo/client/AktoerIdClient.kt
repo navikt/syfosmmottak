@@ -48,7 +48,7 @@ class AktoerIdClient(
                         throw IOException("AktorRegisteret svarte med feilmelding for msgid ${loggingMeta.msgId}")
                     }
                     else -> {
-                        log.info("Http responsen er {}", httpResponse.status)
+                        log.info("AktorRegisteret gav ein Http responsen kode er {}, for {}", httpResponse.status, fields(loggingMeta))
                         log.info("Henter pasient og avsenderSamhandler for {}", fields(loggingMeta))
                         httpResponse.call.response.receive<Map<String, IdentInfoResult>>()
                     }
