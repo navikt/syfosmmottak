@@ -1,14 +1,21 @@
 package no.nav.syfo.client
 
 import io.ktor.client.HttpClient
+import io.ktor.client.call.receive
 import io.ktor.client.request.accept
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.client.request.parameter
+import io.ktor.client.statement.HttpStatement
 import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.util.KtorExperimentalAPI
+import java.io.IOException
+import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.helpers.retry
+import no.nav.syfo.log
 import no.nav.syfo.model.IdentInfoResult
+import no.nav.syfo.util.LoggingMeta
 
 @KtorExperimentalAPI
 class AktoerIdClient(
@@ -16,9 +23,14 @@ class AktoerIdClient(
     private val stsClient: StsOidcClient,
     private val httpClient: HttpClient
 ) {
-    suspend fun getAktoerIds(personNumbers: List<String>, trackingId: String, username: String): Map<String, IdentInfoResult> =
+    suspend fun getAktoerIds(
+        personNumbers: List<String>,
+        trackingId: String,
+        username: String,
+        loggingMeta: LoggingMeta
+    ): Map<String, IdentInfoResult> =
             retry("get_aktoerids") {
-                httpClient.get<Map<String, IdentInfoResult>>("$endpointUrl/identer") {
+                val httpResponse = httpClient.get<HttpStatement>("$endpointUrl/identer") {
                     accept(ContentType.Application.Json)
                     val oidcToken = stsClient.oidcToken()
                     headers {
@@ -29,6 +41,18 @@ class AktoerIdClient(
                     }
                     parameter("gjeldende", "true")
                     parameter("identgruppe", "AktoerId")
+                }.execute()
+
+                when (httpResponse.status) {
+                    HttpStatusCode.InternalServerError -> {
+                        log.error("AktorRegisteret svarte med feilmelding for {}", fields(loggingMeta))
+                        throw IOException("AktorRegisteret svarte med feilmelding for msgid ${loggingMeta.msgId}")
+                    }
+                    else -> {
+                        log.info("Http responsen er {}", httpResponse.status)
+                        log.info("Henter pasient og avsenderSamhandler for {}", fields(loggingMeta))
+                        httpResponse.call.response.receive<Map<String, IdentInfoResult>>()
+                    }
                 }
             }
 }
