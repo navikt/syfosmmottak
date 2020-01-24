@@ -34,7 +34,7 @@ class SarClient(
         when (httpResponse.status) {
             HttpStatusCode.InternalServerError -> {
                 log.error("KuhrSar svarte med feilmelding for {}", fields(loggingMeta))
-                throw IOException("KuhrSar svarte med feilmelding for ${loggingMeta.msgId}")
+                throw IOException("KuhrSar svarte med feilmelding for msgid ${loggingMeta.msgId}")
             }
             else -> {
                 log.info("Http responsen er {}", httpResponse.status)
