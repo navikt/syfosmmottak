@@ -5,7 +5,7 @@ import io.ktor.client.call.receive
 import io.ktor.client.request.accept
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
-import io.ktor.client.statement.HttpStatement
+import io.ktor.client.response.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.util.KtorExperimentalAPI
@@ -26,10 +26,10 @@ class SarClient(
     private val httpClient: HttpClient
 ) {
     suspend fun getSamhandler(ident: String, loggingMeta: LoggingMeta): List<Samhandler> = retry("get_samhandler") {
-        val httpResponse = httpClient.get<HttpStatement>("$endpointUrl/rest/sar/samh") {
+        val httpResponse = httpClient.get<HttpResponse>("$endpointUrl/rest/sar/samh") {
             accept(ContentType.Application.Json)
             parameter("ident", ident)
-        }.execute()
+        }
 
         when (httpResponse.status) {
             HttpStatusCode.InternalServerError -> {

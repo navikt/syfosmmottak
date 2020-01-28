@@ -6,7 +6,7 @@ import io.ktor.client.request.accept
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.client.request.parameter
-import io.ktor.client.statement.HttpStatement
+import io.ktor.client.response.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.util.KtorExperimentalAPI
@@ -29,7 +29,7 @@ class AktoerIdClient(
         loggingMeta: LoggingMeta
     ): Map<String, IdentInfoResult> =
             retry("get_aktoerids") {
-                val httpResponse = httpClient.get<HttpStatement>("$endpointUrl/identer") {
+                val httpResponse = httpClient.get<HttpResponse>("$endpointUrl/identer") {
                     accept(ContentType.Application.Json)
                     val oidcToken = stsClient.oidcToken()
                     headers {
@@ -40,7 +40,7 @@ class AktoerIdClient(
                     }
                     parameter("gjeldende", "true")
                     parameter("identgruppe", "AktoerId")
-                }.execute()
+                }
 
                 when (httpResponse.status) {
                     HttpStatusCode.InternalServerError -> {
