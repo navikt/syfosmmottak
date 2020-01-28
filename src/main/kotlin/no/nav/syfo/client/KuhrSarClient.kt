@@ -15,6 +15,7 @@ import kotlin.math.max
 import net.logstash.logback.argument.StructuredArguments.fields
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.syfo.SamhandlerPraksisType
+import no.nav.syfo.helpers.retry
 import no.nav.syfo.log
 import no.nav.syfo.util.LoggingMeta
 import org.apache.commons.text.similarity.LevenshteinDistance
@@ -24,7 +25,7 @@ class SarClient(
     private val endpointUrl: String,
     private val httpClient: HttpClient
 ) {
-    suspend fun getSamhandler(ident: String, loggingMeta: LoggingMeta): List<Samhandler> {
+    suspend fun getSamhandler(ident: String, loggingMeta: LoggingMeta): List<Samhandler> = retry("get_samhandler") {
         val httpResponse = httpClient.get<HttpStatement>("$endpointUrl/rest/sar/samh") {
             accept(ContentType.Application.Json)
             parameter("ident", ident)
@@ -38,7 +39,7 @@ class SarClient(
             else -> {
                 log.info("KuhrSar gav ein Http responsen kode er {}, for {}", httpResponse.status, fields(loggingMeta))
                 log.info("Henter samhandlerinformasjon for {}", fields(loggingMeta))
-                return httpResponse.call.response.receive<List<Samhandler>>()
+                httpResponse.call.response.receive<List<Samhandler>>()
             }
         }
     }
