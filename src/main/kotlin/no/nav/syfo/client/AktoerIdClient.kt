@@ -12,7 +12,6 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.util.KtorExperimentalAPI
 import java.io.IOException
 import net.logstash.logback.argument.StructuredArguments.fields
-import no.nav.syfo.helpers.retry
 import no.nav.syfo.log
 import no.nav.syfo.model.IdentInfoResult
 import no.nav.syfo.util.LoggingMeta
@@ -27,31 +26,30 @@ class AktoerIdClient(
         personNumbers: List<String>,
         username: String,
         loggingMeta: LoggingMeta
-    ): Map<String, IdentInfoResult> =
-            retry("get_aktoerids") {
-                val httpResponse = httpClient.get<HttpStatement>("$endpointUrl/identer") {
-                    accept(ContentType.Application.Json)
-                    val oidcToken = stsClient.oidcToken()
-                    headers {
-                        append("Authorization", "Bearer ${oidcToken.access_token}")
-                        append("Nav-Consumer-Id", username)
-                        append("Nav-Call-Id", loggingMeta.msgId)
-                        append("Nav-Personidenter", personNumbers.joinToString(","))
-                    }
-                    parameter("gjeldende", "true")
-                    parameter("identgruppe", "AktoerId")
-                }.execute()
-
-                when (httpResponse.status) {
-                    HttpStatusCode.InternalServerError -> {
-                        log.error("AktorRegisteret svarte med feilmelding for {}", fields(loggingMeta))
-                        throw IOException("AktorRegisteret svarte med feilmelding for msgid ${loggingMeta.msgId}")
-                    }
-                    else -> {
-                        log.info("AktorRegisteret gav ein Http responsen kode er {}, for {}", httpResponse.status, fields(loggingMeta))
-                        log.info("Henter pasient og avsenderSamhandler for {}", fields(loggingMeta))
-                        httpResponse.call.response.receive<Map<String, IdentInfoResult>>()
-                    }
-                }
+    ): Map<String, IdentInfoResult> {
+        val httpResponse = httpClient.get<HttpStatement>("$endpointUrl/identer") {
+            accept(ContentType.Application.Json)
+            val oidcToken = stsClient.oidcToken()
+            headers {
+                append("Authorization", "Bearer ${oidcToken.access_token}")
+                append("Nav-Consumer-Id", username)
+                append("Nav-Call-Id", loggingMeta.msgId)
+                append("Nav-Personidenter", personNumbers.joinToString(","))
             }
+            parameter("gjeldende", "true")
+            parameter("identgruppe", "AktoerId")
+        }.execute()
+
+        when (httpResponse.status) {
+            HttpStatusCode.InternalServerError -> {
+                log.error("AktorRegisteret svarte med feilmelding for {}", fields(loggingMeta))
+                throw IOException("AktorRegisteret svarte med feilmelding for msgid ${loggingMeta.msgId}")
+            }
+            else -> {
+                log.info("AktorRegisteret gav ein Http responsen kode er {}, for {}", httpResponse.status, fields(loggingMeta))
+                log.info("Henter pasient og avsenderSamhandler for {}", fields(loggingMeta))
+                return httpResponse.call.response.receive<Map<String, IdentInfoResult>>()
+            }
+        }
+    }
 }
