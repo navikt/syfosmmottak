@@ -111,7 +111,7 @@ suspend fun handleStatusMANUALPROCESSING(
                 msgHead.msgInfo.receiver.organisation,
                 msgHead.msgInfo.sender.organisation
         )
-        sendManuellTask(receivedSykmelding, validationResult, apprec, syfoSmManuellTopic, kafkaproducerManuellOppgave, behandlendeEnhet)
+        sendManuellTask(receivedSykmelding, validationResult, apprec, syfoSmManuellTopic, kafkaproducerManuellOppgave)
     }
 }
 
@@ -193,13 +193,11 @@ fun sendManuellTask(
     validationResult: ValidationResult,
     apprec: Apprec,
     sm2013ManeullTopic: String,
-    kafkaproducerApprec: KafkaProducer<String, ManuellOppgave>,
-    behandlendeEnhet: String
+    kafkaproducerApprec: KafkaProducer<String, ManuellOppgave>
 ) {
     val manuellOppgave = ManuellOppgave(
             receivedSykmelding,
             validationResult,
-            apprec,
-            behandlendeEnhet)
+            apprec)
     kafkaproducerApprec.send(ProducerRecord(sm2013ManeullTopic, manuellOppgave))
 }
