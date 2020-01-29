@@ -8,7 +8,9 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.confluent.kafka.serializers.KafkaAvroSerializer
 import io.ktor.client.HttpClient
+import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.apache.Apache
+import io.ktor.client.engine.apache.ApacheEngineConfig
 import io.ktor.client.features.auth.Auth
 import io.ktor.client.features.auth.providers.basic
 import io.ktor.client.features.json.JacksonSerializer
@@ -45,6 +47,7 @@ import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.client.findBestSamhandlerPraksis
 import no.nav.syfo.handlestatus.handleAktivitetOrPeriodeIsMissing
+import no.nav.syfo.handlestatus.handleAnnenFraversArsakkodeVIsmissing
 import no.nav.syfo.handlestatus.handleArbeidsplassenArsakskodeIsmissing
 import no.nav.syfo.handlestatus.handleBiDiagnoserDiagnosekodeBeskrivelseMissing
 import no.nav.syfo.handlestatus.handleBiDiagnoserDiagnosekodeIsMissing
@@ -139,14 +142,19 @@ fun main() {
 
     val kafkaproducerManuellOppgave = KafkaProducer<String, ManuellOppgave>(producerProperties)
 
-    val simpleHttpClient = HttpClient(Apache) {
+    val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
         install(JsonFeature) {
             serializer = JacksonSerializer {
                 registerKotlinModule()
+                registerModule(JavaTimeModule())
+                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
                 configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             }
         }
+        expectSuccess = false
     }
+
+    val simpleHttpClient = HttpClient(Apache, config)
 
     val httpClientMedBasicAuth = HttpClient(Apache) {
         install(Auth) {
@@ -164,10 +172,11 @@ fun main() {
                 configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             }
         }
+        expectSuccess = false
     }
     val syfoSykemeldingRuleClient = SyfoSykemeldingRuleClient(env.syfosmreglerApiUrl, httpClientMedBasicAuth)
 
-    val sarClient = SarClient(env.kuhrSarApiUrl, httpClientMedBasicAuth)
+    val sarClient = SarClient(env.kuhrSarApiUrl, simpleHttpClient)
 
     val oidcClient = StsOidcClient(credentials.serviceuserUsername, credentials.serviceuserPassword)
     val aktoerIdClient = AktoerIdClient(env.aktoerregisterV1Url, oidcClient, simpleHttpClient)
@@ -305,9 +314,9 @@ suspend fun blockingApplicationLogic(
                 log.info("Received message, {}", fields(loggingMeta))
 
                 val aktoerIds = aktoerIdClient.getAktoerIds(
-                        listOf(personNumberDoctor,
-                                personNumberPatient),
-                        msgId, credentials.serviceuserUsername)
+                        listOf(personNumberDoctor, personNumberPatient),
+                        credentials.serviceuserUsername,
+                        loggingMeta)
 
                 val samhandlerInfo = kuhrSarClient.getSamhandler(personNumberDoctor)
                 val samhandlerPraksisMatch = findBestSamhandlerPraksis(
@@ -322,10 +331,12 @@ suspend fun blockingApplicationLogic(
                 } else {
                     when (samhandlerPraksis) {
                         null -> log.info("SamhandlerPraksis is Not found, {}", fields(loggingMeta))
-                        else -> if (!samhandlerParksisisLegevakt(samhandlerPraksis)) {
+                        else -> if (!samhandlerParksisisLegevakt(samhandlerPraksis) &&
+                                !receiverBlock.partnerReferanse.isNullOrEmpty() &&
+                                receiverBlock.partnerReferanse.isNotBlank()) {
                             startSubscription(subscriptionEmottak, samhandlerPraksis, msgHead, receiverBlock, loggingMeta)
                         } else {
-                            log.info("SamhandlerPraksis is Legevakt, subscription_emottak is not created, {}", fields(loggingMeta))
+                            log.info("SamhandlerPraksis is Legevakt or partnerReferanse is empty or blank, subscription_emottak is not created, {}", fields(loggingMeta))
                         }
                     }
                 }
@@ -421,6 +432,12 @@ suspend fun blockingApplicationLogic(
 
                     if (erTestFnr(personNumberPatient) && env.cluster == "prod-fss") {
                         handleTestFnrInProd(loggingMeta, fellesformat,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
+                        continue@loop
+                    }
+
+                    if (annenFraversArsakkodeVIsmissing(healthInformation)) {
+                        handleAnnenFraversArsakkodeVIsmissing(loggingMeta, fellesformat,
                                 ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
                         continue@loop
                     }
@@ -594,4 +611,13 @@ fun erTestFnr(fnr: String): Boolean {
             "14019800513", "05073500186", "12057900499", "24048600332", "17108300566", "01017112364", "11064700342",
             "29019900248", "25047039315")
     return testFnr.contains(fnr)
+}
+
+fun annenFraversArsakkodeVIsmissing(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean {
+    return when {
+        healthInformation.medisinskVurdering == null -> false
+        healthInformation.medisinskVurdering.annenFraversArsak == null -> false
+        healthInformation.medisinskVurdering.annenFraversArsak.arsakskode == null -> true
+        else -> healthInformation.medisinskVurdering.annenFraversArsak.arsakskode.any { it.v.isNullOrEmpty() }
+    }
 }

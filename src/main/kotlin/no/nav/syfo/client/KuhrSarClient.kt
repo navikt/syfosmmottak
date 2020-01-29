@@ -1,9 +1,11 @@
 package no.nav.syfo.client
 
 import io.ktor.client.HttpClient
+import io.ktor.client.call.receive
 import io.ktor.client.request.accept
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
+import io.ktor.client.statement.HttpStatement
 import io.ktor.http.ContentType
 import io.ktor.util.KtorExperimentalAPI
 import java.util.Date
@@ -22,10 +24,10 @@ class SarClient(
     private val httpClient: HttpClient
 ) {
     suspend fun getSamhandler(ident: String): List<Samhandler> = retry("get_samhandler") {
-        httpClient.get<List<Samhandler>>("$endpointUrl/rest/sar/samh") {
+        httpClient.get<HttpStatement>("$endpointUrl/rest/sar/samh") {
             accept(ContentType.Application.Json)
             parameter("ident", ident)
-        }
+        }.receive<List<Samhandler>>()
     }
 }
 
@@ -148,7 +150,7 @@ fun findBestSamhandlerPraksis(
                 70.0,
                 orgName,
                 loggingMeta
-                )
+        )
     }
 
     return aktiveSamhandlereMedNavn
@@ -159,8 +161,8 @@ fun findBestSamhandlerPraksis(
 
 fun samhandlerMatchingPaaOrganisjonsNavn(samhandlere: List<Samhandler>, orgName: String): SamhandlerPraksisMatch? {
     val inaktiveSamhandlereMedNavn = samhandlere.flatMap { it.samh_praksis }
-                .filter { samhandlerPraksis -> samhandlerPraksis.samh_praksis_status_kode == "inaktiv" }
-                .filter { samhandlerPraksis -> !samhandlerPraksis.navn.isNullOrEmpty() }
+            .filter { samhandlerPraksis -> samhandlerPraksis.samh_praksis_status_kode == "inaktiv" }
+            .filter { samhandlerPraksis -> !samhandlerPraksis.navn.isNullOrEmpty() }
     return if (!inaktiveSamhandlereMedNavn.isNullOrEmpty()) {
         inaktiveSamhandlereMedNavn
                 .map { samhandlerPraksis ->

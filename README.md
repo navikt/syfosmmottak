@@ -13,7 +13,7 @@ This project contains just the receving a sykmelding2013 message
 
 #### Requirements
 
-* JDK 11
+* JDK 12
 
 ## Getting started
 ### Getting github-package-registry packages NAV-IT
