@@ -5,11 +5,9 @@ import io.ktor.client.call.receive
 import io.ktor.client.request.accept
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
-import io.ktor.client.response.HttpResponse
+import io.ktor.client.statement.HttpStatement
 import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
 import io.ktor.util.KtorExperimentalAPI
-import java.io.IOException
 import java.util.Date
 import kotlin.math.max
 import net.logstash.logback.argument.StructuredArguments.fields
@@ -25,23 +23,11 @@ class SarClient(
     private val endpointUrl: String,
     private val httpClient: HttpClient
 ) {
-    suspend fun getSamhandler(ident: String, loggingMeta: LoggingMeta): List<Samhandler> = retry("get_samhandler") {
-        val httpResponse = httpClient.get<HttpResponse>("$endpointUrl/rest/sar/samh") {
+    suspend fun getSamhandler(ident: String): List<Samhandler> = retry("get_samhandler") {
+        httpClient.get<HttpStatement>("$endpointUrl/rest/sar/samh") {
             accept(ContentType.Application.Json)
             parameter("ident", ident)
-        }
-
-        when (httpResponse.status) {
-            HttpStatusCode.InternalServerError -> {
-                log.error("KuhrSar svarte med feilmelding for {}", fields(loggingMeta))
-                throw IOException("KuhrSar svarte med feilmelding for msgid ${loggingMeta.msgId}")
-            }
-            else -> {
-                log.info("KuhrSar gav ein Http responsen kode er {}, for {}", httpResponse.status, fields(loggingMeta))
-                log.info("Henter samhandlerinformasjon for {}", fields(loggingMeta))
-                httpResponse.call.response.receive<List<Samhandler>>()
-            }
-        }
+        }.receive<List<Samhandler>>()
     }
 }
 
