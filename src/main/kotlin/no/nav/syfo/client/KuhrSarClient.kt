@@ -5,7 +5,7 @@ import io.ktor.client.call.receive
 import io.ktor.client.request.accept
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
-import io.ktor.client.statement.HttpStatement
+import io.ktor.client.response.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.util.KtorExperimentalAPI
 import java.util.Date
@@ -24,10 +24,10 @@ class SarClient(
     private val httpClient: HttpClient
 ) {
     suspend fun getSamhandler(ident: String): List<Samhandler> = retry("get_samhandler") {
-        httpClient.get<HttpStatement>("$endpointUrl/rest/sar/samh") {
+        httpClient.get<HttpResponse>("$endpointUrl/rest/sar/samh") {
             accept(ContentType.Application.Json)
             parameter("ident", ident)
-        }.receive<List<Samhandler>>()
+        }.call.response.receive<List<Samhandler>>()
     }
 }
 
