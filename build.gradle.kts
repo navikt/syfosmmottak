@@ -30,10 +30,8 @@ val sykmeldingVersion = "2019.07.29-02-53-86b22e73f7843e422ee500b486dac387a582f2
 val cxfVersion = "3.2.7"
 val jaxwsApiVersion = "2.3.1"
 val commonsTextVersion = "1.4"
-val navArbeidsfordelingv1Version = "1.2019.07.11-06.47-b55f47790a9d"
 val syfooppgaveSchemasVersion = "c8be932543e7356a34690ce7979d494c5d8516d8"
 val confluentVersion = "4.1.1"
-val navPersonv3Version = "1.2019.07.11-06.47-b55f47790a9d"
 val javaxAnnotationApiVersion = "1.3.2"
 val jaxwsToolsVersion = "2.3.1"
 val jaxbRuntimeVersion = "2.4.0-b180830.0438"
@@ -114,9 +112,7 @@ dependencies {
     implementation("no.nav.helse.xml:xmlfellesformat:$fellesformatVersion")
     implementation("no.nav.helse.xml:kith-hodemelding:$kithHodemeldingVersion")
     implementation("no.nav.helse.xml:kith-apprec:$kithApprecVersion")
-    implementation("no.nav.tjenestespesifikasjoner:arbeidsfordeling-v1-tjenestespesifikasjon:$navArbeidsfordelingv1Version")
     implementation("no.nav.syfo.schemas:syfosmoppgave-avro:$syfooppgaveSchemasVersion")
-    implementation("no.nav.tjenestespesifikasjoner:person-v3-tjenestespesifikasjon:$navPersonv3Version")
 
     implementation("no.nav.helse:syfosm-common-models:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-networking:$smCommonVersion")

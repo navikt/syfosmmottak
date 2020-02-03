@@ -92,8 +92,6 @@ import no.nav.syfo.util.fellesformatUnmarshaller
 import no.nav.syfo.util.get
 import no.nav.syfo.util.wrapExceptions
 import no.nav.syfo.ws.createPort
-import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.binding.ArbeidsfordelingV1
-import no.nav.tjeneste.virksomhet.person.v3.binding.PersonV3
 import org.apache.cxf.ws.addressing.WSAddressingFeature
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -109,8 +107,6 @@ val objectMapper: ObjectMapper = ObjectMapper()
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.syfosmmottak")
-
-const val NAV_OPPFOLGING_UTLAND_KONTOR_NR = "0393"
 
 @KtorExperimentalAPI
 fun main() {
@@ -183,19 +179,11 @@ fun main() {
         port { withBasicAuth(credentials.serviceuserUsername, credentials.serviceuserPassword) }
     }
 
-    val arbeidsfordelingV1 = createPort<ArbeidsfordelingV1>(env.arbeidsfordelingV1EndpointURL) {
-        port { withSTS(credentials.serviceuserUsername, credentials.serviceuserPassword, env.securityTokenServiceUrl) }
-    }
-
-    val personV3 = createPort<PersonV3>(env.personV3EndpointURL) {
-        port { withSTS(credentials.serviceuserUsername, credentials.serviceuserPassword, env.securityTokenServiceUrl) }
-    }
-
     launchListeners(env, applicationState,
             subscriptionEmottak, kafkaproducerreceivedSykmelding, kafkaproducervalidationResult,
             syfoSykemeldingRuleClient, sarClient, aktoerIdClient,
             credentials, manuelOppgavekafkaproducer,
-            personV3, arbeidsfordelingV1, kafkaproducerApprec)
+            kafkaproducerApprec)
 }
 
 fun createListener(applicationState: ApplicationState, action: suspend CoroutineScope.() -> Unit): Job =
@@ -221,8 +209,6 @@ fun launchListeners(
     aktoerIdClient: AktoerIdClient,
     credentials: VaultCredentials,
     kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
-    personV3: PersonV3,
-    arbeidsfordelingV1: ArbeidsfordelingV1,
     kafkaproducerApprec: KafkaProducer<String, Apprec>
 ) {
     createListener(applicationState) {
@@ -241,7 +227,7 @@ fun launchListeners(
                         subscriptionEmottak, kafkaproducerreceivedSykmelding, kafkaproducervalidationResult,
                         syfoSykemeldingRuleClient, kuhrSarClient, aktoerIdClient, env,
                         credentials, applicationState, jedis, kafkaManuelTaskProducer,
-                        personV3, session, arbeidsfordelingV1, kafkaproducerApprec)
+                        session, kafkaproducerApprec)
             }
         }
     }
@@ -263,9 +249,7 @@ suspend fun blockingApplicationLogic(
     applicationState: ApplicationState,
     jedis: Jedis,
     kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
-    personV3: PersonV3,
     session: Session,
-    arbeidsfordelingV1: ArbeidsfordelingV1,
     kafkaproducerApprec: KafkaProducer<String, Apprec>
 ) {
     wrapExceptions {
@@ -487,9 +471,7 @@ suspend fun blockingApplicationLogic(
                                 kafkaproducerreceivedSykmelding
                         )
                         Status.MANUAL_PROCESSING -> handleStatusMANUALPROCESSING(
-                                personV3,
                                 receivedSykmelding,
-                                arbeidsfordelingV1,
                                 loggingMeta,
                                 fellesformat,
                                 ediLoggId,
