@@ -1,5 +1,7 @@
 package no.nav.syfo.handlestatus
 
+import com.ctc.wstx.exc.WstxException
+import java.io.IOException
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import javax.jms.MessageProducer
@@ -11,20 +13,38 @@ import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.apprec.ApprecStatus
 import no.nav.syfo.apprec.toApprec
+import no.nav.syfo.helpers.retry
 import no.nav.syfo.log
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ReceivedSykmelding
+import no.nav.syfo.model.RuleInfo
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.sak.avro.PrioritetType
 import no.nav.syfo.sak.avro.ProduceTask
 import no.nav.syfo.sendReceipt
 import no.nav.syfo.sendValidationResult
+import no.nav.syfo.service.fetchDiskresjonsKode
 import no.nav.syfo.service.notifySyfoService
 import no.nav.syfo.util.LoggingMeta
+import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.binding.ArbeidsfordelingV1
+import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.informasjon.ArbeidsfordelingKriterier
+import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.informasjon.Diskresjonskoder
+import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.informasjon.Geografi
+import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.informasjon.Oppgavetyper
+import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.informasjon.Tema
+import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.meldinger.FinnBehandlendeEnhetListeRequest
+import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.meldinger.FinnBehandlendeEnhetListeResponse
+import no.nav.tjeneste.virksomhet.person.v3.binding.PersonV3
+import no.nav.tjeneste.virksomhet.person.v3.informasjon.GeografiskTilknytning
+import no.nav.tjeneste.virksomhet.person.v3.informasjon.NorskIdent
+import no.nav.tjeneste.virksomhet.person.v3.informasjon.PersonIdent
+import no.nav.tjeneste.virksomhet.person.v3.informasjon.Personidenter
+import no.nav.tjeneste.virksomhet.person.v3.meldinger.HentGeografiskTilknytningRequest
+import no.nav.tjeneste.virksomhet.person.v3.meldinger.HentGeografiskTilknytningResponse
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 
-fun handleStatusMANUALPROCESSING(
+suspend fun handleStatusMANUALPROCESSING(
     receivedSykmelding: ReceivedSykmelding,
     loggingMeta: LoggingMeta,
     fellesformat: XMLEIFellesformat,
@@ -44,11 +64,23 @@ fun handleStatusMANUALPROCESSING(
     kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
     sm2013BehandlingsUtfallToipic: String,
     kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
-    syfoSmManuellTopic: String
+    syfoSmManuellTopic: String,
+    personV3: PersonV3,
+    arbeidsfordelingV1: ArbeidsfordelingV1
 ) {
 
-    // TODO snakke med veden hvilke nav kontor skal først få testete ut syfosmmanuell
-    if (validationResult.ruleHits.find { it.ruleName == "PASIENTEN_HAR_KODE_6" || it.ruleName == "BEHANDLER_KI_FT_MT_BENYTTER_ANNEN_DIAGNOSEKODE_ENN_L" } != null) {
+    val geografiskTilknytning = fetchGeografiskTilknytning(personV3, receivedSykmelding)
+    val patientDiskresjonsKode = fetchDiskresjonsKode(personV3, receivedSykmelding)
+    val finnBehandlendeEnhetListeResponse = fetchBehandlendeEnhet(arbeidsfordelingV1, geografiskTilknytning.geografiskTilknytning, patientDiskresjonsKode)
+    if (finnBehandlendeEnhetListeResponse?.behandlendeEnhetListe?.firstOrNull()?.enhetId == null) {
+        log.error("arbeidsfordeling fant ingen nav-enheter {}", StructuredArguments.fields(loggingMeta))
+    }
+    val behandlendeEnhet = finnBehandlendeEnhetListeResponse?.behandlendeEnhetListe?.firstOrNull()?.enhetId
+            ?: "0393"
+
+    val sendToSyfosmManuell = sendToSyfosmManuell(validationResult.ruleHits, behandlendeEnhet)
+
+    if (sendToSyfosmManuell) {
         opprettOppgave(kafkaManuelTaskProducer, receivedSykmelding, validationResult, loggingMeta)
 
         notifySyfoService(session = session, receiptProducer = syfoserviceProducer, ediLoggId = ediLoggId,
@@ -131,3 +163,50 @@ fun sendManuellTask(
             apprec)
     kafkaproducerApprec.send(ProducerRecord(sm2013ManeullTopic, manuellOppgave))
 }
+
+suspend fun fetchGeografiskTilknytning(personV3: PersonV3, receivedSykmelding: ReceivedSykmelding): HentGeografiskTilknytningResponse =
+        retry(callName = "tps_hent_geografisktilknytning",
+                retryIntervals = arrayOf(500L, 1000L, 3000L, 5000L, 10000L),
+                legalExceptions = *arrayOf(IOException::class, WstxException::class)) {
+            personV3.hentGeografiskTilknytning(HentGeografiskTilknytningRequest().withAktoer(PersonIdent().withIdent(
+                    NorskIdent()
+                            .withIdent(receivedSykmelding.personNrPasient)
+                            .withType(Personidenter().withValue("FNR")))))
+        }
+
+suspend fun fetchBehandlendeEnhet(arbeidsfordelingV1: ArbeidsfordelingV1, geografiskTilknytning: GeografiskTilknytning?, patientDiskresjonsKode: String?): FinnBehandlendeEnhetListeResponse? =
+        retry(callName = "finn_nav_kontor",
+                retryIntervals = arrayOf(500L, 1000L, 3000L, 5000L, 10000L),
+                legalExceptions = *arrayOf(IOException::class, WstxException::class)) {
+            arbeidsfordelingV1.finnBehandlendeEnhetListe(FinnBehandlendeEnhetListeRequest().apply {
+                val afk = ArbeidsfordelingKriterier()
+                if (geografiskTilknytning?.geografiskTilknytning != null) {
+                    afk.geografiskTilknytning = Geografi().apply {
+                        value = geografiskTilknytning.geografiskTilknytning
+                    }
+                }
+                afk.tema = Tema().apply {
+                    value = "SYM"
+                }
+
+                afk.oppgavetype = Oppgavetyper().apply {
+                    value = "BEH_EL_SYM"
+                }
+
+                if (!patientDiskresjonsKode.isNullOrBlank()) {
+                    afk.diskresjonskode = Diskresjonskoder().apply {
+                        value = patientDiskresjonsKode
+                    }
+                }
+
+                arbeidsfordelingKriterier = afk
+            })
+        }
+
+fun sendToSyfosmManuell(ruleHits: List<RuleInfo>, behandlendeEnhet: String): Boolean =
+        ruleHits.find { it.ruleName == "PASIENTEN_HAR_KODE_6" || it.ruleName == "BEHANDLER_KI_FT_MT_BENYTTER_ANNEN_DIAGNOSEKODE_ENN_L" } != null ||
+                pilotBehandleneEnhet(behandlendeEnhet)
+
+// TODO dobbelt sjekke at det er riktige nav kontor
+fun pilotBehandleneEnhet(behandlendeEnhet: String): Boolean =
+        listOf("0415", "0412", "0403", "0417").contains(behandlendeEnhet)

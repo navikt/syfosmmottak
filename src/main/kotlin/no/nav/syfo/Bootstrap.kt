@@ -93,6 +93,8 @@ import no.nav.syfo.util.fellesformatUnmarshaller
 import no.nav.syfo.util.get
 import no.nav.syfo.util.wrapExceptions
 import no.nav.syfo.ws.createPort
+import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.binding.ArbeidsfordelingV1
+import no.nav.tjeneste.virksomhet.person.v3.binding.PersonV3
 import org.apache.cxf.ws.addressing.WSAddressingFeature
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -182,11 +184,19 @@ fun main() {
         port { withBasicAuth(credentials.serviceuserUsername, credentials.serviceuserPassword) }
     }
 
+    val arbeidsfordelingV1 = createPort<ArbeidsfordelingV1>(env.arbeidsfordelingV1EndpointURL) {
+        port { withSTS(credentials.serviceuserUsername, credentials.serviceuserPassword, env.securityTokenServiceUrl) }
+    }
+
+    val personV3 = createPort<PersonV3>(env.personV3EndpointURL) {
+        port { withSTS(credentials.serviceuserUsername, credentials.serviceuserPassword, env.securityTokenServiceUrl) }
+    }
+
     launchListeners(env, applicationState,
             subscriptionEmottak, kafkaproducerreceivedSykmelding, kafkaproducervalidationResult,
             syfoSykemeldingRuleClient, sarClient, aktoerIdClient,
             credentials, manuelOppgavekafkaproducer,
-            kafkaproducerApprec, kafkaproducerManuellOppgave)
+            kafkaproducerApprec, kafkaproducerManuellOppgave, personV3, arbeidsfordelingV1)
 }
 
 fun createListener(applicationState: ApplicationState, action: suspend CoroutineScope.() -> Unit): Job =
@@ -213,7 +223,9 @@ fun launchListeners(
     credentials: VaultCredentials,
     kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
-    kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>
+    kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
+    personV3: PersonV3,
+    arbeidsfordelingV1: ArbeidsfordelingV1
 ) {
     createListener(applicationState) {
         connectionFactory(env).createConnection(credentials.mqUsername, credentials.mqPassword).use { connection ->
@@ -231,7 +243,7 @@ fun launchListeners(
                         subscriptionEmottak, kafkaproducerreceivedSykmelding, kafkaproducervalidationResult,
                         syfoSykemeldingRuleClient, kuhrSarClient, aktoerIdClient, env,
                         credentials, applicationState, jedis, kafkaManuelTaskProducer,
-                        session, kafkaproducerApprec, kafkaproducerManuellOppgave)
+                        session, kafkaproducerApprec, kafkaproducerManuellOppgave, personV3, arbeidsfordelingV1)
             }
         }
     }
@@ -255,7 +267,9 @@ suspend fun blockingApplicationLogic(
     kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
     session: Session,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
-    kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>
+    kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
+    personV3: PersonV3,
+    arbeidsfordelingV1: ArbeidsfordelingV1
 ) {
     wrapExceptions {
         loop@ while (applicationState.ready) {
@@ -495,7 +509,9 @@ suspend fun blockingApplicationLogic(
                                 kafkaproducervalidationResult,
                                 env.sm2013BehandlingsUtfallToipic,
                                 kafkaproducerManuellOppgave,
-                                env.syfoSmManuellTopic
+                                env.syfoSmManuellTopic,
+                                personV3,
+                                arbeidsfordelingV1
                         )
 
                         Status.INVALID -> handleStatusINVALID(
