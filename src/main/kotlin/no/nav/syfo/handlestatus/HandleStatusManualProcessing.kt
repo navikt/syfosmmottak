@@ -92,28 +92,28 @@ suspend fun handleStatusMANUALPROCESSING(
         )
         sendManuellTask(receivedSykmelding, validationResult, apprec, syfoSmManuellTopic, kafkaproducerManuellOppgave)
     } else {
-    opprettOppgave(kafkaManuelTaskProducer, receivedSykmelding, validationResult, loggingMeta)
+        opprettOppgave(kafkaManuelTaskProducer, receivedSykmelding, validationResult, loggingMeta)
 
-    notifySyfoService(session = session, receiptProducer = syfoserviceProducer, ediLoggId = ediLoggId,
-            sykmeldingId = receivedSykmelding.sykmelding.id, msgId = msgId, healthInformation = healthInformation)
-    log.info("Message send to syfoService {}, {}", syfoserviceQueueName, StructuredArguments.fields(loggingMeta))
+        notifySyfoService(session = session, receiptProducer = syfoserviceProducer, ediLoggId = ediLoggId,
+                sykmeldingId = receivedSykmelding.sykmelding.id, msgId = msgId, healthInformation = healthInformation)
+        log.info("Message send to syfoService {}, {}", syfoserviceQueueName, StructuredArguments.fields(loggingMeta))
 
-    kafkaproducerreceivedSykmelding.send(ProducerRecord(sm2013ManualHandlingTopic, receivedSykmelding.sykmelding.id, receivedSykmelding))
-    log.info("Message send to kafka {}, {}", sm2013ManualHandlingTopic, StructuredArguments.fields(loggingMeta))
+        kafkaproducerreceivedSykmelding.send(ProducerRecord(sm2013ManualHandlingTopic, receivedSykmelding.sykmelding.id, receivedSykmelding))
+        log.info("Message send to kafka {}, {}", sm2013ManualHandlingTopic, StructuredArguments.fields(loggingMeta))
 
-    sendValidationResult(validationResult, kafkaproducervalidationResult, sm2013BehandlingsUtfallToipic, receivedSykmelding, loggingMeta)
+        sendValidationResult(validationResult, kafkaproducervalidationResult, sm2013BehandlingsUtfallToipic, receivedSykmelding, loggingMeta)
 
-    val apprec = fellesformat.toApprec(
-            ediLoggId,
-            msgId,
-            msgHead,
-            ApprecStatus.OK,
-            null,
-            msgHead.msgInfo.receiver.organisation,
-            msgHead.msgInfo.sender.organisation
-    )
-    sendReceipt(apprec, sm2013ApprecTopic, kafkaproducerApprec)
-    log.info("Apprec receipt sent to kafka topic {}, {}", sm2013ApprecTopic, StructuredArguments.fields(loggingMeta))
+        val apprec = fellesformat.toApprec(
+                ediLoggId,
+                msgId,
+                msgHead,
+                ApprecStatus.OK,
+                null,
+                msgHead.msgInfo.receiver.organisation,
+                msgHead.msgInfo.sender.organisation
+        )
+        sendReceipt(apprec, sm2013ApprecTopic, kafkaproducerApprec)
+        log.info("Apprec receipt sent to kafka topic {}, {}", sm2013ApprecTopic, StructuredArguments.fields(loggingMeta))
     }
 }
 
