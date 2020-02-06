@@ -81,6 +81,7 @@ suspend fun handleStatusMANUALPROCESSING(
     val sendToSyfosmManuell = sendToSyfosmManuell(validationResult.ruleHits, behandlendeEnhet)
 
     if (sendToSyfosmManuell) {
+        log.info("Sending manuell oppgave to syfosmmanuell-backend")
         val apprec = fellesformat.toApprec(
                 ediLoggId,
                 msgId,
@@ -92,6 +93,7 @@ suspend fun handleStatusMANUALPROCESSING(
         )
         sendManuellTask(receivedSykmelding, validationResult, apprec, syfoSmManuellTopic, kafkaproducerManuellOppgave)
     } else {
+        log.info("Sending manuell oppgave to syfosmoppgave")
         opprettOppgave(kafkaManuelTaskProducer, receivedSykmelding, validationResult, loggingMeta)
 
         notifySyfoService(session = session, receiptProducer = syfoserviceProducer, ediLoggId = ediLoggId,
