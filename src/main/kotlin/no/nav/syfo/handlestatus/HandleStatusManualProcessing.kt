@@ -81,29 +81,6 @@ suspend fun handleStatusMANUALPROCESSING(
     val sendToSyfosmManuell = sendToSyfosmManuell(validationResult.ruleHits, behandlendeEnhet)
 
     if (sendToSyfosmManuell) {
-        opprettOppgave(kafkaManuelTaskProducer, receivedSykmelding, validationResult, loggingMeta)
-
-        notifySyfoService(session = session, receiptProducer = syfoserviceProducer, ediLoggId = ediLoggId,
-                sykmeldingId = receivedSykmelding.sykmelding.id, msgId = msgId, healthInformation = healthInformation)
-        log.info("Message send to syfoService {}, {}", syfoserviceQueueName, StructuredArguments.fields(loggingMeta))
-
-        kafkaproducerreceivedSykmelding.send(ProducerRecord(sm2013ManualHandlingTopic, receivedSykmelding.sykmelding.id, receivedSykmelding))
-        log.info("Message send to kafka {}, {}", sm2013ManualHandlingTopic, StructuredArguments.fields(loggingMeta))
-
-        sendValidationResult(validationResult, kafkaproducervalidationResult, sm2013BehandlingsUtfallToipic, receivedSykmelding, loggingMeta)
-
-        val apprec = fellesformat.toApprec(
-                ediLoggId,
-                msgId,
-                msgHead,
-                ApprecStatus.OK,
-                null,
-                msgHead.msgInfo.receiver.organisation,
-                msgHead.msgInfo.sender.organisation
-        )
-        sendReceipt(apprec, sm2013ApprecTopic, kafkaproducerApprec)
-        log.info("Apprec receipt sent to kafka topic {}, {}", sm2013ApprecTopic, StructuredArguments.fields(loggingMeta))
-    } else {
         val apprec = fellesformat.toApprec(
                 ediLoggId,
                 msgId,
@@ -114,6 +91,29 @@ suspend fun handleStatusMANUALPROCESSING(
                 msgHead.msgInfo.sender.organisation
         )
         sendManuellTask(receivedSykmelding, validationResult, apprec, syfoSmManuellTopic, kafkaproducerManuellOppgave)
+    } else {
+    opprettOppgave(kafkaManuelTaskProducer, receivedSykmelding, validationResult, loggingMeta)
+
+    notifySyfoService(session = session, receiptProducer = syfoserviceProducer, ediLoggId = ediLoggId,
+            sykmeldingId = receivedSykmelding.sykmelding.id, msgId = msgId, healthInformation = healthInformation)
+    log.info("Message send to syfoService {}, {}", syfoserviceQueueName, StructuredArguments.fields(loggingMeta))
+
+    kafkaproducerreceivedSykmelding.send(ProducerRecord(sm2013ManualHandlingTopic, receivedSykmelding.sykmelding.id, receivedSykmelding))
+    log.info("Message send to kafka {}, {}", sm2013ManualHandlingTopic, StructuredArguments.fields(loggingMeta))
+
+    sendValidationResult(validationResult, kafkaproducervalidationResult, sm2013BehandlingsUtfallToipic, receivedSykmelding, loggingMeta)
+
+    val apprec = fellesformat.toApprec(
+            ediLoggId,
+            msgId,
+            msgHead,
+            ApprecStatus.OK,
+            null,
+            msgHead.msgInfo.receiver.organisation,
+            msgHead.msgInfo.sender.organisation
+    )
+    sendReceipt(apprec, sm2013ApprecTopic, kafkaproducerApprec)
+    log.info("Apprec receipt sent to kafka topic {}, {}", sm2013ApprecTopic, StructuredArguments.fields(loggingMeta))
     }
 }
 
@@ -203,9 +203,10 @@ suspend fun fetchBehandlendeEnhet(arbeidsfordelingV1: ArbeidsfordelingV1, geogra
             })
         }
 
+// TODO kommentere inn igjen
 fun sendToSyfosmManuell(ruleHits: List<RuleInfo>, behandlendeEnhet: String): Boolean =
-        ruleHits.find { it.ruleName == "PASIENTEN_HAR_KODE_6" || it.ruleName == "BEHANDLER_KI_FT_MT_BENYTTER_ANNEN_DIAGNOSEKODE_ENN_L" } != null ||
-                pilotBehandleneEnhet(behandlendeEnhet)
+        ruleHits.find { it.ruleName == "PASIENTEN_HAR_KODE_6" || it.ruleName == "BEHANDLER_KI_FT_MT_BENYTTER_ANNEN_DIAGNOSEKODE_ENN_L" } == null /*||
+                pilotBehandleneEnhet(behandlendeEnhet) */
 
 // TODO dobbelt sjekke at det er riktige nav kontor
 fun pilotBehandleneEnhet(behandlendeEnhet: String): Boolean =
