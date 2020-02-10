@@ -1,5 +1,6 @@
 package no.nav.syfo
 
+import no.nav.syfo.util.erTestFnr
 import org.amshove.kluent.shouldEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
