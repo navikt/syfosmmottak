@@ -49,7 +49,7 @@ class HttpClients(environment: Environment, credentials: VaultCredentials) {
         }
         expectSuccess = false
     }
-    val syfoSykemeldingRulexClient = SyfoSykemeldingRuleClient(environment.syfosmreglerApiUrl, httpClientMedBasicAuth)
+    val syfoSykemeldingRuleClient = SyfoSykemeldingRuleClient(environment.syfosmreglerApiUrl, httpClientMedBasicAuth)
     val sarClient = SarClient(environment.kuhrSarApiUrl, simpleHttpClient)
     val oidcClient = StsOidcClient(credentials.serviceuserUsername, credentials.serviceuserPassword)
     val aktoerIdClient = AktoerIdClient(environment.aktoerregisterV1Url, oidcClient, simpleHttpClient)
