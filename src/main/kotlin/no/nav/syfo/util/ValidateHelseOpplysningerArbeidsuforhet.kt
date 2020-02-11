@@ -2,17 +2,17 @@ package no.nav.syfo.util
 
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 
-fun fnrAndDnrIsmissingFromBehandler(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean =
+fun fnrOgDnrMangler(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean =
         healthInformation.behandler.id.find { it.typeId.v == "FNR" }?.id.isNullOrBlank() &&
                 healthInformation.behandler.id.find { it.typeId.v == "DNR" }?.id.isNullOrBlank()
 
-fun medisinskeArsakskodeIsmissing(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean =
-        healthInformation.aktivitet.periode.any { periode -> aktivitetIkkeMuligMissingMedisinskeArsakskode(periode.aktivitetIkkeMulig) }
+fun medisinskeArsakskodeMangler(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean =
+        healthInformation.aktivitet.periode.any { periode -> aktivitetIkkeMuligMedisinskeArsakskodeMangler(periode.aktivitetIkkeMulig) }
 
-fun arbeidsplassenArsakskodeIsmissing(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean =
-        healthInformation.aktivitet.periode.any { periode -> aktivitetIkkeMuligMissingArbeidsplassenArsakskode(periode.aktivitetIkkeMulig) }
+fun arbeidsplassenArsakskodeMangler(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean =
+        healthInformation.aktivitet.periode.any { periode -> aktivitetIkkeMuligArbeidsplassenArsakskodeMangler(periode.aktivitetIkkeMulig) }
 
-fun aktivitetIkkeMuligMissingMedisinskeArsakskode(aktivitetIkkeMulig: HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig?): Boolean {
+fun aktivitetIkkeMuligMedisinskeArsakskodeMangler(aktivitetIkkeMulig: HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig?): Boolean {
     return if (aktivitetIkkeMulig == null)
         false
     else if (aktivitetIkkeMulig.medisinskeArsaker != null && aktivitetIkkeMulig.medisinskeArsaker.arsakskode == null)
@@ -20,7 +20,7 @@ fun aktivitetIkkeMuligMissingMedisinskeArsakskode(aktivitetIkkeMulig: HelseOpply
     else aktivitetIkkeMulig.medisinskeArsaker != null && aktivitetIkkeMulig.medisinskeArsaker.arsakskode.any { it.v.isNullOrEmpty() }
 }
 
-fun aktivitetIkkeMuligMissingArbeidsplassenArsakskode(aktivitetIkkeMulig: HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig?): Boolean {
+fun aktivitetIkkeMuligArbeidsplassenArsakskodeMangler(aktivitetIkkeMulig: HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig?): Boolean {
     return if (aktivitetIkkeMulig == null)
         false
     else if (aktivitetIkkeMulig.arbeidsplassen != null && aktivitetIkkeMulig.arbeidsplassen.arsakskode == null)
@@ -28,7 +28,7 @@ fun aktivitetIkkeMuligMissingArbeidsplassenArsakskode(aktivitetIkkeMulig: HelseO
     else aktivitetIkkeMulig.arbeidsplassen != null && aktivitetIkkeMulig.arbeidsplassen.arsakskode.any { it.v.isNullOrEmpty() }
 }
 
-fun annenFraversArsakkodeVIsmissing(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean {
+fun annenFraversArsakkodeVMangler(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean {
     return when {
         healthInformation.medisinskVurdering == null -> false
         healthInformation.medisinskVurdering.annenFraversArsak == null -> false

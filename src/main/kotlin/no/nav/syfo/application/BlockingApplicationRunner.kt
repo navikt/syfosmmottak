@@ -53,17 +53,17 @@ import no.nav.syfo.service.sha256hashstring
 import no.nav.syfo.service.startSubscription
 import no.nav.syfo.service.updateRedis
 import no.nav.syfo.util.LoggingMeta
-import no.nav.syfo.util.annenFraversArsakkodeVIsmissing
-import no.nav.syfo.util.arbeidsplassenArsakskodeIsmissing
+import no.nav.syfo.util.annenFraversArsakkodeVMangler
+import no.nav.syfo.util.arbeidsplassenArsakskodeMangler
 import no.nav.syfo.util.erTestFnr
 import no.nav.syfo.util.extractHelseOpplysningerArbeidsuforhet
 import no.nav.syfo.util.extractOrganisationHerNumberFromSender
 import no.nav.syfo.util.extractOrganisationNumberFromSender
 import no.nav.syfo.util.extractOrganisationRashNumberFromSender
 import no.nav.syfo.util.fellesformatUnmarshaller
-import no.nav.syfo.util.fnrAndDnrIsmissingFromBehandler
+import no.nav.syfo.util.fnrOgDnrMangler
 import no.nav.syfo.util.get
-import no.nav.syfo.util.medisinskeArsakskodeIsmissing
+import no.nav.syfo.util.medisinskeArsakskodeMangler
 import no.nav.syfo.util.wrapExceptions
 import org.apache.kafka.clients.producer.KafkaProducer
 import redis.clients.jedis.Jedis
@@ -216,7 +216,7 @@ class BlockingApplicationRunner {
                             continue@loop
                         }
 
-                        if (fnrAndDnrIsmissingFromBehandler(healthInformation)) {
+                        if (fnrOgDnrMangler(healthInformation)) {
                             handleFnrAndDnrIsmissingFromBehandler(loggingMeta, fellesformat,
                                     ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
                             continue@loop
@@ -236,13 +236,13 @@ class BlockingApplicationRunner {
                             continue@loop
                         }
 
-                        if (medisinskeArsakskodeIsmissing(healthInformation)) {
+                        if (medisinskeArsakskodeMangler(healthInformation)) {
                             handleMedisinskeArsakskodeIsmissing(loggingMeta, fellesformat,
                                     ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
                             continue@loop
                         }
 
-                        if (arbeidsplassenArsakskodeIsmissing(healthInformation)) {
+                        if (arbeidsplassenArsakskodeMangler(healthInformation)) {
                             handleArbeidsplassenArsakskodeIsmissing(loggingMeta, fellesformat,
                                     ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
                             continue@loop
@@ -254,7 +254,7 @@ class BlockingApplicationRunner {
                             continue@loop
                         }
 
-                        if (annenFraversArsakkodeVIsmissing(healthInformation)) {
+                        if (annenFraversArsakkodeVMangler(healthInformation)) {
                             handleAnnenFraversArsakkodeVIsmissing(loggingMeta, fellesformat,
                                     ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
                             continue@loop
