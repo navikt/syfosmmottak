@@ -10,6 +10,7 @@ import io.ktor.client.features.auth.Auth
 import io.ktor.client.features.auth.providers.basic
 import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
+import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.Environment
 import no.nav.syfo.VaultCredentials
 import no.nav.syfo.client.AktoerIdClient
@@ -49,8 +50,12 @@ class HttpClients(environment: Environment, credentials: VaultCredentials) {
         }
         expectSuccess = false
     }
+    @KtorExperimentalAPI
     val syfoSykemeldingRuleClient = SyfoSykemeldingRuleClient(environment.syfosmreglerApiUrl, httpClientMedBasicAuth)
+    @KtorExperimentalAPI
     val sarClient = SarClient(environment.kuhrSarApiUrl, simpleHttpClient)
+    @KtorExperimentalAPI
     val oidcClient = StsOidcClient(credentials.serviceuserUsername, credentials.serviceuserPassword)
+    @KtorExperimentalAPI
     val aktoerIdClient = AktoerIdClient(environment.aktoerregisterV1Url, oidcClient, simpleHttpClient)
 }
