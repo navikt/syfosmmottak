@@ -40,9 +40,9 @@ import no.nav.syfo.handlestatus.handleStatusMANUALPROCESSING
 import no.nav.syfo.handlestatus.handleStatusOK
 import no.nav.syfo.handlestatus.handleTestFnrInProd
 import no.nav.syfo.log
-import no.nav.syfo.metrics.AVVIST_ULIK_SENDER_OG_BEHANDLER
 import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
 import no.nav.syfo.metrics.REQUEST_TIME
+import no.nav.syfo.metrics.ULIK_SENDER_OG_BEHANDLER
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
@@ -285,7 +285,7 @@ class BlockingApplicationRunner {
                         )
 
                         if (receivedSykmelding.sykmelding.behandler.fnr != personNumberDoctor) {
-                            AVVIST_ULIK_SENDER_OG_BEHANDLER.inc()
+                            ULIK_SENDER_OG_BEHANDLER.inc()
                             log.info("Behandlers fnr og avsendres fnr stemmer ikkje {}", StructuredArguments.fields(loggingMeta))
                         }
 
