@@ -1,4 +1,4 @@
-package no.nav.syfo
+package no.nav.syfo.client
 
 enum class SamhandlerPraksisType(val kodeVerdi: String) {
     AUDIOPEDAGOG("AUDI"),

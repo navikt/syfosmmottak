@@ -12,7 +12,6 @@ import java.util.Date
 import kotlin.math.max
 import net.logstash.logback.argument.StructuredArguments.fields
 import net.logstash.logback.argument.StructuredArguments.keyValue
-import no.nav.syfo.SamhandlerPraksisType
 import no.nav.syfo.helpers.retry
 import no.nav.syfo.log
 import no.nav.syfo.util.LoggingMeta
