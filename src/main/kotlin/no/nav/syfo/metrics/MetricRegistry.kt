@@ -22,7 +22,7 @@ val INVALID_MESSAGE_NO_NOTICE: Counter = Counter.build()
         .help("Counts the number of messages, that has not enough information to be sendt to the rule engine ")
         .register()
 
-val AVVIST_ULIK_SENDER_OG_BEHANDLER: Counter = Counter.build()
+val ULIK_SENDER_OG_BEHANDLER: Counter = Counter.build()
         .namespace(METRICS_NS)
         .name("avvist_ulik_sender_og_behandler_count")
         .help("Teller antall meldinger, der det er avvik mellom sender og behandler")
