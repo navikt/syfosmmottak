@@ -142,6 +142,8 @@ class BlockingApplicationRunner {
                             credentials.serviceuserUsername,
                             loggingMeta)
 
+                    log.info("Ferdig med aktoerIdClient {}", StructuredArguments.fields(loggingMeta))
+
                     val samhandlerInfo = kuhrSarClient.getSamhandler(personNumberDoctor)
                     val samhandlerPraksisMatch = findBestSamhandlerPraksis(
                             samhandlerInfo,
