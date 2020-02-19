@@ -205,11 +205,12 @@ suspend fun fetchBehandlendeEnhet(arbeidsfordelingV1: ArbeidsfordelingV1, geogra
             })
         }
 
-// TODO kommentere inn igjen
 fun sendToSyfosmManuell(ruleHits: List<RuleInfo>, behandlendeEnhet: String): Boolean =
-        ruleHits.find { it.ruleName == "PASIENTEN_HAR_KODE_6" || it.ruleName == "BEHANDLER_KI_FT_MT_BENYTTER_ANNEN_DIAGNOSEKODE_ENN_L" } == null /*||
-                pilotBehandleneEnhet(behandlendeEnhet) */
+        ruleHits.find { it.ruleName == "PASIENTEN_HAR_KODE_6" || it.ruleName == "BEHANDLER_KI_FT_MT_BENYTTER_ANNEN_DIAGNOSEKODE_ENN_L" } == null ||
+                pilotBehandleneEnhet(behandlendeEnhet)
 
-// TODO dobbelt sjekke at det er riktige nav kontor
 fun pilotBehandleneEnhet(behandlendeEnhet: String): Boolean =
-        listOf("0415", "0412", "0403", "0417").contains(behandlendeEnhet)
+        listOf("0415", "0412", "0403", "0417", "1101","1108", "1102", "1129", "1106",
+                "1111", "1112","1119","1120","1122","1124","1127","1130","1133","1134",
+                "1135","1146","1149","1151","1160","1161","1162","1164","1165","1169", "1167", "1168")
+                .contains(behandlendeEnhet)
