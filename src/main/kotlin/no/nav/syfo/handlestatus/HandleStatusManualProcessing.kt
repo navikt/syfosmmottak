@@ -82,7 +82,7 @@ suspend fun handleStatusMANUALPROCESSING(
     val egenAnsatt = fetchEgenAnsatt(egenAnsattV1, receivedSykmelding)
 
     val arbeidsfordelingRequest = ArbeidsfordelingRequest(
-            tema = "sym",
+            tema = "SYM",
             geografiskOmraade = geografiskTilknytning.geografiskTilknytning.geografiskTilknytning,
             behandlingstema = "ANY",
             behandlingstype = "ANY",
