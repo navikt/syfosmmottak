@@ -92,7 +92,7 @@ suspend fun handleStatusMANUALPROCESSING(
 
     val sendToSyfosmManuell = sendToSyfosmManuell(validationResult.ruleHits, behandlendeEnhet)
 
-    if (sendToSyfosmManuell) {
+    if (sendToSyfosmManuell && !egenAnsatt) {
         log.info("Sending manuell oppgave to syfosmmanuell-backend {}", StructuredArguments.fields(loggingMeta))
         val apprec = fellesformat.toApprec(
                 ediLoggId,
