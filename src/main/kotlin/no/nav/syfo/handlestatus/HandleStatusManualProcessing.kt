@@ -1,6 +1,7 @@
 package no.nav.syfo.handlestatus
 
 import com.ctc.wstx.exc.WstxException
+import io.ktor.util.KtorExperimentalAPI
 import java.io.IOException
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -13,6 +14,8 @@ import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.apprec.ApprecStatus
 import no.nav.syfo.apprec.toApprec
+import no.nav.syfo.client.ArbeidsFordelingClient
+import no.nav.syfo.client.ArbeidsfordelingRequest
 import no.nav.syfo.helpers.retry
 import no.nav.syfo.log
 import no.nav.syfo.model.ManuellOppgave
@@ -24,8 +27,10 @@ import no.nav.syfo.sak.avro.ProduceTask
 import no.nav.syfo.sendReceipt
 import no.nav.syfo.sendValidationResult
 import no.nav.syfo.service.fetchDiskresjonsKode
+import no.nav.syfo.service.fetchEgenAnsatt
 import no.nav.syfo.service.notifySyfoService
 import no.nav.syfo.util.LoggingMeta
+import no.nav.tjeneste.pip.egen.ansatt.v1.EgenAnsattV1
 import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.binding.ArbeidsfordelingV1
 import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.informasjon.ArbeidsfordelingKriterier
 import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.informasjon.Diskresjonskoder
@@ -44,6 +49,7 @@ import no.nav.tjeneste.virksomhet.person.v3.meldinger.HentGeografiskTilknytningR
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 
+@KtorExperimentalAPI
 suspend fun handleStatusMANUALPROCESSING(
     receivedSykmelding: ReceivedSykmelding,
     loggingMeta: LoggingMeta,
@@ -62,20 +68,36 @@ suspend fun handleStatusMANUALPROCESSING(
     kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
     sm2013ManualHandlingTopic: String,
     kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
-    sm2013BehandlingsUtfallToipic: String,
+    sm2013BehandlingsUtfallTopic: String,
     kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
     syfoSmManuellTopic: String,
     personV3: PersonV3,
-    arbeidsfordelingV1: ArbeidsfordelingV1
+    arbeidsfordelingV1: ArbeidsfordelingV1,
+    egenAnsattV1: EgenAnsattV1,
+    arbeidsFordelingClient: ArbeidsFordelingClient
 ) {
 
     val geografiskTilknytning = fetchGeografiskTilknytning(personV3, receivedSykmelding)
     val patientDiskresjonsKode = fetchDiskresjonsKode(personV3, receivedSykmelding)
-    val finnBehandlendeEnhetListeResponse = fetchBehandlendeEnhet(arbeidsfordelingV1, geografiskTilknytning.geografiskTilknytning, patientDiskresjonsKode)
-    if (finnBehandlendeEnhetListeResponse?.behandlendeEnhetListe?.firstOrNull()?.enhetId == null) {
+    val egenAnsatt = fetchEgenAnsatt(egenAnsattV1, receivedSykmelding)
+
+    val arbeidsfordelingRequest = ArbeidsfordelingRequest(
+            tema = "sym",
+            geografiskOmraade = geografiskTilknytning.geografiskTilknytning.geografiskTilknytning,
+            behandlingstema = "ANY",
+            behandlingstype = "ANY",
+            oppgavetype = "BEH_EL_SYM",
+            diskresjonskode = patientDiskresjonsKode,
+            skjermet = egenAnsatt
+
+    )
+
+    val arbeidsfordelingResponse = arbeidsFordelingClient.finnBehandlendeEnhet(arbeidsfordelingRequest)
+
+    if (arbeidsfordelingResponse?.firstOrNull()?.enhetId == null) {
         log.error("arbeidsfordeling fant ingen nav-enheter {}", StructuredArguments.fields(loggingMeta))
     }
-    val behandlendeEnhet = finnBehandlendeEnhetListeResponse?.behandlendeEnhetListe?.firstOrNull()?.enhetId
+    val behandlendeEnhet = arbeidsfordelingResponse?.firstOrNull()?.enhetId
             ?: "0393"
 
     val sendToSyfosmManuell = sendToSyfosmManuell(validationResult.ruleHits, behandlendeEnhet)
@@ -103,7 +125,7 @@ suspend fun handleStatusMANUALPROCESSING(
         kafkaproducerreceivedSykmelding.send(ProducerRecord(sm2013ManualHandlingTopic, receivedSykmelding.sykmelding.id, receivedSykmelding))
         log.info("Message send to kafka {}, {}", sm2013ManualHandlingTopic, StructuredArguments.fields(loggingMeta))
 
-        sendValidationResult(validationResult, kafkaproducervalidationResult, sm2013BehandlingsUtfallToipic, receivedSykmelding, loggingMeta)
+        sendValidationResult(validationResult, kafkaproducervalidationResult, sm2013BehandlingsUtfallTopic, receivedSykmelding, loggingMeta)
 
         val apprec = fellesformat.toApprec(
                 ediLoggId,
@@ -176,7 +198,12 @@ suspend fun fetchGeografiskTilknytning(personV3: PersonV3, receivedSykmelding: R
                             .withType(Personidenter().withValue("FNR")))))
         }
 
-suspend fun fetchBehandlendeEnhet(arbeidsfordelingV1: ArbeidsfordelingV1, geografiskTilknytning: GeografiskTilknytning?, patientDiskresjonsKode: String?): FinnBehandlendeEnhetListeResponse? =
+suspend fun fetchBehandlendeEnhet(
+    arbeidsfordelingV1: ArbeidsfordelingV1,
+    geografiskTilknytning: GeografiskTilknytning?,
+    patientDiskresjonsKode: String?,
+    egenAnsatt: Boolean?
+): FinnBehandlendeEnhetListeResponse? =
         retry(callName = "finn_nav_kontor",
                 retryIntervals = arrayOf(500L, 1000L, 3000L, 5000L, 10000L),
                 legalExceptions = *arrayOf(IOException::class, WstxException::class)) {
@@ -210,7 +237,7 @@ fun sendToSyfosmManuell(ruleHits: List<RuleInfo>, behandlendeEnhet: String): Boo
                 pilotBehandleneEnhet(behandlendeEnhet)
 
 fun pilotBehandleneEnhet(behandlendeEnhet: String): Boolean =
-        listOf("0415", "0412", "0403", "0417", "1101","1108", "1102", "1129", "1106",
-                "1111", "1112","1119","1120","1122","1124","1127","1130","1133","1134",
-                "1135","1146","1149","1151","1160","1161","1162","1164","1165","1169", "1167", "1168")
+        listOf("0415", "0412", "0403", "0417", "1101", "1108", "1102", "1129", "1106",
+                "1111", "1112", "1119", "1120", "1122", "1124", "1127", "1130", "1133", "1134",
+                "1135", "1146", "1149", "1151", "1160", "1161", "1162", "1164", "1165", "1169", "1167", "1168")
                 .contains(behandlendeEnhet)

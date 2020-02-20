@@ -36,7 +36,8 @@ object KafkaITSpek : Spek({
             "arbeidsfordelingV1", sm2013OppgaveTopic = "oppgaveTopic", securityTokenServiceUrl = "sts", personV3EndpointURL = "personv3",
             kuhrSarApiUrl = "kuhrsarApi", syfosmreglerApiUrl = "syfosmreglerApi", sm2013ManualHandlingTopic = "sm2013ManualHandlingTopic",
             sm2013AutomaticHandlingTopic = "sm2013AutomaticHandlingTopic", sm2013InvalidHandlingTopic = "sm2013InvalidHandlingTopic",
-            applicationName = "syfosmmottak", sm2013Apprec = "syfoSmApprecTopic", cluster = "dev-fss"
+            applicationName = "syfosmmottak", sm2013Apprec = "syfoSmApprecTopic", cluster = "dev-fss",
+            arbeidsfordelingAPIUrl = "", egenAnsattURL = ""
     )
 
     fun Properties.overrideForTest(): Properties = apply {

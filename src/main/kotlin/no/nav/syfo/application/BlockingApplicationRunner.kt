@@ -18,6 +18,7 @@ import no.nav.syfo.Environment
 import no.nav.syfo.VaultCredentials
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.client.AktoerIdClient
+import no.nav.syfo.client.ArbeidsFordelingClient
 import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.client.findBestSamhandlerPraksis
@@ -66,6 +67,7 @@ import no.nav.syfo.util.fnrOgDnrMangler
 import no.nav.syfo.util.get
 import no.nav.syfo.util.medisinskeArsakskodeMangler
 import no.nav.syfo.util.wrapExceptions
+import no.nav.tjeneste.pip.egen.ansatt.v1.EgenAnsattV1
 import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.binding.ArbeidsfordelingV1
 import no.nav.tjeneste.virksomhet.person.v3.binding.PersonV3
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -85,6 +87,7 @@ class BlockingApplicationRunner {
         syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
         kuhrSarClient: SarClient,
         aktoerIdClient: AktoerIdClient,
+        arbeidsFordelingClient: ArbeidsFordelingClient,
         env: Environment,
         credentials: VaultCredentials,
         applicationState: ApplicationState,
@@ -94,7 +97,8 @@ class BlockingApplicationRunner {
         kafkaproducerApprec: KafkaProducer<String, Apprec>,
         kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
         personV3: PersonV3,
-        arbeidsfordelingV1: ArbeidsfordelingV1
+        arbeidsfordelingV1: ArbeidsfordelingV1,
+        egenAnsattV1: EgenAnsattV1
     ) {
         wrapExceptions {
 
@@ -335,11 +339,13 @@ class BlockingApplicationRunner {
                                     kafkaproducerreceivedSykmelding,
                                     env.sm2013ManualHandlingTopic,
                                     kafkaproducervalidationResult,
-                                    env.sm2013BehandlingsUtfallToipic,
+                                    env.sm2013BehandlingsUtfallTopic,
                                     kafkaproducerManuellOppgave,
                                     env.syfoSmManuellTopic,
                                     personV3,
-                                    arbeidsfordelingV1
+                                    arbeidsfordelingV1,
+                                    egenAnsattV1,
+                                    arbeidsFordelingClient
                             )
 
                             Status.INVALID -> handleStatusINVALID(
@@ -351,7 +357,7 @@ class BlockingApplicationRunner {
                                     loggingMeta,
                                     fellesformat,
                                     env.sm2013Apprec,
-                                    env.sm2013BehandlingsUtfallToipic,
+                                    env.sm2013BehandlingsUtfallTopic,
                                     kafkaproducerApprec,
                                     ediLoggId,
                                     msgId,

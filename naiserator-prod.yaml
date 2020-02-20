@@ -64,3 +64,7 @@ spec:
       value: QA.P414.IU03_UTSENDING
     - name: MQ_INPUT_BOQ_QUEUE_NAME
       value: P_SYFOSMMOTTAK.INPUT_BOQ
+    - name: EGEN_ANSATT_URL
+      value: https://wasapp.adeo.no/tpsws/EgenAnsatt_v1
+    - name: ARBEIDSFORDELING_API
+      value: https://app.adeo.no/norg2/api/v1/arbeidsfordeling
