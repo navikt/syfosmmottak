@@ -31,16 +31,7 @@ import no.nav.syfo.service.fetchEgenAnsatt
 import no.nav.syfo.service.notifySyfoService
 import no.nav.syfo.util.LoggingMeta
 import no.nav.tjeneste.pip.egen.ansatt.v1.EgenAnsattV1
-import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.binding.ArbeidsfordelingV1
-import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.informasjon.ArbeidsfordelingKriterier
-import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.informasjon.Diskresjonskoder
-import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.informasjon.Geografi
-import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.informasjon.Oppgavetyper
-import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.informasjon.Tema
-import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.meldinger.FinnBehandlendeEnhetListeRequest
-import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.meldinger.FinnBehandlendeEnhetListeResponse
 import no.nav.tjeneste.virksomhet.person.v3.binding.PersonV3
-import no.nav.tjeneste.virksomhet.person.v3.informasjon.GeografiskTilknytning
 import no.nav.tjeneste.virksomhet.person.v3.informasjon.NorskIdent
 import no.nav.tjeneste.virksomhet.person.v3.informasjon.PersonIdent
 import no.nav.tjeneste.virksomhet.person.v3.informasjon.Personidenter
@@ -72,7 +63,6 @@ suspend fun handleStatusMANUALPROCESSING(
     kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
     syfoSmManuellTopic: String,
     personV3: PersonV3,
-    arbeidsfordelingV1: ArbeidsfordelingV1,
     egenAnsattV1: EgenAnsattV1,
     arbeidsFordelingClient: ArbeidsFordelingClient
 ) {
@@ -196,40 +186,6 @@ suspend fun fetchGeografiskTilknytning(personV3: PersonV3, receivedSykmelding: R
                     NorskIdent()
                             .withIdent(receivedSykmelding.personNrPasient)
                             .withType(Personidenter().withValue("FNR")))))
-        }
-
-suspend fun fetchBehandlendeEnhet(
-    arbeidsfordelingV1: ArbeidsfordelingV1,
-    geografiskTilknytning: GeografiskTilknytning?,
-    patientDiskresjonsKode: String?,
-    egenAnsatt: Boolean?
-): FinnBehandlendeEnhetListeResponse? =
-        retry(callName = "finn_nav_kontor",
-                retryIntervals = arrayOf(500L, 1000L, 3000L, 5000L, 10000L),
-                legalExceptions = *arrayOf(IOException::class, WstxException::class)) {
-            arbeidsfordelingV1.finnBehandlendeEnhetListe(FinnBehandlendeEnhetListeRequest().apply {
-                val afk = ArbeidsfordelingKriterier()
-                if (geografiskTilknytning?.geografiskTilknytning != null) {
-                    afk.geografiskTilknytning = Geografi().apply {
-                        value = geografiskTilknytning.geografiskTilknytning
-                    }
-                }
-                afk.tema = Tema().apply {
-                    value = "SYM"
-                }
-
-                afk.oppgavetype = Oppgavetyper().apply {
-                    value = "BEH_EL_SYM"
-                }
-
-                if (!patientDiskresjonsKode.isNullOrBlank()) {
-                    afk.diskresjonskode = Diskresjonskoder().apply {
-                        value = patientDiskresjonsKode
-                    }
-                }
-
-                arbeidsfordelingKriterier = afk
-            })
         }
 
 fun sendToSyfosmManuell(ruleHits: List<RuleInfo>, behandlendeEnhet: String): Boolean =

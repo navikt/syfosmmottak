@@ -36,7 +36,6 @@ val javaxAnnotationApiVersion = "1.3.2"
 val jaxwsToolsVersion = "2.3.1"
 val jaxbRuntimeVersion = "2.4.0-b180830.0438"
 val javaTimeAdapterVersion = "1.1.3"
-val navArbeidsfordelingv1Version = "1.2019.09.25-00.21-49b69f0625e0"
 val navPersonv3Version = "1.2019.07.11-06.47-b55f47790a9d"
 val navEgenAnsattVersion = "1.2019.09.25-00.21-49b69f0625e0"
 
@@ -116,7 +115,6 @@ dependencies {
     implementation("no.nav.helse.xml:kith-hodemelding:$kithHodemeldingVersion")
     implementation("no.nav.helse.xml:kith-apprec:$kithApprecVersion")
     implementation("no.nav.syfo.schemas:syfosmoppgave-avro:$syfooppgaveSchemasVersion")
-    implementation("no.nav.tjenestespesifikasjoner:arbeidsfordeling-v1-tjenestespesifikasjon:$navArbeidsfordelingv1Version")
     implementation("no.nav.tjenestespesifikasjoner:person-v3-tjenestespesifikasjon:$navPersonv3Version")
     implementation("no.nav.tjenestespesifikasjoner:egenansatt-v1-tjenestespesifikasjon:$navEgenAnsattVersion")
 

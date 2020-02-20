@@ -38,7 +38,6 @@ import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.TrackableException
 import no.nav.syfo.ws.createPort
 import no.nav.tjeneste.pip.egen.ansatt.v1.EgenAnsattV1
-import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.binding.ArbeidsfordelingV1
 import no.nav.tjeneste.virksomhet.person.v3.binding.PersonV3
 import org.apache.cxf.ws.addressing.WSAddressingFeature
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -77,10 +76,6 @@ fun main() {
         port { withBasicAuth(credentials.serviceuserUsername, credentials.serviceuserPassword) }
     }
 
-    val arbeidsfordelingV1 = createPort<ArbeidsfordelingV1>(env.arbeidsfordelingV1EndpointURL) {
-        port { withSTS(credentials.serviceuserUsername, credentials.serviceuserPassword, env.securityTokenServiceUrl) }
-    }
-
     val personV3 = createPort<PersonV3>(env.personV3EndpointURL) {
         port { withSTS(credentials.serviceuserUsername, credentials.serviceuserPassword, env.securityTokenServiceUrl) }
     }
@@ -95,7 +90,7 @@ fun main() {
             httpClients.syfoSykemeldingRuleClient, httpClients.sarClient, httpClients.aktoerIdClient,
             httpClients.arbeidsFordelingClient, credentials, kafkaClients.manualValidationKafkaProducer,
             kafkaClients.kafkaProducerApprec, kafkaClients.kafkaproducerManuellOppgave,
-            personV3, arbeidsfordelingV1, egenansattV1)
+            personV3, egenansattV1)
 }
 
 fun createListener(applicationState: ApplicationState, action: suspend CoroutineScope.() -> Unit): Job =
@@ -125,7 +120,6 @@ fun launchListeners(
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
     personV3: PersonV3,
-    arbeidsfordelingV1: ArbeidsfordelingV1,
     egenAnsattV1: EgenAnsattV1
 ) {
     createListener(applicationState) {
@@ -145,7 +139,7 @@ fun launchListeners(
                         syfoSykemeldingRuleClient, kuhrSarClient, aktoerIdClient, arbeidsFordelingClient, env,
                         credentials, applicationState, jedis, kafkaManuelTaskProducer,
                         session, kafkaproducerApprec, kafkaproducerManuellOppgave,
-                        personV3, arbeidsfordelingV1, egenAnsattV1)
+                        personV3, egenAnsattV1)
             }
         }
     }

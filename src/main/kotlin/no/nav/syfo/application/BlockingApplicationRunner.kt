@@ -68,7 +68,6 @@ import no.nav.syfo.util.get
 import no.nav.syfo.util.medisinskeArsakskodeMangler
 import no.nav.syfo.util.wrapExceptions
 import no.nav.tjeneste.pip.egen.ansatt.v1.EgenAnsattV1
-import no.nav.tjeneste.virksomhet.arbeidsfordeling.v1.binding.ArbeidsfordelingV1
 import no.nav.tjeneste.virksomhet.person.v3.binding.PersonV3
 import org.apache.kafka.clients.producer.KafkaProducer
 import redis.clients.jedis.Jedis
@@ -97,7 +96,6 @@ class BlockingApplicationRunner {
         kafkaproducerApprec: KafkaProducer<String, Apprec>,
         kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
         personV3: PersonV3,
-        arbeidsfordelingV1: ArbeidsfordelingV1,
         egenAnsattV1: EgenAnsattV1
     ) {
         wrapExceptions {
@@ -343,7 +341,6 @@ class BlockingApplicationRunner {
                                     kafkaproducerManuellOppgave,
                                     env.syfoSmManuellTopic,
                                     personV3,
-                                    arbeidsfordelingV1,
                                     egenAnsattV1,
                                     arbeidsFordelingClient
                             )
