@@ -90,6 +90,8 @@ suspend fun handleStatusMANUALPROCESSING(
     val behandlendeEnhet = arbeidsfordelingResponse?.firstOrNull()?.enhetId
             ?: "0393"
 
+    log.info("BehandlendeEnhet er: $behandlendeEnhet {}", StructuredArguments.fields(loggingMeta))
+
     val sendToSyfosmManuell = sendToSyfosmManuell(validationResult.ruleHits, behandlendeEnhet)
 
     if (sendToSyfosmManuell && !egenAnsatt) {
