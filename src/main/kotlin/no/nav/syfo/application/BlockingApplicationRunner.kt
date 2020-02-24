@@ -18,6 +18,7 @@ import no.nav.syfo.Environment
 import no.nav.syfo.VaultCredentials
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.client.AktoerIdClient
+import no.nav.syfo.client.ArbeidsFordelingClient
 import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.client.findBestSamhandlerPraksis
@@ -43,6 +44,7 @@ import no.nav.syfo.log
 import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
 import no.nav.syfo.metrics.REQUEST_TIME
 import no.nav.syfo.metrics.ULIK_SENDER_OG_BEHANDLER
+import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
@@ -65,6 +67,8 @@ import no.nav.syfo.util.fnrOgDnrMangler
 import no.nav.syfo.util.get
 import no.nav.syfo.util.medisinskeArsakskodeMangler
 import no.nav.syfo.util.wrapExceptions
+import no.nav.tjeneste.pip.egen.ansatt.v1.EgenAnsattV1
+import no.nav.tjeneste.virksomhet.person.v3.binding.PersonV3
 import org.apache.kafka.clients.producer.KafkaProducer
 import redis.clients.jedis.Jedis
 import redis.clients.jedis.exceptions.JedisConnectionException
@@ -82,13 +86,17 @@ class BlockingApplicationRunner {
         syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
         kuhrSarClient: SarClient,
         aktoerIdClient: AktoerIdClient,
+        arbeidsFordelingClient: ArbeidsFordelingClient,
         env: Environment,
         credentials: VaultCredentials,
         applicationState: ApplicationState,
         jedis: Jedis,
         kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
         session: Session,
-        kafkaproducerApprec: KafkaProducer<String, Apprec>
+        kafkaproducerApprec: KafkaProducer<String, Apprec>,
+        kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
+        personV3: PersonV3,
+        egenAnsattV1: EgenAnsattV1
     ) {
         wrapExceptions {
 
@@ -329,7 +337,12 @@ class BlockingApplicationRunner {
                                     kafkaproducerreceivedSykmelding,
                                     env.sm2013ManualHandlingTopic,
                                     kafkaproducervalidationResult,
-                                    env.sm2013BehandlingsUtfallToipic
+                                    env.sm2013BehandlingsUtfallTopic,
+                                    kafkaproducerManuellOppgave,
+                                    env.syfoSmManuellTopic,
+                                    personV3,
+                                    egenAnsattV1,
+                                    arbeidsFordelingClient
                             )
 
                             Status.INVALID -> handleStatusINVALID(
@@ -341,7 +354,7 @@ class BlockingApplicationRunner {
                                     loggingMeta,
                                     fellesformat,
                                     env.sm2013Apprec,
-                                    env.sm2013BehandlingsUtfallToipic,
+                                    env.sm2013BehandlingsUtfallTopic,
                                     kafkaproducerApprec,
                                     ediLoggId,
                                     msgId,

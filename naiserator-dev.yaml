@@ -36,8 +36,6 @@ spec:
   vault:
     enabled: true
   env:
-    - name: ARBEIDSFORDELING_V1_ENDPOINT_URL
-      value: https://app-q1.adeo.no/norg2/ws/Arbeidsfordeling/v1
     - name: SUBSCRIPTION_ENDPOINT_URL
       value: https://wasapp-q1.adeo.no/nav-emottak-eletter-web/services/
     - name: SECURITY_TOKEN_SERVICE_URL
@@ -64,3 +62,7 @@ spec:
       value: QA.Q414.IU03_UTSENDING
     - name: MQ_INPUT_BOQ_QUEUE_NAME
       value: Q1_SYFOSMMOTTAK.INPUT_BOQ
+    - name: EGEN_ANSATT_URL
+      value: https://wasapp-q1.adeo.no/tpsws/EgenAnsatt_v1
+    - name: ARBEIDSFORDELING_API
+      value: https://app-q1.adeo.no/norg2/api/v1/arbeidsfordeling

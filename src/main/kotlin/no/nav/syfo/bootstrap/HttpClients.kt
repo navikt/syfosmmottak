@@ -14,6 +14,7 @@ import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.Environment
 import no.nav.syfo.VaultCredentials
 import no.nav.syfo.client.AktoerIdClient
+import no.nav.syfo.client.ArbeidsFordelingClient
 import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
@@ -58,4 +59,6 @@ class HttpClients(environment: Environment, credentials: VaultCredentials) {
     val oidcClient = StsOidcClient(credentials.serviceuserUsername, credentials.serviceuserPassword)
     @KtorExperimentalAPI
     val aktoerIdClient = AktoerIdClient(environment.aktoerregisterV1Url, oidcClient, simpleHttpClient)
+    @KtorExperimentalAPI
+    val arbeidsFordelingClient = ArbeidsFordelingClient(environment.arbeidsfordelingAPIUrl, oidcClient, simpleHttpClient)
 }

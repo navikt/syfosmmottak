@@ -24,8 +24,10 @@ import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.bootstrap.HttpClients
 import no.nav.syfo.bootstrap.KafkaClients
 import no.nav.syfo.client.AktoerIdClient
+import no.nav.syfo.client.ArbeidsFordelingClient
 import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
+import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.mq.connectionFactory
@@ -35,6 +37,8 @@ import no.nav.syfo.sak.avro.ProduceTask
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.TrackableException
 import no.nav.syfo.ws.createPort
+import no.nav.tjeneste.pip.egen.ansatt.v1.EgenAnsattV1
+import no.nav.tjeneste.virksomhet.person.v3.binding.PersonV3
 import org.apache.cxf.ws.addressing.WSAddressingFeature
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -72,11 +76,21 @@ fun main() {
         port { withBasicAuth(credentials.serviceuserUsername, credentials.serviceuserPassword) }
     }
 
+    val personV3 = createPort<PersonV3>(env.personV3EndpointURL) {
+        port { withSTS(credentials.serviceuserUsername, credentials.serviceuserPassword, env.securityTokenServiceUrl) }
+    }
+
+    val egenansattV1 = createPort<EgenAnsattV1>(env.egenAnsattURL) {
+        port { withSTS(credentials.serviceuserUsername, credentials.serviceuserPassword, env.securityTokenServiceUrl) }
+    }
+
     launchListeners(env, applicationState,
-            subscriptionEmottak, kafkaClients.kafkaProducerReceivedSykmelding, kafkaClients.kafkaProducerValidationResult,
+            subscriptionEmottak, kafkaClients.kafkaProducerReceivedSykmelding,
+            kafkaClients.kafkaProducerValidationResult,
             httpClients.syfoSykemeldingRuleClient, httpClients.sarClient, httpClients.aktoerIdClient,
-            credentials, kafkaClients.manualValidationKafkaProducer,
-            kafkaClients.kafkaProducerApprec)
+            httpClients.arbeidsFordelingClient, credentials, kafkaClients.manualValidationKafkaProducer,
+            kafkaClients.kafkaProducerApprec, kafkaClients.kafkaproducerManuellOppgave,
+            personV3, egenansattV1)
 }
 
 fun createListener(applicationState: ApplicationState, action: suspend CoroutineScope.() -> Unit): Job =
@@ -100,9 +114,13 @@ fun launchListeners(
     syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
     kuhrSarClient: SarClient,
     aktoerIdClient: AktoerIdClient,
+    arbeidsFordelingClient: ArbeidsFordelingClient,
     credentials: VaultCredentials,
     kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
-    kafkaproducerApprec: KafkaProducer<String, Apprec>
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
+    personV3: PersonV3,
+    egenAnsattV1: EgenAnsattV1
 ) {
     createListener(applicationState) {
         connectionFactory(env).createConnection(credentials.mqUsername, credentials.mqPassword).use { connection ->
@@ -118,9 +136,10 @@ fun launchListeners(
 
                 BlockingApplicationRunner().run(inputconsumer, syfoserviceProducer, backoutProducer,
                         subscriptionEmottak, kafkaproducerreceivedSykmelding, kafkaproducervalidationResult,
-                        syfoSykemeldingRuleClient, kuhrSarClient, aktoerIdClient, env,
+                        syfoSykemeldingRuleClient, kuhrSarClient, aktoerIdClient, arbeidsFordelingClient, env,
                         credentials, applicationState, jedis, kafkaManuelTaskProducer,
-                        session, kafkaproducerApprec)
+                        session, kafkaproducerApprec, kafkaproducerManuellOppgave,
+                        personV3, egenAnsattV1)
             }
         }
     }

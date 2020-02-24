@@ -6,6 +6,7 @@ import no.nav.syfo.VaultCredentials
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toProducerConfig
+import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.sak.avro.ProduceTask
@@ -22,4 +23,5 @@ class KafkaClients constructor(env: Environment, credentials: VaultCredentials) 
     val kafkaProducerValidationResult = KafkaProducer<String, ValidationResult>(producerProperties)
     val kafkaProducerApprec = KafkaProducer<String, Apprec>(producerProperties)
     val manualValidationKafkaProducer = KafkaProducer<String, ProduceTask>(manualValidationProducerProperties)
+    val kafkaproducerManuellOppgave = KafkaProducer<String, ManuellOppgave>(producerProperties)
 }
