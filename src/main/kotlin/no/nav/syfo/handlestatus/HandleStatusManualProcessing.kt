@@ -73,7 +73,7 @@ suspend fun handleStatusMANUALPROCESSING(
 
     val arbeidsfordelingRequest = ArbeidsfordelingRequest(
             tema = "SYM",
-            geografiskOmraade = geografiskTilknytning.geografiskTilknytning?.geografiskTilknytning ?: null,
+            geografiskOmraade = geografiskTilknytning?.geografiskTilknytning?.geografiskTilknytning ?: null,
             behandlingstema = "ANY",
             behandlingstype = "ANY",
             oppgavetype = "BEH_EL_SYM",
