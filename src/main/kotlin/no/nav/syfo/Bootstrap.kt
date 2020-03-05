@@ -134,6 +134,8 @@ fun launchListeners(
 
                 applicationState.ready = true
 
+                jedis.auth(credentials.redisSecret)
+
                 BlockingApplicationRunner().run(inputconsumer, syfoserviceProducer, backoutProducer,
                         subscriptionEmottak, kafkaproducerreceivedSykmelding, kafkaproducervalidationResult,
                         syfoSykemeldingRuleClient, kuhrSarClient, aktoerIdClient, arbeidsFordelingClient, env,
