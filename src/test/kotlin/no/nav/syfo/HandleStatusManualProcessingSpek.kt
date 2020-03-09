@@ -52,17 +52,5 @@ object HandleStatusManualProcessingSpek : Spek({
 
             sendToSyfosmManuell(validationResult.ruleHits, "0417") shouldEqualTo false
         }
-
-        it("Should return false when the only rule hit is ruleName is BEHANDLER_KI_FT_MT_BENYTTER_ANNEN_DIAGNOSEKODE_ENN_L and behandleneEnhet is 0417") {
-            val validationResult = ValidationResult(status = Status.MANUAL_PROCESSING, ruleHits = listOf(
-                    RuleInfo(ruleName = "BEHANDLER_KI_FT_MT_BENYTTER_ANNEN_DIAGNOSEKODE_ENN_L",
-                            messageForUser = "Behandler er manuellterapeut/kiropraktor eller fysioterapeut med autorisasjon har angitt annen diagnose enn kapitel L (muskel og skjelettsykdommer)",
-                            messageForSender = "Behandler er manuellterapeut/kiropraktor eller fysioterapeut med autorisasjon har angitt annen diagnose enn kapitel L (muskel og skjelettsykdommer)",
-                            ruleStatus = Status.MANUAL_PROCESSING
-                    )
-            ))
-
-            sendToSyfosmManuell(validationResult.ruleHits, "0417") shouldEqualTo false
-        }
     }
 })
