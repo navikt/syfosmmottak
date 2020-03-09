@@ -191,7 +191,7 @@ suspend fun fetchGeografiskTilknytning(personV3: PersonV3, receivedSykmelding: R
         }
 
 fun sendToSyfosmManuell(ruleHits: List<RuleInfo>, behandlendeEnhet: String): Boolean =
-        ruleHits.find { it.ruleName == "PASIENTEN_HAR_KODE_6" || it.ruleName == "BEHANDLER_KI_FT_MT_BENYTTER_ANNEN_DIAGNOSEKODE_ENN_L" } == null &&
+        ruleHits.find { it.ruleName == "PASIENTEN_HAR_KODE_6" } == null &&
                 pilotBehandleneEnhet(behandlendeEnhet)
 
 fun pilotBehandleneEnhet(behandlendeEnhet: String): Boolean =
