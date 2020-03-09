@@ -21,7 +21,7 @@ object UnmarshalSpek : Spek({
         }
 
         it("Test unmarshal dates testsett 2") {
-            val healthInformation = fellesformatUnmarshaller.unmarshal(StringReader(getFileAsString("src/test/resources/helseopplysninger-ISO-8859-1.xml"))) as HelseOpplysningerArbeidsuforhet
+            val healthInformation = fellesformatUnmarshaller.unmarshal(StringReader(getFileAsString("src/test/resources/helseopplysninger-UTF-8.xml"))) as HelseOpplysningerArbeidsuforhet
             val expectedFomDate = LocalDate.of(2017, 9, 1)
             val expectedTomDate = LocalDate.of(2017, 10, 27)
 
