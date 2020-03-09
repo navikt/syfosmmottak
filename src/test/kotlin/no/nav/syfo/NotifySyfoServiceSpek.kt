@@ -13,7 +13,7 @@ import org.spekframework.spek2.style.specification.describe
 
 object NotifySyfoServiceSpek : Spek({
     describe("Legger sykmelding på kø til syfoservice") {
-        it("Sykmeldingen Base64-encodes på ISO-8859-1 format") {
+        it("Sykmeldingen Base64-encodes på UTF-8 format") {
             val sm = fellesformatUnmarshaller.unmarshal(StringReader(String(Files.readAllBytes(Paths.get(("src/test/resources/helseopplysninger-UTF-8.xml"))), StandardCharsets.UTF_8))) as HelseOpplysningerArbeidsuforhet
 
             val sykemeldingsBytes = convertSykemeldingToBase64(sm)
