@@ -35,7 +35,7 @@ val apprecFFJaxbContext: JAXBContext = JAXBContext.newInstance(XMLEIFellesformat
 val apprecFFJaxbMarshaller: Marshaller = apprecFFJaxbContext.createMarshaller()
 
 val sykmeldingMarshaller: Marshaller = JAXBContext.newInstance(HelseOpplysningerArbeidsuforhet::class.java).createMarshaller()
-        .apply { setProperty(JAXB_ENCODING, "ISO-8859-1") }
+        .apply { setProperty(JAXB_ENCODING, "UTF-8") }
 
 val senderMarshaller: Marshaller = JAXBContext.newInstance(XMLSender::class.java).createMarshaller()
         .apply { setProperty(JAXB_ENCODING, "ISO-8859-1") }
