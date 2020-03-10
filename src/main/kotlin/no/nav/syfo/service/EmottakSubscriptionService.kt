@@ -23,7 +23,7 @@ suspend fun startSubscription(
     receiverBlock: XMLMottakenhetBlokk,
     loggingMeta: LoggingMeta
 ) {
-    log.info("SamhandlerPraksis is found, name: ${samhandlerPraksis.navn},  {}", StructuredArguments.fields(loggingMeta))
+    log.info("Oppdate subscription emottak for {}", StructuredArguments.fields(loggingMeta))
     retry(callName = "start_subscription_emottak",
             retryIntervals = arrayOf(500L, 1000L, 3000L, 5000L, 10000L),
             legalExceptions = *arrayOf(IOException::class, WstxException::class)) {
