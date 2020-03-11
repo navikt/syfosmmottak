@@ -57,7 +57,6 @@ import no.nav.syfo.service.updateRedis
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.annenFraversArsakkodeVMangler
 import no.nav.syfo.util.arbeidsplassenArsakskodeMangler
-import no.nav.syfo.util.countCorona
 import no.nav.syfo.util.erTestFnr
 import no.nav.syfo.util.extractHelseOpplysningerArbeidsuforhet
 import no.nav.syfo.util.extractOrganisationHerNumberFromSender
@@ -156,7 +155,7 @@ class BlockingApplicationRunner {
                     val samhandlerPraksis = samhandlerPraksisMatch?.samhandlerPraksis
 
                     if (samhandlerPraksisMatch?.percentageMatch != null && samhandlerPraksisMatch.percentageMatch == 999.0) {
-                        log.info("SamhandlerPraksis is found, subscription_emottak is not created, {}", StructuredArguments.fields(loggingMeta))
+                        log.info("SamhandlerPraksis is found but is FALE or FALO, subscription_emottak is not created, {}", StructuredArguments.fields(loggingMeta))
                     } else {
                         when (samhandlerPraksis) {
                             null -> log.info("SamhandlerPraksis is Not found, {}", StructuredArguments.fields(loggingMeta))
@@ -299,8 +298,6 @@ class BlockingApplicationRunner {
                             ULIK_SENDER_OG_BEHANDLER.inc()
                             log.info("Behandlers fnr og avsendres fnr stemmer ikkje {}", StructuredArguments.fields(loggingMeta))
                         }
-
-                        countCorona(receivedSykmelding.sykmelding.medisinskVurdering)
 
                         log.info("Validating against rules, sykmeldingId {},  {}", StructuredArguments.keyValue("sykmeldingId", sykmelding.id), StructuredArguments.fields(loggingMeta))
                         val validationResult = syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding)
