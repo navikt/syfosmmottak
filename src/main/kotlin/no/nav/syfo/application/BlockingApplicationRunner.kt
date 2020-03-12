@@ -57,7 +57,7 @@ import no.nav.syfo.service.updateRedis
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.annenFraversArsakkodeVMangler
 import no.nav.syfo.util.arbeidsplassenArsakskodeMangler
-import no.nav.syfo.util.countGenMetrikk
+import no.nav.syfo.util.countNewDiagnoseCode
 import no.nav.syfo.util.erTestFnr
 import no.nav.syfo.util.extractHelseOpplysningerArbeidsuforhet
 import no.nav.syfo.util.extractOrganisationHerNumberFromSender
@@ -300,7 +300,7 @@ class BlockingApplicationRunner {
                             log.info("Behandlers fnr og avsendres fnr stemmer ikkje {}", StructuredArguments.fields(loggingMeta))
                         }
 
-                        countGenMetrikk(receivedSykmelding.sykmelding.medisinskVurdering)
+                        countNewDiagnoseCode(receivedSykmelding.sykmelding.medisinskVurdering)
 
                         log.info("Validating against rules, sykmeldingId {},  {}", StructuredArguments.keyValue("sykmeldingId", sykmelding.id), StructuredArguments.fields(loggingMeta))
                         val validationResult = syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding)
