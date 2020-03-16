@@ -167,6 +167,7 @@ class BlockingApplicationRunner {
                                         "Tssid: ${firstSamhnalderPraksis.tss_ident} " +
                                         "Adresselinje1: ${firstSamhnalderPraksis.arbeids_adresse_linje_1} " +
                                         "Samhandler praksis type: ${firstSamhnalderPraksis.samh_praksis_type_kode} " +
+                                        "Samhandlers hpr nummer: ${samhandlerInfo.firstOrNull()?.samh_ident?.find{it.ident_type_kode == "HPR"}?.ident}" +
                                         "{}", fields(loggingMeta))
                             }
                     }

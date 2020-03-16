@@ -41,6 +41,7 @@ data class Samhandler(
     val godkjent_egenandel_refusjon: String,
     val godkjent_for_fil: String,
     val endringslogg_tidspunkt_siste: Date?,
+    val samh_ident: List<Samhandlerident>,
     val samh_praksis: List<SamhandlerPraksis>
 )
 
@@ -83,6 +84,14 @@ data class SamhandlerPeriode(
     val gyldig_til: Date?,
     val samh_praksis_id: String,
     val samh_praksis_periode_id: String
+)
+
+data class Samhandlerident(
+    val samh_id: String?,
+    val samh_ident_id: String?,
+    val ident: String?,
+    val ident_type_kode: String?,
+    val aktiv_ident: String?
 )
 
 data class SamhandlerPraksisMatch(val samhandlerPraksis: SamhandlerPraksis, val percentageMatch: Double)
