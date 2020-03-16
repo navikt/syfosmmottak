@@ -10,6 +10,7 @@ import javax.jms.Session
 import javax.jms.TextMessage
 import kotlinx.coroutines.delay
 import net.logstash.logback.argument.StructuredArguments
+import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.emottak.subscription.SubscriptionPort
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.eiFellesformat.XMLMottakenhetBlokk
@@ -154,6 +155,21 @@ class BlockingApplicationRunner {
                             legekontorHerId,
                             loggingMeta)
                     val samhandlerPraksis = samhandlerPraksisMatch?.samhandlerPraksis
+
+                    if (samhandlerPraksisMatch == null &&
+                            samhandlerInfo.firstOrNull()?.samh_praksis != null &&
+                            samhandlerInfo.firstOrNull()?.samh_praksis?.firstOrNull() != null) {
+                            val firstSamhnalderPraksis = samhandlerInfo.firstOrNull()?.samh_praksis?.firstOrNull()
+                            if (firstSamhnalderPraksis != null) {
+                                log.info("Siste utvei med tss matching ble samhandler praksis: " +
+                                        "Orgnumer: ${firstSamhnalderPraksis.org_id} " +
+                                        "Navn: ${firstSamhnalderPraksis.navn} " +
+                                        "Tssid: ${firstSamhnalderPraksis.tss_ident} " +
+                                        "Adresselinje1: ${firstSamhnalderPraksis.arbeids_adresse_linje_1} " +
+                                        "Samhandler praksis type: ${firstSamhnalderPraksis.samh_praksis_type_kode} " +
+                                        "{}", fields(loggingMeta))
+                            }
+                    }
 
                     if (samhandlerPraksisMatch?.percentageMatch != null && samhandlerPraksisMatch.percentageMatch == 999.0) {
                         log.info("SamhandlerPraksis is found but is FALE or FALO, subscription_emottak is not created, {}", StructuredArguments.fields(loggingMeta))
