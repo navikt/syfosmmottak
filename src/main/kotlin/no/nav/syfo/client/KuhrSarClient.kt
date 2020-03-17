@@ -153,12 +153,35 @@ fun findBestSamhandlerPraksis(
         }
     } else if (aktiveSamhandlere.isNullOrEmpty()) {
         val inaktiveSamhandlerMatchingPaaOrganisjonsNavn = samhandlerMatchingPaaOrganisjonsNavn(samhandlere, orgName)
-        return filtererBortSamhanlderPraksiserPaaProsentMatch(
-                inaktiveSamhandlerMatchingPaaOrganisjonsNavn,
-                70.0,
-                orgName,
-                loggingMeta
-        )
+        if (filtererBortSamhanlderPraksiserPaaProsentMatch(
+                        inaktiveSamhandlerMatchingPaaOrganisjonsNavn,
+                        70.0,
+                        orgName,
+                        loggingMeta
+                ) == null) {
+            if (samhandlere.firstOrNull()?.samh_praksis != null &&
+                    samhandlere.firstOrNull()?.samh_praksis?.firstOrNull() != null) {
+                val firstSamhnalderPraksis = samhandlere.firstOrNull()?.samh_praksis?.firstOrNull()
+                if (firstSamhnalderPraksis != null && !firstSamhnalderPraksis.tss_ident.isEmpty()) {
+                    log.info("Siste utvei med tss matching ble samhandler praksis: " +
+                            "Orgnumer: ${firstSamhnalderPraksis.org_id} " +
+                            "Navn: ${firstSamhnalderPraksis.navn} " +
+                            "Tssid: ${firstSamhnalderPraksis.tss_ident} " +
+                            "Adresselinje1: ${firstSamhnalderPraksis.arbeids_adresse_linje_1} " +
+                            "Samhandler praksis type: ${firstSamhnalderPraksis.samh_praksis_type_kode} " +
+                            "Samhandlers hpr nummer: ${samhandlere.firstOrNull()?.samh_ident?.find { it.ident_type_kode == "HPR" }?.ident} " +
+                            "{}", fields(loggingMeta))
+                    return SamhandlerPraksisMatch(firstSamhnalderPraksis, 999.0)
+                }
+            }
+        } else {
+            return filtererBortSamhanlderPraksiserPaaProsentMatch(
+                    inaktiveSamhandlerMatchingPaaOrganisjonsNavn,
+                    70.0,
+                    orgName,
+                    loggingMeta
+            )
+        }
     }
 
     return aktiveSamhandlereMedNavn
