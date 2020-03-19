@@ -156,22 +156,6 @@ class BlockingApplicationRunner {
                             loggingMeta)
                     val samhandlerPraksis = samhandlerPraksisMatch?.samhandlerPraksis
 
-                    if (samhandlerPraksisMatch == null &&
-                            samhandlerInfo.firstOrNull()?.samh_praksis != null &&
-                            samhandlerInfo.firstOrNull()?.samh_praksis?.firstOrNull() != null) {
-                            val firstSamhnalderPraksis = samhandlerInfo.firstOrNull()?.samh_praksis?.firstOrNull()
-                            if (firstSamhnalderPraksis != null) {
-                                log.info("Siste utvei med tss matching ble samhandler praksis: " +
-                                        "Orgnumer: ${firstSamhnalderPraksis.org_id} " +
-                                        "Navn: ${firstSamhnalderPraksis.navn} " +
-                                        "Tssid: ${firstSamhnalderPraksis.tss_ident} " +
-                                        "Adresselinje1: ${firstSamhnalderPraksis.arbeids_adresse_linje_1} " +
-                                        "Samhandler praksis type: ${firstSamhnalderPraksis.samh_praksis_type_kode} " +
-                                        "Samhandlers hpr nummer: ${samhandlerInfo.firstOrNull()?.samh_ident?.find{it.ident_type_kode == "HPR"}?.ident} " +
-                                        "{}", fields(loggingMeta))
-                            }
-                    }
-
                     if (samhandlerPraksisMatch?.percentageMatch != null && samhandlerPraksisMatch.percentageMatch == 999.0) {
                         log.info("SamhandlerPraksis is found but is FALE or FALO, subscription_emottak is not created, {}", StructuredArguments.fields(loggingMeta))
                     } else {
