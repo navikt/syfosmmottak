@@ -10,7 +10,6 @@
         {"member":"srvDataverk", "role":"CONSUMER"},
         {"member":"srvsykmkonsument", "role":"CONSUMER"},
         {"member":"srvsyfosmmottak", "role":"PRODUCER"},
-        {"member":"srvspsak", "role": "CONSUMER"},
         {"member":"srvsyfoprediksjoner", "role": "CONSUMER"},
         {"member":"srvsyfosmvarsel", "role":"CONSUMER"},
         {"member":"srvsyfostorebror", "role":"CONSUMER"},
