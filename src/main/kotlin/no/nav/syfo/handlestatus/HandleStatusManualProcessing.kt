@@ -158,7 +158,7 @@ fun opprettOppgave(
                         behandlingstype = "ANY"
                         mappeId = 1
                         aktivDato = DateTimeFormatter.ISO_DATE.format(LocalDate.now())
-                        fristFerdigstillelse = DateTimeFormatter.ISO_DATE.format(LocalDate.now())
+                        fristFerdigstillelse = DateTimeFormatter.ISO_DATE.format(finnFristForFerdigstillingAvOppgave(LocalDate.now()))
                         prioritet = PrioritetType.NORM
                         metadata = mapOf()
                     }))
@@ -199,3 +199,7 @@ fun pilotBehandleneEnhet(behandlendeEnhet: String): Boolean =
                 "1111", "1112", "1119", "1120", "1122", "1124", "1127", "1130", "1133", "1134",
                 "1135", "1146", "1149", "1151", "1160", "1161", "1162", "1164", "1165", "1169", "1167", "1168")
                 .contains(behandlendeEnhet)
+
+fun finnFristForFerdigstillingAvOppgave(today: LocalDate): LocalDate {
+    return today.plusDays(4)
+}
