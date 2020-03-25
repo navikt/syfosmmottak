@@ -3,6 +3,7 @@ package no.nav.syfo.handlestatus
 import com.ctc.wstx.exc.WstxException
 import io.ktor.util.KtorExperimentalAPI
 import java.io.IOException
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import javax.jms.MessageProducer
@@ -158,7 +159,7 @@ fun opprettOppgave(
                         behandlingstype = "ANY"
                         mappeId = 1
                         aktivDato = DateTimeFormatter.ISO_DATE.format(LocalDate.now())
-                        fristFerdigstillelse = DateTimeFormatter.ISO_DATE.format(LocalDate.now())
+                        fristFerdigstillelse = DateTimeFormatter.ISO_DATE.format(finnFristForFerdigstillingAvOppgave(LocalDate.now().plusDays(4)))
                         prioritet = PrioritetType.NORM
                         metadata = mapOf()
                     }))
@@ -199,3 +200,14 @@ fun pilotBehandleneEnhet(behandlendeEnhet: String): Boolean =
                 "1111", "1112", "1119", "1120", "1122", "1124", "1127", "1130", "1133", "1134",
                 "1135", "1146", "1149", "1151", "1160", "1161", "1162", "1164", "1165", "1169", "1167", "1168")
                 .contains(behandlendeEnhet)
+
+fun finnFristForFerdigstillingAvOppgave(ferdistilleDato: LocalDate): LocalDate {
+    return setToWorkDay(ferdistilleDato)
+}
+
+fun setToWorkDay(ferdistilleDato: LocalDate): LocalDate =
+        when (ferdistilleDato.dayOfWeek) {
+            DayOfWeek.SATURDAY -> ferdistilleDato.plusDays(2)
+            DayOfWeek.SUNDAY -> ferdistilleDato.plusDays(1)
+            else -> ferdistilleDato
+        }
