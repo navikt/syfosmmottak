@@ -86,7 +86,7 @@ suspend fun handleStatusMANUALPROCESSING(
     val arbeidsfordelingResponse = arbeidsFordelingClient.finnBehandlendeEnhet(arbeidsfordelingRequest)
 
     if (arbeidsfordelingResponse?.firstOrNull()?.enhetId == null) {
-        log.error("arbeidsfordeling fant ingen nav-enheter {}", StructuredArguments.fields(loggingMeta))
+        log.warn("arbeidsfordeling fant ingen nav-enheter {}", StructuredArguments.fields(loggingMeta))
     }
     val behandlendeEnhet = arbeidsfordelingResponse?.firstOrNull()?.enhetNr
             ?: "0393"
