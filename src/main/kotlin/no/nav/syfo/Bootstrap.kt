@@ -23,17 +23,11 @@ import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.bootstrap.HttpClients
 import no.nav.syfo.bootstrap.KafkaClients
-import no.nav.syfo.client.AktoerIdClient
-import no.nav.syfo.client.ArbeidsFordelingClient
-import no.nav.syfo.client.SarClient
-import no.nav.syfo.client.SyfoSykemeldingRuleClient
-import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.mq.connectionFactory
 import no.nav.syfo.mq.consumerForQueue
 import no.nav.syfo.mq.producerForQueue
-import no.nav.syfo.sak.avro.ProduceTask
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.TrackableException
 import no.nav.syfo.ws.createPort
@@ -84,13 +78,14 @@ fun main() {
         port { withSTS(credentials.serviceuserUsername, credentials.serviceuserPassword, env.securityTokenServiceUrl) }
     }
 
-    launchListeners(env, applicationState,
-            subscriptionEmottak, kafkaClients.kafkaProducerReceivedSykmelding,
-            kafkaClients.kafkaProducerValidationResult,
-            httpClients.syfoSykemeldingRuleClient, httpClients.sarClient, httpClients.aktoerIdClient,
-            httpClients.arbeidsFordelingClient, credentials, kafkaClients.manualValidationKafkaProducer,
-            kafkaClients.kafkaProducerApprec, kafkaClients.kafkaproducerManuellOppgave,
-            personV3, egenansattV1)
+    launchListeners(env,
+            applicationState,
+            subscriptionEmottak,
+            kafkaClients,
+            httpClients,
+            credentials,
+            personV3,
+            egenansattV1)
 }
 
 fun createListener(applicationState: ApplicationState, action: suspend CoroutineScope.() -> Unit): Job =
@@ -109,16 +104,9 @@ fun launchListeners(
     env: Environment,
     applicationState: ApplicationState,
     subscriptionEmottak: SubscriptionPort,
-    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
-    kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
-    syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
-    kuhrSarClient: SarClient,
-    aktoerIdClient: AktoerIdClient,
-    arbeidsFordelingClient: ArbeidsFordelingClient,
+    kafkaClients: KafkaClients,
+    httpClients: HttpClients,
     credentials: VaultCredentials,
-    kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
-    kafkaproducerApprec: KafkaProducer<String, Apprec>,
-    kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
     personV3: PersonV3,
     egenAnsattV1: EgenAnsattV1
 ) {
@@ -129,19 +117,25 @@ fun launchListeners(
                 val session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)
 
                 val inputconsumer = session.consumerForQueue(env.inputQueueName)
-                val syfoserviceProducer = session.producerForQueue(env.syfoserviceQueueName)
                 val backoutProducer = session.producerForQueue(env.inputBackoutQueueName)
 
                 applicationState.ready = true
 
                 jedis.auth(credentials.redisSecret)
 
-                BlockingApplicationRunner().run(inputconsumer, syfoserviceProducer, backoutProducer,
-                        subscriptionEmottak, kafkaproducerreceivedSykmelding, kafkaproducervalidationResult,
-                        syfoSykemeldingRuleClient, kuhrSarClient, aktoerIdClient, arbeidsFordelingClient, env,
-                        credentials, applicationState, jedis, kafkaManuelTaskProducer,
-                        session, kafkaproducerApprec, kafkaproducerManuellOppgave,
-                        personV3, egenAnsattV1)
+                BlockingApplicationRunner().run(
+                        inputconsumer,
+                        backoutProducer,
+                        subscriptionEmottak,
+                        env,
+                        credentials,
+                        applicationState,
+                        jedis,
+                        personV3,
+                        egenAnsattV1,
+                        kafkaClients,
+                        httpClients
+                )
             }
         }
     }
