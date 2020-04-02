@@ -9,6 +9,7 @@ import no.nav.syfo.Environment
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.apprec.ApprecStatus
 import no.nav.syfo.apprec.toApprec
+import no.nav.syfo.bootstrap.KafkaClients
 import no.nav.syfo.log
 import no.nav.syfo.metrics.INVALID_MESSAGE_NO_NOTICE
 import no.nav.syfo.metrics.TEST_FNR_IN_PROD
@@ -25,25 +26,22 @@ import redis.clients.jedis.Jedis
 
 fun handleStatusINVALID(
     validationResult: ValidationResult,
-    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
-    kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
     sm2013InvalidHandlingTopic: String,
     receivedSykmelding: ReceivedSykmelding,
     loggingMeta: LoggingMeta,
-    fellesformat: XMLEIFellesformat,
     sm2013ApprecTopic: String,
     sm2013BehandlingsUtfallToipic: String,
-    kafkaproducerApprec: KafkaProducer<String, Apprec>,
     ediLoggId: String,
     msgId: String,
-    msgHead: XMLMsgHead
+    msgHead: XMLMsgHead,
+    kafkaClients: KafkaClients
 ) {
-    sendValidationResult(validationResult, kafkaproducervalidationResult, sm2013BehandlingsUtfallToipic, receivedSykmelding, loggingMeta)
+    sendValidationResult(validationResult, kafkaClients.kafkaProducerValidationResult, sm2013BehandlingsUtfallToipic, receivedSykmelding, loggingMeta)
 
-    kafkaproducerreceivedSykmelding.send(ProducerRecord(sm2013InvalidHandlingTopic, receivedSykmelding.sykmelding.id, receivedSykmelding))
+    kafkaClients.kafkaProducerReceivedSykmelding.send(ProducerRecord(sm2013InvalidHandlingTopic, receivedSykmelding.sykmelding.id, receivedSykmelding))
     log.info("Message send to kafka {}, {}", sm2013InvalidHandlingTopic, fields(loggingMeta))
 
-    val apprec = fellesformat.toApprec(
+    val apprec = toApprec(
             ediLoggId,
             msgId,
             msgHead,
@@ -53,7 +51,7 @@ fun handleStatusINVALID(
             msgHead.msgInfo.sender.organisation,
             validationResult
     )
-    sendReceipt(apprec, sm2013ApprecTopic, kafkaproducerApprec)
+    sendReceipt(apprec, sm2013ApprecTopic, kafkaClients.kafkaProducerApprec)
     log.info("Apprec receipt sent to kafka topic {}, {}", sm2013ApprecTopic, fields(loggingMeta))
 }
 
@@ -432,7 +430,7 @@ fun fellesformatToAppprec(
     msgId: String,
     msgHead: XMLMsgHead
 ): Apprec =
-        fellesformat.toApprec(
+        toApprec(
                 ediLoggId,
                 msgId,
                 msgHead,

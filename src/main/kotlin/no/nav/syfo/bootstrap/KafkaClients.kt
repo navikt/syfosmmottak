@@ -10,6 +10,8 @@ import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.sak.avro.ProduceTask
+import no.nav.syfo.syfoservice.kafka.SyfoserviceKafkaProducer
+import no.nav.syfo.sykmelding.kafka.model.SykmeldingSyfoserviceKafkaMessage
 import no.nav.syfo.util.JacksonKafkaSerializer
 import org.apache.kafka.clients.producer.KafkaProducer
 
@@ -24,4 +26,5 @@ class KafkaClients constructor(env: Environment, credentials: VaultCredentials) 
     val kafkaProducerApprec = KafkaProducer<String, Apprec>(producerProperties)
     val manualValidationKafkaProducer = KafkaProducer<String, ProduceTask>(manualValidationProducerProperties)
     val kafkaproducerManuellOppgave = KafkaProducer<String, ManuellOppgave>(producerProperties)
+    val syfoserviceKafkaProducer = SyfoserviceKafkaProducer(KafkaProducer<String, SykmeldingSyfoserviceKafkaMessage>(producerProperties), env.syfoserviceKafkaTopic)
 }
