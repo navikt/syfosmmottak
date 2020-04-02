@@ -25,7 +25,7 @@ object ApprecMapperSpek : Spek({
     describe("Duplicate AppRec") {
         val tekstTilSykmelder = "Duplikat! - Denne sykmeldingen er mottatt tidligere. \" +\n" +
         "                                        \"Skal ikke sendes på nytt"
-        val apprec = toApprec(
+        val apprec = fellesformat.toApprec(
                 ediloggid = receiverBlock.ediLoggId,
                 msgId = msgHead.msgInfo.msgId,
                 xmlMsgHead = msgHead,
@@ -127,14 +127,14 @@ object ApprecMapperSpek : Spek({
     }
 
     describe("OK AppRec") {
-        val apprec = toApprec(
+        val apprec = fellesformat.toApprec(
                 ediloggid = receiverBlock.ediLoggId,
                 msgId = msgHead.msgInfo.msgId,
                 xmlMsgHead = msgHead,
                 apprecStatus = ApprecStatus.OK,
                 tekstTilSykmelder = null,
-                senderOrganisation = msgHead.msgInfo.receiver.organisation,
-                mottakerOrganisation = msgHead.msgInfo.sender.organisation
+                mottakerOrganisation = msgHead.msgInfo.sender.organisation,
+                senderOrganisation = msgHead.msgInfo.receiver.organisation
         )
         it("Has the same ediLoggId as the source") {
             apprec.ediloggid shouldEqual fellesformat.get<XMLMottakenhetBlokk>().ediLoggId
@@ -242,14 +242,14 @@ object ApprecMapperSpek : Spek({
                     ruleStatus = Status.INVALID
             )))
 
-        val apprec = toApprec(
+        val apprec = fellesformat.toApprec(
                 ediloggid = receiverBlock.ediLoggId,
                 msgId = msgHead.msgInfo.msgId,
                 xmlMsgHead = msgHead,
                 apprecStatus = ApprecStatus.OK,
                 tekstTilSykmelder = null,
-                senderOrganisation = msgHead.msgInfo.receiver.organisation,
                 mottakerOrganisation = msgHead.msgInfo.sender.organisation,
+                senderOrganisation = msgHead.msgInfo.receiver.organisation,
                 validationResult = validationResult
 
         )

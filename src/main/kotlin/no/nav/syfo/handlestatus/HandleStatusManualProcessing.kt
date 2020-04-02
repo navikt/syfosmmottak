@@ -6,13 +6,15 @@ import java.io.IOException
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import javax.jms.MessageProducer
+import javax.jms.Session
 import net.logstash.logback.argument.StructuredArguments
+import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.apprec.ApprecStatus
 import no.nav.syfo.apprec.toApprec
-import no.nav.syfo.bootstrap.KafkaClients
 import no.nav.syfo.client.ArbeidsFordelingClient
 import no.nav.syfo.client.ArbeidsfordelingRequest
 import no.nav.syfo.helpers.retry
@@ -27,6 +29,7 @@ import no.nav.syfo.sendReceipt
 import no.nav.syfo.sendValidationResult
 import no.nav.syfo.service.fetchDiskresjonsKode
 import no.nav.syfo.service.fetchEgenAnsatt
+import no.nav.syfo.service.notifySyfoService
 import no.nav.syfo.util.LoggingMeta
 import no.nav.tjeneste.pip.egen.ansatt.v1.EgenAnsattV1
 import no.nav.tjeneste.virksomhet.person.v3.binding.PersonV3
@@ -42,19 +45,27 @@ import org.apache.kafka.clients.producer.ProducerRecord
 suspend fun handleStatusMANUALPROCESSING(
     receivedSykmelding: ReceivedSykmelding,
     loggingMeta: LoggingMeta,
+    fellesformat: XMLEIFellesformat,
     ediLoggId: String,
     msgId: String,
     msgHead: XMLMsgHead,
     sm2013ApprecTopic: String,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    session: Session,
+    syfoserviceProducer: MessageProducer,
     healthInformation: HelseOpplysningerArbeidsuforhet,
+    syfoserviceQueueName: String,
     validationResult: ValidationResult,
+    kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
+    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
     sm2013ManualHandlingTopic: String,
+    kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
     sm2013BehandlingsUtfallTopic: String,
+    kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
     syfoSmManuellTopic: String,
     personV3: PersonV3,
     egenAnsattV1: EgenAnsattV1,
-    arbeidsFordelingClient: ArbeidsFordelingClient,
-    kafkaClients: KafkaClients
+    arbeidsFordelingClient: ArbeidsFordelingClient
 ) {
 
     val geografiskTilknytning = fetchGeografiskTilknytning(personV3, receivedSykmelding)
@@ -86,7 +97,7 @@ suspend fun handleStatusMANUALPROCESSING(
 
     if (sendToSyfosmManuell && !egenAnsatt) {
         log.info("Sending manuell oppgave to syfosmmanuell-backend {}", StructuredArguments.fields(loggingMeta))
-        val apprec = toApprec(
+        val apprec = fellesformat.toApprec(
                 ediLoggId,
                 msgId,
                 msgHead,
@@ -95,21 +106,21 @@ suspend fun handleStatusMANUALPROCESSING(
                 msgHead.msgInfo.receiver.organisation,
                 msgHead.msgInfo.sender.organisation
         )
-        sendManuellTask(receivedSykmelding, validationResult, apprec, syfoSmManuellTopic, kafkaClients.kafkaproducerManuellOppgave)
+        sendManuellTask(receivedSykmelding, validationResult, apprec, syfoSmManuellTopic, kafkaproducerManuellOppgave)
     } else {
         log.info("Sending manuell oppgave to syfosmoppgave {}", StructuredArguments.fields(loggingMeta))
-        opprettOppgave(kafkaClients.manualValidationKafkaProducer, receivedSykmelding, validationResult, loggingMeta)
+        opprettOppgave(kafkaManuelTaskProducer, receivedSykmelding, validationResult, loggingMeta)
 
-        kafkaClients.syfoserviceKafkaProducer.publishSykmeldingToKafka(sykmeldingId = receivedSykmelding.sykmelding.id, helseOpplysningerArbeidsuforhet = healthInformation)
+        notifySyfoService(session = session, receiptProducer = syfoserviceProducer, ediLoggId = ediLoggId,
+                sykmeldingId = receivedSykmelding.sykmelding.id, msgId = msgId, healthInformation = healthInformation)
+        log.info("Message send to syfoService {}, {}", syfoserviceQueueName, StructuredArguments.fields(loggingMeta))
 
-        log.info("Message send to syfoservice-mq-producer {}", StructuredArguments.fields(loggingMeta))
-
-        kafkaClients.kafkaProducerReceivedSykmelding.send(ProducerRecord(sm2013ManualHandlingTopic, receivedSykmelding.sykmelding.id, receivedSykmelding))
+        kafkaproducerreceivedSykmelding.send(ProducerRecord(sm2013ManualHandlingTopic, receivedSykmelding.sykmelding.id, receivedSykmelding))
         log.info("Message send to kafka {}, {}", sm2013ManualHandlingTopic, StructuredArguments.fields(loggingMeta))
 
-        sendValidationResult(validationResult, kafkaClients.kafkaProducerValidationResult, sm2013BehandlingsUtfallTopic, receivedSykmelding, loggingMeta)
+        sendValidationResult(validationResult, kafkaproducervalidationResult, sm2013BehandlingsUtfallTopic, receivedSykmelding, loggingMeta)
 
-        val apprec = toApprec(
+        val apprec = fellesformat.toApprec(
                 ediLoggId,
                 msgId,
                 msgHead,
@@ -118,7 +129,7 @@ suspend fun handleStatusMANUALPROCESSING(
                 msgHead.msgInfo.receiver.organisation,
                 msgHead.msgInfo.sender.organisation
         )
-        sendReceipt(apprec, sm2013ApprecTopic, kafkaClients.kafkaProducerApprec)
+        sendReceipt(apprec, sm2013ApprecTopic, kafkaproducerApprec)
         log.info("Apprec receipt sent to kafka topic {}, {}", sm2013ApprecTopic, StructuredArguments.fields(loggingMeta))
     }
 }
