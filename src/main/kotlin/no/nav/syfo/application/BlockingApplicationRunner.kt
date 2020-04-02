@@ -291,14 +291,12 @@ class BlockingApplicationRunner {
 
                         when (validationResult.status) {
                             Status.OK -> handleStatusOK(
-                                    fellesformat,
                                     ediLoggId,
                                     msgId,
                                     msgHead,
                                     env.sm2013Apprec,
                                     loggingMeta,
                                     healthInformation,
-                                    env.syfoserviceQueueName,
                                     env.sm2013AutomaticHandlingTopic,
                                     receivedSykmelding,
                                     kafkaClients
@@ -306,13 +304,11 @@ class BlockingApplicationRunner {
                             Status.MANUAL_PROCESSING -> handleStatusMANUALPROCESSING(
                                     receivedSykmelding,
                                     loggingMeta,
-                                    fellesformat,
                                     ediLoggId,
                                     msgId,
                                     msgHead,
                                     env.sm2013Apprec,
                                     healthInformation,
-                                    env.syfoserviceQueueName,
                                     validationResult,
                                     env.sm2013ManualHandlingTopic,
                                     env.sm2013BehandlingsUtfallTopic,
@@ -328,7 +324,6 @@ class BlockingApplicationRunner {
                                     env.sm2013InvalidHandlingTopic,
                                     receivedSykmelding,
                                     loggingMeta,
-                                    fellesformat,
                                     env.sm2013Apprec,
                                     env.sm2013BehandlingsUtfallTopic,
                                     ediLoggId,

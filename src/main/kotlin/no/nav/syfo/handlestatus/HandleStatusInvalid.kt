@@ -29,7 +29,6 @@ fun handleStatusINVALID(
     sm2013InvalidHandlingTopic: String,
     receivedSykmelding: ReceivedSykmelding,
     loggingMeta: LoggingMeta,
-    fellesformat: XMLEIFellesformat,
     sm2013ApprecTopic: String,
     sm2013BehandlingsUtfallToipic: String,
     ediLoggId: String,

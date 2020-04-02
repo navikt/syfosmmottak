@@ -7,7 +7,6 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import net.logstash.logback.argument.StructuredArguments
-import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 import no.nav.syfo.apprec.Apprec
@@ -43,13 +42,11 @@ import org.apache.kafka.clients.producer.ProducerRecord
 suspend fun handleStatusMANUALPROCESSING(
     receivedSykmelding: ReceivedSykmelding,
     loggingMeta: LoggingMeta,
-    fellesformat: XMLEIFellesformat,
     ediLoggId: String,
     msgId: String,
     msgHead: XMLMsgHead,
     sm2013ApprecTopic: String,
     healthInformation: HelseOpplysningerArbeidsuforhet,
-    syfoserviceQueueName: String,
     validationResult: ValidationResult,
     sm2013ManualHandlingTopic: String,
     sm2013BehandlingsUtfallTopic: String,
@@ -105,7 +102,7 @@ suspend fun handleStatusMANUALPROCESSING(
 
         kafkaClients.syfoserviceKafkaProducer.publishSykmeldingToKafka(sykmeldingId = receivedSykmelding.sykmelding.id, helseOpplysningerArbeidsuforhet = healthInformation)
 
-        log.info("Message send to syfoService {}, {}", syfoserviceQueueName, StructuredArguments.fields(loggingMeta))
+        log.info("Message send to syfoservice-mq-producer {}", StructuredArguments.fields(loggingMeta))
 
         kafkaClients.kafkaProducerReceivedSykmelding.send(ProducerRecord(sm2013ManualHandlingTopic, receivedSykmelding.sykmelding.id, receivedSykmelding))
         log.info("Message send to kafka {}, {}", sm2013ManualHandlingTopic, StructuredArguments.fields(loggingMeta))
