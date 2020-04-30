@@ -1,5 +1,5 @@
 [![Build status](https://github.com/navikt/syfosmmottak/workflows/Deploy%20to%20dev%20and%20prod/badge.svg)](https://github.com/navikt/syfosmmottak/workflows/Deploy%20to%20dev%20and%20prod/badge.svg)
-# SYFO sm mottak
+# SYFO smmottak
 This project contains just the receiving a sykmelding2013 message
 
 ## Technologies used
