@@ -284,7 +284,8 @@ class BlockingApplicationRunner {
                                 pasientAktoerId = patientIdents.identer!!.first().ident,
                                 legeAktoerId = doctorIdents.identer!!.first().ident,
                                 msgId = msgId,
-                                signaturDato = msgHead.msgInfo.genDate
+                                signaturDato = msgHead.msgInfo.genDate,
+                                hprFnrBehandler = personNumberDoctor
                         )
                         val receivedSykmelding = ReceivedSykmelding(
                                 sykmelding = sykmelding,
