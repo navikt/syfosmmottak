@@ -10,7 +10,6 @@ import javax.jms.Session
 import javax.jms.TextMessage
 import kotlinx.coroutines.delay
 import net.logstash.logback.argument.StructuredArguments
-import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.emottak.subscription.SubscriptionPort
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.eiFellesformat.XMLMottakenhetBlokk
@@ -20,6 +19,7 @@ import no.nav.syfo.VaultCredentials
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.client.AktoerIdClient
 import no.nav.syfo.client.ArbeidsFordelingClient
+import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.client.findBestSamhandlerPraksis
@@ -32,7 +32,7 @@ import no.nav.syfo.handlestatus.handleBiDiagnoserDiagnosekodeVerkIsMissing
 import no.nav.syfo.handlestatus.handleDoctorNotFoundInAktorRegister
 import no.nav.syfo.handlestatus.handleDuplicateEdiloggid
 import no.nav.syfo.handlestatus.handleDuplicateSM2013Content
-import no.nav.syfo.handlestatus.handleFnrAndDnrIsmissingFromBehandler
+import no.nav.syfo.handlestatus.handleFnrAndDnrAndHprIsmissingFromBehandler
 import no.nav.syfo.handlestatus.handleHouvedDiagnoseDiagnoseBeskrivelseMissing
 import no.nav.syfo.handlestatus.handleHouvedDiagnoseDiagnosekodeMissing
 import no.nav.syfo.handlestatus.handleMedisinskeArsakskodeIsmissing
@@ -61,12 +61,14 @@ import no.nav.syfo.util.arbeidsplassenArsakskodeMangler
 import no.nav.syfo.util.countNewDiagnoseCode
 import no.nav.syfo.util.erTestFnr
 import no.nav.syfo.util.extractHelseOpplysningerArbeidsuforhet
+import no.nav.syfo.util.extractHpr
 import no.nav.syfo.util.extractOrganisationHerNumberFromSender
 import no.nav.syfo.util.extractOrganisationNumberFromSender
 import no.nav.syfo.util.extractOrganisationRashNumberFromSender
 import no.nav.syfo.util.fellesformatUnmarshaller
 import no.nav.syfo.util.fnrOgDnrMangler
 import no.nav.syfo.util.get
+import no.nav.syfo.util.hprMangler
 import no.nav.syfo.util.medisinskeArsakskodeMangler
 import no.nav.syfo.util.wrapExceptions
 import no.nav.tjeneste.pip.egen.ansatt.v1.EgenAnsattV1
@@ -98,7 +100,8 @@ class BlockingApplicationRunner {
         kafkaproducerApprec: KafkaProducer<String, Apprec>,
         kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
         personV3: PersonV3,
-        egenAnsattV1: EgenAnsattV1
+        egenAnsattV1: EgenAnsattV1,
+        norskHelsenettClient: NorskHelsenettClient
     ) {
         wrapExceptions {
 
@@ -137,7 +140,11 @@ class BlockingApplicationRunner {
                     val legekontorOrgName = msgHead.msgInfo.sender.organisation.organisationName
 
                     val personNumberPatient = healthInformation.pasient.fodselsnummer.id
-                    val personNumberDoctor = receiverBlock.avsenderFnrFraDigSignatur
+                    val personNumberDoctor = if (!fnrOgDnrMangler(healthInformation)) {
+                        receiverBlock.avsenderFnrFraDigSignatur
+                    } else {
+                        getFnrFromHpr(norskHelsenettClient, fellesformat, msgId)
+                    }
 
                     log.info("Received message, {}", StructuredArguments.fields(loggingMeta))
 
@@ -228,8 +235,8 @@ class BlockingApplicationRunner {
                             continue@loop
                         }
 
-                        if (fnrOgDnrMangler(healthInformation)) {
-                            handleFnrAndDnrIsmissingFromBehandler(loggingMeta, fellesformat,
+                        if (fnrOgDnrMangler(healthInformation) && hprMangler(healthInformation)) {
+                            handleFnrAndDnrAndHprIsmissingFromBehandler(loggingMeta, fellesformat,
                                     ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
                             continue@loop
                         }
@@ -386,4 +393,22 @@ class BlockingApplicationRunner {
             }
         }
     }
+}
+
+@KtorExperimentalAPI
+suspend fun getFnrFromHpr(
+    norskHelsenettClient: NorskHelsenettClient,
+    fellesformat: XMLEIFellesformat,
+    msgid: String
+): String {
+
+    val hprnummer = extractHpr(fellesformat)!!.id
+    val behandlerFraHpr = norskHelsenettClient.finnBehandler(extractHpr(fellesformat)!!.id, msgid)
+
+    if (behandlerFraHpr == null || behandlerFraHpr.fnr.isNullOrEmpty()) {
+        log.warn("Kunne ikke hente fnr for hpr {}", hprnummer)
+        throw IllegalStateException("Kunne ikke hente fnr for hpr $hprnummer")
+    }
+
+    return behandlerFraHpr.fnr
 }

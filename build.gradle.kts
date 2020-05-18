@@ -43,7 +43,7 @@ val navEgenAnsattVersion = "1.2019.09.25-00.21-49b69f0625e0"
 plugins {
     java
     id("no.nils.wsdl2java") version "0.10"
-    kotlin("jvm") version "1.3.70"
+    kotlin("jvm") version "1.3.72"
     id("org.jmailen.kotlinter") version "2.2.0"
     id("com.diffplug.gradle.spotless") version "3.24.0"
     id("com.github.johnrengelman.shadow") version "5.2.0"

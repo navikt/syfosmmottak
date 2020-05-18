@@ -6,6 +6,9 @@ fun fnrOgDnrMangler(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean
         healthInformation.behandler.id.find { it.typeId.v == "FNR" }?.id.isNullOrBlank() &&
                 healthInformation.behandler.id.find { it.typeId.v == "DNR" }?.id.isNullOrBlank()
 
+fun hprMangler(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean =
+        healthInformation.behandler.id.find { it.typeId.v == "HPR" }?.id.isNullOrBlank()
+
 fun medisinskeArsakskodeMangler(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean =
         healthInformation.aktivitet.periode.any { periode -> aktivitetIkkeMuligMedisinskeArsakskodeMangler(periode.aktivitetIkkeMulig) }
 

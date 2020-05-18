@@ -32,7 +32,10 @@ data class Environment(
     val sm2013Apprec: String = getEnvVar("KAFKA_SM2013_BEHANDLING_TOPIC", "privat-syfo-sm2013-apprec-v1"),
     val cluster: String = getEnvVar("NAIS_CLUSTER_NAME"),
     val egenAnsattURL: String = getEnvVar("EGEN_ANSATT_URL"),
-    val arbeidsfordelingAPIUrl: String = getEnvVar("ARBEIDSFORDELING_API")
+    val arbeidsfordelingAPIUrl: String = getEnvVar("ARBEIDSFORDELING_API"),
+    val norskHelsenettEndpointURL: String = getEnvVar("HELSENETT_ENDPOINT_URL", "http://syfohelsenettproxy"),
+    val aadAccessTokenUrl: String = getEnvVar("AADACCESSTOKEN_URL"),
+    val helsenettproxyId: String = getEnvVar("HELSENETTPROXY_ID")
 ) : MqConfig, KafkaConfig
 
 data class VaultCredentials(
@@ -40,7 +43,9 @@ data class VaultCredentials(
     val serviceuserPassword: String,
     val mqUsername: String,
     val mqPassword: String,
-    val redisSecret: String
+    val redisSecret: String,
+    val clientsecret: String,
+    val clientId: String
 ) : KafkaCredentials {
     override val kafkaUsername: String = serviceuserUsername
     override val kafkaPassword: String = serviceuserPassword
