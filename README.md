@@ -2,7 +2,7 @@
 # SYFO smmottak
 This project contains just the receiving a sykmelding2013 message
 
-<img src="./src/svg/flyttdiagram.svg" alt="Image of the flow of the padm2 application">
+<img src="./src/svg/flyttdiagram.svg" alt="Image of the flow of the syfosmmottak application">
 
 ## Technologies used
 * Kotlin
