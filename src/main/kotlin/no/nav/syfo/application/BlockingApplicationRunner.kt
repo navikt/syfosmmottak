@@ -404,7 +404,7 @@ suspend fun getFnrFromHpr(
 ): String {
 
     val hprnummer = extractHpr(fellesformat)!!.id
-    val behandlerFraHpr = norskHelsenettClient.finnBehandler(extractHpr(fellesformat)!!.id, msgid)
+    val behandlerFraHpr = norskHelsenettClient.finnBehandler(hprnummer, msgid)
 
     if (behandlerFraHpr == null || behandlerFraHpr.fnr.isNullOrEmpty()) {
         log.warn("Kunne ikke hente fnr for hpr {}", hprnummer)
