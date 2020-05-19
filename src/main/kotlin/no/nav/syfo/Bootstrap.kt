@@ -64,7 +64,8 @@ fun main() {
             mqPassword = getFileAsString("/secrets/default/mqPassword"),
             clientId = getFileAsString("/secrets/azuread/syfosmmottak/client_id"),
             clientsecret = getFileAsString("/secrets/azuread/syfosmmottak/client_secret"),
-            redisSecret = getFileAsString("/secrets/default/redisSecret")
+            redisSecret = getFileAsString("/secrets/default/redisSecret"),
+            syfohelsenettproxyId = getFileAsString("/secrets/default/syfohelsenettproxyId")
     )
     val applicationState = ApplicationState()
     val applicationEngine = createApplicationEngine(
