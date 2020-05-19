@@ -94,5 +94,5 @@ class HttpClients(environment: Environment, credentials: VaultCredentials) {
     @KtorExperimentalAPI
     val accessTokenClient = AccessTokenClient(environment.aadAccessTokenUrl, credentials.clientId, credentials.clientsecret, httpClientWithProxy)
     @KtorExperimentalAPI
-    val norskHelsenettClient = NorskHelsenettClient(environment.norskHelsenettEndpointURL, accessTokenClient, environment.helsenettproxyId, simpleHttpClient)
+    val norskHelsenettClient = NorskHelsenettClient(environment.norskHelsenettEndpointURL, accessTokenClient, credentials.syfohelsenettproxyId, simpleHttpClient)
 }
