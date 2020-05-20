@@ -36,11 +36,11 @@ spec:
   vault:
     enabled: true
     paths:
-      - kvPath: /azuread/data/dev/creds/syfosmmottak
+      - kvPath: /azuread/data/prod/creds/syfosmmottak
         mountPath: /secrets/azuread/syfosmmottak
-      - kvPath: /kv/preprod/fss/syfosmmottak/default
+      - kvPath: /kv/prod/fss/syfosmmottak/default
         mountPath: /secrets/default
-      - kvPath: serviceuser/data/dev/srvsyfosmmottak
+      - kvPath: serviceuser/data/prod/srvsyfosmmottak
         mountPath: /secrets/serviceuser
   webproxy: true
   env:
