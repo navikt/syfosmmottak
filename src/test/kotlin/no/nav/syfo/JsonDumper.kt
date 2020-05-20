@@ -21,13 +21,13 @@ fun main() {
             .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
 
     val sm = fellesformatUnmarshaller.unmarshal(StringReader(getFileAsString("src/test/resources/generated_sm.xml"))) as HelseOpplysningerArbeidsuforhet
-    println(objectMapper.writeValueAsString(sm.toSykmelding("detteerensykmeldingid", "41234123", "12890371", "123124334", LocalDateTime.now())))
+    println(objectMapper.writeValueAsString(sm.toSykmelding("detteerensykmeldingid", "41234123", "12890371", "123124334", LocalDateTime.now(), "1213415151")))
 
     val stringInput = getFileAsString("src/test/resources/sykemelding2013Regelsettversjon2.xml")
     val inputMessageText = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
 
     val receivedSykmelding = ReceivedSykmelding(
-            sykmelding = sm.toSykmelding("detteerensykmeldingid", "41234123", "12890371", "123124334", LocalDateTime.now()),
+            sykmelding = sm.toSykmelding("detteerensykmeldingid", "41234123", "12890371", "123124334", LocalDateTime.now(), "1213415151"),
             personNrPasient = "1231231",
             tlfPasient = "1323423424",
             personNrLege = "123134",

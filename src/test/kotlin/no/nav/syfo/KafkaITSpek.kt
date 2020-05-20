@@ -27,7 +27,7 @@ object KafkaITSpek : Spek({
             topicNames = listOf(topic)
     )
 
-    val credentials = VaultCredentials("", "", "", "", "")
+    val credentials = VaultCredentials("", "", "", "", "", "", "", "")
     val config = Environment(mqHostname = "mqhost", mqPort = getRandomPort(),
             mqGatewayName = "mqGateway", kafkaBootstrapServers = embeddedEnvironment.brokersURL,
             mqChannelName = "syfomottak", aktoerregisterV1Url = "localhost-aktor", subscriptionEndpointURL = "localhost-emottak",
@@ -36,7 +36,7 @@ object KafkaITSpek : Spek({
             kuhrSarApiUrl = "kuhrsarApi", syfosmreglerApiUrl = "syfosmreglerApi", sm2013ManualHandlingTopic = "sm2013ManualHandlingTopic",
             sm2013AutomaticHandlingTopic = "sm2013AutomaticHandlingTopic", sm2013InvalidHandlingTopic = "sm2013InvalidHandlingTopic",
             applicationName = "syfosmmottak", sm2013Apprec = "syfoSmApprecTopic", cluster = "dev-fss",
-            arbeidsfordelingAPIUrl = "", egenAnsattURL = ""
+            arbeidsfordelingAPIUrl = "", egenAnsattURL = "", aadAccessTokenUrl = ""
     )
 
     fun Properties.overrideForTest(): Properties = apply {

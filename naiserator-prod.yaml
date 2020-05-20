@@ -35,6 +35,14 @@ spec:
       memory: 512Mi
   vault:
     enabled: true
+    paths:
+      - kvPath: /azuread/data/dev/creds/syfosmmottak
+        mountPath: /secrets/azuread/syfosmmottak
+      - kvPath: /kv/preprod/fss/syfosmmottak/default
+        mountPath: /secrets/default
+      - kvPath: serviceuser/data/dev/srvsyfosmmottak
+        mountPath: /secrets/serviceuser
+  webproxy: true
   env:
     - name: SUBSCRIPTION_ENDPOINT_URL
       value: https://wasapp.adeo.no/nav-emottak-eletter-web/services/
@@ -66,3 +74,5 @@ spec:
       value: https://wasapp.adeo.no/tpsws/EgenAnsatt_v1
     - name: ARBEIDSFORDELING_API
       value: https://app.adeo.no/norg2/api/v1/arbeidsfordeling
+    - name: AADACCESSTOKEN_URL
+      value: https://login.microsoftonline.com/navno.onmicrosoft.com/oauth2/token

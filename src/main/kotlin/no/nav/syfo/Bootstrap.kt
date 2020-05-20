@@ -4,11 +4,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.hotspot.DefaultExports
-import java.nio.file.Paths
 import javax.jms.Session
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
@@ -25,6 +23,7 @@ import no.nav.syfo.bootstrap.HttpClients
 import no.nav.syfo.bootstrap.KafkaClients
 import no.nav.syfo.client.AktoerIdClient
 import no.nav.syfo.client.ArbeidsFordelingClient
+import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.model.ManuellOppgave
@@ -36,6 +35,7 @@ import no.nav.syfo.mq.producerForQueue
 import no.nav.syfo.sak.avro.ProduceTask
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.TrackableException
+import no.nav.syfo.util.getFileAsString
 import no.nav.syfo.ws.createPort
 import no.nav.tjeneste.pip.egen.ansatt.v1.EgenAnsattV1
 import no.nav.tjeneste.virksomhet.person.v3.binding.PersonV3
@@ -57,7 +57,16 @@ val log: Logger = LoggerFactory.getLogger("no.nav.syfo.syfosmmottak")
 @KtorExperimentalAPI
 fun main() {
     val env = Environment()
-    val credentials = objectMapper.readValue<VaultCredentials>(Paths.get("/var/run/secrets/nais.io/vault/credentials.json").toFile())
+    val credentials = VaultCredentials(
+            serviceuserPassword = getFileAsString("/secrets/serviceuser/password"),
+            serviceuserUsername = getFileAsString("/secrets/serviceuser/username"),
+            mqUsername = getFileAsString("/secrets/default/mqUsername"),
+            mqPassword = getFileAsString("/secrets/default/mqPassword"),
+            clientId = getFileAsString("/secrets/azuread/syfosmmottak/client_id"),
+            clientsecret = getFileAsString("/secrets/azuread/syfosmmottak/client_secret"),
+            redisSecret = getFileAsString("/secrets/default/redisSecret"),
+            syfohelsenettproxyId = getFileAsString("/secrets/default/syfohelsenettproxyId")
+    )
     val applicationState = ApplicationState()
     val applicationEngine = createApplicationEngine(
             env,
@@ -90,7 +99,7 @@ fun main() {
             httpClients.syfoSykemeldingRuleClient, httpClients.sarClient, httpClients.aktoerIdClient,
             httpClients.arbeidsFordelingClient, credentials, kafkaClients.manualValidationKafkaProducer,
             kafkaClients.kafkaProducerApprec, kafkaClients.kafkaproducerManuellOppgave,
-            personV3, egenansattV1)
+            personV3, egenansattV1, httpClients.norskHelsenettClient)
 }
 
 fun createListener(applicationState: ApplicationState, action: suspend CoroutineScope.() -> Unit): Job =
@@ -120,7 +129,8 @@ fun launchListeners(
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
     personV3: PersonV3,
-    egenAnsattV1: EgenAnsattV1
+    egenAnsattV1: EgenAnsattV1,
+    norskHelsenettClient: NorskHelsenettClient
 ) {
     createListener(applicationState) {
         connectionFactory(env).createConnection(credentials.mqUsername, credentials.mqPassword).use { connection ->
@@ -141,7 +151,7 @@ fun launchListeners(
                         syfoSykemeldingRuleClient, kuhrSarClient, aktoerIdClient, arbeidsFordelingClient, env,
                         credentials, applicationState, jedis, kafkaManuelTaskProducer,
                         session, kafkaproducerApprec, kafkaproducerManuellOppgave,
-                        personV3, egenAnsattV1)
+                        personV3, egenAnsattV1, norskHelsenettClient)
             }
         }
     }

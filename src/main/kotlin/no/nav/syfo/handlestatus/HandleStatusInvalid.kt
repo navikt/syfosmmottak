@@ -257,7 +257,7 @@ fun handleBiDiagnoserDiagnosekodeBeskrivelseMissing(
     updateRedis(jedis, ediLoggId, sha256String)
 }
 
-fun handleFnrAndDnrIsmissingFromBehandler(
+fun handleFnrAndDnrAndHprIsmissingFromBehandler(
     loggingMeta: LoggingMeta,
     fellesformat: XMLEIFellesformat,
     ediLoggId: String,
@@ -268,11 +268,11 @@ fun handleFnrAndDnrIsmissingFromBehandler(
     jedis: Jedis,
     sha256String: String
 ) {
-    log.warn("FNR or DNR is missing on behandler {}", fields(loggingMeta))
+    log.warn("FNR or DNR or HPR is missing on behandler {}", fields(loggingMeta))
 
     val apprec = fellesformatToAppprec(fellesformat, "Sykmeldingen kan ikke rettes, det må skrives en ny." +
             "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
-            "Fødselsnummer/d-nummer på behandler mangler",
+            "Fødselsnummer/d-nummer/Hpr-nummer på behandler mangler",
             ediLoggId, msgId, msgHead)
 
     sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
