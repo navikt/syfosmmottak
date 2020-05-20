@@ -407,8 +407,8 @@ suspend fun getFnrFromHpr(
     val behandlerFraHpr = norskHelsenettClient.finnBehandler(hprnummer, msgid)
 
     if (behandlerFraHpr == null || behandlerFraHpr.fnr.isNullOrEmpty()) {
-        log.warn("Kunne ikke hente fnr for hpr {}", hprnummer)
-        throw IllegalStateException("Kunne ikke hente fnr for hpr $hprnummer")
+        log.error("Kunne ikke hente fnr for hpr {}, msgid {}", hprnummer, msgid)
+        throw IllegalStateException("Kunne ikke hente fnr for hpr $hprnummer, msgid $msgid")
     }
 
     return behandlerFraHpr.fnr
