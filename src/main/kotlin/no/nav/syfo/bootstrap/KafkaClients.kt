@@ -12,12 +12,21 @@ import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.sak.avro.ProduceTask
 import no.nav.syfo.util.JacksonKafkaSerializer
 import org.apache.kafka.clients.producer.KafkaProducer
+import org.apache.kafka.clients.producer.ProducerConfig
 
 class KafkaClients constructor(env: Environment, credentials: VaultCredentials) {
 
     private val kafkaBaseConfig = loadBaseConfig(env, credentials)
-    private val producerProperties = kafkaBaseConfig.toProducerConfig(env.applicationName, valueSerializer = JacksonKafkaSerializer::class)
+    private val producerProperties = kafkaBaseConfig
+            .toProducerConfig(env.applicationName, valueSerializer = JacksonKafkaSerializer::class)
     private val manualValidationProducerProperties = kafkaBaseConfig.toProducerConfig(env.applicationName, valueSerializer = KafkaAvroSerializer::class)
+
+    init {
+        producerProperties[ProducerConfig.RETRIES_CONFIG] = 100_000
+        producerProperties[ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG] = true
+        manualValidationProducerProperties[ProducerConfig.RETRIES_CONFIG] = 100_000
+        manualValidationProducerProperties[ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG] = true
+    }
 
     val kafkaProducerReceivedSykmelding = KafkaProducer<String, ReceivedSykmelding>(producerProperties)
     val kafkaProducerValidationResult = KafkaProducer<String, ValidationResult>(producerProperties)

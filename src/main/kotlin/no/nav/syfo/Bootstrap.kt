@@ -162,7 +162,13 @@ fun sendReceipt(
     sm2013ApprecTopic: String,
     kafkaproducerApprec: KafkaProducer<String, Apprec>
 ) {
-    kafkaproducerApprec.send(ProducerRecord(sm2013ApprecTopic, apprec))
+    try {
+        kafkaproducerApprec.send(ProducerRecord(sm2013ApprecTopic, apprec)).get()
+        log.info("Apprec receipt sent to kafka topic {}", sm2013ApprecTopic)
+    } catch (ex: Exception) {
+        log.error("failed to send apprec to kafka")
+        throw ex
+    }
 }
 
 fun sendValidationResult(
@@ -173,8 +179,29 @@ fun sendValidationResult(
     loggingMeta: LoggingMeta
 ) {
 
-    kafkaproducervalidationResult.send(
-            ProducerRecord(sm2013BehandlingsUtfallToipic, receivedSykmelding.sykmelding.id, validationResult)
-    )
-    log.info("Validation results send to kafka {}, {}", sm2013BehandlingsUtfallToipic, fields(loggingMeta))
+    try {
+        kafkaproducervalidationResult.send(
+                ProducerRecord(sm2013BehandlingsUtfallToipic, receivedSykmelding.sykmelding.id, validationResult)
+        ).get()
+        log.info("Validation results send to kafka {}, {}", sm2013BehandlingsUtfallToipic, fields(loggingMeta))
+    } catch (ex: Exception) {
+        log.error("failed to send validation result for sykmelding {}", receivedSykmelding.sykmelding.id)
+        throw ex
+    }
+}
+
+fun sendReceivedSykmelding(
+    receivedSykmeldingTopic: String,
+    receivedSykmelding: ReceivedSykmelding,
+    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>
+) {
+    try {
+        kafkaproducerreceivedSykmelding.send(
+                ProducerRecord(receivedSykmeldingTopic, receivedSykmelding.sykmelding.id, receivedSykmelding)
+        ).get()
+        log.info("Sykmelding sendt to kafka topic {} sykmelding id {}", receivedSykmeldingTopic, receivedSykmelding.sykmelding.id)
+    } catch (ex: Exception) {
+        log.error("failed to send sykmelding to kafka result for sykmelding {}", receivedSykmelding.sykmelding.id)
+        throw ex
+    }
 }
