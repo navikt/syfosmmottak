@@ -12,10 +12,10 @@ import no.nav.syfo.apprec.toApprec
 import no.nav.syfo.log
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.sendReceipt
+import no.nav.syfo.sendReceivedSykmelding
 import no.nav.syfo.service.notifySyfoService
 import no.nav.syfo.util.LoggingMeta
 import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.clients.producer.ProducerRecord
 
 fun handleStatusOK(
     fellesformat: XMLEIFellesformat,
@@ -34,12 +34,7 @@ fun handleStatusOK(
     kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>
 ) {
 
-    kafkaproducerreceivedSykmelding.send(ProducerRecord(sm2013AutomaticHandlingTopic, receivedSykmelding.sykmelding.id, receivedSykmelding))
-    log.info("Message send to kafka {}, {}", sm2013AutomaticHandlingTopic, StructuredArguments.fields(loggingMeta))
-
-    notifySyfoService(session = session, receiptProducer = syfoserviceProducer, ediLoggId = ediLoggId,
-            sykmeldingId = receivedSykmelding.sykmelding.id, msgId = msgId, healthInformation = healthInformation)
-    log.info("Message send to syfoService {}, {}", syfoserviceQueueName, StructuredArguments.fields(loggingMeta))
+    sendReceivedSykmelding(sm2013AutomaticHandlingTopic, receivedSykmelding, kafkaproducerreceivedSykmelding)
 
     val apprec = fellesformat.toApprec(
             ediLoggId,
@@ -51,5 +46,9 @@ fun handleStatusOK(
             msgHead.msgInfo.sender.organisation
     )
     sendReceipt(apprec, sm2013ApprecTopic, kafkaproducerApprec)
-    log.info("Apprec receipt sent to kafka topic {}, {}", sm2013ApprecTopic, StructuredArguments.fields(loggingMeta))
+
+    notifySyfoService(session = session, receiptProducer = syfoserviceProducer, ediLoggId = ediLoggId,
+            sykmeldingId = receivedSykmelding.sykmelding.id, msgId = msgId, healthInformation = healthInformation)
+
+    log.info("Message send to syfoService {}, {}", syfoserviceQueueName, StructuredArguments.fields(loggingMeta))
 }

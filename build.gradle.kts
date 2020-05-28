@@ -39,6 +39,7 @@ val jaxbRuntimeVersion = "2.4.0-b180830.0438"
 val javaTimeAdapterVersion = "1.1.3"
 val navPersonv3Version = "1.2019.07.11-06.47-b55f47790a9d"
 val navEgenAnsattVersion = "1.2019.09.25-00.21-49b69f0625e0"
+val mockkVersion = "1.9.3"
 
 plugins {
     java
@@ -141,7 +142,7 @@ dependencies {
     implementation("com.sun.xml.ws:jaxws-tools:$jaxwsToolsVersion") {
         exclude(group = "com.sun.xml.ws", module = "policy")
     }
-
+    testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
@@ -165,7 +166,7 @@ tasks {
     withType<Jar> {
         manifest.attributes["Main-Class"] = "no.nav.syfo.BootstrapKt"
     }
-    
+
     create("printVersion") {
 
         doLast {

@@ -16,11 +16,11 @@ import no.nav.syfo.model.IdentInfoResult
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.sendReceipt
+import no.nav.syfo.sendReceivedSykmelding
 import no.nav.syfo.sendValidationResult
 import no.nav.syfo.service.updateRedis
 import no.nav.syfo.util.LoggingMeta
 import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.clients.producer.ProducerRecord
 import redis.clients.jedis.Jedis
 
 fun handleStatusINVALID(
@@ -39,10 +39,7 @@ fun handleStatusINVALID(
     msgHead: XMLMsgHead
 ) {
     sendValidationResult(validationResult, kafkaproducervalidationResult, sm2013BehandlingsUtfallToipic, receivedSykmelding, loggingMeta)
-
-    kafkaproducerreceivedSykmelding.send(ProducerRecord(sm2013InvalidHandlingTopic, receivedSykmelding.sykmelding.id, receivedSykmelding))
-    log.info("Message send to kafka {}, {}", sm2013InvalidHandlingTopic, fields(loggingMeta))
-
+    sendReceivedSykmelding(sm2013InvalidHandlingTopic, receivedSykmelding, kafkaproducerreceivedSykmelding)
     val apprec = fellesformat.toApprec(
             ediLoggId,
             msgId,
@@ -54,7 +51,6 @@ fun handleStatusINVALID(
             validationResult
     )
     sendReceipt(apprec, sm2013ApprecTopic, kafkaproducerApprec)
-    log.info("Apprec receipt sent to kafka topic {}, {}", sm2013ApprecTopic, fields(loggingMeta))
 }
 
 fun handleDuplicateSM2013Content(
