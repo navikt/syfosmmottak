@@ -390,6 +390,8 @@ class BlockingApplicationRunner {
                 } catch (e: Exception) {
                     log.error("Exception caught while handling message, sending to backout", e)
                     backoutProducer.send(message)
+                } finally {
+                    message.acknowledge()
                 }
             }
         }
