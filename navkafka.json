@@ -6,6 +6,7 @@
         {"member":"srvsyfosmsak", "role":"CONSUMER"},
         {"member":"srvsyfosminfotrygd", "role":"CONSUMER"},
         {"member":"srvsyfosmregister", "role":"CONSUMER"},
+        {"member":"srvsyfosmregister", "role":"PRODUCER"},
         {"member":"srvsyfosmarena", "role":"CONSUMER"},
         {"member":"srvDataverk", "role":"CONSUMER"},
         {"member":"srvsykmkonsument", "role":"CONSUMER"},
@@ -29,7 +30,7 @@
       ],
       "numPartitions": 3,
       "configEntries": {
-        "retention.ms": "-1"
+        "cleanup.policy": "compact"
       }
     },
     {
@@ -39,6 +40,7 @@
         {"member":"srvsyfosmarena", "role":"CONSUMER"},
         {"member":"srvDataverk", "role":"CONSUMER"},
         {"member":"srvsyfosmregister", "role":"CONSUMER"},
+        {"member":"srvsyfosmregister", "role":"PRODUCER"},
         {"member":"srvsykmkonsument", "role":"CONSUMER"},
         {"member":"srvsyfosmmottak", "role":"PRODUCER"},
         {"member":"srvsyfoprediksjoner", "role": "CONSUMER"},
@@ -57,7 +59,7 @@
       ],
       "numPartitions": 3,
       "configEntries": {
-        "retention.ms": "-1"
+        "cleanup.policy": "compact"
       }
     },
     {
@@ -65,6 +67,7 @@
       "members": [
         {"member":"srvsyfosmsak", "role":"CONSUMER"},
         {"member":"srvsyfosmregister", "role":"CONSUMER"},
+        {"member":"srvsyfosmregister", "role":"PRODUCER"},
         {"member":"srvsyfosmmottak", "role":"PRODUCER"},
         {"member":"srvsyfosmvarsel", "role":"CONSUMER"},
         {"member":"srvsyfostorebror", "role":"CONSUMER"},
@@ -80,13 +83,14 @@
       ],
       "numPartitions": 3,
       "configEntries": {
-        "retention.ms": "-1"
+        "cleanup.policy": "compact"
       }
     },
     {
       "topicName": "privat-syfo-sm2013-behandlingsUtfall",
       "members": [
         {"member":"srvsyfosmregister", "role":"CONSUMER"},
+        {"member":"srvsyfosmregister", "role":"PRODUCER"},
         {"member":"srvsyfosmmottak", "role":"PRODUCER"},
         {"member":"srvsyfosminfotrygd", "role":"PRODUCER"},
         {"member":"srvsyfosmsak", "role":"CONSUMER"},
@@ -103,7 +107,7 @@
       ],
       "numPartitions": 3,
       "configEntries": {
-        "retention.ms": "-1"
+        "cleanup.policy": "compact"
       }
     },
     {
