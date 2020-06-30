@@ -44,7 +44,7 @@ class KafkaVedleggProducerTest : Spek({
 
     val stringBuilder = StringBuilder()
 
-    0.until(8_388_608).forEach {
+    0.until(8_000_000).forEach {
         stringBuilder.append("A")
     }
 
@@ -70,7 +70,7 @@ class KafkaVedleggProducerTest : Spek({
             // get the current topic configuration
             val updateConfig = HashMap<ConfigResource, Collection<AlterConfigOp>>()
             updateConfig[resource] = listOf(
-                    AlterConfigOp(ConfigEntry(TopicConfig.MAX_MESSAGE_BYTES_CONFIG, "11000000"), AlterConfigOp.OpType.SET),
+                    AlterConfigOp(ConfigEntry(TopicConfig.MAX_MESSAGE_BYTES_CONFIG, "8388608"), AlterConfigOp.OpType.SET),
                     AlterConfigOp(ConfigEntry(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2"), AlterConfigOp.OpType.SET)
 
             )
