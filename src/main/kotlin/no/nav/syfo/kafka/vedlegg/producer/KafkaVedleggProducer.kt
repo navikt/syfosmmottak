@@ -18,8 +18,8 @@ class KafkaVedleggProducer(private val environment: Environment, private val kaf
             try {
                 kafkaProducer.send(ProducerRecord(environment.sm2013VedleggTopic, receivedSykmelding.sykmelding.id, it)).get()
             } catch (ex: Exception) {
-                log.error("Error producing vedlegg to kafka {}", fields(loggingMeta))
-                throw ex
+                log.error("Error producing vedlegg to kafka {}", fields(loggingMeta), ex)
+                throw RuntimeException("Error sending vedlegg to kafka", ex)
             }
         }
     }
