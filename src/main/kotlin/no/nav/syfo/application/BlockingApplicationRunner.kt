@@ -45,6 +45,7 @@ import no.nav.syfo.kafka.vedlegg.producer.KafkaVedleggProducer
 import no.nav.syfo.log
 import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
 import no.nav.syfo.metrics.REQUEST_TIME
+import no.nav.syfo.metrics.SYKMELDING_VEDLEGG_COUNTER
 import no.nav.syfo.metrics.ULIK_SENDER_OG_BEHANDLER
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ReceivedSykmelding
@@ -128,7 +129,14 @@ class BlockingApplicationRunner {
                     val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(inputMessageText)) as XMLEIFellesformat
 
                     val vedlegg = getVedlegg(fellesformat)
-                    removeVedleggFromFellesformat(fellesformat)
+                    if (vedlegg.isNotEmpty()) {
+                        SYKMELDING_VEDLEGG_COUNTER.inc()
+                        removeVedleggFromFellesformat(fellesformat)
+                    }
+                    val fellesformatText = when (vedlegg.isNotEmpty()) {
+                        true -> fellesformatMarshaller.toString(fellesformat)
+                        false -> inputMessageText
+                    }
 
                     val receiverBlock = fellesformat.get<XMLMottakenhetBlokk>()
                     val msgHead = fellesformat.get<XMLMsgHead>()
@@ -310,7 +318,7 @@ class BlockingApplicationRunner {
                                 legekontorReshId = legekontorReshId,
                                 mottattDato = receiverBlock.mottattDatotid.toGregorianCalendar().toZonedDateTime().withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime(),
                                 rulesetVersion = healthInformation.regelSettVersjon,
-                                fellesformat = fellesformatMarshaller.toString(fellesformat),
+                                fellesformat = fellesformatText,
                                 tssid = samhandlerPraksis?.tss_ident ?: ""
                         )
 
