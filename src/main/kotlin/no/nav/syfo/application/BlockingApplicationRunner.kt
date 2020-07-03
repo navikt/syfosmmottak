@@ -41,9 +41,11 @@ import no.nav.syfo.handlestatus.handleStatusINVALID
 import no.nav.syfo.handlestatus.handleStatusMANUALPROCESSING
 import no.nav.syfo.handlestatus.handleStatusOK
 import no.nav.syfo.handlestatus.handleTestFnrInProd
+import no.nav.syfo.kafka.vedlegg.producer.KafkaVedleggProducer
 import no.nav.syfo.log
 import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
 import no.nav.syfo.metrics.REQUEST_TIME
+import no.nav.syfo.metrics.SYKMELDING_VEDLEGG_COUNTER
 import no.nav.syfo.metrics.ULIK_SENDER_OG_BEHANDLER
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ReceivedSykmelding
@@ -65,11 +67,15 @@ import no.nav.syfo.util.extractHpr
 import no.nav.syfo.util.extractOrganisationHerNumberFromSender
 import no.nav.syfo.util.extractOrganisationNumberFromSender
 import no.nav.syfo.util.extractOrganisationRashNumberFromSender
+import no.nav.syfo.util.fellesformatMarshaller
 import no.nav.syfo.util.fellesformatUnmarshaller
 import no.nav.syfo.util.fnrOgDnrMangler
 import no.nav.syfo.util.get
+import no.nav.syfo.util.getVedlegg
 import no.nav.syfo.util.hprMangler
 import no.nav.syfo.util.medisinskeArsakskodeMangler
+import no.nav.syfo.util.removeVedleggFromFellesformat
+import no.nav.syfo.util.toString
 import no.nav.syfo.util.wrapExceptions
 import no.nav.tjeneste.pip.egen.ansatt.v1.EgenAnsattV1
 import no.nav.tjeneste.virksomhet.person.v3.binding.PersonV3
@@ -101,7 +107,8 @@ class BlockingApplicationRunner {
         kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
         personV3: PersonV3,
         egenAnsattV1: EgenAnsattV1,
-        norskHelsenettClient: NorskHelsenettClient
+        norskHelsenettClient: NorskHelsenettClient,
+        kafkaVedleggProducer: KafkaVedleggProducer
     ) {
         wrapExceptions {
 
@@ -120,6 +127,17 @@ class BlockingApplicationRunner {
                     INCOMING_MESSAGE_COUNTER.inc()
                     val requestLatency = REQUEST_TIME.startTimer()
                     val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(inputMessageText)) as XMLEIFellesformat
+
+                    val vedlegg = getVedlegg(fellesformat)
+                    if (vedlegg.isNotEmpty()) {
+                        SYKMELDING_VEDLEGG_COUNTER.inc()
+                        removeVedleggFromFellesformat(fellesformat)
+                    }
+                    val fellesformatText = when (vedlegg.isNotEmpty()) {
+                        true -> fellesformatMarshaller.toString(fellesformat)
+                        false -> inputMessageText
+                    }
+
                     val receiverBlock = fellesformat.get<XMLMottakenhetBlokk>()
                     val msgHead = fellesformat.get<XMLMsgHead>()
 
@@ -300,7 +318,7 @@ class BlockingApplicationRunner {
                                 legekontorReshId = legekontorReshId,
                                 mottattDato = receiverBlock.mottattDatotid.toGregorianCalendar().toZonedDateTime().withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime(),
                                 rulesetVersion = healthInformation.regelSettVersjon,
-                                fellesformat = inputMessageText,
+                                fellesformat = fellesformatText,
                                 tssid = samhandlerPraksis?.tss_ident ?: ""
                         )
 
@@ -371,6 +389,10 @@ class BlockingApplicationRunner {
                                     ediLoggId,
                                     msgId,
                                     msgHead)
+                        }
+
+                        if(vedlegg.isNotEmpty()) {
+                            kafkaVedleggProducer.sendVedlegg(vedlegg, receivedSykmelding, loggingMeta)
                         }
 
                         val currentRequestLatency = requestLatency.observeDuration()

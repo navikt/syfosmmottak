@@ -10,6 +10,7 @@ import java.io.StringWriter
 import javax.xml.bind.JAXBContext
 import javax.xml.bind.Marshaller
 import javax.xml.bind.Marshaller.JAXB_ENCODING
+import javax.xml.bind.Marshaller.JAXB_FORMATTED_OUTPUT
 import javax.xml.bind.Unmarshaller
 import no.nav.helse.apprecV1.XMLAppRec
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
@@ -27,6 +28,13 @@ val fellesformatJaxBContext: JAXBContext = JAXBContext.newInstance(XMLEIFellesfo
 val fellesformatUnmarshaller: Unmarshaller = fellesformatJaxBContext.createUnmarshaller().apply {
     setAdapter(LocalDateTimeXmlAdapter::class.java, XMLDateTimeAdapter())
     setAdapter(LocalDateXmlAdapter::class.java, XMLDateAdapter())
+}
+
+val fellesformatMarshaller: Marshaller = fellesformatJaxBContext.createMarshaller().apply {
+    setAdapter(LocalDateTimeXmlAdapter::class.java, XMLDateTimeAdapter())
+    setAdapter(LocalDateXmlAdapter::class.java, XMLDateAdapter())
+    setProperty(JAXB_ENCODING, "UTF-8")
+    setProperty(JAXB_FORMATTED_OUTPUT, true)
 }
 
 val apprecJaxbContext: JAXBContext = JAXBContext.newInstance(XMLAppRec::class.java)

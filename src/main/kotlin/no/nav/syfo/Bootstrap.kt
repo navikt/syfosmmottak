@@ -26,6 +26,7 @@ import no.nav.syfo.client.ArbeidsFordelingClient
 import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
+import no.nav.syfo.kafka.vedlegg.producer.KafkaVedleggProducer
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
@@ -99,7 +100,7 @@ fun main() {
             httpClients.syfoSykemeldingRuleClient, httpClients.sarClient, httpClients.aktoerIdClient,
             httpClients.arbeidsFordelingClient, credentials, kafkaClients.manualValidationKafkaProducer,
             kafkaClients.kafkaProducerApprec, kafkaClients.kafkaproducerManuellOppgave,
-            personV3, egenansattV1, httpClients.norskHelsenettClient)
+            personV3, egenansattV1, httpClients.norskHelsenettClient, kafkaClients.kafkaVedleggProducer)
 }
 
 fun createListener(applicationState: ApplicationState, action: suspend CoroutineScope.() -> Unit): Job =
@@ -130,7 +131,8 @@ fun launchListeners(
     kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
     personV3: PersonV3,
     egenAnsattV1: EgenAnsattV1,
-    norskHelsenettClient: NorskHelsenettClient
+    norskHelsenettClient: NorskHelsenettClient,
+    kafkaVedleggProducer: KafkaVedleggProducer
 ) {
     createListener(applicationState) {
         connectionFactory(env).createConnection(credentials.mqUsername, credentials.mqPassword).use { connection ->
@@ -151,7 +153,7 @@ fun launchListeners(
                         syfoSykemeldingRuleClient, kuhrSarClient, aktoerIdClient, arbeidsFordelingClient, env,
                         credentials, applicationState, jedis, kafkaManuelTaskProducer,
                         session, kafkaproducerApprec, kafkaproducerManuellOppgave,
-                        personV3, egenAnsattV1, norskHelsenettClient)
+                        personV3, egenAnsattV1, norskHelsenettClient, kafkaVedleggProducer)
             }
         }
     }

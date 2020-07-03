@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<EI_fellesformat xmlns="http://www.trygdeetaten.no/xml/eiff/1/" xmlns:ns5="http://www.kith.no/xmlstds/felleskomponent1" xmlns:ns2="http://www.kith.no/xmlstds/msghead/2006-05-24" xmlns:ns4="http://www.kith.no/xmlstds/HelseOpplysningerArbeidsuforhet/2013-10-01" xmlns:ns3="http://www.w3.org/2000/09/xmldsig#">
+    <ns2:MsgHead>
+        <ns2:MsgInfo>
+            <ns2:Type V="SYKMELD" DN="Medisinsk vurdering av arbeidsmulighet ved sykdom, sykmelding"/>
+            <ns2:MIGversion>v1.2 2006-05-24</ns2:MIGversion>
+            <ns2:GenDate>2020-06-22T18:02:19</ns2:GenDate>
+            <ns2:MsgId>302D0CF2-65B4-4C7F-897E-B3CAE6DB36C8</ns2:MsgId>
+            <ns2:Ack V="J" DN="Ja"/>
+            <ns2:Sender>
+                <ns2:ComMethod V="EDI" DN="EDI"/>
+                <ns2:Organisation>
+                    <ns2:OrganisationName>Legesenter 2</ns2:OrganisationName>
+                    <ns2:Ident>
+                        <ns2:Id>123</ns2:Id>
+                        <ns2:TypeId V="HER" S="2.16.578.1.12.4.1.1.9051" DN="HER-id"/>
+                    </ns2:Ident>
+                    <ns2:Ident>
+                        <ns2:Id>123456789</ns2:Id>
+                        <ns2:TypeId V="ENH" S="2.16.578.1.12.4.1.1.9051" DN="Organisasjonsnummeret i Enhetsregister"/>
+                    </ns2:Ident>
+                    <ns2:Address>
+                        <ns2:Type V="PST" DN="Postadresse"/>
+                        <ns2:StreetAdr>gate 1</ns2:StreetAdr>
+                        <ns2:PostalCode>1337</ns2:PostalCode>
+                        <ns2:City>Oslo</ns2:City>
+                    </ns2:Address>
+                    <ns2:TeleCom>
+                        <ns2:TypeTelecom V="WD" DN="Arbeidsplass, direktenummer"/>
+                        <ns2:TeleAddress V="tel:12345678"/>
+                    </ns2:TeleCom>
+                    <ns2:HealthcareProfessional>
+                        <ns2:FamilyName>Family</ns2:FamilyName>
+                        <ns2:GivenName>Given</ns2:GivenName>
+                        <ns2:Ident>
+                            <ns2:Id>123456</ns2:Id>
+                            <ns2:TypeId V="HER" S="2.16.578.1.12.4.1.1.8116" DN="HER-id"/>
+                        </ns2:Ident>
+                        <ns2:Ident>
+                            <ns2:Id>123456789</ns2:Id>
+                            <ns2:TypeId V="HPR" S="2.16.578.1.12.4.1.1.8116" DN="HPR-nummer"/>
+                        </ns2:Ident>
+                    </ns2:HealthcareProfessional>
+                </ns2:Organisation>
+            </ns2:Sender>
+            <ns2:Receiver>
+                <ns2:ComMethod V="EDI" DN="EDI"/>
+                <ns2:Organisation>
+                    <ns2:OrganisationName>NAV IKT</ns2:OrganisationName>
+                    <ns2:Ident>
+                        <ns2:Id>79768</ns2:Id>
+                        <ns2:TypeId V="HER" S="2.16.578.1.12.4.1.1.9051" DN="HER-id"/>
+                    </ns2:Ident>
+                    <ns2:Address>
+                        <ns2:Type V="PST" DN="Postadresse"/>
+                        <ns2:StreetAdr>Postboks 5 St Olavs plass</ns2:StreetAdr>
+                        <ns2:PostalCode>0130</ns2:PostalCode>
+                        <ns2:City>OSLO</ns2:City>
+                    </ns2:Address>
+                    <ns2:TeleCom>
+                        <ns2:TypeTelecom V="WD" DN="Arbeidsplass, direktenummer"/>
+                        <ns2:TeleAddress V="tel:22927000"/>
+                    </ns2:TeleCom>
+                </ns2:Organisation>
+            </ns2:Receiver>
+            <ns2:Patient>
+                <ns2:FamilyName>Pasient</ns2:FamilyName>
+                <ns2:GivenName>pasient</ns2:GivenName>
+                <ns2:Ident>
+                    <ns2:Id>12345678912</ns2:Id>
+                    <ns2:TypeId V="FNR" S="2.16.578.1.12.4.1.1.8116" DN="Fødselsnummer"/>
+                </ns2:Ident>
+                <ns2:Address>
+                    <ns2:Type V="PST" DN="Postadresse"/>
+                    <ns2:StreetAdr>gate1</ns2:StreetAdr>
+                    <ns2:PostalCode>1337</ns2:PostalCode>
+                    <ns2:City>OSLO</ns2:City>
+                    <ns2:Country V="NO" DN="Norge"/>
+                </ns2:Address>
+                <ns2:TeleCom>
+                    <ns2:TypeTelecom V="MC" DN="Mobiltelefon"/>
+                    <ns2:TeleAddress V="mob:12345678"/>
+                </ns2:TeleCom>
+            </ns2:Patient>
+        </ns2:MsgInfo>
+        <ns2:Document>
+            <ns2:RefDoc>
+                <ns2:MsgType V="XML" DN="XML-instans"/>
+                <ns2:Id>2cca1f22-9eb5-4890-a534-f8fa095be999</ns2:Id>
+                <ns2:Content>
+                    <ns4:HelseOpplysningerArbeidsuforhet>
+                        <ns4:RegelSettVersjon>2</ns4:RegelSettVersjon>
+                        <ns4:Pasient>
+                            <ns4:Navn>
+                                <ns4:Etternavn>Etternavn</ns4:Etternavn>
+                                <ns4:Fornavn>Fornavn</ns4:Fornavn>
+                            </ns4:Navn>
+                            <ns4:Fodselsnummer>
+                                <ns5:Id>12345678912</ns5:Id>
+                                <ns5:TypeId V="FNR" S="2.16.578.1.12.4.1.1.8116" DN="Fødselsnummer"/>
+                            </ns4:Fodselsnummer>
+                            <ns4:KontaktInfo>
+                                <ns5:TypeTelecom V="MC" DN="Mobiltelefon "/>
+                                <ns5:TeleAddress V="mob:12345678"/>
+                            </ns4:KontaktInfo>
+                            <ns4:NavnFastlege>Fastelge lege</ns4:NavnFastlege>
+                        </ns4:Pasient>
+                        <ns4:Arbeidsgiver>
+                            <ns4:HarArbeidsgiver V="1" DN="Én arbeidsgiver"/>
+                            <ns4:NavnArbeidsgiver>NAV</ns4:NavnArbeidsgiver>
+                            <ns4:Yrkesbetegnelse>yrke</ns4:Yrkesbetegnelse>
+                        </ns4:Arbeidsgiver>
+                        <ns4:MedisinskVurdering>
+                            <ns4:HovedDiagnose>
+                                <ns4:Diagnosekode V="L76" S="2.16.578.1.12.4.1.1.7170" DN="Brudd IKA"/>
+                            </ns4:HovedDiagnose>
+                        </ns4:MedisinskVurdering>
+                        <ns4:Aktivitet>
+                            <ns4:Periode>
+                                <ns4:PeriodeFOMDato>2020-06-10</ns4:PeriodeFOMDato>
+                                <ns4:PeriodeTOMDato>2020-07-20</ns4:PeriodeTOMDato>
+                                <ns4:AktivitetIkkeMulig>
+                                    <ns4:MedisinskeArsaker>
+                                        <ns4:Arsakskode V="1" DN="Helsetilstanden hindrer pasienten i å være i aktivitet"/>
+                                        <ns4:Beskriv>Viser til vedlagt poliklinisk notat.</ns4:Beskriv>
+                                    </ns4:MedisinskeArsaker>
+                                    <ns4:Arbeidsplassen/>
+                                </ns4:AktivitetIkkeMulig>
+                            </ns4:Periode>
+                        </ns4:Aktivitet>
+                        <ns4:Prognose>
+                            <ns4:ErIArbeid/>
+                        </ns4:Prognose>
+                        <ns4:UtdypendeOpplysninger>
+                            <ns4:SpmGruppe>
+                                <ns4:SpmGruppeId>6.4</ns4:SpmGruppeId>
+                                <ns4:SpmGruppeTekst>Helseopplysninger ved 17 uker</ns4:SpmGruppeTekst>
+                                <ns4:SpmSvar>
+                                    <ns4:SpmId>6.4.1</ns4:SpmId>
+                                    <ns4:SpmTekst>Beskriv kort sykehistorie, symptomer og funn i dagens situasjon</ns4:SpmTekst>
+                                    <ns4:SvarTekst>Viser til vedlagt poliklinisk notat.</ns4:SvarTekst>
+                                </ns4:SpmSvar>
+                                <ns4:SpmSvar>
+                                    <ns4:SpmId>6.4.2</ns4:SpmId>
+                                    <ns4:SpmTekst>Beskriv pågående og planlagt henvisning, utredning og/eller behandling</ns4:SpmTekst>
+                                    <ns4:SvarTekst>Starter med fysioterapi.</ns4:SvarTekst>
+                                </ns4:SpmSvar>
+                                <ns4:SpmSvar>
+                                    <ns4:SpmId>6.4.3</ns4:SpmId>
+                                    <ns4:SpmTekst>Hva mener du skal til for at pasienten kan komme tilbake i eget eller annet arbeid?</ns4:SpmTekst>
+                                    <ns4:SvarTekst>Viser til vedlagt poliklinisk notat.</ns4:SvarTekst>
+                                </ns4:SpmSvar>
+                            </ns4:SpmGruppe>
+                        </ns4:UtdypendeOpplysninger>
+                        <ns4:Tiltak/>
+                        <ns4:MeldingTilNav>
+                            <ns4:BistandNAVUmiddelbart>false</ns4:BistandNAVUmiddelbart>
+                        </ns4:MeldingTilNav>
+                        <ns4:KontaktMedPasient>
+                            <ns4:BehandletDato>2020-06-16T22:00:00</ns4:BehandletDato>
+                            <ns4:KontaktDato>2020-05-05</ns4:KontaktDato>
+                            <ns4:BegrunnIkkeKontakt>Tidligere sykemelding videreføres.</ns4:BegrunnIkkeKontakt>
+                        </ns4:KontaktMedPasient>
+                        <ns4:Behandler>
+                            <ns4:Navn>
+                                <ns4:Etternavn>Etternavn</ns4:Etternavn>
+                                <ns4:Fornavn>Fornavn</ns4:Fornavn>
+                            </ns4:Navn>
+                            <ns4:Id>
+                                <ns5:Id>12345678912</ns5:Id>
+                                <ns5:TypeId V="FNR" S="2.16.578.1.12.4.1.1.8116" DN="Fødselsnummer"/>
+                            </ns4:Id>
+                            <ns4:Id>
+                                <ns5:Id>123456</ns5:Id>
+                                <ns5:TypeId V="HER" S="2.16.578.1.12.4.1.1.8116" DN="HER-id"/>
+                            </ns4:Id>
+                            <ns4:Adresse>
+                                <ns5:StreetAdr>adresse</ns5:StreetAdr>
+                                <ns5:PostalCode>1337</ns5:PostalCode>
+                                <ns5:City>Oslo</ns5:City>
+                            </ns4:Adresse>
+                            <ns4:KontaktInfo>
+                                <ns5:TypeTelecom V="HP" DN="Hovedtelefon"/>
+                                <ns5:TeleAddress V="tel:12345678"/>
+                            </ns4:KontaktInfo>
+                        </ns4:Behandler>
+                        <ns4:AvsenderSystem>
+                            <ns4:SystemNavn>test EPJ</ns4:SystemNavn>
+                            <ns4:SystemVersjon>1.0.0</ns4:SystemVersjon>
+                        </ns4:AvsenderSystem>
+                        <ns4:Strekkode>123</ns4:Strekkode>
+                    </ns4:HelseOpplysningerArbeidsuforhet>
+                </ns2:Content>
+            </ns2:RefDoc>
+        </ns2:Document>
+        <ns2:Document>
+            <ns2:DocumentConnection V="V" DN="Vedlegg"/>
+            <ns2:RefDoc>
+                <ns2:MsgType V="A" DN="Vedlegg"/>
+                <ns2:MimeType>application/pdf</ns2:MimeType>
+                <ns2:Description>vedlegg.pdf</ns2:Description>
+                <ns2:Content>
+                    <Base64Container xmlns="http://www.kith.no/xmlstds/base64container" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">base64</Base64Container>
+                </ns2:Content>
+            </ns2:RefDoc>
+        </ns2:Document>
+        <ns3:Signature>
+            <ns3:SignedInfo>
+                <ns3:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+                <ns3:SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/>
+                <ns3:Reference URI="">
+                    <ns3:Transforms>
+                        <ns3:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+                        <ns3:Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+                    </ns3:Transforms>
+                    <ns3:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+                    <ns3:DigestValue>120=</ns3:DigestValue>
+                </ns3:Reference>
+            </ns3:SignedInfo>
+            <ns3:SignatureValue>signatur</ns3:SignatureValue>
+            <ns3:KeyInfo>
+                
+                <ns3:X509Data>
+                    <ns3:X509Certificate>certific</ns3:X509Certificate>
+                </ns3:X509Data>
+            </ns3:KeyInfo>
+        </ns3:Signature>
+    </ns2:MsgHead>
+    <MottakenhetBlokk ediLoggId="ediloggid" avsender="123" ebXMLSamtaleId="b51f9b19-db75-482c-9ed8-a2a35b9c96bc" meldingsType="xml" avsenderRef="SERIALNUMBER=123456789, CN=LEGESENTER, O=LEGESENTER AS, C=NO" avsenderFnrFraDigSignatur="12345678912" mottattDatotid="2020-06-23T04:38:57" partnerReferanse="12345" herIdentifikator="" ebRole="Sykmelder" ebService="Sykmelding" ebAction="Registrering"/>
+</EI_fellesformat>
