@@ -1,6 +1,5 @@
 package no.nav.syfo.kafka.vedlegg.producer
 
-import java.lang.RuntimeException
 import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.Environment
 import no.nav.syfo.kafka.vedlegg.model.BehandlerInfo
@@ -16,6 +15,7 @@ class KafkaVedleggProducer(private val environment: Environment, private val kaf
     fun sendVedlegg(vedlegg: List<Vedlegg>, receivedSykmelding: ReceivedSykmelding, loggingMeta: LoggingMeta) {
         vedlegg.map { toKafkaVedleggMessage(it, receivedSykmelding) }.forEach {
             try {
+                log.info("Sender vedlegg til kafka, {} {}", it.vedlegg.type, loggingMeta)
                 kafkaProducer.send(ProducerRecord(environment.sm2013VedleggTopic, receivedSykmelding.sykmelding.id, it)).get()
             } catch (ex: Exception) {
                 log.error("Error producing vedlegg to kafka {}", fields(loggingMeta), ex)
