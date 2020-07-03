@@ -145,6 +145,7 @@
     {
       "topicName": "privat-syfo-vedlegg",
       "members": [
+        {"member":"srvpale2", "role":"PRODUCER"},
         {"member":"srvsyfosmmottak", "role":"PRODUCER"},
         {"member":"srvsyfosmsak", "role":"CONSUMER"},
         {"member":"s151890", "role":"MANAGER"},
