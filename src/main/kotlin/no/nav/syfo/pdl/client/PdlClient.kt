@@ -18,7 +18,7 @@ class PdlClient(
     private val tema = "SYM"
 
     suspend fun getPasientOgBehandler(pasientIdent: String, legeIdent: String, stsToken: String): GetPasientOgLegeResponse {
-        val getPasientOgLegeRequest = GetPasientOgLegeRequest(query = graphQlQuery, variables = GetPasientOgBehandlerVariables(ident = pasientIdent, legeIdent = legeIdent))
+        val getPasientOgLegeRequest = GetPasientOgLegeRequest(query = graphQlQuery, variables = GetPasientOgBehandlerVariables(pasientIdent = pasientIdent, legeIdent = legeIdent))
         return getGraphQLRespnse(getPasientOgLegeRequest, stsToken)
     }
 
