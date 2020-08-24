@@ -2,13 +2,13 @@ query($pasientIdent: ID!, $legeIdent: ID!) {
   legeIdenter: hentIdenter(ident: $legeIdent, historikk: false) {
     identer {
       ident,
-      type: gruppe
+      gruppe
     }
   }
   pasientIdenter: hentIdenter(ident: $pasientIdent, historikk: false) {
     identer {
       ident,
-      type: gruppe
+      gruppe
     }
   }
 }
