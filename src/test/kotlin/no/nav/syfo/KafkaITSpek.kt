@@ -30,7 +30,7 @@ object KafkaITSpek : Spek({
     val credentials = VaultCredentials("", "", "", "", "", "", "", "")
     val config = Environment(mqHostname = "mqhost", mqPort = getRandomPort(),
             mqGatewayName = "mqGateway", kafkaBootstrapServers = embeddedEnvironment.brokersURL,
-            mqChannelName = "syfomottak", aktoerregisterV1Url = "localhost-aktor", subscriptionEndpointURL = "localhost-emottak",
+            mqChannelName = "syfomottak", subscriptionEndpointURL = "localhost-emottak",
             inputBackoutQueueName = "inputbackqueue", inputQueueName = "inputqueue",
             syfoserviceQueueName = "syfoserviequeue", applicationPort = 1, sm2013OppgaveTopic = "oppgaveTopic", securityTokenServiceUrl = "sts", personV3EndpointURL = "personv3",
             kuhrSarApiUrl = "kuhrsarApi", syfosmreglerApiUrl = "syfosmreglerApi", sm2013ManualHandlingTopic = "sm2013ManualHandlingTopic",
