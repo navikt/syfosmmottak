@@ -35,7 +35,8 @@ data class Environment(
     val arbeidsfordelingAPIUrl: String = getEnvVar("ARBEIDSFORDELING_API"),
     val norskHelsenettEndpointURL: String = getEnvVar("HELSENETT_ENDPOINT_URL", "http://syfohelsenettproxy"),
     val aadAccessTokenUrl: String = getEnvVar("AADACCESSTOKEN_URL"),
-    val sm2013VedleggTopic: String = "privat-syfo-vedlegg"
+    val sm2013VedleggTopic: String = "privat-syfo-vedlegg",
+    val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH")
 ) : MqConfig, KafkaConfig
 
 data class VaultCredentials(

@@ -76,3 +76,5 @@ spec:
       value: https://app.adeo.no/norg2/api/v1/arbeidsfordeling
     - name: AADACCESSTOKEN_URL
       value: https://login.microsoftonline.com/navno.onmicrosoft.com/oauth2/token
+    - name: PDL_GRAPHQL_PATH
+      value: https://pdl-api.nais.adeo.no/graphql

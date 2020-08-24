@@ -21,7 +21,6 @@ import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.bootstrap.HttpClients
 import no.nav.syfo.bootstrap.KafkaClients
-import no.nav.syfo.client.AktoerIdClient
 import no.nav.syfo.client.ArbeidsFordelingClient
 import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SarClient
@@ -33,6 +32,7 @@ import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.mq.connectionFactory
 import no.nav.syfo.mq.consumerForQueue
 import no.nav.syfo.mq.producerForQueue
+import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.sak.avro.ProduceTask
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.TrackableException
@@ -93,11 +93,12 @@ fun main() {
     val egenansattV1 = createPort<EgenAnsattV1>(env.egenAnsattURL) {
         port { withSTS(credentials.serviceuserUsername, credentials.serviceuserPassword, env.securityTokenServiceUrl) }
     }
+    val pdlService = PdlPersonService(httpClients.pdlClient, httpClients.oidcClient)
 
     launchListeners(env, applicationState,
             subscriptionEmottak, kafkaClients.kafkaProducerReceivedSykmelding,
             kafkaClients.kafkaProducerValidationResult,
-            httpClients.syfoSykemeldingRuleClient, httpClients.sarClient, httpClients.aktoerIdClient,
+            httpClients.syfoSykemeldingRuleClient, httpClients.sarClient, pdlService,
             httpClients.arbeidsFordelingClient, credentials, kafkaClients.manualValidationKafkaProducer,
             kafkaClients.kafkaProducerApprec, kafkaClients.kafkaproducerManuellOppgave,
             personV3, egenansattV1, httpClients.norskHelsenettClient, kafkaClients.kafkaVedleggProducer)
@@ -123,7 +124,7 @@ fun launchListeners(
     kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
     syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
     kuhrSarClient: SarClient,
-    aktoerIdClient: AktoerIdClient,
+    pdlService: PdlPersonService,
     arbeidsFordelingClient: ArbeidsFordelingClient,
     credentials: VaultCredentials,
     kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
@@ -150,8 +151,8 @@ fun launchListeners(
 
                 BlockingApplicationRunner().run(inputconsumer, syfoserviceProducer, backoutProducer,
                         subscriptionEmottak, kafkaproducerreceivedSykmelding, kafkaproducervalidationResult,
-                        syfoSykemeldingRuleClient, kuhrSarClient, aktoerIdClient, arbeidsFordelingClient, env,
-                        credentials, applicationState, jedis, kafkaManuelTaskProducer,
+                        syfoSykemeldingRuleClient, kuhrSarClient, pdlService, arbeidsFordelingClient, env,
+                        applicationState, jedis, kafkaManuelTaskProducer,
                         session, kafkaproducerApprec, kafkaproducerManuellOppgave,
                         personV3, egenAnsattV1, norskHelsenettClient, kafkaVedleggProducer)
             }
