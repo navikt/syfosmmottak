@@ -126,7 +126,7 @@ fun handlePatientNotFoundInPDL(
     updateRedis(jedis, ediLoggId, sha256String)
 }
 
-fun handleDoctorNotFoundInAktorRegister(
+fun handleDoctorNotFoundInPDL(
     loggingMeta: LoggingMeta,
     fellesformat: XMLEIFellesformat,
     ediLoggId: String,

@@ -27,7 +27,7 @@ import no.nav.syfo.handlestatus.handleArbeidsplassenArsakskodeIsmissing
 import no.nav.syfo.handlestatus.handleBiDiagnoserDiagnosekodeBeskrivelseMissing
 import no.nav.syfo.handlestatus.handleBiDiagnoserDiagnosekodeIsMissing
 import no.nav.syfo.handlestatus.handleBiDiagnoserDiagnosekodeVerkIsMissing
-import no.nav.syfo.handlestatus.handleDoctorNotFoundInAktorRegister
+import no.nav.syfo.handlestatus.handleDoctorNotFoundInPDL
 import no.nav.syfo.handlestatus.handleDuplicateEdiloggid
 import no.nav.syfo.handlestatus.handleDuplicateSM2013Content
 import no.nav.syfo.handlestatus.handleFnrAndDnrAndHprIsmissingFromBehandler
@@ -216,7 +216,7 @@ class BlockingApplicationRunner {
                             continue@loop
                         }
                         if (doctorAktorId == null) {
-                            handleDoctorNotFoundInAktorRegister(loggingMeta, fellesformat,
+                            handleDoctorNotFoundInPDL(loggingMeta, fellesformat,
                                     ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
                             continue@loop
                         }
