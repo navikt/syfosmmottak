@@ -15,9 +15,7 @@ import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.eiFellesformat.XMLMottakenhetBlokk
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.syfo.Environment
-import no.nav.syfo.VaultCredentials
 import no.nav.syfo.apprec.Apprec
-import no.nav.syfo.client.AktoerIdClient
 import no.nav.syfo.client.ArbeidsFordelingClient
 import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SarClient
@@ -29,14 +27,14 @@ import no.nav.syfo.handlestatus.handleArbeidsplassenArsakskodeIsmissing
 import no.nav.syfo.handlestatus.handleBiDiagnoserDiagnosekodeBeskrivelseMissing
 import no.nav.syfo.handlestatus.handleBiDiagnoserDiagnosekodeIsMissing
 import no.nav.syfo.handlestatus.handleBiDiagnoserDiagnosekodeVerkIsMissing
-import no.nav.syfo.handlestatus.handleDoctorNotFoundInAktorRegister
+import no.nav.syfo.handlestatus.handleDoctorNotFoundInPDL
 import no.nav.syfo.handlestatus.handleDuplicateEdiloggid
 import no.nav.syfo.handlestatus.handleDuplicateSM2013Content
 import no.nav.syfo.handlestatus.handleFnrAndDnrAndHprIsmissingFromBehandler
 import no.nav.syfo.handlestatus.handleHouvedDiagnoseDiagnoseBeskrivelseMissing
 import no.nav.syfo.handlestatus.handleHouvedDiagnoseDiagnosekodeMissing
 import no.nav.syfo.handlestatus.handleMedisinskeArsakskodeIsmissing
-import no.nav.syfo.handlestatus.handlePatientNotFoundInAktorRegister
+import no.nav.syfo.handlestatus.handlePatientNotFoundInPDL
 import no.nav.syfo.handlestatus.handleStatusINVALID
 import no.nav.syfo.handlestatus.handleStatusMANUALPROCESSING
 import no.nav.syfo.handlestatus.handleStatusOK
@@ -52,6 +50,7 @@ import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.model.toSykmelding
+import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.sak.avro.ProduceTask
 import no.nav.syfo.service.samhandlerParksisisLegevakt
 import no.nav.syfo.service.sha256hashstring
@@ -95,10 +94,9 @@ class BlockingApplicationRunner {
         kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
         syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
         kuhrSarClient: SarClient,
-        aktoerIdClient: AktoerIdClient,
+        pdlService: PdlPersonService,
         arbeidsFordelingClient: ArbeidsFordelingClient,
         env: Environment,
-        credentials: VaultCredentials,
         applicationState: ApplicationState,
         jedis: Jedis,
         kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
@@ -166,10 +164,7 @@ class BlockingApplicationRunner {
 
                     log.info("Received message, {}", StructuredArguments.fields(loggingMeta))
 
-                    val aktoerIds = aktoerIdClient.getAktoerIds(
-                            listOf(personNumberDoctor, personNumberPatient),
-                            credentials.serviceuserUsername,
-                            loggingMeta)
+                    val aktoerIds = pdlService.getPasientOgLege(pasientIdent = personNumberPatient, legeIdent = personNumberDoctor, loggingMeta = loggingMeta)
 
                     log.info("Ferdig med aktoerIdClient {}", StructuredArguments.fields(loggingMeta))
 
@@ -212,16 +207,16 @@ class BlockingApplicationRunner {
                                 ediLoggId, msgId, msgHead, env, kafkaproducerApprec)
                         continue@loop
                     } else {
-                        val patientIdents = aktoerIds[personNumberPatient]
-                        val doctorIdents = aktoerIds[personNumberDoctor]
+                        val patientAktorId = aktoerIds?.pasient?.aktorId
+                        val doctorAktorId = aktoerIds?.lege?.aktorId
 
-                        if (patientIdents == null || patientIdents.feilmelding != null) {
-                            handlePatientNotFoundInAktorRegister(patientIdents, loggingMeta, fellesformat,
+                        if (patientAktorId == null) {
+                            handlePatientNotFoundInPDL(loggingMeta, fellesformat,
                                     ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
                             continue@loop
                         }
-                        if (doctorIdents == null || doctorIdents.feilmelding != null) {
-                            handleDoctorNotFoundInAktorRegister(doctorIdents, loggingMeta, fellesformat,
+                        if (doctorAktorId == null) {
+                            handleDoctorNotFoundInPDL(loggingMeta, fellesformat,
                                     ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
                             continue@loop
                         }
@@ -299,8 +294,8 @@ class BlockingApplicationRunner {
 
                         val sykmelding = healthInformation.toSykmelding(
                                 sykmeldingId = UUID.randomUUID().toString(),
-                                pasientAktoerId = patientIdents.identer!!.first().ident,
-                                legeAktoerId = doctorIdents.identer!!.first().ident,
+                                pasientAktoerId = patientAktorId,
+                                legeAktoerId = doctorAktorId,
                                 msgId = msgId,
                                 signaturDato = msgHead.msgInfo.genDate,
                                 hprFnrBehandler = personNumberDoctor
@@ -391,7 +386,7 @@ class BlockingApplicationRunner {
                                     msgHead)
                         }
 
-                        if(vedlegg.isNotEmpty()) {
+                        if (vedlegg.isNotEmpty()) {
                             kafkaVedleggProducer.sendVedlegg(vedlegg, receivedSykmelding, loggingMeta)
                         }
 

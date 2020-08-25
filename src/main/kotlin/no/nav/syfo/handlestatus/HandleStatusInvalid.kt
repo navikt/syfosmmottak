@@ -12,7 +12,6 @@ import no.nav.syfo.apprec.toApprec
 import no.nav.syfo.log
 import no.nav.syfo.metrics.INVALID_MESSAGE_NO_NOTICE
 import no.nav.syfo.metrics.TEST_FNR_IN_PROD
-import no.nav.syfo.model.IdentInfoResult
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.sendReceipt
@@ -101,8 +100,7 @@ fun handleDuplicateEdiloggid(
     INVALID_MESSAGE_NO_NOTICE.inc()
 }
 
-fun handlePatientNotFoundInAktorRegister(
-    patientIdents: IdentInfoResult?,
+fun handlePatientNotFoundInPDL(
     loggingMeta: LoggingMeta,
     fellesformat: XMLEIFellesformat,
     ediLoggId: String,
@@ -114,7 +112,7 @@ fun handlePatientNotFoundInAktorRegister(
     sha256String: String
 ) {
     log.warn("Patient not found i aktorRegister error: {}, {}",
-            keyValue("errorMessage", patientIdents?.feilmelding ?: "No response for FNR"),
+            keyValue("errorMessage", "No response for FNR"),
             fields(loggingMeta))
 
     val apprec = fellesformatToAppprec(fellesformat, "Sykmeldingen kan ikke rettes, det må skrives en ny." +
@@ -123,13 +121,12 @@ fun handlePatientNotFoundInAktorRegister(
             ediLoggId, msgId, msgHead)
 
     sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
-    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, StructuredArguments.fields(loggingMeta))
+    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
     INVALID_MESSAGE_NO_NOTICE.inc()
     updateRedis(jedis, ediLoggId, sha256String)
 }
 
-fun handleDoctorNotFoundInAktorRegister(
-    doctorIdents: IdentInfoResult?,
+fun handleDoctorNotFoundInPDL(
     loggingMeta: LoggingMeta,
     fellesformat: XMLEIFellesformat,
     ediLoggId: String,
@@ -141,7 +138,7 @@ fun handleDoctorNotFoundInAktorRegister(
     sha256String: String
 ) {
     log.warn("Doctor not found i aktorRegister error: {}, {}",
-            keyValue("errorMessage", doctorIdents?.feilmelding ?: "No response for FNR"),
+            keyValue("errorMessage", "No response for FNR"),
             fields(loggingMeta))
 
     val apprec = fellesformatToAppprec(fellesformat, "Sykmeldingen kan ikke rettes, det må skrives en ny." +

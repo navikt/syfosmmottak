@@ -50,8 +50,6 @@ spec:
       value: https://sts.adeo.no/SecurityTokenServiceProvider/
     - name: PERSON_V3_ENDPOINT_URL
       value: https://wasapp.adeo.no/tpsws/ws/Person/v3
-    - name: AKTOR_REGISTER_V1_URL
-      value: https://app.adeo.no/aktoerregister/api/v1
     - name: KAFKA_BOOTSTRAP_SERVERS_URL
       value: SASL_SSL://a01apvl00145.adeo.no:8443,SASL_SSL://a01apvl00146.adeo.no:8443,SASL_SSL://a01apvl00147.adeo.no:8443,SASL_SSL://a01apvl00149.adeo.no:8443
     - name: MQ_HOST_NAME
@@ -76,3 +74,5 @@ spec:
       value: https://app.adeo.no/norg2/api/v1/arbeidsfordeling
     - name: AADACCESSTOKEN_URL
       value: https://login.microsoftonline.com/navno.onmicrosoft.com/oauth2/token
+    - name: PDL_GRAPHQL_PATH
+      value: https://pdl-api.nais.adeo.no/graphql

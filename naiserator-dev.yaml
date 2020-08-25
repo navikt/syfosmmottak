@@ -50,8 +50,6 @@ spec:
       value: https://sts-q1.preprod.local/SecurityTokenServiceProvider/
     - name: PERSON_V3_ENDPOINT_URL
       value: https://wasapp-q1.adeo.no/tpsws/ws/Person/v3
-    - name: AKTOR_REGISTER_V1_URL
-      value: https://app-q1.adeo.no/aktoerregister/api/v1
     - name: KAFKA_BOOTSTRAP_SERVERS_URL
       value: SSL://b27apvl00045.preprod.local:8443,SSL://b27apvl00046.preprod.local:8443,SSL://b27apvl00047.preprod.local:8443
     - name: MQ_HOST_NAME
@@ -76,3 +74,5 @@ spec:
       value: https://app-q1.adeo.no/norg2/api/v1/arbeidsfordeling
     - name: AADACCESSTOKEN_URL
       value: https://login.microsoftonline.com/navq.onmicrosoft.com/oauth2/token
+    - name: PDL_GRAPHQL_PATH
+      value: https://pdl-api.nais.preprod.local/graphql
