@@ -17,12 +17,12 @@ import java.net.ProxySelector
 import no.nav.syfo.Environment
 import no.nav.syfo.VaultCredentials
 import no.nav.syfo.client.AccessTokenClient
+import no.nav.syfo.client.AktoerIdClient
 import no.nav.syfo.client.ArbeidsFordelingClient
 import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
-import no.nav.syfo.pdl.client.PdlClient
 import org.apache.http.impl.conn.SystemDefaultRoutePlanner
 
 class HttpClients(environment: Environment, credentials: VaultCredentials) {
@@ -88,10 +88,11 @@ class HttpClients(environment: Environment, credentials: VaultCredentials) {
     @KtorExperimentalAPI
     val oidcClient = StsOidcClient(credentials.serviceuserUsername, credentials.serviceuserPassword)
     @KtorExperimentalAPI
+    val aktoerIdClient = AktoerIdClient(environment.aktoerregisterV1Url, oidcClient, simpleHttpClient)
+    @KtorExperimentalAPI
     val arbeidsFordelingClient = ArbeidsFordelingClient(environment.arbeidsfordelingAPIUrl, oidcClient, simpleHttpClient)
     @KtorExperimentalAPI
     val accessTokenClient = AccessTokenClient(environment.aadAccessTokenUrl, credentials.clientId, credentials.clientsecret, httpClientWithProxy)
     @KtorExperimentalAPI
     val norskHelsenettClient = NorskHelsenettClient(environment.norskHelsenettEndpointURL, accessTokenClient, credentials.syfohelsenettproxyId, simpleHttpClient)
-    val pdlClient = PdlClient(simpleHttpClient, environment.pdlGraphqlPath, PdlClient::class.java.getResource("/graphql/getPasientOgLege.graphql").readText())
 }

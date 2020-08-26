@@ -1,13 +1,17 @@
 package no.nav.syfo
 
-import java.io.StringReader
-import java.time.LocalDate
+import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
+import no.nav.syfo.util.fellesformatMarshaller
 import no.nav.syfo.util.fellesformatUnmarshaller
+import no.nav.syfo.util.removeVedleggFromFellesformat
+import no.nav.syfo.util.toString
 import no.nav.syfo.utils.getFileAsString
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.io.StringReader
+import java.time.LocalDate
 
 object UnmarshalSpek : Spek({
     describe("Testing unmarshaller") {
