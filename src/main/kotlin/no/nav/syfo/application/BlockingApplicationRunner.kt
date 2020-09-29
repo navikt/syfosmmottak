@@ -146,6 +146,7 @@ class BlockingApplicationRunner {
                             orgNr = extractOrganisationNumberFromSender(fellesformat)?.id,
                             msgId = msgHead.msgInfo.msgId
                     )
+                    log.info("Received message, {}", StructuredArguments.fields(loggingMeta))
 
                     val healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat)
                     val ediLoggId = receiverBlock.ediLoggId
@@ -158,13 +159,16 @@ class BlockingApplicationRunner {
                     val legekontorOrgName = msgHead.msgInfo.sender.organisation.organisationName
 
                     val personNumberPatient = healthInformation.pasient.fodselsnummer.id
+
                     val personNumberDoctor = if (!fnrOgDnrMangler(healthInformation)) {
                         receiverBlock.avsenderFnrFraDigSignatur
-                    } else {
+                    } else if (!hprMangler(healthInformation)) {
                         getFnrFromHpr(norskHelsenettClient, fellesformat, msgId)
+                    } else {
+                        handleFnrAndDnrAndHprIsmissingFromBehandler(loggingMeta, fellesformat,
+                            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
+                        continue@loop
                     }
-
-                    log.info("Received message, {}", StructuredArguments.fields(loggingMeta))
 
                     val aktoerIds = aktoerIdClient.getAktoerIds(
                             listOf(personNumberDoctor, personNumberPatient),
@@ -249,12 +253,6 @@ class BlockingApplicationRunner {
                         if (healthInformation.medisinskVurdering?.biDiagnoser != null &&
                                 healthInformation.medisinskVurdering.biDiagnoser.diagnosekode.any { it.dn.isNullOrEmpty() }) {
                             handleBiDiagnoserDiagnosekodeBeskrivelseMissing(loggingMeta, fellesformat,
-                                    ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
-                            continue@loop
-                        }
-
-                        if (fnrOgDnrMangler(healthInformation) && hprMangler(healthInformation)) {
-                            handleFnrAndDnrAndHprIsmissingFromBehandler(loggingMeta, fellesformat,
                                     ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
                             continue@loop
                         }
@@ -391,7 +389,7 @@ class BlockingApplicationRunner {
                                     msgHead)
                         }
 
-                        if(vedlegg.isNotEmpty()) {
+                        if (vedlegg.isNotEmpty()) {
                             kafkaVedleggProducer.sendVedlegg(vedlegg, receivedSykmelding, loggingMeta)
                         }
 
