@@ -73,6 +73,7 @@ import no.nav.syfo.util.fnrOgDnrMangler
 import no.nav.syfo.util.get
 import no.nav.syfo.util.getVedlegg
 import no.nav.syfo.util.hprMangler
+import no.nav.syfo.util.hprManglerFraSignatur
 import no.nav.syfo.util.medisinskeArsakskodeMangler
 import no.nav.syfo.util.removeVedleggFromFellesformat
 import no.nav.syfo.util.toString
@@ -162,7 +163,7 @@ class BlockingApplicationRunner {
 
                     val personNumberDoctor = if (!fnrOgDnrMangler(healthInformation)) {
                         receiverBlock.avsenderFnrFraDigSignatur
-                    } else if (!hprMangler(healthInformation)) {
+                    } else if (!hprManglerFraSignatur(fellesformat)) {
                         getFnrFromHpr(norskHelsenettClient, fellesformat, msgId)
                     } else {
                         handleFnrAndDnrAndHprIsmissingFromBehandler(loggingMeta, fellesformat,
@@ -254,6 +255,12 @@ class BlockingApplicationRunner {
                                 healthInformation.medisinskVurdering.biDiagnoser.diagnosekode.any { it.dn.isNullOrEmpty() }) {
                             handleBiDiagnoserDiagnosekodeBeskrivelseMissing(loggingMeta, fellesformat,
                                     ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
+                            continue@loop
+                        }
+
+                        if (fnrOgDnrMangler(healthInformation) && hprMangler(healthInformation)) {
+                            handleFnrAndDnrAndHprIsmissingFromBehandler(loggingMeta, fellesformat,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
                             continue@loop
                         }
 
