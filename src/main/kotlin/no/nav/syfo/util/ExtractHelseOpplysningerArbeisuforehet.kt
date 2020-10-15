@@ -34,7 +34,7 @@ fun extractHpr(fellesformat: XMLEIFellesformat): XMLIdent? =
         }
 
 fun hprManglerFraSignatur(fellesformat: XMLEIFellesformat): Boolean =
-    fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.healthcareProfessional.ident.find {
+    fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation?.healthcareProfessional?.ident?.find {
         it.typeId.v == "HPR"
     }?.id.isNullOrBlank()
 
