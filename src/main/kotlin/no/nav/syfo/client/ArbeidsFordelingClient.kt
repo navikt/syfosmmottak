@@ -1,12 +1,15 @@
 package no.nav.syfo.client
 
 import io.ktor.client.HttpClient
+import io.ktor.client.call.receive
 import io.ktor.client.request.header
 import io.ktor.client.request.post
+import io.ktor.client.statement.HttpStatement
 import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.util.KtorExperimentalAPI
-import no.nav.syfo.helpers.retry
+import no.nav.syfo.log
 
 @KtorExperimentalAPI
 class ArbeidsFordelingClient(
@@ -16,15 +19,38 @@ class ArbeidsFordelingClient(
 ) {
     suspend fun finnBehandlendeEnhet(
         arbeidsfordelingRequest: ArbeidsfordelingRequest
-    ): List<ArbeidsfordelingResponse>? =
-            retry("hent_arbeidsfordeling") {
-                httpClient.post<List<ArbeidsfordelingResponse>>("$endpointUrl/enheter/bestmatch") {
-                    contentType(ContentType.Application.Json)
-                    val oidcToken = stsClient.oidcToken()
-                    header("Authorization", "Bearer ${oidcToken.access_token}")
-                    body = arbeidsfordelingRequest
-                }
+    ): List<ArbeidsfordelingResponse>? {
+        val httpResponse = httpClient.post<HttpStatement>("$endpointUrl/enheter/bestmatch") {
+            contentType(ContentType.Application.Json)
+            val oidcToken = stsClient.oidcToken()
+            header("Authorization", "Bearer ${oidcToken.access_token}")
+            body = arbeidsfordelingRequest
+        }.execute()
+
+        when (httpResponse.status) {
+            HttpStatusCode.InternalServerError -> {
+                log.error("finnBehandlendeEnhet svarte med InternalServerError")
+                return null
             }
+            HttpStatusCode.BadRequest -> {
+                log.error("finnBehandlendeEnhet svarer med BadRequest")
+                return null
+            }
+            HttpStatusCode.NotFound -> {
+                log.warn("finnBehandlendeEnhet svarer med NotFound")
+                return null
+            }
+            HttpStatusCode.Unauthorized -> {
+                log.warn("finnBehandlendeEnhet svarer med Unauthorized")
+                return null
+            }
+            HttpStatusCode.OK -> {
+                log.debug("finnBehandlendeEnhet svarer med httpResponse status kode: {}", httpResponse.status.value)
+                return httpResponse.call.response.receive<List<ArbeidsfordelingResponse>>()
+            }
+        }
+        return null
+    }
 }
 
 data class ArbeidsfordelingRequest(
