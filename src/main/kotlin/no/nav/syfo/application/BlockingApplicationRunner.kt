@@ -335,7 +335,7 @@ class BlockingApplicationRunner {
                         countNewDiagnoseCode(receivedSykmelding.sykmelding.medisinskVurdering)
 
                         log.info("Validating against rules, sykmeldingId {},  {}", StructuredArguments.keyValue("sykmeldingId", sykmelding.id), StructuredArguments.fields(loggingMeta))
-                        val validationResult = syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding)
+                        val validationResult = syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding, loggingMeta)
 
                         when (validationResult.status) {
                             Status.OK -> handleStatusOK(

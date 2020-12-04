@@ -7,11 +7,11 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 val artemisVersion = "2.6.4"
-val coroutinesVersion = "1.0.1"
+val coroutinesVersion = "1.3.9"
 val fellesformatVersion = "2019.07.30-12-26-5c924ef4f04022bbb850aaf299eb8e4464c1ca6a"
 val ibmMqVersion = "9.1.0.0"
 val javaxActivationVersion = "1.1.1"
-val jacksonVersion = "2.9.7"
+val jacksonVersion = "2.10.2"
 val jaxbApiVersion = "2.4.0-b180830.0359"
 val jaxbVersion = "2.3.0.1"
 val jedisVersion = "3.1.0"
@@ -20,12 +20,11 @@ val kafkaEmbeddedVersion = "2.4.0"
 val kithHodemeldingVersion = "2019.07.30-12-26-5c924ef4f04022bbb850aaf299eb8e4464c1ca6a"
 val kithApprecVersion = "2019.07.30-04-23-2a0d1388209441ec05d2e92a821eed4f796a3ae2"
 val kluentVersion = "1.51"
-val ktorVersion = "1.2.6"
+val ktorVersion = "1.4.1"
 val logbackVersion = "1.2.3"
-val logstashEncoderVersion = "5.1"
+val logstashEncoderVersion = "6.1"
 val prometheusVersion = "0.6.0"
-val smCommonVersion = "1.7bf5e6f"
-val smCommonDiagnosisCodesVersion = "1.68817ee"
+val smCommonVersion = "1.84cb553"
 val spekVersion = "2.0.9"
 val sykmeldingVersion = "2019.07.29-02-53-86b22e73f7843e422ee500b486dac387a582f2d1"
 val cxfVersion = "3.2.7"
@@ -121,7 +120,7 @@ dependencies {
     implementation("no.nav.tjenestespesifikasjoner:egenansatt-v1-tjenestespesifikasjon:$navEgenAnsattVersion")
 
     implementation("no.nav.helse:syfosm-common-models:$smCommonVersion")
-    implementation("no.nav.helse:syfosm-common-diagnosis-codes:$smCommonDiagnosisCodesVersion")
+    implementation("no.nav.helse:syfosm-common-diagnosis-codes:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-networking:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-rest-sts:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
