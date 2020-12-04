@@ -25,7 +25,6 @@ val logbackVersion = "1.2.3"
 val logstashEncoderVersion = "6.1"
 val prometheusVersion = "0.6.0"
 val smCommonVersion = "1.84cb553"
-val smCommonDiagnosisCodesVersion = "1.84cb553"
 val spekVersion = "2.0.9"
 val sykmeldingVersion = "2019.07.29-02-53-86b22e73f7843e422ee500b486dac387a582f2d1"
 val cxfVersion = "3.2.7"
@@ -121,7 +120,7 @@ dependencies {
     implementation("no.nav.tjenestespesifikasjoner:egenansatt-v1-tjenestespesifikasjon:$navEgenAnsattVersion")
 
     implementation("no.nav.helse:syfosm-common-models:$smCommonVersion")
-    implementation("no.nav.helse:syfosm-common-diagnosis-codes:$smCommonDiagnosisCodesVersion")
+    implementation("no.nav.helse:syfosm-common-diagnosis-codes:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-networking:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-rest-sts:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
