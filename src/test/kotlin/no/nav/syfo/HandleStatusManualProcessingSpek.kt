@@ -1,5 +1,6 @@
 package no.nav.syfo
 
+import java.time.LocalDate
 import no.nav.syfo.handlestatus.pilotBehandleneEnhet
 import no.nav.syfo.handlestatus.sendToSyfosmManuell
 import no.nav.syfo.model.RuleInfo
@@ -29,7 +30,7 @@ object HandleStatusManualProcessingSpek : Spek({
             pilotBehandleneEnhet("0301") shouldEqualTo false
         }
 
-        it("Should return true when the only rule hit is ruleName is TILBAKEDATERT_MER_ENN_8_DAGER_FORSTE_SYKMELDING_MED_BEGRUNNELSE and behandleneEnhet is 0417") {
+        it("Should return true when the only rule hit is ruleName is TILBAKEDATERT_MER_ENN_8_DAGER_FORSTE_SYKMELDING_MED_BEGRUNNELSE and behandleneEnhet is 0417 in prod") {
             val validationResult = ValidationResult(status = Status.MANUAL_PROCESSING, ruleHits = listOf(
                     RuleInfo(ruleName = "TILBAKEDATERT_MER_ENN_8_DAGER_FORSTE_SYKMELDING_MED_BEGRUNNELSE",
                             messageForUser = "Første sykmelding er tilbakedatert og årsak for tilbakedatering er angitt.",
@@ -38,10 +39,10 @@ object HandleStatusManualProcessingSpek : Spek({
                     )
             ))
 
-            sendToSyfosmManuell(validationResult.ruleHits, "0415") shouldEqualTo true
+            sendToSyfosmManuell(validationResult.ruleHits, "0415", "prod-fss", LocalDate.of(2020, 12, 10)) shouldEqualTo true
         }
 
-        it("Should return false when the only rule hit is ruleName is PASIENTEN_HAR_KODE_6 and behandleneEnhet is 0417") {
+        it("Should return false when the only rule hit is ruleName is PASIENTEN_HAR_KODE_6 and behandleneEnhet is 0417 in prod") {
             val validationResult = ValidationResult(status = Status.MANUAL_PROCESSING, ruleHits = listOf(
                     RuleInfo(ruleName = "PASIENTEN_HAR_KODE_6",
                             messageForUser = "Pasient er registrert med sperrekode 6, sperret adresse, strengt fortrolig",
@@ -50,7 +51,51 @@ object HandleStatusManualProcessingSpek : Spek({
                     )
             ))
 
-            sendToSyfosmManuell(validationResult.ruleHits, "0417") shouldEqualTo false
+            sendToSyfosmManuell(validationResult.ruleHits, "0417", "prod-fss", LocalDate.of(2021, 1, 10)) shouldEqualTo false
+        }
+        it("Skal ikke sende til manuell i dev hvis bruker har kode 6") {
+            val validationResult = ValidationResult(status = Status.MANUAL_PROCESSING, ruleHits = listOf(
+                RuleInfo(ruleName = "PASIENTEN_HAR_KODE_6",
+                    messageForUser = "Pasient er registrert med sperrekode 6, sperret adresse, strengt fortrolig",
+                    messageForSender = "Pasient er registrert med sperrekode 6, sperret adresse, strengt fortrolig",
+                    ruleStatus = Status.MANUAL_PROCESSING
+                )
+            ))
+
+            sendToSyfosmManuell(validationResult.ruleHits, "0417", "dev-fss", LocalDate.of(2020, 12, 10)) shouldEqualTo false
+        }
+        it("Skal sende tilbakedatering til manuell i dev uavhengig av pilotkontor") {
+            val validationResult = ValidationResult(status = Status.MANUAL_PROCESSING, ruleHits = listOf(
+                RuleInfo(ruleName = "TILBAKEDATERT_MER_ENN_8_DAGER_FORSTE_SYKMELDING_MED_BEGRUNNELSE",
+                    messageForUser = "Første sykmelding er tilbakedatert og årsak for tilbakedatering er angitt.",
+                    messageForSender = "Første sykmelding er tilbakedatert og felt 11.2 (begrunnelseIkkeKontakt) er utfylt",
+                    ruleStatus = Status.MANUAL_PROCESSING
+                )
+            ))
+
+            sendToSyfosmManuell(validationResult.ruleHits, "0301", "dev-fss", LocalDate.of(2020, 12, 10)) shouldEqualTo true
+        }
+        it("Skal sende tilbakedatering til manuell i prod for ikke-pilot 1/1 2021") {
+            val validationResult = ValidationResult(status = Status.MANUAL_PROCESSING, ruleHits = listOf(
+                RuleInfo(ruleName = "TILBAKEDATERT_MER_ENN_8_DAGER_FORSTE_SYKMELDING_MED_BEGRUNNELSE",
+                    messageForUser = "Første sykmelding er tilbakedatert og årsak for tilbakedatering er angitt.",
+                    messageForSender = "Første sykmelding er tilbakedatert og felt 11.2 (begrunnelseIkkeKontakt) er utfylt",
+                    ruleStatus = Status.MANUAL_PROCESSING
+                )
+            ))
+
+            sendToSyfosmManuell(validationResult.ruleHits, "0301", "prod-fss", LocalDate.of(2021, 1, 1)) shouldEqualTo true
+        }
+        it("Skal ikke sende tilbakedatering til manuell i prod for ikke-pilot før 1/1 2021") {
+            val validationResult = ValidationResult(status = Status.MANUAL_PROCESSING, ruleHits = listOf(
+                RuleInfo(ruleName = "TILBAKEDATERT_MER_ENN_8_DAGER_FORSTE_SYKMELDING_MED_BEGRUNNELSE",
+                    messageForUser = "Første sykmelding er tilbakedatert og årsak for tilbakedatering er angitt.",
+                    messageForSender = "Første sykmelding er tilbakedatert og felt 11.2 (begrunnelseIkkeKontakt) er utfylt",
+                    ruleStatus = Status.MANUAL_PROCESSING
+                )
+            ))
+
+            sendToSyfosmManuell(validationResult.ruleHits, "0301", "prod-fss", LocalDate.of(2020, 12, 31)) shouldEqualTo false
         }
     }
 })

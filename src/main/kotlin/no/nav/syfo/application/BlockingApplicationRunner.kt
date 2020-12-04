@@ -377,7 +377,8 @@ class BlockingApplicationRunner {
                                     env.syfoSmManuellTopic,
                                     personV3,
                                     egenAnsattV1,
-                                    arbeidsFordelingClient
+                                    arbeidsFordelingClient,
+                                    env.cluster
                             )
 
                             Status.INVALID -> handleStatusINVALID(
