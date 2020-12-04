@@ -209,6 +209,7 @@ private suspend fun handleManualProcessing(receivedSykmelding: ReceivedSykmeldin
             "",
             personV3,
             egenAnsattV1,
-            arbeidsFordelingClient
+            arbeidsFordelingClient,
+        ""
     )
 }

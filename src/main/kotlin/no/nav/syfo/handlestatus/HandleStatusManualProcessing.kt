@@ -66,7 +66,8 @@ suspend fun handleStatusMANUALPROCESSING(
     syfoSmManuellTopic: String,
     personV3: PersonV3,
     egenAnsattV1: EgenAnsattV1,
-    arbeidsFordelingClient: ArbeidsFordelingClient
+    arbeidsFordelingClient: ArbeidsFordelingClient,
+    naiscluster: String
 ) {
 
     val geografiskTilknytning = fetchGeografiskTilknytning(personV3, receivedSykmelding)
@@ -94,7 +95,12 @@ suspend fun handleStatusMANUALPROCESSING(
 
     log.info("BehandlendeEnhet er: $behandlendeEnhet {}", StructuredArguments.fields(loggingMeta))
 
-    val sendToSyfosmManuell = sendToSyfosmManuell(validationResult.ruleHits, behandlendeEnhet)
+    val sendToSyfosmManuell = sendToSyfosmManuell(
+        ruleHits = validationResult.ruleHits,
+        behandlendeEnhet = behandlendeEnhet,
+        naiscluster = naiscluster,
+        now = LocalDate.now()
+    )
 
     if (sendToSyfosmManuell && !egenAnsatt) {
         log.info("Sending manuell oppgave to syfosmmanuell-backend {}", StructuredArguments.fields(loggingMeta))
@@ -200,9 +206,15 @@ suspend fun fetchGeografiskTilknytning(personV3: PersonV3, receivedSykmelding: R
                             .withType(Personidenter().withValue("FNR")))))
         }
 
-fun sendToSyfosmManuell(ruleHits: List<RuleInfo>, behandlendeEnhet: String): Boolean =
-        ruleHits.find { it.ruleName == "PASIENTEN_HAR_KODE_6" } == null &&
-                pilotBehandleneEnhet(behandlendeEnhet)
+fun sendToSyfosmManuell(ruleHits: List<RuleInfo>, behandlendeEnhet: String, naiscluster: String, now: LocalDate): Boolean {
+    return if (ruleHits.find { it.ruleName == "PASIENTEN_HAR_KODE_6" } != null) {
+        false
+    } else if (naiscluster == "dev-fss" || now.isAfter(LocalDate.of(2020, 12, 31))) {
+        true
+    } else {
+        pilotBehandleneEnhet(behandlendeEnhet)
+    }
+}
 
 fun pilotBehandleneEnhet(behandlendeEnhet: String): Boolean =
         listOf("0415", "0412", "0403", "0417", "1101", "1108", "1102", "1129", "1106",
