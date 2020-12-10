@@ -49,7 +49,7 @@ spec:
     - name: SECURITY_TOKEN_SERVICE_URL
       value: https://sts.adeo.no/SecurityTokenServiceProvider/
     - name: PERSON_V3_ENDPOINT_URL
-      value: https://wasapp.adeo.no/tpsws/ws/Person/v3
+      value: https://app.adeo.no/tpsws-aura/ws/Person/v3
     - name: AKTOR_REGISTER_V1_URL
       value: https://app.adeo.no/aktoerregister/api/v1
     - name: KAFKA_BOOTSTRAP_SERVERS_URL
@@ -71,7 +71,7 @@ spec:
     - name: MQ_INPUT_BOQ_QUEUE_NAME
       value: P_SYFOSMMOTTAK.INPUT_BOQ
     - name: EGEN_ANSATT_URL
-      value: https://wasapp.adeo.no/tpsws/EgenAnsatt_v1
+      value: https://app.adeo.no/tpsws-aura/ws/EgenAnsatt/v1
     - name: ARBEIDSFORDELING_API
       value: https://app.adeo.no/norg2/api/v1/arbeidsfordeling
     - name: AADACCESSTOKEN_URL
