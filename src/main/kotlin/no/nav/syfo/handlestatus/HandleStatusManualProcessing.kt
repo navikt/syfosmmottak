@@ -148,33 +148,47 @@ fun opprettOppgave(
 ) {
     try {
         kafkaProducer.send(
-                ProducerRecord(
-                        "aapen-syfo-oppgave-produserOppgave",
-                        receivedSykmelding.sykmelding.id,
-                        ProduceTask().apply {
-                            messageId = receivedSykmelding.msgId
-                            aktoerId = receivedSykmelding.sykmelding.pasientAktoerId
-                            tildeltEnhetsnr = ""
-                            opprettetAvEnhetsnr = "9999"
-                            behandlesAvApplikasjon = "FS22" // Gosys
-                            orgnr = receivedSykmelding.legekontorOrgNr ?: ""
-                            beskrivelse = "Manuell behandling av sykmelding grunnet følgende regler: ${results.ruleHits.joinToString(", ", "(", ")") { it.messageForSender }}"
-                            temagruppe = "ANY"
-                            tema = "SYM"
-                            behandlingstema = "ANY"
-                            oppgavetype = "BEH_EL_SYM"
-                            behandlingstype = "ANY"
-                            mappeId = 1
-                            aktivDato = DateTimeFormatter.ISO_DATE.format(LocalDate.now())
-                            fristFerdigstillelse = DateTimeFormatter.ISO_DATE.format(finnFristForFerdigstillingAvOppgave(LocalDate.now().plusDays(4)))
-                            prioritet = PrioritetType.NORM
-                            metadata = mapOf()
-                        })).get()
+            ProducerRecord(
+                "aapen-syfo-oppgave-produserOppgave",
+                receivedSykmelding.sykmelding.id,
+                opprettProduceTask(receivedSykmelding, results, loggingMeta)
+            )).get()
         log.info("Message sendt to topic: aapen-syfo-oppgave-produserOppgave {}", StructuredArguments.fields(loggingMeta))
     } catch (ex: Exception) {
         log.error("Failed to send producer task for sykmelding {} to kafka", receivedSykmelding.sykmelding.id)
         throw ex
     }
+}
+
+fun opprettProduceTask(receivedSykmelding: ReceivedSykmelding, validationResult: ValidationResult, loggingMeta: LoggingMeta): ProduceTask {
+    val oppgave = ProduceTask().apply {
+        messageId = receivedSykmelding.msgId
+        aktoerId = receivedSykmelding.sykmelding.pasientAktoerId
+        tildeltEnhetsnr = ""
+        opprettetAvEnhetsnr = "9999"
+        behandlesAvApplikasjon = "FS22" // Gosys
+        orgnr = receivedSykmelding.legekontorOrgNr ?: ""
+        beskrivelse = "Manuell behandling av sykmelding grunnet følgende regler: ${validationResult.ruleHits.joinToString(", ", "(", ")") { it.messageForSender }}"
+        temagruppe = "ANY"
+        tema = "SYM"
+        behandlingstema = "ANY"
+        oppgavetype = "BEH_EL_SYM"
+        behandlingstype = "ANY"
+        mappeId = 1
+        aktivDato = DateTimeFormatter.ISO_DATE.format(LocalDate.now())
+        fristFerdigstillelse = DateTimeFormatter.ISO_DATE.format(finnFristForFerdigstillingAvOppgave(LocalDate.now().plusDays(4)))
+        prioritet = PrioritetType.NORM
+        metadata = mapOf()
+    }
+    if (validationResult.ruleHits.find { it.ruleName == "SYKMELDING_MED_BEHANDLINGSDAGER" } != null) {
+        log.info("Sykmelding inneholder behandlingsdager, {}", StructuredArguments.fields(loggingMeta))
+        oppgave.behandlingstema = "ab0351"
+    }
+    if (validationResult.ruleHits.find { it.ruleName == "SYKMELDING_MED_REISETILSKUDD" } != null) {
+        log.info("Sykmelding inneholder reisetilskudd, {}", StructuredArguments.fields(loggingMeta))
+        oppgave.behandlingstema = "ab0237"
+    }
+    return oppgave
 }
 
 fun sendManuellTask(
@@ -207,7 +221,7 @@ suspend fun fetchGeografiskTilknytning(personV3: PersonV3, receivedSykmelding: R
         }
 
 fun sendToSyfosmManuell(ruleHits: List<RuleInfo>, behandlendeEnhet: String, naiscluster: String, now: LocalDate): Boolean {
-    return if (ruleHits.find { it.ruleName == "PASIENTEN_HAR_KODE_6" } != null) {
+    return if (ruleHits.find { it.ruleName == "PASIENTEN_HAR_KODE_6" || it.ruleName == "SYKMELDING_MED_BEHANDLINGSDAGER" || it.ruleName == "SYKMELDING_MED_REISETILSKUDD" } != null) {
         false
     } else if (naiscluster == "dev-fss" || now.isAfter(LocalDate.of(2020, 12, 31))) {
         true
