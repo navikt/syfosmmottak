@@ -39,11 +39,11 @@ object HandleStatusManualProcessingSpek : Spek({
 
         it("Should return true when the only rule hit is ruleName is TILBAKEDATERT_MER_ENN_8_DAGER_FORSTE_SYKMELDING_MED_BEGRUNNELSE and behandleneEnhet is 0417 in prod") {
             val validationResult = ValidationResult(status = Status.MANUAL_PROCESSING, ruleHits = listOf(
-                    RuleInfo(ruleName = "TILBAKEDATERT_MER_ENN_8_DAGER_FORSTE_SYKMELDING_MED_BEGRUNNELSE",
-                            messageForUser = "Første sykmelding er tilbakedatert og årsak for tilbakedatering er angitt.",
-                            messageForSender = "Første sykmelding er tilbakedatert og felt 11.2 (begrunnelseIkkeKontakt) er utfylt",
-                            ruleStatus = Status.MANUAL_PROCESSING
-                    )
+                RuleInfo(ruleName = "TILBAKEDATERT_MER_ENN_8_DAGER_FORSTE_SYKMELDING_MED_BEGRUNNELSE",
+                    messageForUser = "Første sykmelding er tilbakedatert og årsak for tilbakedatering er angitt.",
+                    messageForSender = "Første sykmelding er tilbakedatert og felt 11.2 (begrunnelseIkkeKontakt) er utfylt",
+                    ruleStatus = Status.MANUAL_PROCESSING
+                )
             ))
 
             sendToSyfosmManuell(validationResult.ruleHits, "0415", "prod-fss", LocalDate.of(2020, 12, 10)) shouldEqualTo true
@@ -51,11 +51,11 @@ object HandleStatusManualProcessingSpek : Spek({
 
         it("Should return false when the only rule hit is ruleName is PASIENTEN_HAR_KODE_6 and behandleneEnhet is 0417 in prod") {
             val validationResult = ValidationResult(status = Status.MANUAL_PROCESSING, ruleHits = listOf(
-                    RuleInfo(ruleName = "PASIENTEN_HAR_KODE_6",
-                            messageForUser = "Pasient er registrert med sperrekode 6, sperret adresse, strengt fortrolig",
-                            messageForSender = "Pasient er registrert med sperrekode 6, sperret adresse, strengt fortrolig",
-                            ruleStatus = Status.MANUAL_PROCESSING
-                    )
+                RuleInfo(ruleName = "PASIENTEN_HAR_KODE_6",
+                    messageForUser = "Pasient er registrert med sperrekode 6, sperret adresse, strengt fortrolig",
+                    messageForSender = "Pasient er registrert med sperrekode 6, sperret adresse, strengt fortrolig",
+                    ruleStatus = Status.MANUAL_PROCESSING
+                )
             ))
 
             sendToSyfosmManuell(validationResult.ruleHits, "0417", "prod-fss", LocalDate.of(2021, 1, 10)) shouldEqualTo false
@@ -133,29 +133,23 @@ object HandleStatusManualProcessingSpek : Spek({
         it("Behandlingstema er ANY hvis sykmelding ikke har behandlingsdager eller reisetilskudd") {
             val validationResults = ValidationResult(Status.MANUAL_PROCESSING, listOf(RuleInfo("PASIENTEN_HAR_KODE_6", "kode6", "kode6", Status.MANUAL_PROCESSING)))
 
-            runBlocking {
-                val oppgave = opprettProduceTask(receivedSykmelding, validationResults, loggingMeta)
+            val oppgave = opprettProduceTask(receivedSykmelding, validationResults, loggingMeta)
 
-                oppgave.behandlingstema shouldEqual "ANY"
-            }
+            oppgave.behandlingstema shouldEqual "ANY"
         }
         it("Behandlingstema er ab0351 hvis sykmelding har behandlingsdager") {
             val validationResults = ValidationResult(Status.MANUAL_PROCESSING, listOf(RuleInfo("SYKMELDING_MED_BEHANDLINGSDAGER", "Sykmelding inneholder behandlingsdager.", "Sykmelding inneholder behandlingsdager.", Status.MANUAL_PROCESSING)))
 
-            runBlocking {
-                val oppgave = opprettProduceTask(receivedSykmelding, validationResults, loggingMeta)
+            val oppgave = opprettProduceTask(receivedSykmelding, validationResults, loggingMeta)
 
-                oppgave.behandlingstema shouldEqual "ab0351"
-            }
+            oppgave.behandlingstema shouldEqual "ab0351"
         }
         it("Behandlingstema er ab0237 hvis sykmelding har reisetilskudd") {
             val validationResults = ValidationResult(Status.MANUAL_PROCESSING, listOf(RuleInfo("SYKMELDING_MED_REISETILSKUDD", "Sykmelding inneholder reisetilskudd.", "Sykmelding inneholder reisetilskudd.", Status.MANUAL_PROCESSING)))
 
-            runBlocking {
-                val oppgave = opprettProduceTask(receivedSykmelding, validationResults, loggingMeta)
+            val oppgave = opprettProduceTask(receivedSykmelding, validationResults, loggingMeta)
 
-                oppgave.behandlingstema shouldEqual "ab0237"
-            }
+            oppgave.behandlingstema shouldEqual "ab0237"
         }
     }
 })
