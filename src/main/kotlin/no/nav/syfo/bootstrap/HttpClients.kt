@@ -18,7 +18,6 @@ import no.nav.syfo.Environment
 import no.nav.syfo.VaultCredentials
 import no.nav.syfo.client.AccessTokenClient
 import no.nav.syfo.client.AktoerIdClient
-import no.nav.syfo.client.ArbeidsFordelingClient
 import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.StsOidcClient
@@ -89,8 +88,6 @@ class HttpClients(environment: Environment, credentials: VaultCredentials) {
     val oidcClient = StsOidcClient(credentials.serviceuserUsername, credentials.serviceuserPassword)
     @KtorExperimentalAPI
     val aktoerIdClient = AktoerIdClient(environment.aktoerregisterV1Url, oidcClient, simpleHttpClient)
-    @KtorExperimentalAPI
-    val arbeidsFordelingClient = ArbeidsFordelingClient(environment.arbeidsfordelingAPIUrl, oidcClient, simpleHttpClient)
     @KtorExperimentalAPI
     val accessTokenClient = AccessTokenClient(environment.aadAccessTokenUrl, credentials.clientId, credentials.clientsecret, httpClientWithProxy)
     @KtorExperimentalAPI

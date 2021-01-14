@@ -18,7 +18,6 @@ import no.nav.syfo.Environment
 import no.nav.syfo.VaultCredentials
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.client.AktoerIdClient
-import no.nav.syfo.client.ArbeidsFordelingClient
 import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
@@ -78,8 +77,6 @@ import no.nav.syfo.util.medisinskeArsakskodeMangler
 import no.nav.syfo.util.removeVedleggFromFellesformat
 import no.nav.syfo.util.toString
 import no.nav.syfo.util.wrapExceptions
-import no.nav.tjeneste.pip.egen.ansatt.v1.EgenAnsattV1
-import no.nav.tjeneste.virksomhet.person.v3.binding.PersonV3
 import org.apache.kafka.clients.producer.KafkaProducer
 import redis.clients.jedis.Jedis
 import redis.clients.jedis.exceptions.JedisConnectionException
@@ -97,7 +94,6 @@ class BlockingApplicationRunner {
         syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
         kuhrSarClient: SarClient,
         aktoerIdClient: AktoerIdClient,
-        arbeidsFordelingClient: ArbeidsFordelingClient,
         env: Environment,
         credentials: VaultCredentials,
         applicationState: ApplicationState,
@@ -106,8 +102,6 @@ class BlockingApplicationRunner {
         session: Session,
         kafkaproducerApprec: KafkaProducer<String, Apprec>,
         kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
-        personV3: PersonV3,
-        egenAnsattV1: EgenAnsattV1,
         norskHelsenettClient: NorskHelsenettClient,
         kafkaVedleggProducer: KafkaVedleggProducer
     ) {
@@ -374,11 +368,7 @@ class BlockingApplicationRunner {
                                     kafkaproducervalidationResult,
                                     env.sm2013BehandlingsUtfallTopic,
                                     kafkaproducerManuellOppgave,
-                                    env.syfoSmManuellTopic,
-                                    personV3,
-                                    egenAnsattV1,
-                                    arbeidsFordelingClient,
-                                    env.cluster
+                                    env.syfoSmManuellTopic
                             )
 
                             Status.INVALID -> handleStatusINVALID(
