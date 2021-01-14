@@ -1,8 +1,5 @@
 package no.nav.syfo.handlestatus
 
-import com.ctc.wstx.exc.WstxException
-import io.ktor.util.KtorExperimentalAPI
-import java.io.IOException
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -15,9 +12,6 @@ import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.apprec.ApprecStatus
 import no.nav.syfo.apprec.toApprec
-import no.nav.syfo.client.ArbeidsFordelingClient
-import no.nav.syfo.client.ArbeidsfordelingRequest
-import no.nav.syfo.helpers.retry
 import no.nav.syfo.log
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ReceivedSykmelding
@@ -28,22 +22,12 @@ import no.nav.syfo.sak.avro.ProduceTask
 import no.nav.syfo.sendReceipt
 import no.nav.syfo.sendReceivedSykmelding
 import no.nav.syfo.sendValidationResult
-import no.nav.syfo.service.fetchDiskresjonsKode
-import no.nav.syfo.service.fetchEgenAnsatt
 import no.nav.syfo.service.notifySyfoService
 import no.nav.syfo.util.LoggingMeta
-import no.nav.tjeneste.pip.egen.ansatt.v1.EgenAnsattV1
-import no.nav.tjeneste.virksomhet.person.v3.binding.PersonV3
-import no.nav.tjeneste.virksomhet.person.v3.informasjon.NorskIdent
-import no.nav.tjeneste.virksomhet.person.v3.informasjon.PersonIdent
-import no.nav.tjeneste.virksomhet.person.v3.informasjon.Personidenter
-import no.nav.tjeneste.virksomhet.person.v3.meldinger.HentGeografiskTilknytningRequest
-import no.nav.tjeneste.virksomhet.person.v3.meldinger.HentGeografiskTilknytningResponse
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 
-@KtorExperimentalAPI
-suspend fun handleStatusMANUALPROCESSING(
+fun handleStatusMANUALPROCESSING(
     receivedSykmelding: ReceivedSykmelding,
     loggingMeta: LoggingMeta,
     fellesformat: XMLEIFellesformat,
@@ -63,46 +47,11 @@ suspend fun handleStatusMANUALPROCESSING(
     kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
     sm2013BehandlingsUtfallTopic: String,
     kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
-    syfoSmManuellTopic: String,
-    personV3: PersonV3,
-    egenAnsattV1: EgenAnsattV1,
-    arbeidsFordelingClient: ArbeidsFordelingClient,
-    naiscluster: String
+    syfoSmManuellTopic: String
 ) {
+    val sendToSyfosmManuell = sendToSyfosmManuell(ruleHits = validationResult.ruleHits)
 
-    val geografiskTilknytning = fetchGeografiskTilknytning(personV3, receivedSykmelding)
-    val patientDiskresjonsKode = fetchDiskresjonsKode(personV3, receivedSykmelding)
-    val egenAnsatt = fetchEgenAnsatt(egenAnsattV1, receivedSykmelding)
-
-    val arbeidsfordelingRequest = ArbeidsfordelingRequest(
-            tema = "SYM",
-            geografiskOmraade = geografiskTilknytning.geografiskTilknytning?.geografiskTilknytning,
-            behandlingstema = "ANY",
-            behandlingstype = "ANY",
-            oppgavetype = "BEH_EL_SYM",
-            diskresjonskode = patientDiskresjonsKode,
-            skjermet = egenAnsatt
-
-    )
-
-    val arbeidsfordelingResponse = arbeidsFordelingClient.finnBehandlendeEnhet(arbeidsfordelingRequest)
-
-    if (arbeidsfordelingResponse?.firstOrNull()?.enhetId == null) {
-        log.warn("arbeidsfordeling fant ingen nav-enheter {}", StructuredArguments.fields(loggingMeta))
-    }
-    val behandlendeEnhet = arbeidsfordelingResponse?.firstOrNull()?.enhetNr
-            ?: "0393"
-
-    log.info("BehandlendeEnhet er: $behandlendeEnhet {}", StructuredArguments.fields(loggingMeta))
-
-    val sendToSyfosmManuell = sendToSyfosmManuell(
-        ruleHits = validationResult.ruleHits,
-        behandlendeEnhet = behandlendeEnhet,
-        naiscluster = naiscluster,
-        now = LocalDate.now()
-    )
-
-    if (sendToSyfosmManuell && !egenAnsatt) {
+    if (sendToSyfosmManuell) {
         log.info("Sending manuell oppgave to syfosmmanuell-backend {}", StructuredArguments.fields(loggingMeta))
         val apprec = fellesformat.toApprec(
                 ediLoggId,
@@ -210,31 +159,9 @@ fun sendManuellTask(
     }
 }
 
-suspend fun fetchGeografiskTilknytning(personV3: PersonV3, receivedSykmelding: ReceivedSykmelding): HentGeografiskTilknytningResponse =
-        retry(callName = "tps_hent_geografisktilknytning",
-                retryIntervals = arrayOf(500L, 1000L, 3000L, 5000L, 10000L),
-                legalExceptions = *arrayOf(IOException::class, WstxException::class)) {
-            personV3.hentGeografiskTilknytning(HentGeografiskTilknytningRequest().withAktoer(PersonIdent().withIdent(
-                    NorskIdent()
-                            .withIdent(receivedSykmelding.personNrPasient)
-                            .withType(Personidenter().withValue("FNR")))))
-        }
-
-fun sendToSyfosmManuell(ruleHits: List<RuleInfo>, behandlendeEnhet: String, naiscluster: String, now: LocalDate): Boolean {
-    return if (ruleHits.find { it.ruleName == "PASIENTEN_HAR_KODE_6" || it.ruleName == "SYKMELDING_MED_BEHANDLINGSDAGER" || it.ruleName == "SYKMELDING_MED_REISETILSKUDD" } != null) {
-        false
-    } else if (naiscluster == "dev-fss" || now.isAfter(LocalDate.of(2020, 12, 31))) {
-        true
-    } else {
-        pilotBehandleneEnhet(behandlendeEnhet)
-    }
+fun sendToSyfosmManuell(ruleHits: List<RuleInfo>): Boolean {
+    return ruleHits.find { it.ruleName == "PASIENTEN_HAR_KODE_6" || it.ruleName == "SYKMELDING_MED_BEHANDLINGSDAGER" || it.ruleName == "SYKMELDING_MED_REISETILSKUDD" } == null
 }
-
-fun pilotBehandleneEnhet(behandlendeEnhet: String): Boolean =
-        listOf("0415", "0412", "0403", "0417", "1101", "1108", "1102", "1129", "1106",
-                "1111", "1112", "1119", "1120", "1122", "1124", "1127", "1130", "1133", "1134",
-                "1135", "1146", "1149", "1151", "1160", "1161", "1162", "1164", "1165", "1169", "1167", "1168")
-                .contains(behandlendeEnhet)
 
 fun finnFristForFerdigstillingAvOppgave(ferdistilleDato: LocalDate): LocalDate {
     return setToWorkDay(ferdistilleDato)
