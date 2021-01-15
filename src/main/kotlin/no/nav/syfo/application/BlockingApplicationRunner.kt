@@ -165,8 +165,6 @@ class BlockingApplicationRunner {
 
                     val identer = pdlPersonService.getAktorids(listOf(personNumberDoctor, personNumberPatient), loggingMeta)
 
-                    log.info("Ferdig med aktoerIdClient {}", StructuredArguments.fields(loggingMeta))
-
                     val samhandlerInfo = kuhrSarClient.getSamhandler(personNumberDoctor)
                     val samhandlerPraksisMatch = findBestSamhandlerPraksis(
                             samhandlerInfo,
