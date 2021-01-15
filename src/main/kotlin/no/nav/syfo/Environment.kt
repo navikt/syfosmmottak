@@ -10,7 +10,6 @@ data class Environment(
     val syfosmreglerApiUrl: String = getEnvVar("SYFOSMREGLER_API_URL", "http://syfosmregler"),
     val subscriptionEndpointURL: String = getEnvVar("SUBSCRIPTION_ENDPOINT_URL"),
     val securityTokenServiceUrl: String = getEnvVar("SECURITY_TOKEN_SERVICE_URL"),
-    val aktoerregisterV1Url: String = getEnvVar("AKTOR_REGISTER_V1_URL"),
     val applicationPort: Int = getEnvVar("APPLICATION_PORT", "8080").toInt(),
     val applicationName: String = getEnvVar("NAIS_APP_NAME", "syfosmmottak"),
     override val kafkaBootstrapServers: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS_URL"),
@@ -32,7 +31,8 @@ data class Environment(
     val cluster: String = getEnvVar("NAIS_CLUSTER_NAME"),
     val norskHelsenettEndpointURL: String = getEnvVar("HELSENETT_ENDPOINT_URL", "http://syfohelsenettproxy"),
     val aadAccessTokenUrl: String = getEnvVar("AADACCESSTOKEN_URL"),
-    val sm2013VedleggTopic: String = "privat-syfo-vedlegg"
+    val sm2013VedleggTopic: String = "privat-syfo-vedlegg",
+    val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH")
 ) : MqConfig, KafkaConfig
 
 data class VaultCredentials(

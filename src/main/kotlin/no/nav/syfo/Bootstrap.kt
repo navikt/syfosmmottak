@@ -21,7 +21,6 @@ import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.bootstrap.HttpClients
 import no.nav.syfo.bootstrap.KafkaClients
-import no.nav.syfo.client.AktoerIdClient
 import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
@@ -32,6 +31,7 @@ import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.mq.connectionFactory
 import no.nav.syfo.mq.consumerForQueue
 import no.nav.syfo.mq.producerForQueue
+import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.sak.avro.ProduceTask
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.TrackableException
@@ -86,7 +86,7 @@ fun main() {
     launchListeners(env, applicationState,
             subscriptionEmottak, kafkaClients.kafkaProducerReceivedSykmelding,
             kafkaClients.kafkaProducerValidationResult,
-            httpClients.syfoSykemeldingRuleClient, httpClients.sarClient, httpClients.aktoerIdClient,
+            httpClients.syfoSykemeldingRuleClient, httpClients.sarClient, httpClients.pdlPersonService,
             credentials, kafkaClients.manualValidationKafkaProducer,
             kafkaClients.kafkaProducerApprec, kafkaClients.kafkaproducerManuellOppgave,
             httpClients.norskHelsenettClient, kafkaClients.kafkaVedleggProducer)
@@ -112,7 +112,7 @@ fun launchListeners(
     kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
     syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
     kuhrSarClient: SarClient,
-    aktoerIdClient: AktoerIdClient,
+    pdlPersonService: PdlPersonService,
     credentials: VaultCredentials,
     kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
@@ -136,8 +136,8 @@ fun launchListeners(
 
                 BlockingApplicationRunner().run(inputconsumer, syfoserviceProducer, backoutProducer,
                         subscriptionEmottak, kafkaproducerreceivedSykmelding, kafkaproducervalidationResult,
-                        syfoSykemeldingRuleClient, kuhrSarClient, aktoerIdClient, env,
-                        credentials, applicationState, jedis, kafkaManuelTaskProducer,
+                        syfoSykemeldingRuleClient, kuhrSarClient, pdlPersonService, env,
+                        applicationState, jedis, kafkaManuelTaskProducer,
                         session, kafkaproducerApprec, kafkaproducerManuellOppgave,
                         norskHelsenettClient, kafkaVedleggProducer)
             }
