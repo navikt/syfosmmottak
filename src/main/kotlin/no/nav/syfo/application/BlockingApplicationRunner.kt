@@ -314,8 +314,6 @@ class BlockingApplicationRunner {
                                 tssid = samhandlerPraksis?.tss_ident ?: ""
                         )
 
-                        log.info("Pasientfnr: $personNumberPatient, pasient-aktørid: $patientAktorId, legefnr: $personNumberDoctor, lege-aktørid: $doctorAktorId")
-
                         if (receivedSykmelding.sykmelding.behandler.fnr != personNumberDoctor) {
                             ULIK_SENDER_OG_BEHANDLER.inc()
                             log.info("Behandlers fnr og avsendres fnr stemmer ikkje {}", StructuredArguments.fields(loggingMeta))
