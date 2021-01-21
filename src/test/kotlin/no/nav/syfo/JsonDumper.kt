@@ -41,7 +41,8 @@ fun main() {
             rulesetVersion = "2",
             fellesformat = objectMapper
                     .writeValueAsString(inputMessageText),
-            tssid = "13415"
+            tssid = "13415",
+            merknader = null
     )
 
     println(objectMapper.writeValueAsString(receivedSykmelding))

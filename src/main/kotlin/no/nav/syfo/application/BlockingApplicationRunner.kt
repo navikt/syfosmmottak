@@ -311,7 +311,8 @@ class BlockingApplicationRunner {
                                 mottattDato = receiverBlock.mottattDatotid.toGregorianCalendar().toZonedDateTime().withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime(),
                                 rulesetVersion = healthInformation.regelSettVersjon,
                                 fellesformat = fellesformatText,
-                                tssid = samhandlerPraksis?.tss_ident ?: ""
+                                tssid = samhandlerPraksis?.tss_ident ?: "",
+                                merknader = null
                         )
 
                         if (receivedSykmelding.sykmelding.behandler.fnr != personNumberDoctor) {
