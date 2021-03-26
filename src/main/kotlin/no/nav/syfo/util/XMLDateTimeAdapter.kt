@@ -6,11 +6,15 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import javax.xml.bind.DatatypeConverter
+import no.nav.syfo.log
 
 class XMLDateTimeAdapter : LocalDateTimeXmlAdapter() {
     override fun unmarshal(stringValue: String?): LocalDateTime? = when (stringValue) {
         null -> null
-        else -> DatatypeConverter.parseDateTime(stringValue).toInstant().atZone(ZoneOffset.UTC).toLocalDateTime()
+        else -> {
+            log.info("received timestamp $stringValue")
+            DatatypeConverter.parseDateTime(stringValue).toInstant().atZone(ZoneOffset.UTC).toLocalDateTime()
+        }
     }
 }
 
