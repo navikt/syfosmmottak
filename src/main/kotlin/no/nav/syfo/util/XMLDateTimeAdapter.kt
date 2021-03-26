@@ -7,7 +7,6 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.GregorianCalendar
 import javax.xml.bind.DatatypeConverter
-import no.nav.syfo.log
 
 class XMLDateTimeAdapter : LocalDateTimeXmlAdapter() {
     override fun unmarshal(stringValue: String?): LocalDateTime? = when (stringValue) {
@@ -19,9 +18,6 @@ class XMLDateTimeAdapter : LocalDateTimeXmlAdapter() {
 class XMLDateAdapter : LocalDateXmlAdapter() {
     override fun unmarshal(stringValue: String?): LocalDate? = when (stringValue) {
         null -> null
-        else -> {
-            log.info("Received date $stringValue")
-            DatatypeConverter.parseDate(stringValue).toInstant().atZone(ZoneOffset.MAX).toLocalDate()
-        }
+        else -> DatatypeConverter.parseDate(stringValue).toInstant().atZone(ZoneOffset.MAX).toLocalDate()
     }
 }
