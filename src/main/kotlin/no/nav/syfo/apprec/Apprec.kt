@@ -13,6 +13,7 @@ data class Apprec(
     val tekstTilSykmelder: String? = null,
     val senderOrganisasjon: Organisation,
     val mottakerOrganisasjon: Organisation,
+    val msgGenDate: String,
     val validationResult: ValidationResult?
 )
 

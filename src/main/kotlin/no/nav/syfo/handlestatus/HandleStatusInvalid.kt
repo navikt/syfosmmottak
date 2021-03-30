@@ -46,6 +46,7 @@ fun handleStatusINVALID(
             null,
             msgHead.msgInfo.receiver.organisation,
             msgHead.msgInfo.sender.organisation,
+            msgHead.msgInfo.genDate,
             validationResult
     )
     sendReceipt(apprec, sm2013ApprecTopic, kafkaproducerApprec)
@@ -427,5 +428,6 @@ fun fellesformatToAppprec(
                 ApprecStatus.AVVIST,
                 tekstTilSykmelder,
                 msgHead.msgInfo.receiver.organisation,
-                msgHead.msgInfo.sender.organisation
+                msgHead.msgInfo.sender.organisation,
+                msgHead.msgInfo.genDate
         )

@@ -60,7 +60,8 @@ fun handleStatusMANUALPROCESSING(
                 ApprecStatus.OK,
                 null,
                 msgHead.msgInfo.receiver.organisation,
-                msgHead.msgInfo.sender.organisation
+                msgHead.msgInfo.sender.organisation,
+                msgHead.msgInfo.genDate
         )
         sendManuellTask(receivedSykmelding, validationResult, apprec, syfoSmManuellTopic, kafkaproducerManuellOppgave)
     } else {
@@ -78,7 +79,8 @@ fun handleStatusMANUALPROCESSING(
                 ApprecStatus.OK,
                 null,
                 msgHead.msgInfo.receiver.organisation,
-                msgHead.msgInfo.sender.organisation
+                msgHead.msgInfo.sender.organisation,
+                msgHead.msgInfo.genDate
         )
         sendReceipt(apprec, sm2013ApprecTopic, kafkaproducerApprec)
         log.info("Apprec receipt sent to kafka topic {}, {}", sm2013ApprecTopic, StructuredArguments.fields(loggingMeta))
