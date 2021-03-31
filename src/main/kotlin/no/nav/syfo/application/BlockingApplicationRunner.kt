@@ -69,6 +69,7 @@ import no.nav.syfo.util.fellesformatMarshaller
 import no.nav.syfo.util.fellesformatUnmarshaller
 import no.nav.syfo.util.fnrOgDnrMangler
 import no.nav.syfo.util.get
+import no.nav.syfo.util.getLocalDateTime
 import no.nav.syfo.util.getVedlegg
 import no.nav.syfo.util.hprMangler
 import no.nav.syfo.util.hprManglerFraSignatur
@@ -133,7 +134,6 @@ class BlockingApplicationRunner {
 
                     val receiverBlock = fellesformat.get<XMLMottakenhetBlokk>()
                     val msgHead = fellesformat.get<XMLMsgHead>()
-
                     val loggingMeta = LoggingMeta(
                             mottakId = receiverBlock.ediLoggId,
                             orgNr = extractOrganisationNumberFromSender(fellesformat)?.id,
@@ -294,7 +294,7 @@ class BlockingApplicationRunner {
                                 pasientAktoerId = patientAktorId,
                                 legeAktoerId = doctorAktorId,
                                 msgId = msgId,
-                                signaturDato = msgHead.msgInfo.genDate,
+                                signaturDato = getLocalDateTime(msgHead.msgInfo.genDate),
                                 hprFnrBehandler = personNumberDoctor
                         )
                         val receivedSykmelding = ReceivedSykmelding(

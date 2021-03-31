@@ -7,6 +7,7 @@ import no.nav.helse.msgHead.XMLIdent
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.helse.msgHead.XMLOrganisation
 import no.nav.syfo.model.ValidationResult
+import no.nav.syfo.util.getLocalDateTime
 
 fun XMLEIFellesformat.toApprec(
     ediloggid: String,
@@ -16,19 +17,20 @@ fun XMLEIFellesformat.toApprec(
     tekstTilSykmelder: String? = null,
     senderOrganisation: XMLOrganisation,
     mottakerOrganisation: XMLOrganisation,
+    msgGenDate: String,
     validationResult: ValidationResult? = null
 ) = Apprec(
         ediloggid = ediloggid,
         msgId = msgId,
         msgTypeVerdi = xmlMsgHead.msgInfo.type.v,
         msgTypeBeskrivelse = xmlMsgHead.msgInfo.type?.dn ?: "",
-        genDate = xmlMsgHead.msgInfo.genDate,
+        genDate = getLocalDateTime(xmlMsgHead.msgInfo.genDate),
         apprecStatus = apprecStatus,
         tekstTilSykmelder = tekstTilSykmelder,
         senderOrganisasjon = senderOrganisation.intoHCP(),
         mottakerOrganisasjon = mottakerOrganisation.intoHCP(),
+        msgGenDate = msgGenDate,
         validationResult = validationResult
-
 )
 
 fun XMLHealthcareProfessional.intoHCPerson(): Helsepersonell =

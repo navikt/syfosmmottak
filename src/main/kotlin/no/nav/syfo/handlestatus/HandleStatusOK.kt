@@ -43,7 +43,8 @@ fun handleStatusOK(
             ApprecStatus.OK,
             null,
             msgHead.msgInfo.receiver.organisation,
-            msgHead.msgInfo.sender.organisation
+            msgHead.msgInfo.sender.organisation,
+            msgHead.msgInfo.genDate
     )
     sendReceipt(apprec, sm2013ApprecTopic, kafkaproducerApprec)
 

@@ -11,6 +11,7 @@ import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.util.fellesformatUnmarshaller
 import no.nav.syfo.util.get
+import no.nav.syfo.util.getLocalDateTime
 import no.nav.syfo.utils.getFileAsString
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
@@ -32,8 +33,13 @@ object ApprecMapperSpek : Spek({
                 apprecStatus = ApprecStatus.AVVIST,
                 tekstTilSykmelder = tekstTilSykmelder,
                 senderOrganisation = msgHead.msgInfo.receiver.organisation,
-                mottakerOrganisation = msgHead.msgInfo.sender.organisation
+                mottakerOrganisation = msgHead.msgInfo.sender.organisation,
+                msgGenDate = msgHead.msgInfo.genDate
         )
+
+        it("Has same msgGenDate") {
+            apprec.msgGenDate shouldEqual fellesformat.get<XMLMsgHead>().msgInfo.genDate
+        }
 
         it("Has the same ediLoggId as the source") {
             apprec.ediloggid shouldEqual fellesformat.get<XMLMottakenhetBlokk>().ediLoggId
@@ -42,7 +48,7 @@ object ApprecMapperSpek : Spek({
             apprec.msgId shouldEqual fellesformat.get<XMLMsgHead>().msgInfo.msgId
         }
         it("Has the same genDate as the source") {
-            apprec.genDate shouldEqual fellesformat.get<XMLMsgHead>().msgInfo.genDate
+            apprec.genDate shouldEqual getLocalDateTime(fellesformat.get<XMLMsgHead>().msgInfo.genDate)
         }
         it("Has the same msgTypeVerdi as the source") {
             apprec.msgTypeVerdi shouldEqual fellesformat.get<XMLMsgHead>().msgInfo.type.v
@@ -134,7 +140,8 @@ object ApprecMapperSpek : Spek({
                 apprecStatus = ApprecStatus.OK,
                 tekstTilSykmelder = null,
                 mottakerOrganisation = msgHead.msgInfo.sender.organisation,
-                senderOrganisation = msgHead.msgInfo.receiver.organisation
+                senderOrganisation = msgHead.msgInfo.receiver.organisation,
+                msgGenDate = msgHead.msgInfo.genDate
         )
         it("Has the same ediLoggId as the source") {
             apprec.ediloggid shouldEqual fellesformat.get<XMLMottakenhetBlokk>().ediLoggId
@@ -143,7 +150,7 @@ object ApprecMapperSpek : Spek({
             apprec.msgId shouldEqual fellesformat.get<XMLMsgHead>().msgInfo.msgId
         }
         it("Has the same genDate as the source") {
-            apprec.genDate shouldEqual fellesformat.get<XMLMsgHead>().msgInfo.genDate
+            apprec.genDate shouldEqual getLocalDateTime(fellesformat.get<XMLMsgHead>().msgInfo.genDate)
         }
         it("Has the same msgTypeVerdi as the source") {
             apprec.msgTypeVerdi shouldEqual fellesformat.get<XMLMsgHead>().msgInfo.type.v
@@ -250,8 +257,8 @@ object ApprecMapperSpek : Spek({
                 tekstTilSykmelder = null,
                 mottakerOrganisation = msgHead.msgInfo.sender.organisation,
                 senderOrganisation = msgHead.msgInfo.receiver.organisation,
-                validationResult = validationResult
-
+                validationResult = validationResult,
+                msgGenDate = msgHead.msgInfo.genDate
         )
         it("Has the same validationResult as the source") {
             apprec.validationResult shouldEqual validationResult
@@ -264,7 +271,7 @@ object ApprecMapperSpek : Spek({
             apprec.msgId shouldEqual fellesformat.get<XMLMsgHead>().msgInfo.msgId
         }
         it("Has the same genDate as the source") {
-            apprec.genDate shouldEqual fellesformat.get<XMLMsgHead>().msgInfo.genDate
+            apprec.genDate shouldEqual getLocalDateTime(fellesformat.get<XMLMsgHead>().msgInfo.genDate)
         }
         it("Has the same msgTypeVerdi as the source") {
             apprec.msgTypeVerdi shouldEqual fellesformat.get<XMLMsgHead>().msgInfo.type.v
