@@ -4,6 +4,7 @@ import io.ktor.util.KtorExperimentalAPI
 import java.io.StringReader
 import java.time.ZoneOffset
 import java.util.UUID
+import javax.jms.Message
 import javax.jms.MessageConsumer
 import javax.jms.MessageProducer
 import javax.jms.Session
@@ -42,6 +43,7 @@ import no.nav.syfo.kafka.vedlegg.producer.KafkaVedleggProducer
 import no.nav.syfo.log
 import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
 import no.nav.syfo.metrics.REQUEST_TIME
+import no.nav.syfo.metrics.RETRY_COUTER
 import no.nav.syfo.metrics.SYKMELDING_VEDLEGG_COUNTER
 import no.nav.syfo.metrics.ULIK_SENDER_OG_BEHANDLER
 import no.nav.syfo.model.ManuellOppgave
@@ -83,6 +85,9 @@ import redis.clients.jedis.exceptions.JedisConnectionException
 
 class BlockingApplicationRunner {
 
+    companion object {
+        private const val SYFOSMMOTTAK_RETRY_COUNT = "syfosmmottak-retry-count"
+    }
     @KtorExperimentalAPI
     suspend fun run(
         inputconsumer: MessageConsumer,
@@ -108,6 +113,7 @@ class BlockingApplicationRunner {
 
             loop@ while (applicationState.ready) {
                 val message = inputconsumer.receiveNoWait()
+                var loggingMeta: LoggingMeta? = null
                 if (message == null) {
                     delay(100)
                     continue
@@ -134,7 +140,7 @@ class BlockingApplicationRunner {
 
                     val receiverBlock = fellesformat.get<XMLMottakenhetBlokk>()
                     val msgHead = fellesformat.get<XMLMsgHead>()
-                    val loggingMeta = LoggingMeta(
+                    loggingMeta = LoggingMeta(
                             mottakId = receiverBlock.ediLoggId,
                             orgNr = extractOrganisationNumberFromSender(fellesformat)?.id,
                             msgId = msgHead.msgInfo.msgId
@@ -403,17 +409,43 @@ class BlockingApplicationRunner {
                     }
                 } catch (jedisException: JedisConnectionException) {
                     log.error("Exception caught, redis issue while handling message, sending to backout", jedisException)
-                    backoutProducer.send(message)
+                    sendToBackout(message, loggingMeta, backoutProducer)
                     log.error("Setting applicationState.alive to false")
                     applicationState.alive = false
                 } catch (e: Exception) {
                     log.error("Exception caught while handling message, sending to backout", e)
-                    backoutProducer.send(message)
+                    sendToBackout(message, loggingMeta, backoutProducer)
                 } finally {
                     message.acknowledge()
                 }
             }
         }
+    }
+
+    private fun sendToBackout(
+        message: Message,
+        loggingMeta: LoggingMeta?,
+        backoutProducer: MessageProducer
+    ) {
+        var retryCount = if (message.propertyExists(SYFOSMMOTTAK_RETRY_COUNT)) {
+            message.getIntProperty(SYFOSMMOTTAK_RETRY_COUNT)
+        } else {
+            log.info("retry count does not exist")
+            0
+        }
+        log.info("retry count is $retryCount")
+
+        if (retryCount > 0) {
+            if (loggingMeta?.msgId != null) {
+                RETRY_COUTER.labels(loggingMeta.msgId).inc()
+            }
+            log.warn("Messaged is tried $retryCount before", StructuredArguments.fields(loggingMeta))
+        } else {
+            log.warn("Message is tried before")
+        }
+        retryCount++
+        message.setIntProperty(SYFOSMMOTTAK_RETRY_COUNT, retryCount)
+        backoutProducer.send(message)
     }
 }
 
