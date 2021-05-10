@@ -156,7 +156,14 @@ class BlockingApplicationRunner {
                     val personNumberDoctor = if (!fnrOgDnrMangler(healthInformation)) {
                         receiverBlock.avsenderFnrFraDigSignatur
                     } else if (!hprManglerFraSignatur(fellesformat)) {
-                        getFnrFromHpr(norskHelsenettClient, fellesformat, msgId)
+                        val fnr = getFnrFromHpr(norskHelsenettClient, fellesformat, msgId)
+                        if (fnr.isNullOrEmpty()) {
+                            handleFnrAndDnrAndHprIsmissingFromBehandler(loggingMeta, fellesformat,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
+                            continue@loop
+                        } else {
+                            fnr
+                        }
                     } else {
                         handleFnrAndDnrAndHprIsmissingFromBehandler(loggingMeta, fellesformat,
                             ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
@@ -415,15 +422,10 @@ suspend fun getFnrFromHpr(
     norskHelsenettClient: NorskHelsenettClient,
     fellesformat: XMLEIFellesformat,
     msgid: String
-): String {
+): String? {
 
     val hprnummer = extractHpr(fellesformat)!!.id
     val behandlerFraHpr = norskHelsenettClient.finnBehandler(hprnummer, msgid)
 
-    if (behandlerFraHpr == null || behandlerFraHpr.fnr.isNullOrEmpty()) {
-        log.error("Kunne ikke hente fnr for hpr {}, msgid {}", hprnummer, msgid)
-        throw IllegalStateException("Kunne ikke hente fnr for hpr $hprnummer, msgid $msgid")
-    }
-
-    return behandlerFraHpr.fnr
+    return behandlerFraHpr?.fnr
 }
