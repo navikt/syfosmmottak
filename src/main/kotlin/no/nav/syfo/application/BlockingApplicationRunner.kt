@@ -427,24 +427,29 @@ class BlockingApplicationRunner {
         loggingMeta: LoggingMeta?,
         backoutProducer: MessageProducer
     ) {
-        var retryCount = if (message.propertyExists(SYFOSMMOTTAK_RETRY_COUNT)) {
-            message.getIntProperty(SYFOSMMOTTAK_RETRY_COUNT)
-        } else {
-            log.info("retry count does not exist")
-            0
-        }
-        log.info("retry count is $retryCount")
-
-        if (retryCount > 0) {
-            if (loggingMeta?.msgId != null) {
-                RETRY_COUTER.labels(loggingMeta.msgId).inc()
+        try {
+            var retryCount = if (message.propertyExists(SYFOSMMOTTAK_RETRY_COUNT)) {
+                message.getIntProperty(SYFOSMMOTTAK_RETRY_COUNT)
+            } else {
+                log.info("retry count does not exist")
+                0
             }
-            log.warn("Messaged is tried $retryCount before", StructuredArguments.fields(loggingMeta))
-        } else {
-            log.warn("Message is tried before")
+            log.info("retry count is $retryCount")
+
+            if (retryCount > 0) {
+                if (loggingMeta?.msgId != null) {
+                    RETRY_COUTER.labels(loggingMeta.msgId).inc()
+                }
+                log.warn("Messaged is tried $retryCount before", StructuredArguments.fields(loggingMeta))
+            } else {
+                log.warn("Message is tried before")
+            }
+            retryCount++
+            message.setIntProperty(SYFOSMMOTTAK_RETRY_COUNT, retryCount)
+        } catch (ex: Exception) {
+            log.warn("Could not update retry-counter-property")
         }
-        retryCount++
-        message.setIntProperty(SYFOSMMOTTAK_RETRY_COUNT, retryCount)
+
         backoutProducer.send(message)
     }
 }
