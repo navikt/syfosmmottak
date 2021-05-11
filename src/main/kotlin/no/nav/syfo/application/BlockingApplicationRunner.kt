@@ -442,7 +442,7 @@ class BlockingApplicationRunner {
                 }
                 log.warn("Messaged is tried $retryCount before", StructuredArguments.fields(loggingMeta))
             } else {
-                log.warn("Message is tried before")
+                log.warn("Message is not tried before")
             }
             retryCount++
             message.setIntProperty(SYFOSMMOTTAK_RETRY_COUNT, retryCount)
