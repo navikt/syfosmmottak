@@ -115,13 +115,10 @@ fun handlePatientNotFoundInPDL(
 
     val apprec = fellesformatToAppprec(fellesformat, "Sykmeldingen kan ikke rettes, det må skrives en ny." +
             "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
-                    "Pasienten er ikkje registrert i folkeregisteret",
+                    "Pasienten er ikke registrert i folkeregisteret",
             ediLoggId, msgId, msgHead)
 
-    sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
-    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
-    INVALID_MESSAGE_NO_NOTICE.inc()
-    updateRedis(jedis, ediLoggId, sha256String)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
 }
 
 fun handleDoctorNotFoundInPDL(
@@ -139,13 +136,10 @@ fun handleDoctorNotFoundInPDL(
 
     val apprec = fellesformatToAppprec(fellesformat, "Sykmeldingen kan ikke rettes, det må skrives en ny." +
             "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
-            "Behandler er ikkje registrert i folkeregisteret",
+            "Behandler er ikke registrert i folkeregisteret",
             ediLoggId, msgId, msgHead)
 
-    sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
-    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
-    INVALID_MESSAGE_NO_NOTICE.inc()
-    updateRedis(jedis, ediLoggId, sha256String)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
 }
 
 fun handleAktivitetOrPeriodeIsMissing(
@@ -166,10 +160,7 @@ fun handleAktivitetOrPeriodeIsMissing(
             "Ingen perioder er oppgitt i sykmeldingen.",
             ediLoggId, msgId, msgHead)
 
-    sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
-    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
-    INVALID_MESSAGE_NO_NOTICE.inc()
-    updateRedis(jedis, ediLoggId, sha256String)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
 }
 
 fun handleBiDiagnoserDiagnosekodeIsMissing(
@@ -191,10 +182,7 @@ fun handleBiDiagnoserDiagnosekodeIsMissing(
                     "Diagnosekode på bidiagnose mangler",
             ediLoggId, msgId, msgHead)
 
-    sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
-    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
-    INVALID_MESSAGE_NO_NOTICE.inc()
-    updateRedis(jedis, ediLoggId, sha256String)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
 }
 
 fun handleBiDiagnoserDiagnosekodeVerkIsMissing(
@@ -216,10 +204,7 @@ fun handleBiDiagnoserDiagnosekodeVerkIsMissing(
                     "Diagnosekodeverk på bidiagnose mangler. Kontakt din EPJ-leverandør",
             ediLoggId, msgId, msgHead)
 
-    sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
-    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
-    INVALID_MESSAGE_NO_NOTICE.inc()
-    updateRedis(jedis, ediLoggId, sha256String)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
 }
 
 fun handleBiDiagnoserDiagnosekodeBeskrivelseMissing(
@@ -240,10 +225,28 @@ fun handleBiDiagnoserDiagnosekodeBeskrivelseMissing(
             "Diagnosekode beskrivelse på bidiagnose mangler. Kontakt din EPJ-leverandør",
             ediLoggId, msgId, msgHead)
 
-    sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
-    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
-    INVALID_MESSAGE_NO_NOTICE.inc()
-    updateRedis(jedis, ediLoggId, sha256String)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
+}
+
+fun handleHRPNotFound(
+    loggingMeta: LoggingMeta,
+    fellesformat: XMLEIFellesformat,
+    ediLoggId: String,
+    msgId: String,
+    msgHead: XMLMsgHead,
+    env: Environment,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    jedis: Jedis,
+    sha256String: String
+) {
+    log.warn("HPR number not found in HPR {}", fields(loggingMeta))
+
+    val apprec = fellesformatToAppprec(fellesformat, "Sykmeldingen kan ikke rettes, det må skrives en ny." +
+            "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
+            "Ugyldig HPR-nummer, det finnes ikke i HPR registeret",
+        ediLoggId, msgId, msgHead)
+
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
 }
 
 fun handleFnrAndDnrAndHprIsmissingFromBehandler(
@@ -264,10 +267,7 @@ fun handleFnrAndDnrAndHprIsmissingFromBehandler(
             "Fødselsnummer/d-nummer/Hpr-nummer på behandler mangler",
             ediLoggId, msgId, msgHead)
 
-    sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
-    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
-    INVALID_MESSAGE_NO_NOTICE.inc()
-    updateRedis(jedis, ediLoggId, sha256String)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
 }
 
 fun handleHouvedDiagnoseDiagnosekodeMissing(
@@ -288,10 +288,7 @@ fun handleHouvedDiagnoseDiagnosekodeMissing(
             "Diagnosekode for hoveddiagnose mangler i sykmeldingen. Kontakt din EPJ-leverandør",
             ediLoggId, msgId, msgHead)
 
-    sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
-    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
-    INVALID_MESSAGE_NO_NOTICE.inc()
-    updateRedis(jedis, ediLoggId, sha256String)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
 }
 
 fun handleHouvedDiagnoseDiagnoseBeskrivelseMissing(
@@ -312,10 +309,7 @@ fun handleHouvedDiagnoseDiagnoseBeskrivelseMissing(
             "Diagnosekode beskrivelse for hoveddiagnose mangler i sykmeldingen. Kontakt din EPJ-leverandør",
             ediLoggId, msgId, msgHead)
 
-    sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
-    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
-    INVALID_MESSAGE_NO_NOTICE.inc()
-    updateRedis(jedis, ediLoggId, sha256String)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
 }
 
 fun handleMedisinskeArsakskodeIsmissing(
@@ -336,10 +330,7 @@ fun handleMedisinskeArsakskodeIsmissing(
             "MedisinskeArsaker Arsakskode V mangler i sykmeldingen. Kontakt din EPJ-leverandør",
             ediLoggId, msgId, msgHead)
 
-    sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
-    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
-    INVALID_MESSAGE_NO_NOTICE.inc()
-    updateRedis(jedis, ediLoggId, sha256String)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
 }
 
 fun handleArbeidsplassenArsakskodeIsmissing(
@@ -360,10 +351,7 @@ fun handleArbeidsplassenArsakskodeIsmissing(
             "ArbeidsplassenArsaker Arsakskode V mangler i sykmeldingen. Kontakt din EPJ-leverandør",
             ediLoggId, msgId, msgHead)
 
-    sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
-    log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
-    INVALID_MESSAGE_NO_NOTICE.inc()
-    updateRedis(jedis, ediLoggId, sha256String)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
 }
 
 fun handleTestFnrInProd(
@@ -408,6 +396,18 @@ fun handleAnnenFraversArsakkodeVIsmissing(
             "AnnenFravers Arsakskode V mangler i sykmeldingen. Kontakt din EPJ-leverandør",
             ediLoggId, msgId, msgHead)
 
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
+}
+
+private fun sendApprec(
+    apprec: Apprec,
+    env: Environment,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    loggingMeta: LoggingMeta,
+    jedis: Jedis,
+    ediLoggId: String,
+    sha256String: String
+) {
     sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
     log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
     INVALID_MESSAGE_NO_NOTICE.inc()
