@@ -431,23 +431,23 @@ class BlockingApplicationRunner {
             var retryCount = if (message.propertyExists(SYFOSMMOTTAK_RETRY_COUNT)) {
                 message.getIntProperty(SYFOSMMOTTAK_RETRY_COUNT)
             } else {
-                log.info("retry count does not exist")
+                log.info("retry count does not exist {}", StructuredArguments.fields(loggingMeta))
                 0
             }
-            log.info("retry count is $retryCount")
+            log.info("retry count is $retryCount {}", StructuredArguments.fields(loggingMeta))
 
             if (retryCount > 0) {
                 if (loggingMeta?.msgId != null) {
                     RETRY_COUTER.labels(loggingMeta.msgId).inc()
                 }
-                log.warn("Messaged is tried $retryCount before", StructuredArguments.fields(loggingMeta))
+                log.warn("Messaged is tried $retryCount before {}", StructuredArguments.fields(loggingMeta))
             } else {
-                log.warn("Message is not tried before")
+                log.warn("Message is not tried before {}", StructuredArguments.fields(loggingMeta) )
             }
             retryCount++
             message.setIntProperty(SYFOSMMOTTAK_RETRY_COUNT, retryCount)
         } catch (ex: Exception) {
-            log.warn("Could not update retry-counter-property")
+            log.warn("Could not update retry-counter-property {}", StructuredArguments.fields(loggingMeta))
         }
 
         backoutProducer.send(message)
