@@ -41,7 +41,9 @@ import no.nav.syfo.handlestatus.handleStatusOK
 import no.nav.syfo.handlestatus.handleTestFnrInProd
 import no.nav.syfo.kafka.vedlegg.producer.KafkaVedleggProducer
 import no.nav.syfo.log
+import no.nav.syfo.metrics.IKKE_OPPDATERT_PARTNERREG
 import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
+import no.nav.syfo.metrics.MANGLER_TSSIDENT
 import no.nav.syfo.metrics.REQUEST_TIME
 import no.nav.syfo.metrics.RETRY_COUTER
 import no.nav.syfo.metrics.SYKMELDING_VEDLEGG_COUNTER
@@ -185,18 +187,25 @@ class BlockingApplicationRunner {
                             legekontorHerId,
                             loggingMeta)
                     val samhandlerPraksis = samhandlerPraksisMatch?.samhandlerPraksis
-
+                    if (samhandlerPraksis?.tss_ident == null) {
+                        MANGLER_TSSIDENT.inc()
+                    }
                     if (samhandlerPraksisMatch?.percentageMatch != null && samhandlerPraksisMatch.percentageMatch == 999.0) {
                         log.info("SamhandlerPraksis is found but is FALE or FALO, subscription_emottak is not created, {}", StructuredArguments.fields(loggingMeta))
+                        IKKE_OPPDATERT_PARTNERREG.inc()
                     } else {
                         when (samhandlerPraksis) {
-                            null -> log.info("SamhandlerPraksis is Not found, {}", StructuredArguments.fields(loggingMeta))
+                            null -> {
+                                log.info("SamhandlerPraksis is Not found, {}", StructuredArguments.fields(loggingMeta))
+                                IKKE_OPPDATERT_PARTNERREG.inc()
+                            }
                             else -> if (!samhandlerParksisisLegevakt(samhandlerPraksis) &&
                                     !receiverBlock.partnerReferanse.isNullOrEmpty() &&
                                     receiverBlock.partnerReferanse.isNotBlank()) {
                                 startSubscription(subscriptionEmottak, samhandlerPraksis, msgHead, receiverBlock, loggingMeta)
                             } else {
                                 log.info("SamhandlerPraksis is Legevakt or partnerReferanse is empty or blank, subscription_emottak is not created, {}", StructuredArguments.fields(loggingMeta))
+                                IKKE_OPPDATERT_PARTNERREG.inc()
                             }
                         }
                     }
@@ -442,7 +451,7 @@ class BlockingApplicationRunner {
                 }
                 log.warn("Messaged is tried $retryCount before {}", StructuredArguments.fields(loggingMeta))
             } else {
-                log.warn("Message is not tried before {}", StructuredArguments.fields(loggingMeta) )
+                log.warn("Message is not tried before {}", StructuredArguments.fields(loggingMeta))
             }
             retryCount++
             message.setIntProperty(SYFOSMMOTTAK_RETRY_COUNT, retryCount)
