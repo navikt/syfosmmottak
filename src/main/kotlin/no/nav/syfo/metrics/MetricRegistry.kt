@@ -10,13 +10,6 @@ val REQUEST_TIME: Summary = Summary.build()
         .name("request_time_ms")
         .help("Request time in milliseconds.").register()
 
-val RETRY_COUTER: Counter = Counter.build()
-        .namespace(METRICS_NS)
-        .name("retry_message_count")
-        .labelNames("msgId")
-        .help("Counts the number of times a message has been retried")
-        .register()
-
 val INCOMING_MESSAGE_COUNTER: Counter = Counter.build()
         .namespace(METRICS_NS)
         .name("incoming_message_count")
