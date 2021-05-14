@@ -87,9 +87,6 @@ import redis.clients.jedis.exceptions.JedisConnectionException
 
 class BlockingApplicationRunner {
 
-    companion object {
-        private const val SYFOSMMOTTAK_RETRY_COUNT = "syfosmmottak-retry-count"
-    }
     @KtorExperimentalAPI
     suspend fun run(
         inputconsumer: MessageConsumer,
@@ -120,6 +117,7 @@ class BlockingApplicationRunner {
                     delay(100)
                     continue
                 }
+                getDeliveryCount(message, loggingMeta)
 
                 try {
                     val inputMessageText = when (message) {
@@ -431,30 +429,32 @@ class BlockingApplicationRunner {
         }
     }
 
+    private fun getDeliveryCount(message: Message, loggingMeta: LoggingMeta?): Int {
+        var deliveryCount = if (message.propertyExists("JMSXDeliveryCount")) {
+            message.getIntProperty("JMSXDeliveryCount")
+        } else {
+            log.info("delivery count does not exist {}", StructuredArguments.fields(loggingMeta))
+            0
+        }
+        log.info("delivery count is $deliveryCount {}", StructuredArguments.fields(loggingMeta))
+        return deliveryCount
+    }
+
     private fun sendToBackout(
         message: Message,
         loggingMeta: LoggingMeta?,
         backoutProducer: MessageProducer
     ) {
         try {
-            var retryCount = if (message.propertyExists(SYFOSMMOTTAK_RETRY_COUNT)) {
-                message.getIntProperty(SYFOSMMOTTAK_RETRY_COUNT)
-            } else {
-                log.info("retry count does not exist {}", StructuredArguments.fields(loggingMeta))
-                0
-            }
-            log.info("retry count is $retryCount {}", StructuredArguments.fields(loggingMeta))
-
-            if (retryCount > 0) {
+            val deliveryCount = getDeliveryCount(message, loggingMeta)
+            if (deliveryCount > 0) {
                 if (loggingMeta?.msgId != null) {
                     RETRY_COUTER.labels(loggingMeta.msgId).inc()
                 }
-                log.warn("Messaged is tried $retryCount before {}", StructuredArguments.fields(loggingMeta))
+                log.warn("Messaged is tried $deliveryCount before {}", StructuredArguments.fields(loggingMeta))
             } else {
                 log.warn("Message is not tried before {}", StructuredArguments.fields(loggingMeta))
             }
-            retryCount++
-            message.setIntProperty(SYFOSMMOTTAK_RETRY_COUNT, retryCount)
         } catch (ex: Exception) {
             log.warn("Could not update retry-counter-property ${StructuredArguments.fields(loggingMeta)}", ex)
         }
