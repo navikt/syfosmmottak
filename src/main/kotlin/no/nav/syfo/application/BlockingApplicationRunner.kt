@@ -22,6 +22,7 @@ import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.client.findBestSamhandlerPraksis
 import no.nav.syfo.handlestatus.handleAktivitetOrPeriodeIsMissing
 import no.nav.syfo.handlestatus.handleAnnenFraversArsakkodeVIsmissing
+import no.nav.syfo.handlestatus.handleArbeidsplassenArsakskodeHarUgyldigVerdi
 import no.nav.syfo.handlestatus.handleArbeidsplassenArsakskodeIsmissing
 import no.nav.syfo.handlestatus.handleBiDiagnoserDiagnosekodeBeskrivelseMissing
 import no.nav.syfo.handlestatus.handleBiDiagnoserDiagnosekodeIsMissing
@@ -32,6 +33,7 @@ import no.nav.syfo.handlestatus.handleDuplicateSM2013Content
 import no.nav.syfo.handlestatus.handleFnrAndDnrAndHprIsmissingFromBehandler
 import no.nav.syfo.handlestatus.handleHouvedDiagnoseDiagnoseBeskrivelseMissing
 import no.nav.syfo.handlestatus.handleHouvedDiagnoseDiagnosekodeMissing
+import no.nav.syfo.handlestatus.handleMedisinskeArsakskodeHarUgyldigVerdi
 import no.nav.syfo.handlestatus.handleMedisinskeArsakskodeIsmissing
 import no.nav.syfo.handlestatus.handlePatientNotFoundInPDL
 import no.nav.syfo.handlestatus.handleStatusINVALID
@@ -59,6 +61,7 @@ import no.nav.syfo.service.startSubscription
 import no.nav.syfo.service.updateRedis
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.annenFraversArsakkodeVMangler
+import no.nav.syfo.util.arbeidsplassenArsakskodeHarUgyldigVerdi
 import no.nav.syfo.util.arbeidsplassenArsakskodeMangler
 import no.nav.syfo.util.countNewDiagnoseCode
 import no.nav.syfo.util.erTestFnr
@@ -75,6 +78,7 @@ import no.nav.syfo.util.getLocalDateTime
 import no.nav.syfo.util.getVedlegg
 import no.nav.syfo.util.hprMangler
 import no.nav.syfo.util.hprManglerFraSignatur
+import no.nav.syfo.util.medisinskeArsakskodeHarUgyldigVerdi
 import no.nav.syfo.util.medisinskeArsakskodeMangler
 import no.nav.syfo.util.removeVedleggFromFellesformat
 import no.nav.syfo.util.toString
@@ -341,8 +345,24 @@ class BlockingApplicationRunner {
                             continue@loop
                         }
 
+                        if (medisinskeArsakskodeHarUgyldigVerdi(healthInformation)) {
+                            handleMedisinskeArsakskodeHarUgyldigVerdi(
+                                loggingMeta, fellesformat,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
+                            )
+                            continue@loop
+                        }
+
                         if (arbeidsplassenArsakskodeMangler(healthInformation)) {
                             handleArbeidsplassenArsakskodeIsmissing(
+                                loggingMeta, fellesformat,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
+                            )
+                            continue@loop
+                        }
+
+                        if (arbeidsplassenArsakskodeHarUgyldigVerdi(healthInformation)) {
+                            handleArbeidsplassenArsakskodeHarUgyldigVerdi(
                                 loggingMeta, fellesformat,
                                 ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
                             )
