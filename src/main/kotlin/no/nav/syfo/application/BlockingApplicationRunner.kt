@@ -4,7 +4,6 @@ import io.ktor.util.KtorExperimentalAPI
 import java.io.StringReader
 import java.time.ZoneOffset
 import java.util.UUID
-import javax.jms.Message
 import javax.jms.MessageConsumer
 import javax.jms.MessageProducer
 import javax.jms.Session
@@ -45,7 +44,6 @@ import no.nav.syfo.metrics.IKKE_OPPDATERT_PARTNERREG
 import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
 import no.nav.syfo.metrics.MANGLER_TSSIDENT
 import no.nav.syfo.metrics.REQUEST_TIME
-import no.nav.syfo.metrics.RETRY_COUTER
 import no.nav.syfo.metrics.SYKMELDING_VEDLEGG_COUNTER
 import no.nav.syfo.metrics.ULIK_SENDER_OG_BEHANDLER
 import no.nav.syfo.model.ManuellOppgave
@@ -87,9 +85,6 @@ import redis.clients.jedis.exceptions.JedisConnectionException
 
 class BlockingApplicationRunner {
 
-    companion object {
-        private const val SYFOSMMOTTAK_RETRY_COUNT = "syfosmmottak-retry-count"
-    }
     @KtorExperimentalAPI
     suspend fun run(
         inputconsumer: MessageConsumer,
@@ -128,7 +123,8 @@ class BlockingApplicationRunner {
                     }
                     INCOMING_MESSAGE_COUNTER.inc()
                     val requestLatency = REQUEST_TIME.startTimer()
-                    val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(inputMessageText)) as XMLEIFellesformat
+                    val fellesformat =
+                        fellesformatUnmarshaller.unmarshal(StringReader(inputMessageText)) as XMLEIFellesformat
 
                     val vedlegg = getVedlegg(fellesformat)
                     if (vedlegg.isNotEmpty()) {
@@ -143,9 +139,9 @@ class BlockingApplicationRunner {
                     val receiverBlock = fellesformat.get<XMLMottakenhetBlokk>()
                     val msgHead = fellesformat.get<XMLMsgHead>()
                     loggingMeta = LoggingMeta(
-                            mottakId = receiverBlock.ediLoggId,
-                            orgNr = extractOrganisationNumberFromSender(fellesformat)?.id,
-                            msgId = msgHead.msgInfo.msgId
+                        mottakId = receiverBlock.ediLoggId,
+                        orgNr = extractOrganisationNumberFromSender(fellesformat)?.id,
+                        msgId = msgHead.msgInfo.msgId
                     )
                     log.info("Received message, {}", StructuredArguments.fields(loggingMeta))
 
@@ -166,32 +162,41 @@ class BlockingApplicationRunner {
                     } else if (!hprManglerFraSignatur(fellesformat)) {
                         val fnr = getFnrFromHpr(norskHelsenettClient, fellesformat, msgId)
                         if (fnr.isNullOrEmpty()) {
-                            handleFnrAndDnrAndHprIsmissingFromBehandler(loggingMeta, fellesformat,
-                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
+                            handleFnrAndDnrAndHprIsmissingFromBehandler(
+                                loggingMeta, fellesformat,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
+                            )
                             continue@loop
                         } else {
                             fnr
                         }
                     } else {
-                        handleFnrAndDnrAndHprIsmissingFromBehandler(loggingMeta, fellesformat,
-                            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
+                        handleFnrAndDnrAndHprIsmissingFromBehandler(
+                            loggingMeta, fellesformat,
+                            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
+                        )
                         continue@loop
                     }
 
-                    val identer = pdlPersonService.getAktorids(listOf(personNumberDoctor, personNumberPatient), loggingMeta)
+                    val identer =
+                        pdlPersonService.getAktorids(listOf(personNumberDoctor, personNumberPatient), loggingMeta)
 
                     val samhandlerInfo = kuhrSarClient.getSamhandler(personNumberDoctor)
                     val samhandlerPraksisMatch = findBestSamhandlerPraksis(
-                            samhandlerInfo,
-                            legekontorOrgName,
-                            legekontorHerId,
-                            loggingMeta)
+                        samhandlerInfo,
+                        legekontorOrgName,
+                        legekontorHerId,
+                        loggingMeta
+                    )
                     val samhandlerPraksis = samhandlerPraksisMatch?.samhandlerPraksis
                     if (samhandlerPraksis?.tss_ident == null) {
                         MANGLER_TSSIDENT.inc()
                     }
                     if (samhandlerPraksisMatch?.percentageMatch != null && samhandlerPraksisMatch.percentageMatch == 999.0) {
-                        log.info("SamhandlerPraksis is found but is FALE or FALO, subscription_emottak is not created, {}", StructuredArguments.fields(loggingMeta))
+                        log.info(
+                            "SamhandlerPraksis is found but is FALE or FALO, subscription_emottak is not created, {}",
+                            StructuredArguments.fields(loggingMeta)
+                        )
                         IKKE_OPPDATERT_PARTNERREG.inc()
                     } else {
                         when (samhandlerPraksis) {
@@ -200,11 +205,21 @@ class BlockingApplicationRunner {
                                 IKKE_OPPDATERT_PARTNERREG.inc()
                             }
                             else -> if (!samhandlerParksisisLegevakt(samhandlerPraksis) &&
-                                    !receiverBlock.partnerReferanse.isNullOrEmpty() &&
-                                    receiverBlock.partnerReferanse.isNotBlank()) {
-                                startSubscription(subscriptionEmottak, samhandlerPraksis, msgHead, receiverBlock, loggingMeta)
+                                !receiverBlock.partnerReferanse.isNullOrEmpty() &&
+                                receiverBlock.partnerReferanse.isNotBlank()
+                            ) {
+                                startSubscription(
+                                    subscriptionEmottak,
+                                    samhandlerPraksis,
+                                    msgHead,
+                                    receiverBlock,
+                                    loggingMeta
+                                )
                             } else {
-                                log.info("SamhandlerPraksis is Legevakt or partnerReferanse is empty or blank, subscription_emottak is not created, {}", StructuredArguments.fields(loggingMeta))
+                                log.info(
+                                    "SamhandlerPraksis is Legevakt or partnerReferanse is empty or blank, subscription_emottak is not created, {}",
+                                    StructuredArguments.fields(loggingMeta)
+                                )
                                 IKKE_OPPDATERT_PARTNERREG.inc()
                             }
                         }
@@ -214,193 +229,242 @@ class BlockingApplicationRunner {
                     val redisEdiloggid = jedis.get(ediLoggId)
 
                     if (redisSha256String != null) {
-                        handleDuplicateSM2013Content(redisSha256String, loggingMeta, fellesformat,
-                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec)
+                        handleDuplicateSM2013Content(
+                            redisSha256String, loggingMeta, fellesformat,
+                            ediLoggId, msgId, msgHead, env, kafkaproducerApprec
+                        )
                         continue@loop
                     } else if (redisEdiloggid != null && redisEdiloggid.length != 21) {
-                        log.error("Redis returned a redisEdiloggid that is longer than 21" +
-                                "characters redisEdiloggid: {} {}", redisEdiloggid, StructuredArguments.fields(loggingMeta))
+                        log.error(
+                            "Redis returned a redisEdiloggid that is longer than 21" +
+                                    "characters redisEdiloggid: {} {}",
+                            redisEdiloggid,
+                            StructuredArguments.fields(loggingMeta)
+                        )
                         throw RuntimeException("Redis has some issues with geting the redisEdiloggid")
                     } else if (redisEdiloggid != null) {
-                        handleDuplicateEdiloggid(redisEdiloggid, loggingMeta, fellesformat,
-                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec)
+                        handleDuplicateEdiloggid(
+                            redisEdiloggid, loggingMeta, fellesformat,
+                            ediLoggId, msgId, msgHead, env, kafkaproducerApprec
+                        )
                         continue@loop
                     } else {
                         val patientAktorId = identer[personNumberPatient]
                         val doctorAktorId = identer[personNumberDoctor]
 
                         if (patientAktorId == null) {
-                            handlePatientNotFoundInPDL(loggingMeta, fellesformat,
-                                    ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
+                            handlePatientNotFoundInPDL(
+                                loggingMeta, fellesformat,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
+                            )
                             continue@loop
                         }
                         if (doctorAktorId == null) {
-                            handleDoctorNotFoundInPDL(loggingMeta, fellesformat,
-                                    ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
+                            handleDoctorNotFoundInPDL(
+                                loggingMeta, fellesformat,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
+                            )
                             continue@loop
                         }
 
                         if (healthInformation.aktivitet == null || healthInformation.aktivitet.periode.isNullOrEmpty()) {
-                            handleAktivitetOrPeriodeIsMissing(loggingMeta, fellesformat,
-                                    ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
+                            handleAktivitetOrPeriodeIsMissing(
+                                loggingMeta, fellesformat,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
+                            )
                             continue@loop
                         }
 
                         if (healthInformation.medisinskVurdering?.biDiagnoser != null &&
-                                healthInformation.medisinskVurdering.biDiagnoser.diagnosekode.any { it.v.isNullOrEmpty() }) {
-                            handleBiDiagnoserDiagnosekodeIsMissing(loggingMeta, fellesformat,
-                                    ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
+                            healthInformation.medisinskVurdering.biDiagnoser.diagnosekode.any { it.v.isNullOrEmpty() }
+                        ) {
+                            handleBiDiagnoserDiagnosekodeIsMissing(
+                                loggingMeta, fellesformat,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
+                            )
                             continue@loop
                         }
 
                         if (healthInformation.medisinskVurdering?.biDiagnoser != null &&
-                                healthInformation.medisinskVurdering.biDiagnoser.diagnosekode.any { it.s.isNullOrEmpty() }) {
-                            handleBiDiagnoserDiagnosekodeVerkIsMissing(loggingMeta, fellesformat,
-                                    ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
+                            healthInformation.medisinskVurdering.biDiagnoser.diagnosekode.any { it.s.isNullOrEmpty() }
+                        ) {
+                            handleBiDiagnoserDiagnosekodeVerkIsMissing(
+                                loggingMeta, fellesformat,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
+                            )
                             continue@loop
                         }
 
                         if (healthInformation.medisinskVurdering?.biDiagnoser != null &&
-                                healthInformation.medisinskVurdering.biDiagnoser.diagnosekode.any { it.dn.isNullOrEmpty() }) {
-                            handleBiDiagnoserDiagnosekodeBeskrivelseMissing(loggingMeta, fellesformat,
-                                    ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
+                            healthInformation.medisinskVurdering.biDiagnoser.diagnosekode.any { it.dn.isNullOrEmpty() }
+                        ) {
+                            handleBiDiagnoserDiagnosekodeBeskrivelseMissing(
+                                loggingMeta, fellesformat,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
+                            )
                             continue@loop
                         }
 
                         if (fnrOgDnrMangler(healthInformation) && hprMangler(healthInformation)) {
-                            handleFnrAndDnrAndHprIsmissingFromBehandler(loggingMeta, fellesformat,
-                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
+                            handleFnrAndDnrAndHprIsmissingFromBehandler(
+                                loggingMeta, fellesformat,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
+                            )
                             continue@loop
                         }
 
                         if (healthInformation.medisinskVurdering?.hovedDiagnose?.diagnosekode != null &&
-                                healthInformation.medisinskVurdering.hovedDiagnose.diagnosekode.v == null) {
-                            handleHouvedDiagnoseDiagnosekodeMissing(loggingMeta, fellesformat,
-                                    ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
+                            healthInformation.medisinskVurdering.hovedDiagnose.diagnosekode.v == null
+                        ) {
+                            handleHouvedDiagnoseDiagnosekodeMissing(
+                                loggingMeta, fellesformat,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
+                            )
                             continue@loop
                         }
 
                         if (healthInformation.medisinskVurdering?.hovedDiagnose?.diagnosekode != null &&
-                                healthInformation.medisinskVurdering.hovedDiagnose.diagnosekode.dn == null) {
-                            handleHouvedDiagnoseDiagnoseBeskrivelseMissing(loggingMeta, fellesformat,
-                                    ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
+                            healthInformation.medisinskVurdering.hovedDiagnose.diagnosekode.dn == null
+                        ) {
+                            handleHouvedDiagnoseDiagnoseBeskrivelseMissing(
+                                loggingMeta, fellesformat,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
+                            )
                             continue@loop
                         }
 
                         if (medisinskeArsakskodeMangler(healthInformation)) {
-                            handleMedisinskeArsakskodeIsmissing(loggingMeta, fellesformat,
-                                    ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
+                            handleMedisinskeArsakskodeIsmissing(
+                                loggingMeta, fellesformat,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
+                            )
                             continue@loop
                         }
 
                         if (arbeidsplassenArsakskodeMangler(healthInformation)) {
-                            handleArbeidsplassenArsakskodeIsmissing(loggingMeta, fellesformat,
-                                    ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
+                            handleArbeidsplassenArsakskodeIsmissing(
+                                loggingMeta, fellesformat,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
+                            )
                             continue@loop
                         }
 
                         if (erTestFnr(personNumberPatient) && env.cluster == "prod-fss") {
-                            handleTestFnrInProd(loggingMeta, fellesformat,
-                                    ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
+                            handleTestFnrInProd(
+                                loggingMeta, fellesformat,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
+                            )
                             continue@loop
                         }
 
                         if (annenFraversArsakkodeVMangler(healthInformation)) {
-                            handleAnnenFraversArsakkodeVIsmissing(loggingMeta, fellesformat,
-                                    ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String)
+                            handleAnnenFraversArsakkodeVIsmissing(
+                                loggingMeta, fellesformat,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
+                            )
                             continue@loop
                         }
 
                         val sykmelding = healthInformation.toSykmelding(
-                                sykmeldingId = UUID.randomUUID().toString(),
-                                pasientAktoerId = patientAktorId,
-                                legeAktoerId = doctorAktorId,
-                                msgId = msgId,
-                                signaturDato = getLocalDateTime(msgHead.msgInfo.genDate),
-                                hprFnrBehandler = personNumberDoctor
+                            sykmeldingId = UUID.randomUUID().toString(),
+                            pasientAktoerId = patientAktorId,
+                            legeAktoerId = doctorAktorId,
+                            msgId = msgId,
+                            signaturDato = getLocalDateTime(msgHead.msgInfo.genDate),
+                            hprFnrBehandler = personNumberDoctor
                         )
                         val receivedSykmelding = ReceivedSykmelding(
-                                sykmelding = sykmelding,
-                                personNrPasient = personNumberPatient,
-                                tlfPasient = healthInformation.pasient.kontaktInfo.firstOrNull()?.teleAddress?.v,
-                                personNrLege = personNumberDoctor,
-                                navLogId = ediLoggId,
-                                msgId = msgId,
-                                legekontorOrgNr = legekontorOrgNr,
-                                legekontorOrgName = legekontorOrgName,
-                                legekontorHerId = legekontorHerId,
-                                legekontorReshId = legekontorReshId,
-                                mottattDato = receiverBlock.mottattDatotid.toGregorianCalendar().toZonedDateTime().withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime(),
-                                rulesetVersion = healthInformation.regelSettVersjon,
-                                fellesformat = fellesformatText,
-                                tssid = samhandlerPraksis?.tss_ident ?: "",
-                                merknader = null
+                            sykmelding = sykmelding,
+                            personNrPasient = personNumberPatient,
+                            tlfPasient = healthInformation.pasient.kontaktInfo.firstOrNull()?.teleAddress?.v,
+                            personNrLege = personNumberDoctor,
+                            navLogId = ediLoggId,
+                            msgId = msgId,
+                            legekontorOrgNr = legekontorOrgNr,
+                            legekontorOrgName = legekontorOrgName,
+                            legekontorHerId = legekontorHerId,
+                            legekontorReshId = legekontorReshId,
+                            mottattDato = receiverBlock.mottattDatotid.toGregorianCalendar().toZonedDateTime()
+                                .withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime(),
+                            rulesetVersion = healthInformation.regelSettVersjon,
+                            fellesformat = fellesformatText,
+                            tssid = samhandlerPraksis?.tss_ident ?: "",
+                            merknader = null
                         )
 
                         if (receivedSykmelding.sykmelding.behandler.fnr != personNumberDoctor) {
                             ULIK_SENDER_OG_BEHANDLER.inc()
-                            log.info("Behandlers fnr og avsendres fnr stemmer ikkje {}", StructuredArguments.fields(loggingMeta))
+                            log.info(
+                                "Behandlers fnr og avsendres fnr stemmer ikkje {}",
+                                StructuredArguments.fields(loggingMeta)
+                            )
                         }
 
                         countNewDiagnoseCode(receivedSykmelding.sykmelding.medisinskVurdering)
 
-                        log.info("Validating against rules, sykmeldingId {},  {}", StructuredArguments.keyValue("sykmeldingId", sykmelding.id), StructuredArguments.fields(loggingMeta))
-                        val validationResult = syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding, loggingMeta)
+                        log.info(
+                            "Validating against rules, sykmeldingId {},  {}",
+                            StructuredArguments.keyValue("sykmeldingId", sykmelding.id),
+                            StructuredArguments.fields(loggingMeta)
+                        )
+                        val validationResult =
+                            syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding, loggingMeta)
 
                         when (validationResult.status) {
                             Status.OK -> handleStatusOK(
-                                    fellesformat,
-                                    ediLoggId,
-                                    msgId,
-                                    msgHead,
-                                    env.sm2013Apprec,
-                                    kafkaproducerApprec,
-                                    loggingMeta,
-                                    session,
-                                    syfoserviceProducer,
-                                    healthInformation,
-                                    env.syfoserviceQueueName,
-                                    env.sm2013AutomaticHandlingTopic,
-                                    receivedSykmelding,
-                                    kafkaproducerreceivedSykmelding
+                                fellesformat,
+                                ediLoggId,
+                                msgId,
+                                msgHead,
+                                env.sm2013Apprec,
+                                kafkaproducerApprec,
+                                loggingMeta,
+                                session,
+                                syfoserviceProducer,
+                                healthInformation,
+                                env.syfoserviceQueueName,
+                                env.sm2013AutomaticHandlingTopic,
+                                receivedSykmelding,
+                                kafkaproducerreceivedSykmelding
                             )
                             Status.MANUAL_PROCESSING -> handleStatusMANUALPROCESSING(
-                                    receivedSykmelding,
-                                    loggingMeta,
-                                    fellesformat,
-                                    ediLoggId,
-                                    msgId,
-                                    msgHead,
-                                    env.sm2013Apprec,
-                                    kafkaproducerApprec,
-                                    session,
-                                    syfoserviceProducer,
-                                    healthInformation,
-                                    env.syfoserviceQueueName,
-                                    validationResult,
-                                    kafkaManuelTaskProducer,
-                                    kafkaproducerreceivedSykmelding,
-                                    env.sm2013ManualHandlingTopic,
-                                    kafkaproducervalidationResult,
-                                    env.sm2013BehandlingsUtfallTopic,
-                                    kafkaproducerManuellOppgave,
-                                    env.syfoSmManuellTopic
+                                receivedSykmelding,
+                                loggingMeta,
+                                fellesformat,
+                                ediLoggId,
+                                msgId,
+                                msgHead,
+                                env.sm2013Apprec,
+                                kafkaproducerApprec,
+                                session,
+                                syfoserviceProducer,
+                                healthInformation,
+                                env.syfoserviceQueueName,
+                                validationResult,
+                                kafkaManuelTaskProducer,
+                                kafkaproducerreceivedSykmelding,
+                                env.sm2013ManualHandlingTopic,
+                                kafkaproducervalidationResult,
+                                env.sm2013BehandlingsUtfallTopic,
+                                kafkaproducerManuellOppgave,
+                                env.syfoSmManuellTopic
                             )
 
                             Status.INVALID -> handleStatusINVALID(
-                                    validationResult,
-                                    kafkaproducerreceivedSykmelding,
-                                    kafkaproducervalidationResult,
-                                    env.sm2013InvalidHandlingTopic,
-                                    receivedSykmelding,
-                                    loggingMeta,
-                                    fellesformat,
-                                    env.sm2013Apprec,
-                                    env.sm2013BehandlingsUtfallTopic,
-                                    kafkaproducerApprec,
-                                    ediLoggId,
-                                    msgId,
-                                    msgHead)
+                                validationResult,
+                                kafkaproducerreceivedSykmelding,
+                                kafkaproducervalidationResult,
+                                env.sm2013InvalidHandlingTopic,
+                                receivedSykmelding,
+                                loggingMeta,
+                                fellesformat,
+                                env.sm2013Apprec,
+                                env.sm2013BehandlingsUtfallTopic,
+                                kafkaproducerApprec,
+                                ediLoggId,
+                                msgId,
+                                msgHead
+                            )
                         }
 
                         if (vedlegg.isNotEmpty()) {
@@ -410,56 +474,41 @@ class BlockingApplicationRunner {
                         val currentRequestLatency = requestLatency.observeDuration()
 
                         updateRedis(jedis, ediLoggId, sha256String)
-                        log.info("Message got outcome {}, {}, processing took {}s",
-                                StructuredArguments.keyValue("status", validationResult.status),
-                                StructuredArguments.keyValue("ruleHits", validationResult.ruleHits.joinToString(", ", "(", ")") { it.ruleName }),
-                                StructuredArguments.keyValue("latency", currentRequestLatency),
-                                StructuredArguments.fields(loggingMeta))
+                        log.info(
+                            "Message got outcome {}, {}, processing took {}s",
+                            StructuredArguments.keyValue("status", validationResult.status),
+                            StructuredArguments.keyValue(
+                                "ruleHits",
+                                validationResult.ruleHits.joinToString(", ", "(", ")") { it.ruleName }),
+                            StructuredArguments.keyValue("latency", currentRequestLatency),
+                            StructuredArguments.fields(loggingMeta)
+                        )
                     }
                 } catch (jedisException: JedisConnectionException) {
-                    log.error("Exception caught, redis issue while handling message, sending to backout", jedisException)
-                    sendToBackout(message, loggingMeta, backoutProducer)
+                    log.error(
+                        "Exception caught, redis issue while handling message, sending to backout ${
+                            StructuredArguments.fields(
+                                loggingMeta
+                            )
+                        }", jedisException
+                    )
+                    backoutProducer.send(message)
                     log.error("Setting applicationState.alive to false")
                     applicationState.alive = false
                 } catch (e: Exception) {
-                    log.error("Exception caught while handling message, sending to backout ${StructuredArguments.fields(loggingMeta)}", e)
-                    sendToBackout(message, loggingMeta, backoutProducer)
+                    log.error(
+                        "Exception caught while handling message, sending to backout ${
+                            StructuredArguments.fields(
+                                loggingMeta
+                            )
+                        }", e
+                    )
+                    backoutProducer.send(message)
                 } finally {
                     message.acknowledge()
                 }
             }
         }
-    }
-
-    private fun sendToBackout(
-        message: Message,
-        loggingMeta: LoggingMeta?,
-        backoutProducer: MessageProducer
-    ) {
-        try {
-            var retryCount = if (message.propertyExists(SYFOSMMOTTAK_RETRY_COUNT)) {
-                message.getIntProperty(SYFOSMMOTTAK_RETRY_COUNT)
-            } else {
-                log.info("retry count does not exist {}", StructuredArguments.fields(loggingMeta))
-                0
-            }
-            log.info("retry count is $retryCount {}", StructuredArguments.fields(loggingMeta))
-
-            if (retryCount > 0) {
-                if (loggingMeta?.msgId != null) {
-                    RETRY_COUTER.labels(loggingMeta.msgId).inc()
-                }
-                log.warn("Messaged is tried $retryCount before {}", StructuredArguments.fields(loggingMeta))
-            } else {
-                log.warn("Message is not tried before {}", StructuredArguments.fields(loggingMeta))
-            }
-            retryCount++
-            message.setIntProperty(SYFOSMMOTTAK_RETRY_COUNT, retryCount)
-        } catch (ex: Exception) {
-            log.warn("Could not update retry-counter-property ${StructuredArguments.fields(loggingMeta)}", ex)
-        }
-
-        backoutProducer.send(message)
     }
 }
 
