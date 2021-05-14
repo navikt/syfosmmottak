@@ -422,7 +422,7 @@ class BlockingApplicationRunner {
                     log.error("Setting applicationState.alive to false")
                     applicationState.alive = false
                 } catch (e: Exception) {
-                    log.error("Exception caught while handling message, sending to backout", e)
+                    log.error("Exception caught while handling message, sending to backout ${StructuredArguments.fields(loggingMeta)}", e)
                     sendToBackout(message, loggingMeta, backoutProducer)
                 } finally {
                     message.acknowledge()
@@ -456,7 +456,7 @@ class BlockingApplicationRunner {
             retryCount++
             message.setIntProperty(SYFOSMMOTTAK_RETRY_COUNT, retryCount)
         } catch (ex: Exception) {
-            log.warn("Could not update retry-counter-property {}", StructuredArguments.fields(loggingMeta))
+            log.warn("Could not update retry-counter-property ${StructuredArguments.fields(loggingMeta)}", ex)
         }
 
         backoutProducer.send(message)
