@@ -5,6 +5,7 @@ import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 import no.nav.syfo.util.aktivitetIkkeMuligArbeidsplassenArsakskodeMangler
 import no.nav.syfo.util.aktivitetIkkeMuligMedisinskeArsakskodeMangler
 import no.nav.syfo.util.fellesformatUnmarshaller
+import no.nav.syfo.util.medisinskeArsakskodeHarUgyldigVerdi
 import no.nav.syfo.util.medisinskeArsakskodeMangler
 import no.nav.syfo.utils.getFileAsString
 import org.amshove.kluent.shouldEqual
@@ -41,6 +42,16 @@ object ArsakKodeMissingSpek : Spek({
             val aktivitetIkkeMulig = HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig()
 
             aktivitetIkkeMuligArbeidsplassenArsakskodeMangler(aktivitetIkkeMulig) shouldEqual false
+        }
+        it("medisinskeArsakskodeHarUgyldigVerdi er false hvis V=1") {
+            val healthInformation = fellesformatUnmarshaller.unmarshal(StringReader(getFileAsString("src/test/resources/generated_sm_8.xml"))) as HelseOpplysningerArbeidsuforhet
+
+            medisinskeArsakskodeHarUgyldigVerdi(healthInformation) shouldEqual false
+        }
+        it("medisinskeArsakskodeHarUgyldigVerdi er true hvis V=A") {
+            val healthInformation = fellesformatUnmarshaller.unmarshal(StringReader(getFileAsString("src/test/resources/generated_sm_10.xml"))) as HelseOpplysningerArbeidsuforhet
+
+            medisinskeArsakskodeHarUgyldigVerdi(healthInformation) shouldEqual true
         }
     }
 })
