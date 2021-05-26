@@ -42,7 +42,8 @@ fun main() {
             fellesformat = objectMapper
                     .writeValueAsString(inputMessageText),
             tssid = "13415",
-            merknader = null
+            merknader = null,
+            partnerreferanse = "16524"
     )
 
     println(objectMapper.writeValueAsString(receivedSykmelding))
