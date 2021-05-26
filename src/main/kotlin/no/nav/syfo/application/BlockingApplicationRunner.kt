@@ -409,7 +409,8 @@ class BlockingApplicationRunner {
                             rulesetVersion = healthInformation.regelSettVersjon,
                             fellesformat = fellesformatText,
                             tssid = samhandlerPraksis?.tss_ident ?: "",
-                            merknader = null
+                            merknader = null,
+                            partnerreferanse = receiverBlock.partnerReferanse
                         )
 
                         if (receivedSykmelding.sykmelding.behandler.fnr != personNumberDoctor) {
