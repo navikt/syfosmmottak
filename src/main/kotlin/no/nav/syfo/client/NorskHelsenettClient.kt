@@ -45,7 +45,7 @@ class NorskHelsenettClient(
                 null
             }
             else -> {
-                log.info("Hentet behandler for msgId {}", msgId)
+                log.info("Hentet behandler for msgId {}, status var {}", msgId, httpResponse.status)
                 httpResponse.call.response.receive<Behandler>()
             }
         }
