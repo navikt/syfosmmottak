@@ -1,7 +1,7 @@
 package no.nav.syfo.client
 
 import io.ktor.client.HttpClient
-import io.ktor.client.features.ClientRequestException
+import io.ktor.client.features.ResponseException
 import io.ktor.client.request.accept
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
@@ -13,10 +13,10 @@ import no.nav.syfo.helpers.retry
 import no.nav.syfo.log
 
 class NorskHelsenettClient(
-        private val endpointUrl: String,
-        private val accessTokenClient: AccessTokenClient,
-        private val resourceId: String,
-        private val httpClient: HttpClient
+    private val endpointUrl: String,
+    private val accessTokenClient: AccessTokenClient,
+    private val resourceId: String,
+    private val httpClient: HttpClient
 ) {
 
     @KtorExperimentalAPI
@@ -36,35 +36,34 @@ class NorskHelsenettClient(
                 }.also {
                     log.info("Hentet behandler for msgId {}", msgId)
                 }
-            } catch (e: Exception) {
-                if (e is ClientRequestException && e.response.status == NotFound) {
+            } catch (e: ResponseException) {
+                if (e.response.status == NotFound) {
                     log.warn("Fant ikke behandler for HprNummer $hprNummer for msgId $msgId")
                     null
                 } else {
-                    log.error("Syfohelsenettproxy svarte med feilmelding for msgId {}, {}", msgId, e.cause)
-                    throw IOException("Syfohelsenettproxy svarte med feilmelding for $msgId")
+                    log.error("Syfohelsenettproxy kastet feilmelding {} for msgId {} ved søk på hprNummer {}", e.message, msgId, hprNummer)
+                    throw IOException("Syfohelsenettproxy kastet feilmelding ${e.message}")
                 }
             }
         }
     }
 }
 
-
 data class Behandler(
-        val godkjenninger: List<Godkjenning>,
-        val fnr: String?,
-        val fornavn: String?,
-        val mellomnavn: String?,
-        val etternavn: String?
+    val godkjenninger: List<Godkjenning>,
+    val fnr: String?,
+    val fornavn: String?,
+    val mellomnavn: String?,
+    val etternavn: String?
 )
 
 data class Godkjenning(
-        val helsepersonellkategori: Kode? = null,
-        val autorisasjon: Kode? = null
+    val helsepersonellkategori: Kode? = null,
+    val autorisasjon: Kode? = null
 )
 
 data class Kode(
-        val aktiv: Boolean,
-        val oid: Int,
-        val verdi: String?
+    val aktiv: Boolean,
+    val oid: Int,
+    val verdi: String?
 )

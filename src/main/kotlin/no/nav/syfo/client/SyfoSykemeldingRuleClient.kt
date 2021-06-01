@@ -1,12 +1,10 @@
 package no.nav.syfo.client
 
 import io.ktor.client.HttpClient
-import io.ktor.client.call.receive
+import io.ktor.client.features.ResponseException
 import io.ktor.client.request.accept
 import io.ktor.client.request.post
-import io.ktor.client.statement.HttpStatement
 import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.util.KtorExperimentalAPI
 import java.io.IOException
@@ -19,17 +17,17 @@ import no.nav.syfo.util.LoggingMeta
 
 @KtorExperimentalAPI
 class SyfoSykemeldingRuleClient(private val endpointUrl: String, private val client: HttpClient) {
-    suspend fun executeRuleValidation(payload: ReceivedSykmelding, loggingMeta: LoggingMeta): ValidationResult = retry("syfosmregler_validate") {
-        val httpResponse = client.post<HttpStatement>("$endpointUrl/v1/rules/validate") {
-            contentType(ContentType.Application.Json)
-            accept(ContentType.Application.Json)
-            body = payload
-        }.execute()
-        if (httpResponse.status != HttpStatusCode.OK) {
-            log.error("Syfosmregler svarte med feilmelding ${httpResponse.status} for {}", fields(loggingMeta))
-            throw IOException("Syfosmregler svarte med feilmelding ${httpResponse.status}")
-        } else {
-            httpResponse.call.response.receive<ValidationResult>()
-        }
+    suspend fun executeRuleValidation(payload: ReceivedSykmelding, loggingMeta: LoggingMeta): ValidationResult =
+            retry("syfosmregler_validate") {
+                try {
+                    client.post<ValidationResult>("$endpointUrl/v1/rules/validate") {
+                        contentType(ContentType.Application.Json)
+                        accept(ContentType.Application.Json)
+                        body = payload
+                    }
+                } catch (e: ResponseException) {
+                    log.error("Syfosmregler kastet feilmelding {} for {}", e.message, fields(loggingMeta))
+                    throw IOException("Syfosmregler kastet feilmelding ${e.message}")
+                }
     }
 }
