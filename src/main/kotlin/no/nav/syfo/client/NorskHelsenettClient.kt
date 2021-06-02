@@ -1,13 +1,11 @@
 package no.nav.syfo.client
 
 import io.ktor.client.HttpClient
-import io.ktor.client.call.receive
+import io.ktor.client.features.ResponseException
 import io.ktor.client.request.accept
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
-import io.ktor.client.statement.HttpStatement
 import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode.Companion.InternalServerError
 import io.ktor.http.HttpStatusCode.Companion.NotFound
 import io.ktor.util.KtorExperimentalAPI
 import java.io.IOException
@@ -22,31 +20,30 @@ class NorskHelsenettClient(
 ) {
 
     @KtorExperimentalAPI
-    suspend fun finnBehandler(hprNummer: String, msgId: String): Behandler? = retry(
-        callName = "finnbehandler",
-        retryIntervals = arrayOf(500L, 1000L, 3000L, 5000L)) {
-        log.info("Henter behandler fra syfohelsenettproxy for msgId {}", msgId)
-        val httpResponse = httpClient.get<HttpStatement>("$endpointUrl/api/behandlerMedHprNummer") {
-            accept(ContentType.Application.Json)
-            val accessToken = accessTokenClient.hentAccessToken(resourceId)
-            headers {
-                append("Authorization", "Bearer $accessToken")
-                append("Nav-CallId", msgId)
-                append("hprNummer", hprNummer)
-            }
-        }.execute()
-        if (httpResponse.status == InternalServerError) {
-            log.error("Syfohelsenettproxy svarte med feilmelding for msgId {}", msgId)
-            throw IOException("Syfohelsenettproxy svarte med feilmelding for $msgId")
-        }
-        when (NotFound) {
-            httpResponse.status -> {
-                log.warn("Fant ikke behandler for HprNummer $hprNummer for msgId $msgId")
-                null
-            }
-            else -> {
-                log.info("Hentet behandler for msgId {}", msgId)
-                httpResponse.call.response.receive<Behandler>()
+    suspend fun finnBehandler(hprNummer: String, msgId: String): Behandler? {
+        return retry(callName = "finnbehandler",
+                retryIntervals = arrayOf(500L, 1000L, 3000L, 5000L)) {
+            try {
+                log.info("Henter behandler fra syfohelsenettproxy for msgId {}", msgId)
+                return@retry httpClient.get<Behandler>("$endpointUrl/api/behandlerMedHprNummer") {
+                    accept(ContentType.Application.Json)
+                    val accessToken = accessTokenClient.hentAccessToken(resourceId)
+                    headers {
+                        append("Authorization", "Bearer $accessToken")
+                        append("Nav-CallId", msgId)
+                        append("hprNummer", hprNummer)
+                    }
+                }.also {
+                    log.info("Hentet behandler for msgId {}", msgId)
+                }
+            } catch (e: ResponseException) {
+                if (e.response.status == NotFound) {
+                    log.warn("Fant ikke behandler for HprNummer $hprNummer for msgId $msgId")
+                    null
+                } else {
+                    log.error("Syfohelsenettproxy kastet feilmelding {} for msgId {} ved søk på hprNummer {}", e.message, msgId, hprNummer)
+                    throw IOException("Syfohelsenettproxy kastet feilmelding ${e.message}")
+                }
             }
         }
     }
