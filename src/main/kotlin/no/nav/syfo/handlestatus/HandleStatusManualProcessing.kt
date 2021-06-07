@@ -162,7 +162,7 @@ fun sendManuellTask(
 }
 
 fun sendToSyfosmManuell(ruleHits: List<RuleInfo>): Boolean {
-    return ruleHits.find { it.ruleName == "PASIENTEN_HAR_KODE_6" || it.ruleName == "SYKMELDING_MED_BEHANDLINGSDAGER" || it.ruleName == "SYKMELDING_MED_REISETILSKUDD" } == null
+    return ruleHits.find { it.ruleName == "SYKMELDING_MED_BEHANDLINGSDAGER" || it.ruleName == "SYKMELDING_MED_REISETILSKUDD" } == null
 }
 
 fun finnFristForFerdigstillingAvOppgave(ferdistilleDato: LocalDate): LocalDate {

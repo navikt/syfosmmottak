@@ -28,18 +28,6 @@ object HandleStatusManualProcessingSpek : Spek({
 
             sendToSyfosmManuell(validationResult.ruleHits) shouldEqualTo true
         }
-
-        it("Should return false when the only rule hit is ruleName is PASIENTEN_HAR_KODE_6") {
-            val validationResult = ValidationResult(status = Status.MANUAL_PROCESSING, ruleHits = listOf(
-                RuleInfo(ruleName = "PASIENTEN_HAR_KODE_6",
-                    messageForUser = "Pasient er registrert med sperrekode 6, sperret adresse, strengt fortrolig",
-                    messageForSender = "Pasient er registrert med sperrekode 6, sperret adresse, strengt fortrolig",
-                    ruleStatus = Status.MANUAL_PROCESSING
-                )
-            ))
-
-            sendToSyfosmManuell(validationResult.ruleHits) shouldEqualTo false
-        }
         it("Should return false when rulehits contain SYKMELDING_MED_BEHANDLINGSDAGER") {
             val validationResult = ValidationResult(status = Status.MANUAL_PROCESSING, ruleHits = listOf(
                 RuleInfo(ruleName = "SYKMELDING_MED_BEHANDLINGSDAGER",
@@ -66,13 +54,6 @@ object HandleStatusManualProcessingSpek : Spek({
 
     describe("Oppretter manuelle oppgaver med riktige parametre") {
         val receivedSykmelding = mockk<ReceivedSykmelding>(relaxed = true)
-        it("Behandlingstema er ANY hvis sykmelding ikke har behandlingsdager eller reisetilskudd") {
-            val validationResults = ValidationResult(Status.MANUAL_PROCESSING, listOf(RuleInfo("PASIENTEN_HAR_KODE_6", "kode6", "kode6", Status.MANUAL_PROCESSING)))
-
-            val oppgave = opprettProduceTask(receivedSykmelding, validationResults, loggingMeta)
-
-            oppgave.behandlingstema shouldEqual "ANY"
-        }
         it("Behandlingstema er ab0351 hvis sykmelding har behandlingsdager") {
             val validationResults = ValidationResult(Status.MANUAL_PROCESSING, listOf(RuleInfo("SYKMELDING_MED_BEHANDLINGSDAGER", "Sykmelding inneholder behandlingsdager.", "Sykmelding inneholder behandlingsdager.", Status.MANUAL_PROCESSING)))
 
