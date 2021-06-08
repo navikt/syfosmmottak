@@ -12,7 +12,7 @@ import no.nav.helse.sm2013.Ident
 import no.nav.helse.sm2013.NavnType
 import no.nav.helse.sm2013.TeleCom
 import no.nav.syfo.model.toSykmelding
-import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
@@ -58,10 +58,11 @@ object SykmeldingMapperSpek : Spek({
                 }
                 aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
                     periode.add(
-                            HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
-                                periodeFOMDato = LocalDate.now()
-                                periodeTOMDato = LocalDate.now().plusDays(4)
-                                aktivitetIkkeMulig = HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig().apply {
+                        HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
+                            periodeFOMDato = LocalDate.now()
+                            periodeTOMDato = LocalDate.now().plusDays(4)
+                            aktivitetIkkeMulig =
+                                HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig().apply {
                                     medisinskeArsaker = ArsakType().apply {
                                         arsakskode.add(CS().apply {
                                             v = medisinskeArsakerArsakskodeV
@@ -70,7 +71,7 @@ object SykmeldingMapperSpek : Spek({
                                         beskriv = "Kan ikkje jobbe"
                                     }
                                 }
-                            }
+                        }
                     )
                 }
                 pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
@@ -100,15 +101,15 @@ object SykmeldingMapperSpek : Spek({
             }
 
             val sykmelding = healthInformation.toSykmelding(
-                    sykmeldingId = "123-asdasasd-12314234",
-                    pasientAktoerId = "756564123",
-                    legeAktoerId = "756564124",
-                    msgId = "12313-12313-123123as-asda",
-                    signaturDato = LocalDateTime.now(),
-                    hprFnrBehandler = "1213415151"
+                sykmeldingId = "123-asdasasd-12314234",
+                pasientAktoerId = "756564123",
+                legeAktoerId = "756564124",
+                msgId = "12313-12313-123123as-asda",
+                signaturDato = LocalDateTime.now(),
+                hprFnrBehandler = "1213415151"
             )
 
-            sykmelding.perioder.first().aktivitetIkkeMulig?.medisinskArsak?.arsak?.first()?.codeValue shouldEqual medisinskeArsakerArsakskodeV.trim()
+            sykmelding.perioder.first().aktivitetIkkeMulig?.medisinskArsak?.arsak?.first()?.codeValue shouldBeEqualTo medisinskeArsakerArsakskodeV.trim()
         }
 
         it("Validate Restriksjonskode is mapped") {
@@ -214,7 +215,7 @@ object SykmeldingMapperSpek : Spek({
                     hprFnrBehandler = "1213415151"
             )
 
-            sykmelding.utdypendeOpplysninger.getValue("6.1").getValue("6.1.3").restriksjoner shouldEqual emptyList()
+            sykmelding.utdypendeOpplysninger.getValue("6.1").getValue("6.1.3").restriksjoner shouldBeEqualTo emptyList()
         }
     }
 })

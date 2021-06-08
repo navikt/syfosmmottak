@@ -10,7 +10,7 @@ import no.nav.syfo.util.extractHelseOpplysningerArbeidsuforhet
 import no.nav.syfo.util.fellesformatUnmarshaller
 import no.nav.syfo.util.xmlObjectWriter
 import no.nav.syfo.utils.getFileAsString
-import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
@@ -20,7 +20,7 @@ object BootstrapSpek : Spek({
     val sykmelding2013 = extractHelseOpplysningerArbeidsuforhet(fellesformat)
     describe("Testing extract sykmeld2013") {
         it("Returns internal server error when liveness check fails") {
-            sykmelding2013.regelSettVersjon shouldEqual "2"
+            sykmelding2013.regelSettVersjon shouldBeEqualTo "2"
         }
     }
 

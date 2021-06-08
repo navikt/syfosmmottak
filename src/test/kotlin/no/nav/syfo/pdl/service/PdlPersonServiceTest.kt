@@ -14,7 +14,7 @@ import no.nav.syfo.pdl.client.model.HentIdenterBolk
 import no.nav.syfo.pdl.client.model.PdlIdent
 import no.nav.syfo.pdl.client.model.ResponseData
 import no.nav.syfo.util.LoggingMeta
-import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
@@ -41,8 +41,8 @@ object PdlPersonServiceTest : Spek({
             runBlocking {
                 val aktorids = pdlPersonService.getAktorids(listOf("fnrPasient", "fnrLege"), loggingMeta)
 
-                aktorids["fnrPasient"] shouldEqual "aktorIdPasient"
-                aktorids["fnrLege"] shouldEqual "aktorIdLege"
+                aktorids["fnrPasient"] shouldBeEqualTo "aktorIdPasient"
+                aktorids["fnrLege"] shouldBeEqualTo "aktorIdLege"
             }
         }
         it("Pasient-aktørid er null hvis pasient ikke finnes i PDL") {
@@ -54,8 +54,8 @@ object PdlPersonServiceTest : Spek({
             runBlocking {
                 val aktorids = pdlPersonService.getAktorids(listOf("fnrPasient", "fnrLege"), loggingMeta)
 
-                aktorids["fnrPasient"] shouldEqual null
-                aktorids["fnrLege"] shouldEqual "aktorIdLege"
+                aktorids["fnrPasient"] shouldBeEqualTo null
+                aktorids["fnrLege"] shouldBeEqualTo "aktorIdLege"
             }
         }
         it("Skal feile når ingen identer finnes") {

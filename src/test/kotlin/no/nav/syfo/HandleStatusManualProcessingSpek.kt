@@ -8,8 +8,7 @@ import no.nav.syfo.model.RuleInfo
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.util.LoggingMeta
-import org.amshove.kluent.shouldEqual
-import org.amshove.kluent.shouldEqualTo
+import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
@@ -26,7 +25,7 @@ object HandleStatusManualProcessingSpek : Spek({
                 )
             ))
 
-            sendToSyfosmManuell(validationResult.ruleHits) shouldEqualTo true
+            sendToSyfosmManuell(validationResult.ruleHits) shouldBeEqualTo true
         }
         it("Should return false when rulehits contain SYKMELDING_MED_BEHANDLINGSDAGER") {
             val validationResult = ValidationResult(status = Status.MANUAL_PROCESSING, ruleHits = listOf(
@@ -37,7 +36,7 @@ object HandleStatusManualProcessingSpek : Spek({
                 )
             ))
 
-            sendToSyfosmManuell(validationResult.ruleHits) shouldEqualTo false
+            sendToSyfosmManuell(validationResult.ruleHits) shouldBeEqualTo false
         }
         it("Should return false when rulehits contain SYKMELDING_MED_REISETILSKUDD") {
             val validationResult = ValidationResult(status = Status.MANUAL_PROCESSING, ruleHits = listOf(
@@ -48,25 +47,45 @@ object HandleStatusManualProcessingSpek : Spek({
                 )
             ))
 
-            sendToSyfosmManuell(validationResult.ruleHits) shouldEqualTo false
+            sendToSyfosmManuell(validationResult.ruleHits) shouldBeEqualTo false
         }
     }
 
     describe("Oppretter manuelle oppgaver med riktige parametre") {
         val receivedSykmelding = mockk<ReceivedSykmelding>(relaxed = true)
         it("Behandlingstema er ab0351 hvis sykmelding har behandlingsdager") {
-            val validationResults = ValidationResult(Status.MANUAL_PROCESSING, listOf(RuleInfo("SYKMELDING_MED_BEHANDLINGSDAGER", "Sykmelding inneholder behandlingsdager.", "Sykmelding inneholder behandlingsdager.", Status.MANUAL_PROCESSING)))
+            val validationResults = ValidationResult(
+                Status.MANUAL_PROCESSING,
+                listOf(
+                    RuleInfo(
+                        "SYKMELDING_MED_BEHANDLINGSDAGER",
+                        "Sykmelding inneholder behandlingsdager.",
+                        "Sykmelding inneholder behandlingsdager.",
+                        Status.MANUAL_PROCESSING
+                    )
+                )
+            )
 
             val oppgave = opprettProduceTask(receivedSykmelding, validationResults, loggingMeta)
 
-            oppgave.behandlingstema shouldEqual "ab0351"
+            oppgave.behandlingstema shouldBeEqualTo "ab0351"
         }
         it("Behandlingstema er ab0237 hvis sykmelding har reisetilskudd") {
-            val validationResults = ValidationResult(Status.MANUAL_PROCESSING, listOf(RuleInfo("SYKMELDING_MED_REISETILSKUDD", "Sykmelding inneholder reisetilskudd.", "Sykmelding inneholder reisetilskudd.", Status.MANUAL_PROCESSING)))
+            val validationResults = ValidationResult(
+                Status.MANUAL_PROCESSING,
+                listOf(
+                    RuleInfo(
+                        "SYKMELDING_MED_REISETILSKUDD",
+                        "Sykmelding inneholder reisetilskudd.",
+                        "Sykmelding inneholder reisetilskudd.",
+                        Status.MANUAL_PROCESSING
+                    )
+                )
+            )
 
             val oppgave = opprettProduceTask(receivedSykmelding, validationResults, loggingMeta)
 
-            oppgave.behandlingstema shouldEqual "ab0237"
+            oppgave.behandlingstema shouldBeEqualTo "ab0237"
         }
     }
 })

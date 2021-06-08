@@ -3,7 +3,7 @@ package no.nav.syfo.kafka.vedlegg.producer
 import java.time.Duration
 import java.util.Properties
 import no.nav.common.KafkaEnvironment
-import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.shouldBeEqualTo
 import org.apache.kafka.clients.admin.AdminClient
 import org.apache.kafka.clients.admin.AlterConfigOp
 import org.apache.kafka.clients.admin.ConfigEntry
@@ -59,10 +59,10 @@ class KafkaVedleggProducerTest : Spek({
     describe("Should be able to send vedlegg") {
         it("Should send small vedlegg") {
             val adminClient = AdminClient.create(
-                    Properties().apply {
-                        set(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, embeddedEnvironment.brokersURL)
-                        set(ConsumerConfig.CLIENT_ID_CONFIG, "embkafka-adminclient")
-                    }
+                Properties().apply {
+                    set(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, embeddedEnvironment.brokersURL)
+                    set(ConsumerConfig.CLIENT_ID_CONFIG, "embkafka-adminclient")
+                }
             )
 
             adminClient.createTopics(listOf(NewTopic("privat-syfo-vedlegg", 3, 2))).all().get()
@@ -70,8 +70,8 @@ class KafkaVedleggProducerTest : Spek({
             // get the current topic configuration
             val updateConfig = HashMap<ConfigResource, Collection<AlterConfigOp>>()
             updateConfig[resource] = listOf(
-                    AlterConfigOp(ConfigEntry(TopicConfig.MAX_MESSAGE_BYTES_CONFIG, "8388608"), AlterConfigOp.OpType.SET),
-                    AlterConfigOp(ConfigEntry(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2"), AlterConfigOp.OpType.SET)
+                AlterConfigOp(ConfigEntry(TopicConfig.MAX_MESSAGE_BYTES_CONFIG, "8388608"), AlterConfigOp.OpType.SET),
+                AlterConfigOp(ConfigEntry(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2"), AlterConfigOp.OpType.SET)
 
             )
             adminClient.incrementalAlterConfigs(updateConfig).all().get()
@@ -79,7 +79,7 @@ class KafkaVedleggProducerTest : Spek({
 
             kafkaConsumer.subscribe(listOf("privat-syfo-vedlegg"))
             val messages = kafkaConsumer.poll(Duration.ofSeconds(30))
-            messages.count() shouldEqual 1
+            messages.count() shouldBeEqualTo 1
             kafkaConsumer.close()
         }
     }
