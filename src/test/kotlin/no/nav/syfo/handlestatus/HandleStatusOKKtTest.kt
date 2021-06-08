@@ -4,12 +4,6 @@ import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import java.io.StringReader
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutionException
-import javax.jms.MessageProducer
-import javax.jms.Session
-import kotlin.test.assertFailsWith
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
@@ -24,6 +18,12 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.io.StringReader
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutionException
+import javax.jms.MessageProducer
+import javax.jms.Session
+import kotlin.test.assertFailsWith
 
 class HandleStatusOKKtTest() : Spek({
 
@@ -42,16 +42,17 @@ class HandleStatusOKKtTest() : Spek({
 
     describe("Test sending") {
         it("test ok producer") {
-            handleStatusOK(fellesformat,
-                    "123",
-                    "1",
-                    msgHead,
-                    "topic",
-                    kafkaApprecProducer,
-                    LoggingMeta("1", "", ""),
-                    session,
-                    syfoserviceProducer,
-                    healthInformation, "", "topic", receivedSykmelding, kafkaProducerReceviedSykmelding
+            handleStatusOK(
+                fellesformat,
+                "123",
+                "1",
+                msgHead,
+                "topic",
+                kafkaApprecProducer,
+                LoggingMeta("1", "", ""),
+                session,
+                syfoserviceProducer,
+                healthInformation, "", "topic", receivedSykmelding, kafkaProducerReceviedSykmelding
             )
             verify(exactly = 1) { kafkaProducerReceviedSykmelding.send(any()) }
             verify(exactly = 1) { kafkaApprecProducer.send(any()) }
@@ -68,16 +69,17 @@ class HandleStatusOKKtTest() : Spek({
 
             every { kafkaProducerReceviedSykmelding.send(any()) } returns future
             val exception = assertFailsWith<ExecutionException> {
-                handleStatusOK(fellesformat,
-                        "123",
-                        "1",
-                        msgHead,
-                        "topic",
-                        kafkaApprecProducer,
-                        LoggingMeta("1", "", ""),
-                        session,
-                        syfoserviceProducer,
-                        healthInformation, "", "topic", receivedSykmelding, kafkaProducerReceviedSykmelding
+                handleStatusOK(
+                    fellesformat,
+                    "123",
+                    "1",
+                    msgHead,
+                    "topic",
+                    kafkaApprecProducer,
+                    LoggingMeta("1", "", ""),
+                    session,
+                    syfoserviceProducer,
+                    healthInformation, "", "topic", receivedSykmelding, kafkaProducerReceviedSykmelding
                 )
             }
             exception.cause shouldBeInstanceOf RuntimeException::class
@@ -96,16 +98,17 @@ class HandleStatusOKKtTest() : Spek({
             every { kafkaProducerReceviedSykmelding.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
             every { kafkaApprecProducer.send(any()) } returns ff
             val exception = assertFailsWith<ExecutionException> {
-                handleStatusOK(fellesformat,
-                        "123",
-                        "1",
-                        msgHead,
-                        "topic",
-                        kafkaApprecProducer,
-                        LoggingMeta("1", "", ""),
-                        session,
-                        syfoserviceProducer,
-                        healthInformation, "", "topic", receivedSykmelding, kafkaProducerReceviedSykmelding
+                handleStatusOK(
+                    fellesformat,
+                    "123",
+                    "1",
+                    msgHead,
+                    "topic",
+                    kafkaApprecProducer,
+                    LoggingMeta("1", "", ""),
+                    session,
+                    syfoserviceProducer,
+                    healthInformation, "", "topic", receivedSykmelding, kafkaProducerReceviedSykmelding
                 )
             }
             exception.cause shouldBeInstanceOf RuntimeException::class

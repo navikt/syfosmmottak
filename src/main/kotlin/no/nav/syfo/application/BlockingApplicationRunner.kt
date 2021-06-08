@@ -1,13 +1,6 @@
 package no.nav.syfo.application
 
 import io.ktor.util.KtorExperimentalAPI
-import java.io.StringReader
-import java.time.ZoneOffset
-import java.util.UUID
-import javax.jms.MessageConsumer
-import javax.jms.MessageProducer
-import javax.jms.Session
-import javax.jms.TextMessage
 import kotlinx.coroutines.delay
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.emottak.subscription.SubscriptionPort
@@ -86,6 +79,13 @@ import no.nav.syfo.util.wrapExceptions
 import org.apache.kafka.clients.producer.KafkaProducer
 import redis.clients.jedis.Jedis
 import redis.clients.jedis.exceptions.JedisConnectionException
+import java.io.StringReader
+import java.time.ZoneOffset
+import java.util.UUID
+import javax.jms.MessageConsumer
+import javax.jms.MessageProducer
+import javax.jms.Session
+import javax.jms.TextMessage
 
 class BlockingApplicationRunner {
 
@@ -241,7 +241,7 @@ class BlockingApplicationRunner {
                     } else if (redisEdiloggid != null && redisEdiloggid.length != 21) {
                         log.error(
                             "Redis returned a redisEdiloggid that is longer than 21" +
-                                    "characters redisEdiloggid: {} {}",
+                                "characters redisEdiloggid: {} {}",
                             redisEdiloggid,
                             StructuredArguments.fields(loggingMeta)
                         )
@@ -500,7 +500,8 @@ class BlockingApplicationRunner {
                             StructuredArguments.keyValue("status", validationResult.status),
                             StructuredArguments.keyValue(
                                 "ruleHits",
-                                validationResult.ruleHits.joinToString(", ", "(", ")") { it.ruleName }),
+                                validationResult.ruleHits.joinToString(", ", "(", ")") { it.ruleName }
+                            ),
                             StructuredArguments.keyValue("latency", currentRequestLatency),
                             StructuredArguments.fields(loggingMeta)
                         )
@@ -508,10 +509,11 @@ class BlockingApplicationRunner {
                 } catch (jedisException: JedisConnectionException) {
                     log.error(
                         "Exception caught, redis issue while handling message, sending to backout ${
-                            StructuredArguments.fields(
-                                loggingMeta
-                            )
-                        }", jedisException
+                        StructuredArguments.fields(
+                            loggingMeta
+                        )
+                        }",
+                        jedisException
                     )
                     backoutProducer.send(message)
                     log.error("Setting applicationState.alive to false")
@@ -519,10 +521,11 @@ class BlockingApplicationRunner {
                 } catch (e: Exception) {
                     log.error(
                         "Exception caught while handling message, sending to backout ${
-                            StructuredArguments.fields(
-                                loggingMeta
-                            )
-                        }", e
+                        StructuredArguments.fields(
+                            loggingMeta
+                        )
+                        }",
+                        e
                     )
                     backoutProducer.send(message)
                 } finally {

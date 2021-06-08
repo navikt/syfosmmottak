@@ -4,10 +4,6 @@ import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import java.io.StringReader
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutionException
-import kotlin.test.assertFailsWith
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.syfo.apprec.Apprec
@@ -22,6 +18,10 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.io.StringReader
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutionException
+import kotlin.test.assertFailsWith
 
 class HandleStatusInvalidKtTest : Spek({
     val kafkaApprecProducer = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
@@ -82,18 +82,18 @@ class HandleStatusInvalidKtTest : Spek({
 
 private fun handleStatusInvalid(validationResult: ValidationResult, kafkaProducerReceviedSykmelding: KafkaProducer<String, ReceivedSykmelding>, validationResultKafkaProducer: KafkaProducer<String, ValidationResult>, receivedSykmelding: ReceivedSykmelding, fellesformat: XMLEIFellesformat, kafkaApprecProducer: KafkaProducer<String, Apprec>, msgHead: XMLMsgHead) {
     handleStatusINVALID(
-            validationResult,
-            kafkaProducerReceviedSykmelding,
-            validationResultKafkaProducer,
-            "",
-            receivedSykmelding,
-            LoggingMeta("", "", ""),
-            fellesformat,
-            "",
-            "",
-            kafkaApprecProducer,
-            "",
-            "",
-            msgHead
+        validationResult,
+        kafkaProducerReceviedSykmelding,
+        validationResultKafkaProducer,
+        "",
+        receivedSykmelding,
+        LoggingMeta("", "", ""),
+        fellesformat,
+        "",
+        "",
+        kafkaApprecProducer,
+        "",
+        "",
+        msgHead
     )
 }

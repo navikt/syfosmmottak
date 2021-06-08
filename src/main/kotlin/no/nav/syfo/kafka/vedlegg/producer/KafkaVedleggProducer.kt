@@ -26,15 +26,15 @@ class KafkaVedleggProducer(private val environment: Environment, private val kaf
 
     private fun toKafkaVedleggMessage(vedlegg: Vedlegg, receivedSykmelding: ReceivedSykmelding): VedleggKafkaMessage {
         return VedleggKafkaMessage(
-                vedlegg = vedlegg,
-                msgId = receivedSykmelding.msgId,
-                pasientFnr = receivedSykmelding.personNrPasient,
-                behandler = BehandlerInfo(
-                        fornavn = receivedSykmelding.sykmelding.behandler.fornavn,
-                        etternavn = receivedSykmelding.sykmelding.behandler.etternavn,
-                        fnr = receivedSykmelding.personNrLege
-                ),
-                pasientAktorId = receivedSykmelding.sykmelding.pasientAktoerId
+            vedlegg = vedlegg,
+            msgId = receivedSykmelding.msgId,
+            pasientFnr = receivedSykmelding.personNrPasient,
+            behandler = BehandlerInfo(
+                fornavn = receivedSykmelding.sykmelding.behandler.fornavn,
+                etternavn = receivedSykmelding.sykmelding.behandler.etternavn,
+                fnr = receivedSykmelding.personNrLege
+            ),
+            pasientAktorId = receivedSykmelding.sykmelding.pasientAktoerId
         )
     }
 }
