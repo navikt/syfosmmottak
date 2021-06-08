@@ -1,9 +1,9 @@
 package no.nav.syfo.util
 
-import java.time.LocalDateTime
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.LocalDateTime
 
 class GetDateTests : Spek({
     describe("Testing conversion between datetime formats") {

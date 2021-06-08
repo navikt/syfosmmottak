@@ -19,7 +19,7 @@ class KafkaClients constructor(env: Environment, credentials: VaultCredentials) 
 
     private val kafkaBaseConfig = loadBaseConfig(env, credentials)
     private val producerProperties = kafkaBaseConfig
-            .toProducerConfig(env.applicationName, valueSerializer = JacksonKafkaSerializer::class)
+        .toProducerConfig(env.applicationName, valueSerializer = JacksonKafkaSerializer::class)
     private val manualValidationProducerProperties = kafkaBaseConfig.toProducerConfig(env.applicationName, valueSerializer = KafkaAvroSerializer::class)
     private val vedleggProducerProperties = kafkaBaseConfig.toProducerConfig(env.applicationName, valueSerializer = JacksonKafkaSerializer::class)
     init {

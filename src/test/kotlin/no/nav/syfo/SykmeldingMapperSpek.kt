@@ -1,7 +1,5 @@
 package no.nav.syfo
 
-import java.time.LocalDate
-import java.time.LocalDateTime
 import no.nav.helse.sm2013.Address
 import no.nav.helse.sm2013.ArsakType
 import no.nav.helse.sm2013.CS
@@ -15,6 +13,8 @@ import no.nav.syfo.model.toSykmelding
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 object SykmeldingMapperSpek : Spek({
 
@@ -43,18 +43,22 @@ object SykmeldingMapperSpek : Spek({
                         fornavn = "Per"
                         etternavn = "Hansne"
                     }
-                    id.add(Ident().apply {
-                        id = "12343567"
-                        typeId = CV().apply {
-                            dn = "Fødselsnummer"
-                            s = "2.16.578.1.12.4.1.1.8116"
-                            v = "FNR"
+                    id.add(
+                        Ident().apply {
+                            id = "12343567"
+                            typeId = CV().apply {
+                                dn = "Fødselsnummer"
+                                s = "2.16.578.1.12.4.1.1.8116"
+                                v = "FNR"
+                            }
                         }
-                    })
+                    )
                     adresse = Address().apply {
                     }
-                    kontaktInfo.add(TeleCom().apply {
-                    })
+                    kontaktInfo.add(
+                        TeleCom().apply {
+                        }
+                    )
                 }
                 aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
                     periode.add(
@@ -64,10 +68,12 @@ object SykmeldingMapperSpek : Spek({
                             aktivitetIkkeMulig =
                                 HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig().apply {
                                     medisinskeArsaker = ArsakType().apply {
-                                        arsakskode.add(CS().apply {
-                                            v = medisinskeArsakerArsakskodeV
-                                            dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                        })
+                                        arsakskode.add(
+                                            CS().apply {
+                                                v = medisinskeArsakerArsakskodeV
+                                                dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
+                                            }
+                                        )
                                         beskriv = "Kan ikkje jobbe"
                                     }
                                 }
@@ -133,34 +139,40 @@ object SykmeldingMapperSpek : Spek({
                         fornavn = "Per"
                         etternavn = "Hansne"
                     }
-                    id.add(Ident().apply {
-                        id = "12343567"
-                        typeId = CV().apply {
-                            dn = "Fødselsnummer"
-                            s = "2.16.578.1.12.4.1.1.8116"
-                            v = "FNR"
+                    id.add(
+                        Ident().apply {
+                            id = "12343567"
+                            typeId = CV().apply {
+                                dn = "Fødselsnummer"
+                                s = "2.16.578.1.12.4.1.1.8116"
+                                v = "FNR"
+                            }
                         }
-                    })
+                    )
                     adresse = Address().apply {
                     }
-                    kontaktInfo.add(TeleCom().apply {
-                    })
+                    kontaktInfo.add(
+                        TeleCom().apply {
+                        }
+                    )
                 }
                 aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
                     periode.add(
-                            HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
-                                periodeFOMDato = LocalDate.now()
-                                periodeTOMDato = LocalDate.now().plusDays(4)
-                                aktivitetIkkeMulig = HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig().apply {
-                                    medisinskeArsaker = ArsakType().apply {
-                                        arsakskode.add(CS().apply {
+                        HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
+                            periodeFOMDato = LocalDate.now()
+                            periodeTOMDato = LocalDate.now().plusDays(4)
+                            aktivitetIkkeMulig = HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig().apply {
+                                medisinskeArsaker = ArsakType().apply {
+                                    arsakskode.add(
+                                        CS().apply {
                                             v = "1"
                                             dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                        })
-                                        beskriv = "Kan ikkje jobbe"
-                                    }
+                                        }
+                                    )
+                                    beskriv = "Kan ikkje jobbe"
                                 }
                             }
+                        }
                     )
                 }
                 pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
@@ -188,31 +200,35 @@ object SykmeldingMapperSpek : Spek({
                     systemVersjon = "1.0.2"
                 }
                 utdypendeOpplysninger = HelseOpplysningerArbeidsuforhet.UtdypendeOpplysninger().apply {
-                    spmGruppe.add(HelseOpplysningerArbeidsuforhet.UtdypendeOpplysninger.SpmGruppe().apply {
-                        spmGruppeId = "6.1"
-                        spmGruppeTekst = "Utdypende opplysninger ved 4,12 og 28 uker ved visse diagnoser"
-                        spmSvar.add(
+                    spmGruppe.add(
+                        HelseOpplysningerArbeidsuforhet.UtdypendeOpplysninger.SpmGruppe().apply {
+                            spmGruppeId = "6.1"
+                            spmGruppeTekst = "Utdypende opplysninger ved 4,12 og 28 uker ved visse diagnoser"
+                            spmSvar.add(
                                 DynaSvarType().apply {
                                     spmId = "6.1.3"
                                     spmTekst = "Hva er videre plan for behandling?"
                                     restriksjon = DynaSvarType.Restriksjon().apply {
-                                        restriksjonskode.add(CS().apply {
-                                        })
+                                        restriksjonskode.add(
+                                            CS().apply {
+                                            }
+                                        )
                                     }
                                     svarTekst = "-"
                                 }
-                        )
-                    })
+                            )
+                        }
+                    )
                 }
             }
 
             val sykmelding = healthInformation.toSykmelding(
-                    sykmeldingId = "123-asdasasd-12314234",
-                    pasientAktoerId = "756564123",
-                    legeAktoerId = "756564124",
-                    msgId = "12313-12313-123123as-asda",
-                    signaturDato = LocalDateTime.now(),
-                    hprFnrBehandler = "1213415151"
+                sykmeldingId = "123-asdasasd-12314234",
+                pasientAktoerId = "756564123",
+                legeAktoerId = "756564124",
+                msgId = "12313-12313-123123as-asda",
+                signaturDato = LocalDateTime.now(),
+                hprFnrBehandler = "1213415151"
             )
 
             sykmelding.utdypendeOpplysninger.getValue("6.1").getValue("6.1.3").restriksjoner shouldBeEqualTo emptyList()

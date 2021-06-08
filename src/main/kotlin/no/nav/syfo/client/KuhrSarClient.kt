@@ -8,14 +8,14 @@ import io.ktor.client.request.parameter
 import io.ktor.client.statement.HttpStatement
 import io.ktor.http.ContentType
 import io.ktor.util.KtorExperimentalAPI
-import java.util.Date
-import kotlin.math.max
 import net.logstash.logback.argument.StructuredArguments.fields
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.syfo.helpers.retry
 import no.nav.syfo.log
 import no.nav.syfo.util.LoggingMeta
 import org.apache.commons.text.similarity.LevenshteinDistance
+import java.util.Date
+import kotlin.math.max
 
 @KtorExperimentalAPI
 class SarClient(
@@ -107,9 +107,9 @@ fun List<SamhandlerPeriode>.formaterPerioder() = joinToString(",", "periode(", "
 }
 
 fun List<Samhandler>.formaterPraksis() = flatMap { it.samh_praksis }
-        .joinToString(",", "praksis(", ") ") { praksis ->
-            "${praksis.navn}: ${praksis.samh_praksis_status_kode} ${praksis.samh_praksis_periode.formaterPerioder()}"
-        }
+    .joinToString(",", "praksis(", ") ") { praksis ->
+        "${praksis.navn}: ${praksis.samh_praksis_status_kode} ${praksis.samh_praksis_periode.formaterPerioder()}"
+    }
 
 fun findBestSamhandlerPraksis(
     samhandlere: List<Samhandler>,
@@ -118,13 +118,15 @@ fun findBestSamhandlerPraksis(
     loggingMeta: LoggingMeta
 ): SamhandlerPraksisMatch? {
     val aktiveSamhandlere = samhandlere.flatMap { it.samh_praksis }
-            .filter { praksis -> praksis.samh_praksis_status_kode == "aktiv" }
+        .filter { praksis -> praksis.samh_praksis_status_kode == "aktiv" }
 
     if (aktiveSamhandlere.isEmpty()) {
-        log.info("Fant ingen aktive samhandlere. {}  Meta: {}, {} ",
-                keyValue("praksis Informasjo", samhandlere.formaterPraksis()),
-                keyValue("antall praksiser", samhandlere.size),
-                fields(loggingMeta))
+        log.info(
+            "Fant ingen aktive samhandlere. {}  Meta: {}, {} ",
+            keyValue("praksis Informasjo", samhandlere.formaterPraksis()),
+            keyValue("antall praksiser", samhandlere.size),
+            fields(loggingMeta)
+        )
     }
 
     if (!herId.isNullOrEmpty() && aktiveSamhandlere.isNotEmpty()) {
@@ -132,21 +134,23 @@ fun findBestSamhandlerPraksis(
             it.her_id == herId
         }
         if (samhandlerByHerId != null) {
-            log.info("Fant samhandler basert på herid. herid: $herId, {}, {}",
-                    keyValue("praksis Informasjo", samhandlere.formaterPraksis()),
-                    fields(loggingMeta))
+            log.info(
+                "Fant samhandler basert på herid. herid: $herId, {}, {}",
+                keyValue("praksis Informasjo", samhandlere.formaterPraksis()),
+                fields(loggingMeta)
+            )
             return SamhandlerPraksisMatch(samhandlerByHerId, 100.0)
         }
     }
 
     val aktiveSamhandlereMedNavn = samhandlere.flatMap { it.samh_praksis }
-            .filter { praksis -> praksis.samh_praksis_status_kode == "aktiv" }
-            .filter { !it.navn.isNullOrEmpty() }
+        .filter { praksis -> praksis.samh_praksis_status_kode == "aktiv" }
+        .filter { !it.navn.isNullOrEmpty() }
 
     if (aktiveSamhandlereMedNavn.isNullOrEmpty() && !aktiveSamhandlere.isNullOrEmpty()) {
         val samhandlerFALEOrFALO = aktiveSamhandlere.find {
             it.samh_praksis_type_kode == SamhandlerPraksisType.FASTLEGE.kodeVerdi ||
-                    it.samh_praksis_type_kode == SamhandlerPraksisType.FASTLONNET.kodeVerdi
+                it.samh_praksis_type_kode == SamhandlerPraksisType.FASTLONNET.kodeVerdi
         }
         if (samhandlerFALEOrFALO != null) {
             return SamhandlerPraksisMatch(samhandlerFALEOrFALO, 999.0)
@@ -154,51 +158,56 @@ fun findBestSamhandlerPraksis(
     } else if (aktiveSamhandlere.isNullOrEmpty()) {
         val inaktiveSamhandlerMatchingPaaOrganisjonsNavn = samhandlerMatchingPaaOrganisjonsNavn(samhandlere, orgName)
         if (filtererBortSamhanlderPraksiserPaaProsentMatch(
-                        inaktiveSamhandlerMatchingPaaOrganisjonsNavn,
-                        70.0,
-                        orgName,
-                        loggingMeta
-                ) == null) {
+                inaktiveSamhandlerMatchingPaaOrganisjonsNavn,
+                70.0,
+                orgName,
+                loggingMeta
+            ) == null
+        ) {
             if (samhandlere.firstOrNull()?.samh_praksis != null &&
-                    samhandlere.firstOrNull()?.samh_praksis?.firstOrNull() != null) {
+                samhandlere.firstOrNull()?.samh_praksis?.firstOrNull() != null
+            ) {
                 val firstSamhnalderPraksis = samhandlere.firstOrNull()?.samh_praksis?.firstOrNull()
                 if (firstSamhnalderPraksis != null && !firstSamhnalderPraksis.tss_ident.isEmpty()) {
-                    log.info("Siste utvei med tss matching ble samhandler praksis: " +
+                    log.info(
+                        "Siste utvei med tss matching ble samhandler praksis: " +
                             "Orgnumer: ${firstSamhnalderPraksis.org_id} " +
                             "Navn: ${firstSamhnalderPraksis.navn} " +
                             "Tssid: ${firstSamhnalderPraksis.tss_ident} " +
                             "Adresselinje1: ${firstSamhnalderPraksis.arbeids_adresse_linje_1} " +
                             "Samhandler praksis type: ${firstSamhnalderPraksis.samh_praksis_type_kode} " +
                             "Samhandlers hpr nummer: ${samhandlere.firstOrNull()?.samh_ident?.find { it.ident_type_kode == "HPR" }?.ident} " +
-                            "{}", fields(loggingMeta))
+                            "{}",
+                        fields(loggingMeta)
+                    )
                     return SamhandlerPraksisMatch(firstSamhnalderPraksis, 999.0)
                 }
             }
         } else {
             return filtererBortSamhanlderPraksiserPaaProsentMatch(
-                    inaktiveSamhandlerMatchingPaaOrganisjonsNavn,
-                    70.0,
-                    orgName,
-                    loggingMeta
+                inaktiveSamhandlerMatchingPaaOrganisjonsNavn,
+                70.0,
+                orgName,
+                loggingMeta
             )
         }
     }
 
     return aktiveSamhandlereMedNavn
-            .map { samhandlerPraksis ->
-                SamhandlerPraksisMatch(samhandlerPraksis, calculatePercentageStringMatch(samhandlerPraksis.navn, orgName) * 100)
-            }.maxBy { it.percentageMatch }
+        .map { samhandlerPraksis ->
+            SamhandlerPraksisMatch(samhandlerPraksis, calculatePercentageStringMatch(samhandlerPraksis.navn, orgName) * 100)
+        }.maxBy { it.percentageMatch }
 }
 
 fun samhandlerMatchingPaaOrganisjonsNavn(samhandlere: List<Samhandler>, orgName: String): SamhandlerPraksisMatch? {
     val inaktiveSamhandlereMedNavn = samhandlere.flatMap { it.samh_praksis }
-            .filter { samhandlerPraksis -> samhandlerPraksis.samh_praksis_status_kode == "inaktiv" }
-            .filter { samhandlerPraksis -> !samhandlerPraksis.navn.isNullOrEmpty() }
+        .filter { samhandlerPraksis -> samhandlerPraksis.samh_praksis_status_kode == "inaktiv" }
+        .filter { samhandlerPraksis -> !samhandlerPraksis.navn.isNullOrEmpty() }
     return if (!inaktiveSamhandlereMedNavn.isNullOrEmpty()) {
         inaktiveSamhandlereMedNavn
-                .map { samhandlerPraksis ->
-                    SamhandlerPraksisMatch(samhandlerPraksis, calculatePercentageStringMatch(samhandlerPraksis.navn?.toLowerCase(), orgName.toLowerCase()) * 100)
-                }.maxBy { it.percentageMatch }
+            .map { samhandlerPraksis ->
+                SamhandlerPraksisMatch(samhandlerPraksis, calculatePercentageStringMatch(samhandlerPraksis.navn?.toLowerCase(), orgName.toLowerCase()) * 100)
+            }.maxBy { it.percentageMatch }
     } else {
         null
     }
@@ -211,14 +220,17 @@ fun filtererBortSamhanlderPraksiserPaaProsentMatch(
     loggingMeta: LoggingMeta
 ): SamhandlerPraksisMatch? {
     return if (samhandlerPraksis != null && samhandlerPraksis.percentageMatch >= prosentMatch) {
-        log.info("Beste match ble samhandler praksis: " +
+        log.info(
+            "Beste match ble samhandler praksis: " +
                 "Orgnumer: ${samhandlerPraksis.samhandlerPraksis.org_id} " +
                 "Navn: ${samhandlerPraksis.samhandlerPraksis.navn} " +
                 "Tssid: ${samhandlerPraksis.samhandlerPraksis.tss_ident} " +
                 "Adresselinje1: ${samhandlerPraksis.samhandlerPraksis.arbeids_adresse_linje_1} " +
                 "Samhandler praksis type: ${samhandlerPraksis.samhandlerPraksis.samh_praksis_type_kode} " +
                 "Prosent match:${samhandlerPraksis.percentageMatch} %, basert på sykmeldingens organisjons navn: $orgName " +
-                "{}", fields(loggingMeta))
+                "{}",
+            fields(loggingMeta)
+        )
         samhandlerPraksis
     } else {
         null

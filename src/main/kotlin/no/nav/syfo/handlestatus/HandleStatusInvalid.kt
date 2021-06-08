@@ -39,15 +39,15 @@ fun handleStatusINVALID(
     sendValidationResult(validationResult, kafkaproducervalidationResult, sm2013BehandlingsUtfallToipic, receivedSykmelding, loggingMeta)
     sendReceivedSykmelding(sm2013InvalidHandlingTopic, receivedSykmelding, kafkaproducerreceivedSykmelding)
     val apprec = fellesformat.toApprec(
-            ediLoggId,
-            msgId,
-            msgHead,
-            ApprecStatus.AVVIST,
-            null,
-            msgHead.msgInfo.receiver.organisation,
-            msgHead.msgInfo.sender.organisation,
-            msgHead.msgInfo.genDate,
-            validationResult
+        ediLoggId,
+        msgId,
+        msgHead,
+        ApprecStatus.AVVIST,
+        null,
+        msgHead.msgInfo.receiver.organisation,
+        msgHead.msgInfo.sender.organisation,
+        msgHead.msgInfo.genDate,
+        validationResult
     )
     sendReceipt(apprec, sm2013ApprecTopic, kafkaproducerApprec)
 }
@@ -62,14 +62,19 @@ fun handleDuplicateSM2013Content(
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>
 ) {
-    log.warn("Message with {} marked as duplicate, has same redisSha256String {}",
-            keyValue("originalEdiLoggId", redisSha256String), fields(loggingMeta))
+    log.warn(
+        "Message with {} marked as duplicate, has same redisSha256String {}",
+        keyValue("originalEdiLoggId", redisSha256String), fields(loggingMeta)
+    )
 
     val apprec = fellesformatToAppprec(
-            fellesformat, "Sykmeldingen er avvist fordi den er " +
+        fellesformat,
+        "Sykmeldingen er avvist fordi den er " +
             "identisk med en allerede mottatt sykmelding (duplikat)," +
             " og den kan derfor ikke sendes på nytt. Pasienten har ikke fått beskjed. " +
-            "Kontakt din EPJ-leverandør hvis dette ikke stemmer", ediLoggId, msgId, msgHead)
+            "Kontakt din EPJ-leverandør hvis dette ikke stemmer",
+        ediLoggId, msgId, msgHead
+    )
 
     sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
     log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
@@ -86,14 +91,19 @@ fun handleDuplicateEdiloggid(
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>
 ) {
-    log.warn("Message with {} marked as duplicate, has same redisEdiloggid {}",
-            keyValue("originalEdiLoggId", redisEdiloggid), fields(loggingMeta))
+    log.warn(
+        "Message with {} marked as duplicate, has same redisEdiloggid {}",
+        keyValue("originalEdiLoggId", redisEdiloggid), fields(loggingMeta)
+    )
 
-    val apprec = fellesformatToAppprec(fellesformat, "Sykmeldingen kan ikke rettes, det må skrives en ny." +
+    val apprec = fellesformatToAppprec(
+        fellesformat,
+        "Sykmeldingen kan ikke rettes, det må skrives en ny." +
             "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
-                    "Denne sykmeldingen har ein identisk identifikator med ein sykmelding som er mottatt tidligere, og er derfor ein duplikat." +
-                    "og skal ikke sendes på nytt. Dersom dette ikke stemmer, kontakt din EPJ-leverandør",
-            ediLoggId, msgId, msgHead)
+            "Denne sykmeldingen har ein identisk identifikator med ein sykmelding som er mottatt tidligere, og er derfor ein duplikat." +
+            "og skal ikke sendes på nytt. Dersom dette ikke stemmer, kontakt din EPJ-leverandør",
+        ediLoggId, msgId, msgHead
+    )
 
     sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
     log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
@@ -113,10 +123,13 @@ fun handlePatientNotFoundInPDL(
 ) {
     log.warn("Patient not found i PDL, {}", fields(loggingMeta))
 
-    val apprec = fellesformatToAppprec(fellesformat, "Sykmeldingen kan ikke rettes, det må skrives en ny." +
+    val apprec = fellesformatToAppprec(
+        fellesformat,
+        "Sykmeldingen kan ikke rettes, det må skrives en ny." +
             "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
-                    "Pasienten er ikke registrert i folkeregisteret",
-            ediLoggId, msgId, msgHead)
+            "Pasienten er ikke registrert i folkeregisteret",
+        ediLoggId, msgId, msgHead
+    )
 
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
 }
@@ -134,10 +147,13 @@ fun handleDoctorNotFoundInPDL(
 ) {
     log.warn("Doctor not found in PDL, {}", fields(loggingMeta))
 
-    val apprec = fellesformatToAppprec(fellesformat, "Sykmeldingen kan ikke rettes, det må skrives en ny." +
+    val apprec = fellesformatToAppprec(
+        fellesformat,
+        "Sykmeldingen kan ikke rettes, det må skrives en ny." +
             "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
             "Behandler er ikke registrert i folkeregisteret",
-            ediLoggId, msgId, msgHead)
+        ediLoggId, msgId, msgHead
+    )
 
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
 }
@@ -155,10 +171,13 @@ fun handleAktivitetOrPeriodeIsMissing(
 ) {
     log.warn("Periode is missing {}", fields(loggingMeta))
 
-    val apprec = fellesformatToAppprec(fellesformat, "Sykmeldingen kan ikke rettes, det må skrives en ny." +
+    val apprec = fellesformatToAppprec(
+        fellesformat,
+        "Sykmeldingen kan ikke rettes, det må skrives en ny." +
             "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
             "Ingen perioder er oppgitt i sykmeldingen.",
-            ediLoggId, msgId, msgHead)
+        ediLoggId, msgId, msgHead
+    )
 
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
 }
@@ -176,11 +195,13 @@ fun handleBiDiagnoserDiagnosekodeIsMissing(
 ) {
     log.warn("diagnosekode is missing {}", fields(loggingMeta))
 
-    val apprec = fellesformatToAppprec(fellesformat,
-            "Sykmeldingen kan ikke rettes, det må skrives en ny." +
-                    "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
-                    "Diagnosekode på bidiagnose mangler",
-            ediLoggId, msgId, msgHead)
+    val apprec = fellesformatToAppprec(
+        fellesformat,
+        "Sykmeldingen kan ikke rettes, det må skrives en ny." +
+            "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
+            "Diagnosekode på bidiagnose mangler",
+        ediLoggId, msgId, msgHead
+    )
 
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
 }
@@ -198,11 +219,13 @@ fun handleBiDiagnoserDiagnosekodeVerkIsMissing(
 ) {
     log.warn("Diagnosekodeverk S is missing {}", fields(loggingMeta))
 
-    val apprec = fellesformatToAppprec(fellesformat,
-            "Sykmeldingen kan ikke rettes, det må skrives en ny." +
-                    "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
-                    "Diagnosekodeverk på bidiagnose mangler. Kontakt din EPJ-leverandør",
-            ediLoggId, msgId, msgHead)
+    val apprec = fellesformatToAppprec(
+        fellesformat,
+        "Sykmeldingen kan ikke rettes, det må skrives en ny." +
+            "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
+            "Diagnosekodeverk på bidiagnose mangler. Kontakt din EPJ-leverandør",
+        ediLoggId, msgId, msgHead
+    )
 
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
 }
@@ -220,10 +243,13 @@ fun handleBiDiagnoserDiagnosekodeBeskrivelseMissing(
 ) {
     log.warn("Diagnosekodebeskrivelse DN is missing {}", fields(loggingMeta))
 
-    val apprec = fellesformatToAppprec(fellesformat, "Sykmeldingen kan ikke rettes, det må skrives en ny." +
+    val apprec = fellesformatToAppprec(
+        fellesformat,
+        "Sykmeldingen kan ikke rettes, det må skrives en ny." +
             "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
             "Diagnosekode beskrivelse på bidiagnose mangler. Kontakt din EPJ-leverandør",
-            ediLoggId, msgId, msgHead)
+        ediLoggId, msgId, msgHead
+    )
 
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
 }
@@ -241,10 +267,13 @@ fun handleHRPNotFound(
 ) {
     log.warn("HPR number not found in HPR {}", fields(loggingMeta))
 
-    val apprec = fellesformatToAppprec(fellesformat, "Sykmeldingen kan ikke rettes, det må skrives en ny." +
+    val apprec = fellesformatToAppprec(
+        fellesformat,
+        "Sykmeldingen kan ikke rettes, det må skrives en ny." +
             "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
             "Ugyldig HPR-nummer, det finnes ikke i HPR registeret",
-        ediLoggId, msgId, msgHead)
+        ediLoggId, msgId, msgHead
+    )
 
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
 }
@@ -262,10 +291,13 @@ fun handleFnrAndDnrAndHprIsmissingFromBehandler(
 ) {
     log.warn("FNR or DNR or HPR is missing on behandler {}", fields(loggingMeta))
 
-    val apprec = fellesformatToAppprec(fellesformat, "Sykmeldingen kan ikke rettes, det må skrives en ny." +
+    val apprec = fellesformatToAppprec(
+        fellesformat,
+        "Sykmeldingen kan ikke rettes, det må skrives en ny." +
             "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
             "Fødselsnummer/d-nummer/Hpr-nummer på behandler mangler",
-            ediLoggId, msgId, msgHead)
+        ediLoggId, msgId, msgHead
+    )
 
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
 }
@@ -283,10 +315,13 @@ fun handleHouvedDiagnoseDiagnosekodeMissing(
 ) {
     log.warn("Houveddiagnose diagnosekode V mangler {}", fields(loggingMeta))
 
-    val apprec = fellesformatToAppprec(fellesformat, "Sykmeldingen kan ikke rettes, det må skrives en ny." +
+    val apprec = fellesformatToAppprec(
+        fellesformat,
+        "Sykmeldingen kan ikke rettes, det må skrives en ny." +
             "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
             "Diagnosekode for hoveddiagnose mangler i sykmeldingen. Kontakt din EPJ-leverandør",
-            ediLoggId, msgId, msgHead)
+        ediLoggId, msgId, msgHead
+    )
 
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
 }
@@ -304,10 +339,13 @@ fun handleHouvedDiagnoseDiagnoseBeskrivelseMissing(
 ) {
     log.warn("Houveddiagnose diagnosekode beskrivelse DN mangler {}", fields(loggingMeta))
 
-    val apprec = fellesformatToAppprec(fellesformat, "Sykmeldingen kan ikke rettes, det må skrives en ny." +
+    val apprec = fellesformatToAppprec(
+        fellesformat,
+        "Sykmeldingen kan ikke rettes, det må skrives en ny." +
             "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
             "Diagnosekode beskrivelse for hoveddiagnose mangler i sykmeldingen. Kontakt din EPJ-leverandør",
-            ediLoggId, msgId, msgHead)
+        ediLoggId, msgId, msgHead
+    )
 
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
 }
@@ -325,10 +363,13 @@ fun handleMedisinskeArsakskodeIsmissing(
 ) {
     log.warn("MedisinskeArsaker Arsakskode V mangler {}", fields(loggingMeta))
 
-    val apprec = fellesformatToAppprec(fellesformat, "Sykmeldingen kan ikke rettes, det må skrives en ny." +
+    val apprec = fellesformatToAppprec(
+        fellesformat,
+        "Sykmeldingen kan ikke rettes, det må skrives en ny." +
             "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
             "MedisinskeArsaker Arsakskode V mangler i sykmeldingen. Kontakt din EPJ-leverandør",
-            ediLoggId, msgId, msgHead)
+        ediLoggId, msgId, msgHead
+    )
 
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
 }
@@ -346,10 +387,13 @@ fun handleMedisinskeArsakskodeHarUgyldigVerdi(
 ) {
     log.warn("MedisinskeArsaker Arsakskode V har ugyldig verdi", fields(loggingMeta))
 
-    val apprec = fellesformatToAppprec(fellesformat, "Sykmeldingen kan ikke rettes, det må skrives en ny." +
-        "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
-        "MedisinskeArsaker Arsakskode V i sykmeldingen har ugyldig verdi. Gyldige verdier er 1,2,3,9. Kontakt din EPJ-leverandør",
-        ediLoggId, msgId, msgHead)
+    val apprec = fellesformatToAppprec(
+        fellesformat,
+        "Sykmeldingen kan ikke rettes, det må skrives en ny." +
+            "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
+            "MedisinskeArsaker Arsakskode V i sykmeldingen har ugyldig verdi. Gyldige verdier er 1,2,3,9. Kontakt din EPJ-leverandør",
+        ediLoggId, msgId, msgHead
+    )
 
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
 }
@@ -367,10 +411,13 @@ fun handleArbeidsplassenArsakskodeIsmissing(
 ) {
     log.warn("Arbeidsplassen Arsakskode V mangler {}", fields(loggingMeta))
 
-    val apprec = fellesformatToAppprec(fellesformat, "Sykmeldingen kan ikke rettes, det må skrives en ny." +
+    val apprec = fellesformatToAppprec(
+        fellesformat,
+        "Sykmeldingen kan ikke rettes, det må skrives en ny." +
             "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
             "ArbeidsplassenArsaker Arsakskode V mangler i sykmeldingen. Kontakt din EPJ-leverandør",
-            ediLoggId, msgId, msgHead)
+        ediLoggId, msgId, msgHead
+    )
 
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
 }
@@ -388,10 +435,13 @@ fun handleArbeidsplassenArsakskodeHarUgyldigVerdi(
 ) {
     log.warn("Arbeidsplassen Arsakskode V har ugyldig verdi {}", fields(loggingMeta))
 
-    val apprec = fellesformatToAppprec(fellesformat, "Sykmeldingen kan ikke rettes, det må skrives en ny." +
-        "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
-        "ArbeidsplassenArsaker Arsakskode V i sykmeldingen har ugyldig verdi. Gyldige verdier er 1 og 9. Kontakt din EPJ-leverandør",
-        ediLoggId, msgId, msgHead)
+    val apprec = fellesformatToAppprec(
+        fellesformat,
+        "Sykmeldingen kan ikke rettes, det må skrives en ny." +
+            "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
+            "ArbeidsplassenArsaker Arsakskode V i sykmeldingen har ugyldig verdi. Gyldige verdier er 1 og 9. Kontakt din EPJ-leverandør",
+        ediLoggId, msgId, msgHead
+    )
 
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
 }
@@ -409,9 +459,12 @@ fun handleTestFnrInProd(
 ) {
     log.warn("Test fødselsnummer er kommet inn i produksjon {}", fields(loggingMeta))
 
-    val apprec = fellesformatToAppprec(fellesformat, "Test fødselsnummer er kommet inn i produksjon, " +
+    val apprec = fellesformatToAppprec(
+        fellesformat,
+        "Test fødselsnummer er kommet inn i produksjon, " +
             "dette er eit alvorlig brudd som aldri burde oppstå. Kontakt din EPJ-leverandør snarest",
-            ediLoggId, msgId, msgHead)
+        ediLoggId, msgId, msgHead
+    )
 
     sendReceipt(apprec, env.sm2013Apprec, kafkaproducerApprec)
     log.info("Apprec receipt sent to kafka topic {}, {}", env.sm2013Apprec, fields(loggingMeta))
@@ -433,10 +486,13 @@ fun handleAnnenFraversArsakkodeVIsmissing(
 ) {
     log.warn("AnnenFravers Arsakskode V mangler {}", fields(loggingMeta))
 
-    val apprec = fellesformatToAppprec(fellesformat, "Sykmeldingen kan ikke rettes, det må skrives en ny." +
+    val apprec = fellesformatToAppprec(
+        fellesformat,
+        "Sykmeldingen kan ikke rettes, det må skrives en ny." +
             "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
             "AnnenFravers Arsakskode V mangler i sykmeldingen. Kontakt din EPJ-leverandør",
-            ediLoggId, msgId, msgHead)
+        ediLoggId, msgId, msgHead
+    )
 
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
 }
@@ -463,13 +519,13 @@ fun fellesformatToAppprec(
     msgId: String,
     msgHead: XMLMsgHead
 ): Apprec =
-        fellesformat.toApprec(
-                ediLoggId,
-                msgId,
-                msgHead,
-                ApprecStatus.AVVIST,
-                tekstTilSykmelder,
-                msgHead.msgInfo.receiver.organisation,
-                msgHead.msgInfo.sender.organisation,
-                msgHead.msgInfo.genDate
-        )
+    fellesformat.toApprec(
+        ediLoggId,
+        msgId,
+        msgHead,
+        ApprecStatus.AVVIST,
+        tekstTilSykmelder,
+        msgHead.msgInfo.receiver.organisation,
+        msgHead.msgInfo.sender.organisation,
+        msgHead.msgInfo.genDate
+    )

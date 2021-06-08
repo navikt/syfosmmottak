@@ -1,7 +1,5 @@
 package no.nav.syfo.handlestatus
 
-import javax.jms.MessageProducer
-import javax.jms.Session
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.msgHead.XMLMsgHead
@@ -16,6 +14,8 @@ import no.nav.syfo.sendReceivedSykmelding
 import no.nav.syfo.service.notifySyfoService
 import no.nav.syfo.util.LoggingMeta
 import org.apache.kafka.clients.producer.KafkaProducer
+import javax.jms.MessageProducer
+import javax.jms.Session
 
 fun handleStatusOK(
     fellesformat: XMLEIFellesformat,
@@ -37,19 +37,21 @@ fun handleStatusOK(
     sendReceivedSykmelding(sm2013AutomaticHandlingTopic, receivedSykmelding, kafkaproducerreceivedSykmelding)
 
     val apprec = fellesformat.toApprec(
-            ediLoggId,
-            msgId,
-            msgHead,
-            ApprecStatus.OK,
-            null,
-            msgHead.msgInfo.receiver.organisation,
-            msgHead.msgInfo.sender.organisation,
-            msgHead.msgInfo.genDate
+        ediLoggId,
+        msgId,
+        msgHead,
+        ApprecStatus.OK,
+        null,
+        msgHead.msgInfo.receiver.organisation,
+        msgHead.msgInfo.sender.organisation,
+        msgHead.msgInfo.genDate
     )
     sendReceipt(apprec, sm2013ApprecTopic, kafkaproducerApprec)
 
-    notifySyfoService(session = session, receiptProducer = syfoserviceProducer, ediLoggId = ediLoggId,
-            sykmeldingId = receivedSykmelding.sykmelding.id, msgId = msgId, healthInformation = healthInformation)
+    notifySyfoService(
+        session = session, receiptProducer = syfoserviceProducer, ediLoggId = ediLoggId,
+        sykmeldingId = receivedSykmelding.sykmelding.id, msgId = msgId, healthInformation = healthInformation
+    )
 
     log.info("Message send to syfoService {}, {}", syfoserviceQueueName, StructuredArguments.fields(loggingMeta))
 }

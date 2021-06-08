@@ -1,7 +1,5 @@
 package no.nav.syfo.kafka.vedlegg.producer
 
-import java.time.Duration
-import java.util.Properties
 import no.nav.common.KafkaEnvironment
 import org.amshove.kluent.shouldBeEqualTo
 import org.apache.kafka.clients.admin.AdminClient
@@ -19,11 +17,13 @@ import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.Duration
+import java.util.Properties
 
 class KafkaVedleggProducerTest : Spek({
     val embeddedEnvironment = KafkaEnvironment(
-            autoStart = false,
-            noOfBrokers = 3
+        autoStart = false,
+        noOfBrokers = 3
     )
 
     val kafkaConfig = Properties()

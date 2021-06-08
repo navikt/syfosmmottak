@@ -15,9 +15,9 @@ import org.spekframework.spek2.style.specification.describe
 object StartSubscription : Spek({
 
     val objectMapper = ObjectMapper()
-            .registerKotlinModule()
-            .registerModule(JavaTimeModule())
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        .registerKotlinModule()
+        .registerModule(JavaTimeModule())
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
     describe("Oppretter subscription") {
         val samhandlerleva: List<Samhandler> = objectMapper.readValue(KuhrSarClientSpek::class.java.getResourceAsStream("/kuhr_sahr_leva.json").readBytes().toString(Charsets.UTF_8))

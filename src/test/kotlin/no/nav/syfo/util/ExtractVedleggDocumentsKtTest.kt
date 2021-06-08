@@ -1,6 +1,5 @@
 package no.nav.syfo.util
 
-import java.io.StringReader
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.syfo.kafka.vedlegg.model.Content
@@ -8,6 +7,7 @@ import no.nav.syfo.kafka.vedlegg.model.Vedlegg
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.io.StringReader
 
 class ExtractVedleggDocumentsKtTest : Spek({
     describe("Sykmelding med vedlegg") {

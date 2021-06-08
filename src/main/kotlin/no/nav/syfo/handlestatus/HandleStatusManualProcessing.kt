@@ -1,10 +1,5 @@
 package no.nav.syfo.handlestatus
 
-import java.time.DayOfWeek
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import javax.jms.MessageProducer
-import javax.jms.Session
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.msgHead.XMLMsgHead
@@ -26,6 +21,11 @@ import no.nav.syfo.service.notifySyfoService
 import no.nav.syfo.util.LoggingMeta
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import javax.jms.MessageProducer
+import javax.jms.Session
 
 fun handleStatusMANUALPROCESSING(
     receivedSykmelding: ReceivedSykmelding,
@@ -54,14 +54,14 @@ fun handleStatusMANUALPROCESSING(
     if (sendToSyfosmManuell) {
         log.info("Sending manuell oppgave to syfosmmanuell-backend {}", StructuredArguments.fields(loggingMeta))
         val apprec = fellesformat.toApprec(
-                ediLoggId,
-                msgId,
-                msgHead,
-                ApprecStatus.OK,
-                null,
-                msgHead.msgInfo.receiver.organisation,
-                msgHead.msgInfo.sender.organisation,
-                msgHead.msgInfo.genDate
+            ediLoggId,
+            msgId,
+            msgHead,
+            ApprecStatus.OK,
+            null,
+            msgHead.msgInfo.receiver.organisation,
+            msgHead.msgInfo.sender.organisation,
+            msgHead.msgInfo.genDate
         )
         sendManuellTask(receivedSykmelding, validationResult, apprec, syfoSmManuellTopic, kafkaproducerManuellOppgave)
     } else {
@@ -73,20 +73,22 @@ fun handleStatusMANUALPROCESSING(
         sendValidationResult(validationResult, kafkaproducervalidationResult, sm2013BehandlingsUtfallTopic, receivedSykmelding, loggingMeta)
 
         val apprec = fellesformat.toApprec(
-                ediLoggId,
-                msgId,
-                msgHead,
-                ApprecStatus.OK,
-                null,
-                msgHead.msgInfo.receiver.organisation,
-                msgHead.msgInfo.sender.organisation,
-                msgHead.msgInfo.genDate
+            ediLoggId,
+            msgId,
+            msgHead,
+            ApprecStatus.OK,
+            null,
+            msgHead.msgInfo.receiver.organisation,
+            msgHead.msgInfo.sender.organisation,
+            msgHead.msgInfo.genDate
         )
         sendReceipt(apprec, sm2013ApprecTopic, kafkaproducerApprec)
         log.info("Apprec receipt sent to kafka topic {}, {}", sm2013ApprecTopic, StructuredArguments.fields(loggingMeta))
 
-        notifySyfoService(session = session, receiptProducer = syfoserviceProducer, ediLoggId = ediLoggId,
-                sykmeldingId = receivedSykmelding.sykmelding.id, msgId = msgId, healthInformation = healthInformation)
+        notifySyfoService(
+            session = session, receiptProducer = syfoserviceProducer, ediLoggId = ediLoggId,
+            sykmeldingId = receivedSykmelding.sykmelding.id, msgId = msgId, healthInformation = healthInformation
+        )
         log.info("Message send to syfoService {}, {}", syfoserviceQueueName, StructuredArguments.fields(loggingMeta))
     }
 }
@@ -103,7 +105,8 @@ fun opprettOppgave(
                 "aapen-syfo-oppgave-produserOppgave",
                 receivedSykmelding.sykmelding.id,
                 opprettProduceTask(receivedSykmelding, results, loggingMeta)
-            )).get()
+            )
+        ).get()
         log.info("Message sendt to topic: aapen-syfo-oppgave-produserOppgave {}", StructuredArguments.fields(loggingMeta))
     } catch (ex: Exception) {
         log.error("Failed to send producer task for sykmelding {} to kafka", receivedSykmelding.sykmelding.id)
@@ -151,9 +154,10 @@ fun sendManuellTask(
 ) {
     try {
         val manuellOppgave = ManuellOppgave(
-                receivedSykmelding,
-                validationResult,
-                apprec)
+            receivedSykmelding,
+            validationResult,
+            apprec
+        )
         kafkaproducerManuellOppgave.send(ProducerRecord(sm2013ManeullTopic, manuellOppgave)).get()
     } catch (ex: Exception) {
         log.error("Failed to send manuell oppgave for sykmelding {} to kafka", receivedSykmelding.sykmelding.id)
@@ -170,8 +174,8 @@ fun finnFristForFerdigstillingAvOppgave(ferdistilleDato: LocalDate): LocalDate {
 }
 
 fun setToWorkDay(ferdistilleDato: LocalDate): LocalDate =
-        when (ferdistilleDato.dayOfWeek) {
-            DayOfWeek.SATURDAY -> ferdistilleDato.plusDays(2)
-            DayOfWeek.SUNDAY -> ferdistilleDato.plusDays(1)
-            else -> ferdistilleDato
-        }
+    when (ferdistilleDato.dayOfWeek) {
+        DayOfWeek.SATURDAY -> ferdistilleDato.plusDays(2)
+        DayOfWeek.SUNDAY -> ferdistilleDato.plusDays(1)
+        else -> ferdistilleDato
+    }

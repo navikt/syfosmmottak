@@ -1,6 +1,5 @@
 package no.nav.syfo
 
-import java.io.StringReader
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.eiFellesformat.XMLMottakenhetBlokk
 import no.nav.helse.msgHead.XMLMsgHead
@@ -16,6 +15,7 @@ import no.nav.syfo.utils.getFileAsString
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.io.StringReader
 
 object ApprecMapperSpek : Spek({
     val stringInput = getFileAsString("src/test/resources/sykemelding2013Regelsettversjon2.xml")
@@ -25,16 +25,16 @@ object ApprecMapperSpek : Spek({
 
     describe("Duplicate AppRec") {
         val tekstTilSykmelder = "Duplikat! - Denne sykmeldingen er mottatt tidligere. \" +\n" +
-        "                                        \"Skal ikke sendes på nytt"
+            "                                        \"Skal ikke sendes på nytt"
         val apprec = fellesformat.toApprec(
-                ediloggid = receiverBlock.ediLoggId,
-                msgId = msgHead.msgInfo.msgId,
-                xmlMsgHead = msgHead,
-                apprecStatus = ApprecStatus.AVVIST,
-                tekstTilSykmelder = tekstTilSykmelder,
-                senderOrganisation = msgHead.msgInfo.receiver.organisation,
-                mottakerOrganisation = msgHead.msgInfo.sender.organisation,
-                msgGenDate = msgHead.msgInfo.genDate
+            ediloggid = receiverBlock.ediLoggId,
+            msgId = msgHead.msgInfo.msgId,
+            xmlMsgHead = msgHead,
+            apprecStatus = ApprecStatus.AVVIST,
+            tekstTilSykmelder = tekstTilSykmelder,
+            senderOrganisation = msgHead.msgInfo.receiver.organisation,
+            mottakerOrganisation = msgHead.msgInfo.sender.organisation,
+            msgGenDate = msgHead.msgInfo.genDate
         )
 
         it("Has same msgGenDate") {
@@ -134,14 +134,14 @@ object ApprecMapperSpek : Spek({
 
     describe("OK AppRec") {
         val apprec = fellesformat.toApprec(
-                ediloggid = receiverBlock.ediLoggId,
-                msgId = msgHead.msgInfo.msgId,
-                xmlMsgHead = msgHead,
-                apprecStatus = ApprecStatus.OK,
-                tekstTilSykmelder = null,
-                mottakerOrganisation = msgHead.msgInfo.sender.organisation,
-                senderOrganisation = msgHead.msgInfo.receiver.organisation,
-                msgGenDate = msgHead.msgInfo.genDate
+            ediloggid = receiverBlock.ediLoggId,
+            msgId = msgHead.msgInfo.msgId,
+            xmlMsgHead = msgHead,
+            apprecStatus = ApprecStatus.OK,
+            tekstTilSykmelder = null,
+            mottakerOrganisation = msgHead.msgInfo.sender.organisation,
+            senderOrganisation = msgHead.msgInfo.receiver.organisation,
+            msgGenDate = msgHead.msgInfo.genDate
         )
         it("Has the same ediLoggId as the source") {
             apprec.ediloggid shouldBeEqualTo fellesformat.get<XMLMottakenhetBlokk>().ediLoggId
@@ -236,29 +236,35 @@ object ApprecMapperSpek : Spek({
 
     describe("Avisst AppRec with validationResult") {
 
-        val validationResult = ValidationResult(status = Status.INVALID, ruleHits = listOf(
-            RuleInfo(ruleName = "BEHANDLER_KI_NOT_USING_VALID_DIAGNOSECODE_TYPE",
+        val validationResult = ValidationResult(
+            status = Status.INVALID,
+            ruleHits = listOf(
+                RuleInfo(
+                    ruleName = "BEHANDLER_KI_NOT_USING_VALID_DIAGNOSECODE_TYPE",
                     messageForUser = "Den som skrev sykmeldingen mangler autorisasjon.",
                     messageForSender = "Behandler er manuellterapeut/kiropraktor eller fysioterapeut med " +
-                            "autorisasjon har angitt annen diagnose enn kapitel L (muskel og skjelettsykdommer)",
+                        "autorisasjon har angitt annen diagnose enn kapitel L (muskel og skjelettsykdommer)",
                     ruleStatus = Status.INVALID
-            ),
-            RuleInfo(ruleName = "NUMBER_OF_TREATMENT_DAYS_SET",
+                ),
+                RuleInfo(
+                    ruleName = "NUMBER_OF_TREATMENT_DAYS_SET",
                     messageForUser = "Hvis behandlingsdager er angitt sendes meldingen til manuell behandling.",
                     messageForSender = "Hvis behandlingsdager er angitt sendes meldingen til manuell behandling.",
                     ruleStatus = Status.INVALID
-            )))
+                )
+            )
+        )
 
         val apprec = fellesformat.toApprec(
-                ediloggid = receiverBlock.ediLoggId,
-                msgId = msgHead.msgInfo.msgId,
-                xmlMsgHead = msgHead,
-                apprecStatus = ApprecStatus.OK,
-                tekstTilSykmelder = null,
-                mottakerOrganisation = msgHead.msgInfo.sender.organisation,
-                senderOrganisation = msgHead.msgInfo.receiver.organisation,
-                validationResult = validationResult,
-                msgGenDate = msgHead.msgInfo.genDate
+            ediloggid = receiverBlock.ediLoggId,
+            msgId = msgHead.msgInfo.msgId,
+            xmlMsgHead = msgHead,
+            apprecStatus = ApprecStatus.OK,
+            tekstTilSykmelder = null,
+            mottakerOrganisation = msgHead.msgInfo.sender.organisation,
+            senderOrganisation = msgHead.msgInfo.receiver.organisation,
+            validationResult = validationResult,
+            msgGenDate = msgHead.msgInfo.genDate
         )
         it("Has the same validationResult as the source") {
             apprec.validationResult shouldBeEqualTo validationResult

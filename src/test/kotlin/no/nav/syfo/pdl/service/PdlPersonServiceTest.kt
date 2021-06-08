@@ -4,7 +4,6 @@ import io.ktor.util.KtorExperimentalAPI
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.mockkClass
-import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.client.OidcToken
 import no.nav.syfo.client.StsOidcClient
@@ -17,6 +16,7 @@ import no.nav.syfo.util.LoggingMeta
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import kotlin.test.assertFailsWith
 
 @KtorExperimentalAPI
 object PdlPersonServiceTest : Spek({
@@ -33,10 +33,15 @@ object PdlPersonServiceTest : Spek({
 
     describe("Test av PdlPersonService") {
         it("Henter aktørid for pasient og lege") {
-            coEvery { pdlClient.getAktorids(any(), any()) } returns GetPersonResponse(ResponseData(hentIdenterBolk = listOf(
-                HentIdenterBolk("fnrPasient", listOf(PdlIdent("aktorIdPasient", "AKTORID"), PdlIdent("fnrPasient", "FOLKEREGISTERIDENT")), "ok"),
-                HentIdenterBolk("fnrLege", listOf(PdlIdent("aktorIdLege", "AKTORID"), PdlIdent("fnrLege", "FOLKEREGISTERIDENT")), "ok")
-            )), errors = null)
+            coEvery { pdlClient.getAktorids(any(), any()) } returns GetPersonResponse(
+                ResponseData(
+                    hentIdenterBolk = listOf(
+                        HentIdenterBolk("fnrPasient", listOf(PdlIdent("aktorIdPasient", "AKTORID"), PdlIdent("fnrPasient", "FOLKEREGISTERIDENT")), "ok"),
+                        HentIdenterBolk("fnrLege", listOf(PdlIdent("aktorIdLege", "AKTORID"), PdlIdent("fnrLege", "FOLKEREGISTERIDENT")), "ok")
+                    )
+                ),
+                errors = null
+            )
 
             runBlocking {
                 val aktorids = pdlPersonService.getAktorids(listOf("fnrPasient", "fnrLege"), loggingMeta)
@@ -46,10 +51,15 @@ object PdlPersonServiceTest : Spek({
             }
         }
         it("Pasient-aktørid er null hvis pasient ikke finnes i PDL") {
-            coEvery { pdlClient.getAktorids(any(), any()) } returns GetPersonResponse(ResponseData(hentIdenterBolk = listOf(
-                HentIdenterBolk("fnrPasient", null, "not_found"),
-                HentIdenterBolk("fnrLege", listOf(PdlIdent("aktorIdLege", "AKTORID"), PdlIdent("fnrLege", "FOLKEREGISTERIDENT")), "ok")
-            )), errors = null)
+            coEvery { pdlClient.getAktorids(any(), any()) } returns GetPersonResponse(
+                ResponseData(
+                    hentIdenterBolk = listOf(
+                        HentIdenterBolk("fnrPasient", null, "not_found"),
+                        HentIdenterBolk("fnrLege", listOf(PdlIdent("aktorIdLege", "AKTORID"), PdlIdent("fnrLege", "FOLKEREGISTERIDENT")), "ok")
+                    )
+                ),
+                errors = null
+            )
 
             runBlocking {
                 val aktorids = pdlPersonService.getAktorids(listOf("fnrPasient", "fnrLege"), loggingMeta)

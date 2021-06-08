@@ -5,12 +5,6 @@ import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import java.io.StringReader
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutionException
-import javax.jms.MessageProducer
-import javax.jms.Session
-import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.msgHead.XMLMsgHead
@@ -30,6 +24,12 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.io.StringReader
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutionException
+import javax.jms.MessageProducer
+import javax.jms.Session
+import kotlin.test.assertFailsWith
 
 @KtorExperimentalAPI
 class HandleStatusManualProcessingKtTest : Spek({
@@ -43,12 +43,16 @@ class HandleStatusManualProcessingKtTest : Spek({
     val validationResultKafkaProducer = mockk<KafkaProducer<String, ValidationResult>>()
     val manuellOppgaveProducer = mockk<KafkaProducer<String, ManuellOppgave>>()
     val validationResult = ValidationResult(Status.MANUAL_PROCESSING, emptyList())
-    val validationResultIkkeManuell = ValidationResult(Status.MANUAL_PROCESSING, listOf(
-        RuleInfo(ruleName = "SYKMELDING_MED_BEHANDLINGSDAGER",
-            messageForUser = "Sykmelding inneholder behandlingsdager.",
-            messageForSender = "Sykmelding inneholder behandlingsdager.",
-            ruleStatus = Status.MANUAL_PROCESSING
-        ))
+    val validationResultIkkeManuell = ValidationResult(
+        Status.MANUAL_PROCESSING,
+        listOf(
+            RuleInfo(
+                ruleName = "SYKMELDING_MED_BEHANDLINGSDAGER",
+                messageForUser = "Sykmelding inneholder behandlingsdager.",
+                messageForSender = "Sykmelding inneholder behandlingsdager.",
+                ruleStatus = Status.MANUAL_PROCESSING
+            )
+        )
     )
     val stringInput = getFileAsString("src/test/resources/sykemelding2013Regelsettversjon2.xml")
     val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
@@ -139,25 +143,25 @@ fun getFailingFuture(): CompletableFuture<RecordMetadata> {
 
 private fun handleManualProcessing(receivedSykmelding: ReceivedSykmelding, loggingMeta: LoggingMeta, fellesformat: XMLEIFellesformat, msgHead: XMLMsgHead, kafkaApprecProducer: KafkaProducer<String, Apprec>, session: Session, syfoserviceProducer: MessageProducer, healthInformation: HelseOpplysningerArbeidsuforhet, validationResutl: ValidationResult, kafkaManualTaskProducer: KafkaProducer<String, ProduceTask>, kafkaProducerReceviedSykmelding: KafkaProducer<String, ReceivedSykmelding>, validationResultKafkaProducer: KafkaProducer<String, ValidationResult>, manuellOppgaveProducer: KafkaProducer<String, ManuellOppgave>) {
     handleStatusMANUALPROCESSING(
-            receivedSykmelding,
-            loggingMeta,
-            fellesformat,
-            "",
-            "",
-            msgHead,
-            "",
-            kafkaApprecProducer,
-            session,
-            syfoserviceProducer,
-            healthInformation,
-            "",
-            validationResutl,
-            kafkaManualTaskProducer,
-            kafkaProducerReceviedSykmelding,
-            "",
-            validationResultKafkaProducer,
-            "",
-            manuellOppgaveProducer,
-            ""
+        receivedSykmelding,
+        loggingMeta,
+        fellesformat,
+        "",
+        "",
+        msgHead,
+        "",
+        kafkaApprecProducer,
+        session,
+        syfoserviceProducer,
+        healthInformation,
+        "",
+        validationResutl,
+        kafkaManualTaskProducer,
+        kafkaProducerReceviedSykmelding,
+        "",
+        validationResultKafkaProducer,
+        "",
+        manuellOppgaveProducer,
+        ""
     )
 }

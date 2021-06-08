@@ -17,35 +17,47 @@ object HandleStatusManualProcessingSpek : Spek({
 
     describe("Sending til syfosmmanuell") {
         it("Should return true when the only rule hit is ruleName is TILBAKEDATERT_MER_ENN_8_DAGER_FORSTE_SYKMELDING_MED_BEGRUNNELSE") {
-            val validationResult = ValidationResult(status = Status.MANUAL_PROCESSING, ruleHits = listOf(
-                RuleInfo(ruleName = "TILBAKEDATERT_MER_ENN_8_DAGER_FORSTE_SYKMELDING_MED_BEGRUNNELSE",
-                    messageForUser = "Første sykmelding er tilbakedatert og årsak for tilbakedatering er angitt.",
-                    messageForSender = "Første sykmelding er tilbakedatert og felt 11.2 (begrunnelseIkkeKontakt) er utfylt",
-                    ruleStatus = Status.MANUAL_PROCESSING
+            val validationResult = ValidationResult(
+                status = Status.MANUAL_PROCESSING,
+                ruleHits = listOf(
+                    RuleInfo(
+                        ruleName = "TILBAKEDATERT_MER_ENN_8_DAGER_FORSTE_SYKMELDING_MED_BEGRUNNELSE",
+                        messageForUser = "Første sykmelding er tilbakedatert og årsak for tilbakedatering er angitt.",
+                        messageForSender = "Første sykmelding er tilbakedatert og felt 11.2 (begrunnelseIkkeKontakt) er utfylt",
+                        ruleStatus = Status.MANUAL_PROCESSING
+                    )
                 )
-            ))
+            )
 
             sendToSyfosmManuell(validationResult.ruleHits) shouldBeEqualTo true
         }
         it("Should return false when rulehits contain SYKMELDING_MED_BEHANDLINGSDAGER") {
-            val validationResult = ValidationResult(status = Status.MANUAL_PROCESSING, ruleHits = listOf(
-                RuleInfo(ruleName = "SYKMELDING_MED_BEHANDLINGSDAGER",
-                    messageForUser = "Sykmelding inneholder behandlingsdager.",
-                    messageForSender = "Sykmelding inneholder behandlingsdager.",
-                    ruleStatus = Status.MANUAL_PROCESSING
+            val validationResult = ValidationResult(
+                status = Status.MANUAL_PROCESSING,
+                ruleHits = listOf(
+                    RuleInfo(
+                        ruleName = "SYKMELDING_MED_BEHANDLINGSDAGER",
+                        messageForUser = "Sykmelding inneholder behandlingsdager.",
+                        messageForSender = "Sykmelding inneholder behandlingsdager.",
+                        ruleStatus = Status.MANUAL_PROCESSING
+                    )
                 )
-            ))
+            )
 
             sendToSyfosmManuell(validationResult.ruleHits) shouldBeEqualTo false
         }
         it("Should return false when rulehits contain SYKMELDING_MED_REISETILSKUDD") {
-            val validationResult = ValidationResult(status = Status.MANUAL_PROCESSING, ruleHits = listOf(
-                RuleInfo(ruleName = "SYKMELDING_MED_REISETILSKUDD",
-                    messageForUser = "Sykmelding inneholder reisetilskudd.",
-                    messageForSender = "Sykmelding inneholder reisetilskudd.",
-                    ruleStatus = Status.MANUAL_PROCESSING
+            val validationResult = ValidationResult(
+                status = Status.MANUAL_PROCESSING,
+                ruleHits = listOf(
+                    RuleInfo(
+                        ruleName = "SYKMELDING_MED_REISETILSKUDD",
+                        messageForUser = "Sykmelding inneholder reisetilskudd.",
+                        messageForSender = "Sykmelding inneholder reisetilskudd.",
+                        ruleStatus = Status.MANUAL_PROCESSING
+                    )
                 )
-            ))
+            )
 
             sendToSyfosmManuell(validationResult.ruleHits) shouldBeEqualTo false
         }

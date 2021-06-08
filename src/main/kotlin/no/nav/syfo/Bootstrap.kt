@@ -7,7 +7,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.hotspot.DefaultExports
-import javax.jms.Session
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
@@ -43,12 +42,13 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import redis.clients.jedis.Jedis
+import javax.jms.Session
 
 val objectMapper: ObjectMapper = ObjectMapper()
-        .registerModule(JavaTimeModule())
-        .registerKotlinModule()
-        .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    .registerModule(JavaTimeModule())
+    .registerKotlinModule()
+    .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+    .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.syfosmmottak")
 
@@ -56,19 +56,20 @@ val log: Logger = LoggerFactory.getLogger("no.nav.syfo.syfosmmottak")
 fun main() {
     val env = Environment()
     val credentials = VaultCredentials(
-            serviceuserPassword = getFileAsString("/secrets/serviceuser/password"),
-            serviceuserUsername = getFileAsString("/secrets/serviceuser/username"),
-            mqUsername = getFileAsString("/secrets/default/mqUsername"),
-            mqPassword = getFileAsString("/secrets/default/mqPassword"),
-            clientId = getFileAsString("/secrets/azuread/syfosmmottak/client_id"),
-            clientsecret = getFileAsString("/secrets/azuread/syfosmmottak/client_secret"),
-            redisSecret = getFileAsString("/secrets/default/redisSecret"),
-            syfohelsenettproxyId = getFileAsString("/secrets/default/syfohelsenettproxyId")
+        serviceuserPassword = getFileAsString("/secrets/serviceuser/password"),
+        serviceuserUsername = getFileAsString("/secrets/serviceuser/username"),
+        mqUsername = getFileAsString("/secrets/default/mqUsername"),
+        mqPassword = getFileAsString("/secrets/default/mqPassword"),
+        clientId = getFileAsString("/secrets/azuread/syfosmmottak/client_id"),
+        clientsecret = getFileAsString("/secrets/azuread/syfosmmottak/client_secret"),
+        redisSecret = getFileAsString("/secrets/default/redisSecret"),
+        syfohelsenettproxyId = getFileAsString("/secrets/default/syfohelsenettproxyId")
     )
     val applicationState = ApplicationState()
     val applicationEngine = createApplicationEngine(
-            env,
-            applicationState)
+        env,
+        applicationState
+    )
 
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
     applicationServer.start()
@@ -83,25 +84,27 @@ fun main() {
         port { withBasicAuth(credentials.serviceuserUsername, credentials.serviceuserPassword) }
     }
 
-    launchListeners(env, applicationState,
-            subscriptionEmottak, kafkaClients.kafkaProducerReceivedSykmelding,
-            kafkaClients.kafkaProducerValidationResult,
-            httpClients.syfoSykemeldingRuleClient, httpClients.sarClient, httpClients.pdlPersonService,
-            credentials, kafkaClients.manualValidationKafkaProducer,
-            kafkaClients.kafkaProducerApprec, kafkaClients.kafkaproducerManuellOppgave,
-            httpClients.norskHelsenettClient, kafkaClients.kafkaVedleggProducer)
+    launchListeners(
+        env, applicationState,
+        subscriptionEmottak, kafkaClients.kafkaProducerReceivedSykmelding,
+        kafkaClients.kafkaProducerValidationResult,
+        httpClients.syfoSykemeldingRuleClient, httpClients.sarClient, httpClients.pdlPersonService,
+        credentials, kafkaClients.manualValidationKafkaProducer,
+        kafkaClients.kafkaProducerApprec, kafkaClients.kafkaproducerManuellOppgave,
+        httpClients.norskHelsenettClient, kafkaClients.kafkaVedleggProducer
+    )
 }
 
 fun createListener(applicationState: ApplicationState, action: suspend CoroutineScope.() -> Unit): Job =
-        GlobalScope.launch {
-            try {
-                action()
-            } catch (e: TrackableException) {
-                log.error("En uhåndtert feil oppstod, applikasjonen restarter {}", e.cause)
-            } finally {
-                applicationState.alive = false
-            }
+    GlobalScope.launch {
+        try {
+            action()
+        } catch (e: TrackableException) {
+            log.error("En uhåndtert feil oppstod, applikasjonen restarter {}", e.cause)
+        } finally {
+            applicationState.alive = false
         }
+    }
 
 @KtorExperimentalAPI
 fun launchListeners(
@@ -134,12 +137,14 @@ fun launchListeners(
 
                 jedis.auth(credentials.redisSecret)
 
-                BlockingApplicationRunner().run(inputconsumer, syfoserviceProducer, backoutProducer,
-                        subscriptionEmottak, kafkaproducerreceivedSykmelding, kafkaproducervalidationResult,
-                        syfoSykemeldingRuleClient, kuhrSarClient, pdlPersonService, env,
-                        applicationState, jedis, kafkaManuelTaskProducer,
-                        session, kafkaproducerApprec, kafkaproducerManuellOppgave,
-                        norskHelsenettClient, kafkaVedleggProducer)
+                BlockingApplicationRunner().run(
+                    inputconsumer, syfoserviceProducer, backoutProducer,
+                    subscriptionEmottak, kafkaproducerreceivedSykmelding, kafkaproducervalidationResult,
+                    syfoSykemeldingRuleClient, kuhrSarClient, pdlPersonService, env,
+                    applicationState, jedis, kafkaManuelTaskProducer,
+                    session, kafkaproducerApprec, kafkaproducerManuellOppgave,
+                    norskHelsenettClient, kafkaVedleggProducer
+                )
             }
         }
     }
@@ -169,7 +174,7 @@ fun sendValidationResult(
 
     try {
         kafkaproducervalidationResult.send(
-                ProducerRecord(sm2013BehandlingsUtfallToipic, receivedSykmelding.sykmelding.id, validationResult)
+            ProducerRecord(sm2013BehandlingsUtfallToipic, receivedSykmelding.sykmelding.id, validationResult)
         ).get()
         log.info("Validation results send to kafka {}, {}", sm2013BehandlingsUtfallToipic, fields(loggingMeta))
     } catch (ex: Exception) {
@@ -185,7 +190,7 @@ fun sendReceivedSykmelding(
 ) {
     try {
         kafkaproducerreceivedSykmelding.send(
-                ProducerRecord(receivedSykmeldingTopic, receivedSykmelding.sykmelding.id, receivedSykmelding)
+            ProducerRecord(receivedSykmeldingTopic, receivedSykmelding.sykmelding.id, receivedSykmelding)
         ).get()
         log.info("Sykmelding sendt to kafka topic {} sykmelding id {}", receivedSykmeldingTopic, receivedSykmelding.sykmelding.id)
     } catch (ex: Exception) {

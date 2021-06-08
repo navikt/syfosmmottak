@@ -5,20 +5,20 @@ import no.nav.syfo.model.ArbeidsrelatertArsakType
 import no.nav.syfo.model.MedisinskArsakType
 
 fun fnrOgDnrMangler(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean =
-        healthInformation.behandler.id.find { it.typeId.v == "FNR" }?.id.isNullOrBlank() &&
-                healthInformation.behandler.id.find { it.typeId.v == "DNR" }?.id.isNullOrBlank()
+    healthInformation.behandler.id.find { it.typeId.v == "FNR" }?.id.isNullOrBlank() &&
+        healthInformation.behandler.id.find { it.typeId.v == "DNR" }?.id.isNullOrBlank()
 
 fun hprMangler(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean =
-        healthInformation.behandler.id.find { it.typeId.v == "HPR" }?.id.isNullOrBlank()
+    healthInformation.behandler.id.find { it.typeId.v == "HPR" }?.id.isNullOrBlank()
 
 fun medisinskeArsakskodeMangler(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean =
-        healthInformation.aktivitet.periode.any { periode -> aktivitetIkkeMuligMedisinskeArsakskodeMangler(periode.aktivitetIkkeMulig) }
+    healthInformation.aktivitet.periode.any { periode -> aktivitetIkkeMuligMedisinskeArsakskodeMangler(periode.aktivitetIkkeMulig) }
 
 fun medisinskeArsakskodeHarUgyldigVerdi(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean =
     healthInformation.aktivitet.periode.any { periode -> aktivitetIkkeMuligMedisinskeArsakskodeHarUgyldigVerdi(periode.aktivitetIkkeMulig) }
 
 fun arbeidsplassenArsakskodeMangler(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean =
-        healthInformation.aktivitet.periode.any { periode -> aktivitetIkkeMuligArbeidsplassenArsakskodeMangler(periode.aktivitetIkkeMulig) }
+    healthInformation.aktivitet.periode.any { periode -> aktivitetIkkeMuligArbeidsplassenArsakskodeMangler(periode.aktivitetIkkeMulig) }
 
 fun arbeidsplassenArsakskodeHarUgyldigVerdi(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean =
     healthInformation.aktivitet.periode.any { periode -> aktivitetIkkeMuligArbeidsplassenArsakskodeMangler(periode.aktivitetIkkeMulig) }
