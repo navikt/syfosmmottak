@@ -31,7 +31,7 @@ data class Environment(
     val redisHost: String = getEnvVar("REDIS_HOST", "syfosmmottak-redis.teamsykmelding.svc.nais.local"),
     val sm2013Apprec: String = getEnvVar("KAFKA_SM2013_BEHANDLING_TOPIC", "privat-syfo-sm2013-apprec-v1"),
     override val cluster: String = getEnvVar("NAIS_CLUSTER_NAME"),
-    val norskHelsenettEndpointURL: String = getEnvVar("HELSENETT_ENDPOINT_URL", "http://syfohelsenettproxy"),
+    val norskHelsenettEndpointURL: String = getEnvVar("HELSENETT_ENDPOINT_URL", "http://syfohelsenettproxy.default"),
     val aadAccessTokenUrl: String = getEnvVar("AADACCESSTOKEN_URL"),
     val sm2013VedleggTopic: String = "privat-syfo-vedlegg",
     val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH")
