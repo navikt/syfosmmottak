@@ -62,7 +62,7 @@ fun main() {
         mqPassword = getFileAsString("/secrets/default/mqPassword"),
         clientId = getFileAsString("/secrets/azuread/syfosmmottak/client_id"),
         clientsecret = getFileAsString("/secrets/azuread/syfosmmottak/client_secret"),
-        redisSecret = getFileAsString("/secrets/default/redisSecret"),
+        redisSecret = getEnvVar("REDIS_PASSWORD"),
         syfohelsenettproxyId = getFileAsString("/secrets/default/syfohelsenettproxyId")
     )
     val applicationState = ApplicationState()
@@ -125,7 +125,7 @@ fun launchListeners(
 ) {
     createListener(applicationState) {
         connectionFactory(env).createConnection(credentials.mqUsername, credentials.mqPassword).use { connection ->
-            Jedis(env.redishost, 6379).use { jedis ->
+            Jedis(env.redisHost, 6379).use { jedis ->
                 connection.start()
                 val session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE)
 

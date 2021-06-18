@@ -2,9 +2,9 @@ apiVersion: "nais.io/v1alpha1"
 kind: "Application"
 metadata:
   name: syfosmmottak
-  namespace: default
+  namespace: teamsykmelding
   labels:
-    team: teamsykefravr
+    team: teamsykmelding
 spec:
   image: {{ image }}
   replicas:
@@ -38,16 +38,16 @@ spec:
     paths:
       - kvPath: /azuread/data/prod/creds/syfosmmottak
         mountPath: /secrets/azuread/syfosmmottak
-      - kvPath: /kv/prod/fss/syfosmmottak/default
+      - kvPath: /kv/prod/fss/syfosmmottak/teamsykmelding
         mountPath: /secrets/default
       - kvPath: serviceuser/data/prod/srvsyfosmmottak
         mountPath: /secrets/serviceuser
   webproxy: true
+  envFrom:
+    - secret: syfosmmottak-redis-password
   env:
     - name: SUBSCRIPTION_ENDPOINT_URL
       value: https://wasapp.adeo.no/nav-emottak-eletter-web/services/
-    - name: SECURITY_TOKEN_SERVICE_URL
-      value: https://sts.adeo.no/SecurityTokenServiceProvider/
     - name: KAFKA_BOOTSTRAP_SERVERS_URL
       value: SASL_SSL://a01apvl00145.adeo.no:8443,SASL_SSL://a01apvl00146.adeo.no:8443,SASL_SSL://a01apvl00147.adeo.no:8443,SASL_SSL://a01apvl00149.adeo.no:8443
     - name: MQ_HOST_NAME
