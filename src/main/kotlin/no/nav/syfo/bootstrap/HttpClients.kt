@@ -85,7 +85,7 @@ class HttpClients(environment: Environment, credentials: VaultCredentials) {
     @KtorExperimentalAPI
     val sarClient = SarClient(environment.kuhrSarApiUrl, simpleHttpClient)
     @KtorExperimentalAPI
-    val oidcClient = StsOidcClient(credentials.serviceuserUsername, credentials.serviceuserPassword)
+    val oidcClient = StsOidcClient(credentials.serviceuserUsername, credentials.serviceuserPassword, environment.securityTokenServiceUrl)
     @KtorExperimentalAPI
     val accessTokenClient = AccessTokenClient(environment.aadAccessTokenUrl, credentials.clientId, credentials.clientsecret, httpClientWithProxy)
     @KtorExperimentalAPI
