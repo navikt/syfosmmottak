@@ -31,7 +31,7 @@ object KafkaITSpek : Spek({
     val config = Environment(
         mqHostname = "mqhost", mqPort = getRandomPort(),
         mqGatewayName = "mqGateway", kafkaBootstrapServers = embeddedEnvironment.brokersURL,
-        mqChannelName = "syfomottak", subscriptionEndpointURL = "localhost-emottak",
+        mqChannelName = "syfomottak", subscriptionEndpointURL = "localhost-emottak", norskHelsenettEndpointURL = "url",
         inputBackoutQueueName = "inputbackqueue", inputQueueName = "inputqueue", truststore = "truststore", truststorePassword = "pwd",
         syfoserviceQueueName = "syfoserviequeue", applicationPort = 1, sm2013OppgaveTopic = "oppgaveTopic", securityTokenServiceUrl = "sts",
         kuhrSarApiUrl = "kuhrsarApi", syfosmreglerApiUrl = "syfosmreglerApi", sm2013ManualHandlingTopic = "sm2013ManualHandlingTopic",

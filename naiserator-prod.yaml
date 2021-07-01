@@ -70,3 +70,5 @@ spec:
       value: https://login.microsoftonline.com/navno.onmicrosoft.com/oauth2/token
     - name: PDL_GRAPHQL_PATH
       value: https://pdl-api.nais.adeo.no/graphql
+    - name: HELSENETT_ENDPOINT_URL
+      value: https://syfohelsenettproxy.nais.adeo.no
