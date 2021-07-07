@@ -40,8 +40,6 @@ data class Environment(
 data class VaultCredentials(
     val serviceuserUsername: String,
     val serviceuserPassword: String,
-    val mqUsername: String,
-    val mqPassword: String,
     val redisSecret: String,
     val clientsecret: String,
     val clientId: String,
