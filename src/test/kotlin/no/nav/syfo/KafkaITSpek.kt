@@ -36,7 +36,8 @@ object KafkaITSpek : Spek({
         syfoserviceQueueName = "syfoserviequeue", applicationPort = 1, sm2013OppgaveTopic = "oppgaveTopic", securityTokenServiceUrl = "sts",
         kuhrSarApiUrl = "kuhrsarApi", syfosmreglerApiUrl = "syfosmreglerApi", sm2013ManualHandlingTopic = "sm2013ManualHandlingTopic",
         sm2013AutomaticHandlingTopic = "sm2013AutomaticHandlingTopic", sm2013InvalidHandlingTopic = "sm2013InvalidHandlingTopic",
-        applicationName = "syfosmmottak", sm2013Apprec = "syfoSmApprecTopic", cluster = "dev-fss", aadAccessTokenUrl = "", pdlGraphqlPath = "pdl"
+        applicationName = "syfosmmottak", sm2013Apprec = "syfoSmApprecTopic", cluster = "dev-fss", aadAccessTokenUrl = "",
+        aadAccessTokenV2Url = "", pdlGraphqlPath = "pdl", pdlScope = "pdlScope", clientIdV2 = "clientIdV2", clientSecretV2 = "clientSecretV2"
     )
 
     fun Properties.overrideForTest(): Properties = apply {

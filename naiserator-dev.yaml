@@ -70,3 +70,5 @@ spec:
       value: https://login.microsoftonline.com/navq.onmicrosoft.com/oauth2/token
     - name: PDL_GRAPHQL_PATH
       value: https://pdl-api.nais.preprod.local/graphql
+    - name: PDL_SCOPE
+      value: api://dev-fss.pdl.pdl-api/.default
