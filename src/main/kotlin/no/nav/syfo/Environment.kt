@@ -31,7 +31,7 @@ data class Environment(
     val redisHost: String = getEnvVar("REDIS_HOST", "syfosmmottak-redis.teamsykmelding.svc.nais.local"),
     val sm2013Apprec: String = getEnvVar("KAFKA_SM2013_BEHANDLING_TOPIC", "privat-syfo-sm2013-apprec-v1"),
     override val cluster: String = getEnvVar("NAIS_CLUSTER_NAME"),
-    val norskHelsenettEndpointURL: String = getEnvVar("HELSENETT_ENDPOINT_URL", "http://syfohelsenettproxy.default"),
+    val norskHelsenettEndpointURL: String = getEnvVar("HELSENETT_ENDPOINT_URL"),
     val aadAccessTokenUrl: String = getEnvVar("AADACCESSTOKEN_URL"),
     val aadAccessTokenV2Url: String = getEnvVar("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
     val clientIdV2: String = getEnvVar("AZURE_APP_CLIENT_ID"),
@@ -44,8 +44,6 @@ data class Environment(
 data class VaultCredentials(
     val serviceuserUsername: String,
     val serviceuserPassword: String,
-    val mqUsername: String,
-    val mqPassword: String,
     val redisSecret: String,
     val clientsecret: String,
     val clientId: String,
