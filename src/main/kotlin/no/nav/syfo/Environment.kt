@@ -33,8 +33,12 @@ data class Environment(
     override val cluster: String = getEnvVar("NAIS_CLUSTER_NAME"),
     val norskHelsenettEndpointURL: String = getEnvVar("HELSENETT_ENDPOINT_URL"),
     val aadAccessTokenUrl: String = getEnvVar("AADACCESSTOKEN_URL"),
+    val aadAccessTokenV2Url: String = getEnvVar("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
+    val clientIdV2: String = getEnvVar("AZURE_APP_CLIENT_ID"),
+    val clientSecretV2: String = getEnvVar("AZURE_APP_CLIENT_SECRET"),
     val sm2013VedleggTopic: String = "privat-syfo-vedlegg",
-    val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH")
+    val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH"),
+    val pdlScope: String = getEnvVar("PDL_SCOPE")
 ) : MqConfig, KafkaConfig
 
 data class VaultCredentials(
