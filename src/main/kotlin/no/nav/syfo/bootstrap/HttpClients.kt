@@ -16,9 +16,9 @@ import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.Environment
 import no.nav.syfo.VaultCredentials
 import no.nav.syfo.client.AccessTokenClient
-import no.nav.syfo.client.AccessTokenClientV2
 import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SarClient
+import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.pdl.PdlFactory
 import org.apache.http.impl.conn.SystemDefaultRoutePlanner
@@ -85,16 +85,11 @@ class HttpClients(environment: Environment, credentials: VaultCredentials) {
     @KtorExperimentalAPI
     val sarClient = SarClient(environment.kuhrSarApiUrl, simpleHttpClient)
     @KtorExperimentalAPI
-    val accessTokenClient = AccessTokenClient(environment.aadAccessTokenUrl, credentials.clientId, credentials.clientsecret, httpClientWithProxy)
+    val oidcClient = StsOidcClient(credentials.serviceuserUsername, credentials.serviceuserPassword, environment.securityTokenServiceUrl)
     @KtorExperimentalAPI
-    val accessTokenClientV2 = AccessTokenClientV2(
-        environment.aadAccessTokenV2Url,
-        environment.clientIdV2,
-        environment.clientSecretV2,
-        httpClientWithProxy
-    )
+    val accessTokenClient = AccessTokenClient(environment.aadAccessTokenUrl, credentials.clientId, credentials.clientsecret, httpClientWithProxy)
     @KtorExperimentalAPI
     val norskHelsenettClient = NorskHelsenettClient(environment.norskHelsenettEndpointURL, accessTokenClient, credentials.syfohelsenettproxyId, simpleHttpClient)
     @KtorExperimentalAPI
-    val pdlPersonService = PdlFactory.getPdlService(environment, simpleHttpClient, accessTokenClientV2, environment.pdlScope)
+    val pdlPersonService = PdlFactory.getPdlService(environment, oidcClient, simpleHttpClient)
 }

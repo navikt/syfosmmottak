@@ -33,10 +33,6 @@ spec:
     requests:
       cpu: 250m
       memory: 768Mi
-  azure:
-    application:
-      enabled: true
-      tenant: nav.no
   vault:
     enabled: true
     paths:
@@ -74,5 +70,3 @@ spec:
       value: https://pdl-api.nais.adeo.no/graphql
     - name: HELSENETT_ENDPOINT_URL
       value: https://syfohelsenettproxy.nais.adeo.no
-    - name: PDL_SCOPE
-      value: api://prod-fss.pdl.pdl-api/.default
