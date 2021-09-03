@@ -15,7 +15,6 @@ import io.ktor.client.features.json.JsonFeature
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.Environment
 import no.nav.syfo.VaultCredentials
-import no.nav.syfo.client.AccessTokenClient
 import no.nav.syfo.client.AccessTokenClientV2
 import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SarClient
@@ -69,7 +68,7 @@ class HttpClients(environment: Environment, credentials: VaultCredentials) {
         expectSuccess = false
     }
 
-    val proxyConfig: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
+    private val proxyConfig: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
         config()
         engine {
             customizeClient {
@@ -78,14 +77,12 @@ class HttpClients(environment: Environment, credentials: VaultCredentials) {
         }
     }
 
-    val httpClientWithProxy = HttpClient(Apache, proxyConfig)
+    private val httpClientWithProxy = HttpClient(Apache, proxyConfig)
 
     @KtorExperimentalAPI
     val syfoSykemeldingRuleClient = SyfoSykemeldingRuleClient(environment.syfosmreglerApiUrl, httpClientMedBasicAuth)
     @KtorExperimentalAPI
     val sarClient = SarClient(environment.kuhrSarApiUrl, simpleHttpClient)
-    @KtorExperimentalAPI
-    val accessTokenClient = AccessTokenClient(environment.aadAccessTokenUrl, credentials.clientId, credentials.clientsecret, httpClientWithProxy)
     @KtorExperimentalAPI
     val accessTokenClientV2 = AccessTokenClientV2(
         environment.aadAccessTokenV2Url,
@@ -94,7 +91,7 @@ class HttpClients(environment: Environment, credentials: VaultCredentials) {
         httpClientWithProxy
     )
     @KtorExperimentalAPI
-    val norskHelsenettClient = NorskHelsenettClient(environment.norskHelsenettEndpointURL, accessTokenClient, credentials.syfohelsenettproxyId, simpleHttpClient)
+    val norskHelsenettClient = NorskHelsenettClient(environment.norskHelsenettEndpointURL, accessTokenClientV2, environment.helsenettproxyScope, simpleHttpClient)
     @KtorExperimentalAPI
     val pdlPersonService = PdlFactory.getPdlService(environment, simpleHttpClient, accessTokenClientV2, environment.pdlScope)
 }

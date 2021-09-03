@@ -32,22 +32,19 @@ data class Environment(
     val sm2013Apprec: String = getEnvVar("KAFKA_SM2013_BEHANDLING_TOPIC", "privat-syfo-sm2013-apprec-v1"),
     override val cluster: String = getEnvVar("NAIS_CLUSTER_NAME"),
     val norskHelsenettEndpointURL: String = getEnvVar("HELSENETT_ENDPOINT_URL"),
-    val aadAccessTokenUrl: String = getEnvVar("AADACCESSTOKEN_URL"),
     val aadAccessTokenV2Url: String = getEnvVar("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
     val clientIdV2: String = getEnvVar("AZURE_APP_CLIENT_ID"),
     val clientSecretV2: String = getEnvVar("AZURE_APP_CLIENT_SECRET"),
     val sm2013VedleggTopic: String = "privat-syfo-vedlegg",
     val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH"),
-    val pdlScope: String = getEnvVar("PDL_SCOPE")
+    val pdlScope: String = getEnvVar("PDL_SCOPE"),
+    val helsenettproxyScope: String = getEnvVar("HELSENETT_SCOPE")
 ) : MqConfig, KafkaConfig
 
 data class VaultCredentials(
     val serviceuserUsername: String,
     val serviceuserPassword: String,
-    val redisSecret: String,
-    val clientsecret: String,
-    val clientId: String,
-    val syfohelsenettproxyId: String
+    val redisSecret: String
 ) : KafkaCredentials {
     override val kafkaUsername: String = serviceuserUsername
     override val kafkaPassword: String = serviceuserPassword
