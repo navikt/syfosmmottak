@@ -40,8 +40,6 @@ spec:
   vault:
     enabled: true
     paths:
-      - kvPath: /azuread/data/prod/creds/syfosmmottak
-        mountPath: /secrets/azuread/syfosmmottak
       - kvPath: /kv/prod/fss/syfosmmottak/teamsykmelding
         mountPath: /secrets/default
       - kvPath: serviceuser/data/prod/srvsyfosmmottak
@@ -68,11 +66,11 @@ spec:
       value: QA.P_SYFOSMMOTTAK.INPUT
     - name: MQ_INPUT_BOQ_QUEUE_NAME
       value: P_SYFOSMMOTTAK.INPUT_BOQ
-    - name: AADACCESSTOKEN_URL
-      value: https://login.microsoftonline.com/navno.onmicrosoft.com/oauth2/token
     - name: PDL_GRAPHQL_PATH
       value: https://pdl-api.nais.adeo.no/graphql
     - name: HELSENETT_ENDPOINT_URL
       value: https://syfohelsenettproxy.nais.adeo.no
     - name: PDL_SCOPE
       value: api://prod-fss.pdl.pdl-api/.default
+    - name: HELSENETT_SCOPE
+      value: api://prod-fss.teamsykmelding.syfohelsenettproxy/.default

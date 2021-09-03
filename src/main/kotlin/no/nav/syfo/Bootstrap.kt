@@ -58,10 +58,7 @@ fun main() {
     val credentials = VaultCredentials(
         serviceuserPassword = getFileAsString("/secrets/serviceuser/password"),
         serviceuserUsername = getFileAsString("/secrets/serviceuser/username"),
-        clientId = getFileAsString("/secrets/azuread/syfosmmottak/client_id"),
-        clientsecret = getFileAsString("/secrets/azuread/syfosmmottak/client_secret"),
-        redisSecret = getEnvVar("REDIS_PASSWORD"),
-        syfohelsenettproxyId = getFileAsString("/secrets/default/syfohelsenettproxyId")
+        redisSecret = getEnvVar("REDIS_PASSWORD")
     )
     val applicationState = ApplicationState()
     val applicationEngine = createApplicationEngine(
