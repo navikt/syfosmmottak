@@ -138,10 +138,6 @@ fun opprettProduceTask(receivedSykmelding: ReceivedSykmelding, validationResult:
         log.info("Sykmelding inneholder behandlingsdager, {}", StructuredArguments.fields(loggingMeta))
         oppgave.behandlingstema = "ab0351"
     }
-    if (validationResult.ruleHits.find { it.ruleName == "SYKMELDING_MED_REISETILSKUDD" } != null) {
-        log.info("Sykmelding inneholder reisetilskudd, {}", StructuredArguments.fields(loggingMeta))
-        oppgave.behandlingstema = "ab0237"
-    }
     return oppgave
 }
 
@@ -166,7 +162,7 @@ fun sendManuellTask(
 }
 
 fun sendToSyfosmManuell(ruleHits: List<RuleInfo>): Boolean {
-    return ruleHits.find { it.ruleName == "SYKMELDING_MED_BEHANDLINGSDAGER" || it.ruleName == "SYKMELDING_MED_REISETILSKUDD" } == null
+    return ruleHits.find { it.ruleName == "SYKMELDING_MED_BEHANDLINGSDAGER" } == null
 }
 
 fun finnFristForFerdigstillingAvOppgave(ferdistilleDato: LocalDate): LocalDate {

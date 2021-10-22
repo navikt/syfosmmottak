@@ -46,21 +46,6 @@ object HandleStatusManualProcessingSpek : Spek({
 
             sendToSyfosmManuell(validationResult.ruleHits) shouldBeEqualTo false
         }
-        it("Should return false when rulehits contain SYKMELDING_MED_REISETILSKUDD") {
-            val validationResult = ValidationResult(
-                status = Status.MANUAL_PROCESSING,
-                ruleHits = listOf(
-                    RuleInfo(
-                        ruleName = "SYKMELDING_MED_REISETILSKUDD",
-                        messageForUser = "Sykmelding inneholder reisetilskudd.",
-                        messageForSender = "Sykmelding inneholder reisetilskudd.",
-                        ruleStatus = Status.MANUAL_PROCESSING
-                    )
-                )
-            )
-
-            sendToSyfosmManuell(validationResult.ruleHits) shouldBeEqualTo false
-        }
     }
 
     describe("Oppretter manuelle oppgaver med riktige parametre") {
@@ -81,23 +66,6 @@ object HandleStatusManualProcessingSpek : Spek({
             val oppgave = opprettProduceTask(receivedSykmelding, validationResults, loggingMeta)
 
             oppgave.behandlingstema shouldBeEqualTo "ab0351"
-        }
-        it("Behandlingstema er ab0237 hvis sykmelding har reisetilskudd") {
-            val validationResults = ValidationResult(
-                Status.MANUAL_PROCESSING,
-                listOf(
-                    RuleInfo(
-                        "SYKMELDING_MED_REISETILSKUDD",
-                        "Sykmelding inneholder reisetilskudd.",
-                        "Sykmelding inneholder reisetilskudd.",
-                        Status.MANUAL_PROCESSING
-                    )
-                )
-            )
-
-            val oppgave = opprettProduceTask(receivedSykmelding, validationResults, loggingMeta)
-
-            oppgave.behandlingstema shouldBeEqualTo "ab0237"
         }
     }
 })
