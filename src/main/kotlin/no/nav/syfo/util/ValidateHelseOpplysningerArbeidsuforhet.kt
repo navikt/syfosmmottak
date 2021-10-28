@@ -8,6 +8,9 @@ fun fnrOgDnrMangler(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean
     healthInformation.behandler.id.find { it.typeId.v == "FNR" }?.id.isNullOrBlank() &&
         healthInformation.behandler.id.find { it.typeId.v == "DNR" }?.id.isNullOrBlank()
 
+fun getFnrOrDnr(healthInformation: HelseOpplysningerArbeidsuforhet): String? =
+    healthInformation.behandler.id.find { it.typeId.v == "FNR" || it.typeId.v == "DNR" }?.id
+
 fun hprMangler(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean =
     healthInformation.behandler.id.find { it.typeId.v == "HPR" }?.id.isNullOrBlank()
 

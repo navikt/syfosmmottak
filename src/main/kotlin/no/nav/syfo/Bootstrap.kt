@@ -132,13 +132,26 @@ fun launchListeners(
 
                 jedis.auth(credentials.redisSecret)
 
-                BlockingApplicationRunner().run(
-                    inputconsumer, syfoserviceProducer, backoutProducer,
-                    subscriptionEmottak, kafkaproducerreceivedSykmelding, kafkaproducervalidationResult,
-                    syfoSykemeldingRuleClient, kuhrSarClient, pdlPersonService, env,
-                    applicationState, jedis, kafkaManuelTaskProducer,
-                    session, kafkaproducerApprec, kafkaproducerManuellOppgave,
-                    norskHelsenettClient, kafkaVedleggProducer
+                BlockingApplicationRunner(
+                    env,
+                    applicationState,
+                    subscriptionEmottak,
+                    syfoSykemeldingRuleClient,
+                    norskHelsenettClient,
+                    kuhrSarClient,
+                    pdlPersonService,
+                    jedis,
+                    session,
+                ).run(
+                    inputconsumer,
+                    syfoserviceProducer,
+                    backoutProducer,
+                    kafkaproducerreceivedSykmelding,
+                    kafkaproducervalidationResult,
+                    kafkaManuelTaskProducer,
+                    kafkaproducerApprec,
+                    kafkaproducerManuellOppgave,
+                    kafkaVedleggProducer
                 )
             }
         }

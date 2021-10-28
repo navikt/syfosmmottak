@@ -8,8 +8,10 @@ import io.ktor.client.request.headers
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode.Companion.NotFound
 import io.ktor.util.KtorExperimentalAPI
+import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.helpers.retry
 import no.nav.syfo.log
+import no.nav.syfo.util.LoggingMeta
 import java.io.IOException
 
 class NorskHelsenettClient(
@@ -20,30 +22,61 @@ class NorskHelsenettClient(
 ) {
 
     @KtorExperimentalAPI
-    suspend fun finnBehandler(hprNummer: String, msgId: String): Behandler? {
+    suspend fun lookupByHpr(hprNummer: String, loggingMeta: LoggingMeta): Behandler? {
         return retry(
             callName = "finnbehandler",
             retryIntervals = arrayOf(500L, 1000L, 3000L, 5000L)
         ) {
             try {
-                log.info("Henter behandler fra syfohelsenettproxy for msgId {}", msgId)
+                log.info("Henter behandler for hpr fra syfohelsenettproxy for msgId {}", fields(loggingMeta))
                 return@retry httpClient.get<Behandler>("$endpointUrl/api/v2/behandlerMedHprNummer") {
                     accept(ContentType.Application.Json)
                     val accessToken = accessTokenClient.getAccessTokenV2(resourceId)
                     headers {
                         append("Authorization", "Bearer $accessToken")
-                        append("Nav-CallId", msgId)
+                        append("Nav-CallId", loggingMeta.msgId)
                         append("hprNummer", hprNummer)
                     }
                 }.also {
-                    log.info("Hentet behandler for msgId {}", msgId)
+                    log.info("Hentet behandler {}", fields(loggingMeta))
                 }
             } catch (e: ResponseException) {
                 if (e.response.status == NotFound) {
-                    log.warn("Fant ikke behandler for HprNummer $hprNummer for msgId $msgId")
+                    log.warn("Fant ikke behandler for hprNummer {}", fields(loggingMeta))
                     null
                 } else {
-                    log.error("Syfohelsenettproxy kastet feilmelding {} for msgId {} ved søk på hprNummer {}", e.message, msgId, hprNummer)
+                    log.error("Syfohelsenettproxy kastet feilmelding {} for loggingMeta {} ved søk på hprNummer", e.message, fields(loggingMeta))
+                    throw IOException("Syfohelsenettproxy kastet feilmelding ${e.message}")
+                }
+            }
+        }
+    }
+
+    @KtorExperimentalAPI
+    suspend fun lookupByFnr(fnr: String, loggingMeta: LoggingMeta): Behandler? {
+        return retry(
+            callName = "finnbehandler",
+            retryIntervals = arrayOf(500L, 1000L, 3000L, 5000L)
+        ) {
+            try {
+                log.info("Henter behandler for fnr fra syfohelsenettproxy for msgId {}", fields(loggingMeta))
+                return@retry httpClient.get<Behandler>("$endpointUrl/api/v2/behandler") {
+                    accept(ContentType.Application.Json)
+                    val accessToken = accessTokenClient.getAccessTokenV2(resourceId)
+                    headers {
+                        append("Authorization", "Bearer $accessToken")
+                        append("Nav-CallId", loggingMeta.msgId)
+                        append("behandlerFnr", fnr)
+                    }
+                }.also {
+                    log.info("Hentet behandler {}", fields(loggingMeta))
+                }
+            } catch (e: ResponseException) {
+                if (e.response.status == NotFound) {
+                    log.warn("Fant ikke behandler med fnr {}", fields(loggingMeta))
+                    null
+                } else {
+                    log.error("Syfohelsenettproxy kastet feilmelding {} for loggingMeta {} ved søk på fnr", e.message, fields(loggingMeta))
                     throw IOException("Syfohelsenettproxy kastet feilmelding ${e.message}")
                 }
             }

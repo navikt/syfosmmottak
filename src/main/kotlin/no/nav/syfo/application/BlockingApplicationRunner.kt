@@ -9,6 +9,7 @@ import no.nav.helse.eiFellesformat.XMLMottakenhetBlokk
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.syfo.Environment
 import no.nav.syfo.apprec.Apprec
+import no.nav.syfo.client.Behandler
 import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
@@ -67,10 +68,10 @@ import no.nav.syfo.util.fellesformatMarshaller
 import no.nav.syfo.util.fellesformatUnmarshaller
 import no.nav.syfo.util.fnrOgDnrMangler
 import no.nav.syfo.util.get
+import no.nav.syfo.util.getFnrOrDnr
 import no.nav.syfo.util.getLocalDateTime
 import no.nav.syfo.util.getVedlegg
 import no.nav.syfo.util.hprMangler
-import no.nav.syfo.util.hprManglerFraSignatur
 import no.nav.syfo.util.medisinskeArsakskodeHarUgyldigVerdi
 import no.nav.syfo.util.medisinskeArsakskodeMangler
 import no.nav.syfo.util.removeVedleggFromFellesformat
@@ -87,29 +88,31 @@ import javax.jms.MessageProducer
 import javax.jms.Session
 import javax.jms.TextMessage
 
-class BlockingApplicationRunner {
+class BlockingApplicationRunner(
+    private val env: Environment,
+    private val applicationState: ApplicationState,
+    private val subscriptionEmottak: SubscriptionPort,
+    private val syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
+    private val norskHelsenettClient: NorskHelsenettClient,
+    private val kuhrSarClient: SarClient,
+    private val pdlPersonService: PdlPersonService,
+    private val jedis: Jedis,
+    private val session: Session
+) {
 
     @KtorExperimentalAPI
     suspend fun run(
         inputconsumer: MessageConsumer,
         syfoserviceProducer: MessageProducer,
         backoutProducer: MessageProducer,
-        subscriptionEmottak: SubscriptionPort,
         kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
         kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
-        syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
-        kuhrSarClient: SarClient,
-        pdlPersonService: PdlPersonService,
-        env: Environment,
-        applicationState: ApplicationState,
-        jedis: Jedis,
         kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
-        session: Session,
         kafkaproducerApprec: KafkaProducer<String, Apprec>,
         kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
-        norskHelsenettClient: NorskHelsenettClient,
         kafkaVedleggProducer: KafkaVedleggProducer
     ) {
+
         wrapExceptions {
 
             loop@ while (applicationState.ready) {
@@ -161,20 +164,17 @@ class BlockingApplicationRunner {
 
                     val personNumberPatient = healthInformation.pasient.fodselsnummer.id
 
-                    val personNumberDoctor = if (!fnrOgDnrMangler(healthInformation)) {
-                        receiverBlock.avsenderFnrFraDigSignatur
-                    } else if (!hprManglerFraSignatur(fellesformat)) {
-                        val fnr = getFnrFromHpr(norskHelsenettClient, fellesformat, msgId)
-                        if (fnr.isNullOrEmpty()) {
-                            handleFnrAndDnrAndHprIsmissingFromBehandler(
-                                loggingMeta, fellesformat,
-                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
-                            )
-                            continue@loop
-                        } else {
-                            fnr
-                        }
-                    } else {
+                    val signaturFnr: String = receiverBlock.avsenderFnrFraDigSignatur
+                    val behandlerFnr: String? = getFnrOrDnr(healthInformation)
+                    val behandlerHpr: String? = extractHpr(fellesformat)?.id
+
+                    val signerendeBehandler: Behandler? = getBehandler(signaturFnr, null, loggingMeta)
+                    val behandler: Behandler? = getBehandler(behandlerFnr, behandlerHpr, loggingMeta)
+
+                    if (signerendeBehandler == null) {
+                        throw IllegalStateException("Klarte ikke slå opp behandler for signerende behandler")
+                    }
+                    if (behandler == null) {
                         handleFnrAndDnrAndHprIsmissingFromBehandler(
                             loggingMeta, fellesformat,
                             ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
@@ -183,9 +183,9 @@ class BlockingApplicationRunner {
                     }
 
                     val identer =
-                        pdlPersonService.getAktorids(listOf(personNumberDoctor, personNumberPatient), loggingMeta)
+                        pdlPersonService.getAktorids(listOf(signaturFnr, personNumberPatient), loggingMeta)
 
-                    val samhandlerInfo = kuhrSarClient.getSamhandler(personNumberDoctor)
+                    val samhandlerInfo = kuhrSarClient.getSamhandler(signaturFnr)
                     val samhandlerPraksisMatch = findBestSamhandlerPraksis(
                         samhandlerInfo,
                         legekontorOrgName,
@@ -254,7 +254,7 @@ class BlockingApplicationRunner {
                         continue@loop
                     } else {
                         val patientAktorId = identer[personNumberPatient]
-                        val doctorAktorId = identer[personNumberDoctor]
+                        val doctorAktorId = identer[signaturFnr]
 
                         if (patientAktorId == null) {
                             handlePatientNotFoundInPDL(
@@ -391,13 +391,13 @@ class BlockingApplicationRunner {
                             legeAktoerId = doctorAktorId,
                             msgId = msgId,
                             signaturDato = getLocalDateTime(msgHead.msgInfo.genDate),
-                            hprFnrBehandler = personNumberDoctor
+                            hprFnrBehandler = signaturFnr
                         )
                         val receivedSykmelding = ReceivedSykmelding(
                             sykmelding = sykmelding,
                             personNrPasient = personNumberPatient,
                             tlfPasient = healthInformation.pasient.kontaktInfo.firstOrNull()?.teleAddress?.v,
-                            personNrLege = personNumberDoctor,
+                            personNrLege = signaturFnr,
                             navLogId = ediLoggId,
                             msgId = msgId,
                             legekontorOrgNr = legekontorOrgNr,
@@ -413,7 +413,7 @@ class BlockingApplicationRunner {
                             partnerreferanse = receiverBlock.partnerReferanse
                         )
 
-                        if (receivedSykmelding.sykmelding.behandler.fnr != personNumberDoctor) {
+                        if (receivedSykmelding.sykmelding.behandler.fnr != signaturFnr) {
                             ULIK_SENDER_OG_BEHANDLER.inc()
                             log.info(
                                 "Behandlers fnr og avsendres fnr stemmer ikkje {}",
@@ -534,17 +534,20 @@ class BlockingApplicationRunner {
             }
         }
     }
-}
 
-@KtorExperimentalAPI
-suspend fun getFnrFromHpr(
-    norskHelsenettClient: NorskHelsenettClient,
-    fellesformat: XMLEIFellesformat,
-    msgid: String
-): String? {
+    @KtorExperimentalAPI
+    private suspend fun getBehandler(
+        fnr: String?,
+        hprNr: String?,
+        loggingMeta: LoggingMeta
+    ): Behandler? {
 
-    val hprnummer = extractHpr(fellesformat)!!.id
-    val behandlerFraHpr = norskHelsenettClient.finnBehandler(hprnummer, msgid)
+        val behandler = when {
+            fnr != null -> norskHelsenettClient.lookupByFnr(fnr, loggingMeta)
+            hprNr != null -> norskHelsenettClient.lookupByHpr(hprNr, loggingMeta)
+            else -> null
+        }
 
-    return behandlerFraHpr?.fnr
+        return behandler
+    }
 }
