@@ -10,6 +10,7 @@ import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.syfo.Environment
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.client.Behandler
+import no.nav.syfo.client.Godkjenning
 import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
@@ -241,7 +242,7 @@ class BlockingApplicationRunner(
                     } else if (redisEdiloggid != null && redisEdiloggid.length != 21) {
                         log.error(
                             "Redis returned a redisEdiloggid that is longer than 21" +
-                                "characters redisEdiloggid: {} {}",
+                                    "characters redisEdiloggid: {} {}",
                             redisEdiloggid,
                             StructuredArguments.fields(loggingMeta)
                         )
@@ -400,6 +401,8 @@ class BlockingApplicationRunner(
                             personNrLege = signaturFnr,
                             navLogId = ediLoggId,
                             msgId = msgId,
+                            legeHprNr = signerendeBehandler.hprNummer,
+                            legeHelsepersonellkategori = getHelsepersonellKategori(signerendeBehandler.godkjenninger),
                             legekontorOrgNr = legekontorOrgNr,
                             legekontorOrgName = legekontorOrgName,
                             legekontorHerId = legekontorHerId,
@@ -509,9 +512,9 @@ class BlockingApplicationRunner(
                 } catch (jedisException: JedisConnectionException) {
                     log.error(
                         "Exception caught, redis issue while handling message, sending to backout ${
-                        StructuredArguments.fields(
-                            loggingMeta
-                        )
+                            StructuredArguments.fields(
+                                loggingMeta
+                            )
                         }",
                         jedisException
                     )
@@ -521,9 +524,9 @@ class BlockingApplicationRunner(
                 } catch (e: Exception) {
                     log.error(
                         "Exception caught while handling message, sending to backout ${
-                        StructuredArguments.fields(
-                            loggingMeta
-                        )
+                            StructuredArguments.fields(
+                                loggingMeta
+                            )
                         }",
                         e
                     )
@@ -532,6 +535,19 @@ class BlockingApplicationRunner(
                     message.acknowledge()
                 }
             }
+        }
+    }
+
+    private fun getHelsepersonellKategori(godkjenninger: List<Godkjenning>): String? = when {
+        godkjenninger.find { it.helsepersonellkategori?.verdi === "LE" } != null -> "LE"
+        godkjenninger.find { it.helsepersonellkategori?.verdi === "TL" } != null -> "TL"
+        godkjenninger.find { it.helsepersonellkategori?.verdi === "MT" } != null -> "MT"
+        godkjenninger.find { it.helsepersonellkategori?.verdi === "FT" } != null -> "FT"
+        godkjenninger.find { it.helsepersonellkategori?.verdi === "KI" } != null -> "KI"
+        else -> {
+            val verdi = godkjenninger.firstOrNull()?.helsepersonellkategori?.verdi
+            log.error("Signerende behandler har ikke en helsepersonellkategori($verdi) vi kjenner igjen")
+            verdi
         }
     }
 
