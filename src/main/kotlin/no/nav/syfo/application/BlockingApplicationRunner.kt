@@ -549,7 +549,7 @@ class BlockingApplicationRunner(
         godkjenninger.find { it.helsepersonellkategori?.verdi === "KI" } != null -> "KI"
         else -> {
             val verdi = godkjenninger.firstOrNull()?.helsepersonellkategori?.verdi
-            log.error("Signerende behandler har ikke en helsepersonellkategori($verdi) vi kjenner igjen")
+            log.warn("Signerende behandler har ikke en helsepersonellkategori($verdi) vi kjenner igjen")
             verdi
         }
     }
