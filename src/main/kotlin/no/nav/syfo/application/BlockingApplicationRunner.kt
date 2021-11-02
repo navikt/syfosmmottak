@@ -9,7 +9,6 @@ import no.nav.helse.eiFellesformat.XMLMottakenhetBlokk
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.syfo.Environment
 import no.nav.syfo.apprec.Apprec
-import no.nav.syfo.client.Behandler
 import no.nav.syfo.client.Godkjenning
 import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SarClient
@@ -42,7 +41,6 @@ import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
 import no.nav.syfo.metrics.MANGLER_TSSIDENT
 import no.nav.syfo.metrics.REQUEST_TIME
 import no.nav.syfo.metrics.SYKMELDING_VEDLEGG_COUNTER
-import no.nav.syfo.metrics.ULIK_SENDER_OG_BEHANDLER
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.Status
@@ -69,9 +67,11 @@ import no.nav.syfo.util.fellesformatMarshaller
 import no.nav.syfo.util.fellesformatUnmarshaller
 import no.nav.syfo.util.fnrOgDnrMangler
 import no.nav.syfo.util.get
+import no.nav.syfo.util.getFnrOrDnr
 import no.nav.syfo.util.getLocalDateTime
 import no.nav.syfo.util.getVedlegg
 import no.nav.syfo.util.hprMangler
+import no.nav.syfo.util.logUlikBehandler
 import no.nav.syfo.util.medisinskeArsakskodeHarUgyldigVerdi
 import no.nav.syfo.util.medisinskeArsakskodeMangler
 import no.nav.syfo.util.removeVedleggFromFellesformat
@@ -162,29 +162,13 @@ class BlockingApplicationRunner(
                     val legekontorOrgNr = extractOrganisationNumberFromSender(fellesformat)?.id
                     val legekontorOrgName = msgHead.msgInfo.sender.organisation.organisationName
 
-                    val personNumberPatient = healthInformation.pasient.fodselsnummer.id
+                    val pasientFnr = healthInformation.pasient.fodselsnummer.id
+                    val signaturFnr = receiverBlock.avsenderFnrFraDigSignatur
+                    val behandlerFnr = getFnrOrDnr(healthInformation)
 
-                    val signaturFnr: String = receiverBlock.avsenderFnrFraDigSignatur
-                    val behandlerHpr: String? = extractHpr(fellesformat)?.id
+                    val behandler = norskHelsenettClient.getBehandler(fnr = signaturFnr, loggingMeta = loggingMeta)
 
-                    val brukFnrFraSignatur = !fnrOgDnrMangler(healthInformation)
-
-                    val behandler = if (brukFnrFraSignatur) {
-                        getBehandler(fnr = signaturFnr, hprNr = null, loggingMeta = loggingMeta)
-                    } else {
-                        getBehandler(null, behandlerHpr, loggingMeta)
-                    }
-
-                    if (!brukFnrFraSignatur && behandler == null) {
-                        handleFnrAndDnrAndHprIsmissingFromBehandler(
-                            loggingMeta, fellesformat,
-                            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
-                        )
-                        continue@loop
-                    }
-
-                    val identer =
-                        pdlPersonService.getAktorids(listOf(signaturFnr, personNumberPatient), loggingMeta)
+                    val identer = pdlPersonService.getAktorids(listOf(signaturFnr, pasientFnr), loggingMeta)
 
                     val samhandlerInfo = kuhrSarClient.getSamhandler(signaturFnr)
                     val samhandlerPraksisMatch = findBestSamhandlerPraksis(
@@ -254,7 +238,7 @@ class BlockingApplicationRunner(
                         )
                         continue@loop
                     } else {
-                        val patientAktorId = identer[personNumberPatient]
+                        val patientAktorId = identer[pasientFnr]
                         val doctorAktorId = identer[signaturFnr]
 
                         if (patientAktorId == null) {
@@ -370,7 +354,7 @@ class BlockingApplicationRunner(
                             continue@loop
                         }
 
-                        if (erTestFnr(personNumberPatient) && env.cluster == "prod-fss") {
+                        if (erTestFnr(pasientFnr) && env.cluster == "prod-fss") {
                             handleTestFnrInProd(
                                 loggingMeta, fellesformat,
                                 ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
@@ -396,7 +380,7 @@ class BlockingApplicationRunner(
                         )
                         val receivedSykmelding = ReceivedSykmelding(
                             sykmelding = sykmelding,
-                            personNrPasient = personNumberPatient,
+                            personNrPasient = pasientFnr,
                             tlfPasient = healthInformation.pasient.kontaktInfo.firstOrNull()?.teleAddress?.v,
                             personNrLege = signaturFnr,
                             navLogId = ediLoggId,
@@ -420,12 +404,13 @@ class BlockingApplicationRunner(
                             partnerreferanse = receiverBlock.partnerReferanse
                         )
 
-                        if (receivedSykmelding.sykmelding.behandler.fnr != signaturFnr) {
-                            ULIK_SENDER_OG_BEHANDLER.inc()
-                            log.info(
-                                "Behandlers fnr og avsendres fnr stemmer ikkje {}",
-                                StructuredArguments.fields(loggingMeta)
-                            )
+                        when (behandlerFnr) {
+                            null -> if (behandler?.hprNummer != extractHpr(fellesformat)?.id) {
+                                logUlikBehandler(loggingMeta)
+                            }
+                            else -> if (behandlerFnr != signaturFnr) {
+                                logUlikBehandler(loggingMeta)
+                            }
                         }
 
                         countNewDiagnoseCode(receivedSykmelding.sykmelding.medisinskVurdering)
@@ -553,21 +538,5 @@ class BlockingApplicationRunner(
             log.warn("Signerende behandler har ikke en helsepersonellkategori($verdi) vi kjenner igjen")
             verdi
         }
-    }
-
-    @KtorExperimentalAPI
-    private suspend fun getBehandler(
-        fnr: String?,
-        hprNr: String?,
-        loggingMeta: LoggingMeta
-    ): Behandler? {
-
-        val behandler = when {
-            fnr != null -> norskHelsenettClient.lookupByFnr(fnr, loggingMeta)
-            hprNr != null -> norskHelsenettClient.lookupByHpr(hprNr, loggingMeta)
-            else -> null
-        }
-
-        return behandler
     }
 }
