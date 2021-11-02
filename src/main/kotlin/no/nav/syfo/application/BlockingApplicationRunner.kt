@@ -170,7 +170,10 @@ class BlockingApplicationRunner(
                     val behandlerHpr: String? = extractHpr(fellesformat)?.id
 
                     val signerendeBehandler: Behandler? = getBehandler(signaturFnr, null, loggingMeta)
-                    val behandler: Behandler? = getBehandler(behandlerFnr, behandlerHpr, loggingMeta)
+                    val behandler: Behandler? = when (behandlerFnr) {
+                        signaturFnr -> signerendeBehandler
+                        else -> getBehandler(behandlerFnr, behandlerHpr, loggingMeta)
+                    }
 
                     if (signerendeBehandler == null) {
                         throw IllegalStateException("Klarte ikke slå opp behandler for signerende behandler")
@@ -242,7 +245,7 @@ class BlockingApplicationRunner(
                     } else if (redisEdiloggid != null && redisEdiloggid.length != 21) {
                         log.error(
                             "Redis returned a redisEdiloggid that is longer than 21" +
-                                    "characters redisEdiloggid: {} {}",
+                                "characters redisEdiloggid: {} {}",
                             redisEdiloggid,
                             StructuredArguments.fields(loggingMeta)
                         )
@@ -512,9 +515,9 @@ class BlockingApplicationRunner(
                 } catch (jedisException: JedisConnectionException) {
                     log.error(
                         "Exception caught, redis issue while handling message, sending to backout ${
-                            StructuredArguments.fields(
-                                loggingMeta
-                            )
+                        StructuredArguments.fields(
+                            loggingMeta
+                        )
                         }",
                         jedisException
                     )
@@ -524,9 +527,9 @@ class BlockingApplicationRunner(
                 } catch (e: Exception) {
                     log.error(
                         "Exception caught while handling message, sending to backout ${
-                            StructuredArguments.fields(
-                                loggingMeta
-                            )
+                        StructuredArguments.fields(
+                            loggingMeta
+                        )
                         }",
                         e
                     )
