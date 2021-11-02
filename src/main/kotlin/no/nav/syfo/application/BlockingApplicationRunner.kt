@@ -69,7 +69,6 @@ import no.nav.syfo.util.fellesformatMarshaller
 import no.nav.syfo.util.fellesformatUnmarshaller
 import no.nav.syfo.util.fnrOgDnrMangler
 import no.nav.syfo.util.get
-import no.nav.syfo.util.getFnrOrDnr
 import no.nav.syfo.util.getLocalDateTime
 import no.nav.syfo.util.getVedlegg
 import no.nav.syfo.util.hprMangler
@@ -166,19 +165,17 @@ class BlockingApplicationRunner(
                     val personNumberPatient = healthInformation.pasient.fodselsnummer.id
 
                     val signaturFnr: String = receiverBlock.avsenderFnrFraDigSignatur
-                    val behandlerFnr: String? = getFnrOrDnr(healthInformation)
                     val behandlerHpr: String? = extractHpr(fellesformat)?.id
 
-                    val signerendeBehandler: Behandler? = getBehandler(signaturFnr, null, loggingMeta)
-                    val behandler: Behandler? = when (behandlerFnr) {
-                        signaturFnr -> signerendeBehandler
-                        else -> getBehandler(behandlerFnr, behandlerHpr, loggingMeta)
+                    val brukFnrFraSignatur = !fnrOgDnrMangler(healthInformation)
+
+                    val behandler = if (brukFnrFraSignatur) {
+                        getBehandler(fnr = signaturFnr, hprNr = null, loggingMeta = loggingMeta)
+                    } else {
+                        getBehandler(null, behandlerHpr, loggingMeta)
                     }
 
-                    if (signerendeBehandler == null) {
-                        throw IllegalStateException("Klarte ikke slå opp behandler for signerende behandler")
-                    }
-                    if (behandler == null) {
+                    if (!brukFnrFraSignatur && behandler == null) {
                         handleFnrAndDnrAndHprIsmissingFromBehandler(
                             loggingMeta, fellesformat,
                             ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
@@ -404,8 +401,12 @@ class BlockingApplicationRunner(
                             personNrLege = signaturFnr,
                             navLogId = ediLoggId,
                             msgId = msgId,
-                            legeHprNr = signerendeBehandler.hprNummer,
-                            legeHelsepersonellkategori = getHelsepersonellKategori(signerendeBehandler.godkjenninger),
+                            legeHprNr = behandler?.hprNummer,
+                            legeHelsepersonellkategori = behandler?.godkjenninger?.let {
+                                getHelsepersonellKategori(
+                                    it
+                                )
+                            },
                             legekontorOrgNr = legekontorOrgNr,
                             legekontorOrgName = legekontorOrgName,
                             legekontorHerId = legekontorHerId,
