@@ -13,7 +13,7 @@ fun HelseOpplysningerArbeidsuforhet.toSykmelding(
     legeAktoerId: String,
     msgId: String,
     signaturDato: LocalDateTime,
-    hprFnrBehandler: String
+    behandlerFnrFallback: String
 ) = Sykmelding(
     id = sykmeldingId,
     msgId = msgId,
@@ -31,7 +31,7 @@ fun HelseOpplysningerArbeidsuforhet.toSykmelding(
     meldingTilArbeidsgiver = meldingTilArbeidsgiver,
     kontaktMedPasient = kontaktMedPasient.toKontaktMedPasient(),
     behandletTidspunkt = kontaktMedPasient.behandletDato,
-    behandler = behandler.toBehandler(legeAktoerId, hprFnrBehandler),
+    behandler = behandler.toBehandler(legeAktoerId, behandlerFnrFallback),
     avsenderSystem = avsenderSystem.toAvsenderSystem(),
     syketilfelleStartDato = syketilfelleStartDato,
     signaturDato = signaturDato,
@@ -155,12 +155,12 @@ fun HelseOpplysningerArbeidsuforhet.KontaktMedPasient.toKontaktMedPasient() = Ko
     begrunnelseIkkeKontakt = begrunnIkkeKontakt
 )
 
-fun HelseOpplysningerArbeidsuforhet.Behandler.toBehandler(aktoerId: String, hprFnrBehandler: String) = Behandler(
+fun HelseOpplysningerArbeidsuforhet.Behandler.toBehandler(aktoerId: String, fallbackFnr: String) = Behandler(
     fornavn = navn.fornavn,
     mellomnavn = navn.mellomnavn,
     etternavn = navn.etternavn,
     aktoerId = aktoerId,
-    fnr = id.find { it.typeId.v == "FNR" }?.id ?: id.find { it.typeId.v == "DNR" }?.id ?: hprFnrBehandler,
+    fnr = id.find { it.typeId.v == "FNR" }?.id ?: id.find { it.typeId.v == "DNR" }?.id ?: fallbackFnr,
     hpr = id.find { it.typeId.v == "HPR" }?.id,
     her = id.find { it.typeId.v == "HER" }?.id,
     adresse = adresse.toAdresse(),

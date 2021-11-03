@@ -112,7 +112,7 @@ object SykmeldingMapperSpek : Spek({
                 legeAktoerId = "756564124",
                 msgId = "12313-12313-123123as-asda",
                 signaturDato = LocalDateTime.now(),
-                hprFnrBehandler = "1213415151"
+                behandlerFnrFallback = "1213415151"
             )
 
             sykmelding.perioder.first().aktivitetIkkeMulig?.medisinskArsak?.arsak?.first()?.codeValue shouldBeEqualTo medisinskeArsakerArsakskodeV.trim()
@@ -228,7 +228,7 @@ object SykmeldingMapperSpek : Spek({
                 legeAktoerId = "756564124",
                 msgId = "12313-12313-123123as-asda",
                 signaturDato = LocalDateTime.now(),
-                hprFnrBehandler = "1213415151"
+                behandlerFnrFallback = "1213415151"
             )
 
             sykmelding.utdypendeOpplysninger.getValue("6.1").getValue("6.1.3").restriksjoner shouldBeEqualTo emptyList()

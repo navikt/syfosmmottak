@@ -9,6 +9,7 @@ import no.nav.helse.eiFellesformat.XMLMottakenhetBlokk
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.syfo.Environment
 import no.nav.syfo.apprec.Apprec
+import no.nav.syfo.client.Behandler
 import no.nav.syfo.client.Godkjenning
 import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SarClient
@@ -67,7 +68,6 @@ import no.nav.syfo.util.fellesformatMarshaller
 import no.nav.syfo.util.fellesformatUnmarshaller
 import no.nav.syfo.util.fnrOgDnrMangler
 import no.nav.syfo.util.get
-import no.nav.syfo.util.getFnrOrDnr
 import no.nav.syfo.util.getLocalDateTime
 import no.nav.syfo.util.getVedlegg
 import no.nav.syfo.util.hprMangler
@@ -164,9 +164,9 @@ class BlockingApplicationRunner(
 
                     val pasientFnr = healthInformation.pasient.fodselsnummer.id
                     val signaturFnr = receiverBlock.avsenderFnrFraDigSignatur
-                    val behandlerFnr = getFnrOrDnr(healthInformation)
 
-                    val behandler = norskHelsenettClient.getBehandler(fnr = signaturFnr, loggingMeta = loggingMeta)
+                    val signerendeBehandler = norskHelsenettClient.getByFnr(fnr = signaturFnr, loggingMeta = loggingMeta)
+                    val avsenderFnr = getAvsenderFnr(fellesformat, signerendeBehandler, loggingMeta)
 
                     val identer = pdlPersonService.getAktorids(listOf(signaturFnr, pasientFnr), loggingMeta)
 
@@ -376,7 +376,7 @@ class BlockingApplicationRunner(
                             legeAktoerId = doctorAktorId,
                             msgId = msgId,
                             signaturDato = getLocalDateTime(msgHead.msgInfo.genDate),
-                            hprFnrBehandler = signaturFnr
+                            behandlerFnrFallback = avsenderFnr ?: signaturFnr
                         )
                         val receivedSykmelding = ReceivedSykmelding(
                             sykmelding = sykmelding,
@@ -385,8 +385,8 @@ class BlockingApplicationRunner(
                             personNrLege = signaturFnr,
                             navLogId = ediLoggId,
                             msgId = msgId,
-                            legeHprNr = behandler?.hprNummer,
-                            legeHelsepersonellkategori = behandler?.godkjenninger?.let {
+                            legeHprNr = signerendeBehandler?.hprNummer,
+                            legeHelsepersonellkategori = signerendeBehandler?.godkjenninger?.let {
                                 getHelsepersonellKategori(
                                     it
                                 )
@@ -404,13 +404,8 @@ class BlockingApplicationRunner(
                             partnerreferanse = receiverBlock.partnerReferanse
                         )
 
-                        when (behandlerFnr) {
-                            null -> if (behandler?.hprNummer != extractHpr(fellesformat)?.id) {
-                                logUlikBehandler(loggingMeta)
-                            }
-                            else -> if (behandlerFnr != signaturFnr) {
-                                logUlikBehandler(loggingMeta)
-                            }
+                        if (avsenderFnr != signaturFnr) {
+                            logUlikBehandler(loggingMeta)
                         }
 
                         countNewDiagnoseCode(receivedSykmelding.sykmelding.medisinskVurdering)
@@ -524,6 +519,18 @@ class BlockingApplicationRunner(
                     message.acknowledge()
                 }
             }
+        }
+    }
+
+    /**
+     * Finds the sender's FNR, either by matching HPR against signerende behandler or by doing a lookup against HPR
+     */
+    private suspend fun getAvsenderFnr(fellesformat: XMLEIFellesformat, signerendeBehandler: Behandler?, loggingMeta: LoggingMeta): String? {
+        val hpr = extractHpr(fellesformat = fellesformat)?.id
+        return if (hpr == signerendeBehandler?.hprNummer) {
+            signerendeBehandler?.fnr
+        } else {
+            norskHelsenettClient.getByHpr(hpr, loggingMeta)?.fnr
         }
     }
 
