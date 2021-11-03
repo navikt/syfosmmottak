@@ -535,11 +535,11 @@ class BlockingApplicationRunner(
     }
 
     private fun getHelsepersonellKategori(godkjenninger: List<Godkjenning>): String? = when {
-        godkjenninger.find { it.helsepersonellkategori?.verdi === "LE" } != null -> "LE"
-        godkjenninger.find { it.helsepersonellkategori?.verdi === "TL" } != null -> "TL"
-        godkjenninger.find { it.helsepersonellkategori?.verdi === "MT" } != null -> "MT"
-        godkjenninger.find { it.helsepersonellkategori?.verdi === "FT" } != null -> "FT"
-        godkjenninger.find { it.helsepersonellkategori?.verdi === "KI" } != null -> "KI"
+        godkjenninger.find { it.helsepersonellkategori?.verdi == "LE" } != null -> "LE"
+        godkjenninger.find { it.helsepersonellkategori?.verdi == "TL" } != null -> "TL"
+        godkjenninger.find { it.helsepersonellkategori?.verdi == "MT" } != null -> "MT"
+        godkjenninger.find { it.helsepersonellkategori?.verdi == "FT" } != null -> "FT"
+        godkjenninger.find { it.helsepersonellkategori?.verdi == "KI" } != null -> "KI"
         else -> {
             val verdi = godkjenninger.firstOrNull()?.helsepersonellkategori?.verdi
             log.warn("Signerende behandler har ikke en helsepersonellkategori($verdi) vi kjenner igjen")
