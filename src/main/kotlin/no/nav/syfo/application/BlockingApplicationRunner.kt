@@ -59,6 +59,7 @@ import no.nav.syfo.util.arbeidsplassenArsakskodeHarUgyldigVerdi
 import no.nav.syfo.util.arbeidsplassenArsakskodeMangler
 import no.nav.syfo.util.countNewDiagnoseCode
 import no.nav.syfo.util.erTestFnr
+import no.nav.syfo.util.extractFnrDnrFraBehandler
 import no.nav.syfo.util.extractHelseOpplysningerArbeidsuforhet
 import no.nav.syfo.util.extractHpr
 import no.nav.syfo.util.extractOrganisationHerNumberFromSender
@@ -164,8 +165,6 @@ class BlockingApplicationRunner(
 
                     val pasientFnr = healthInformation.pasient.fodselsnummer.id
                     val signaturFnr = receiverBlock.avsenderFnrFraDigSignatur
-
-                    val signerendeBehandler = norskHelsenettClient.getByFnr(fnr = signaturFnr, loggingMeta = loggingMeta)
 
                     val identer = pdlPersonService.getAktorids(listOf(signaturFnr, pasientFnr), loggingMeta)
 
@@ -369,7 +368,14 @@ class BlockingApplicationRunner(
                             continue@loop
                         }
 
-                        val avsenderFnr = getAvsenderFnr(fellesformat, signerendeBehandler, loggingMeta)
+                        val signerendeBehandler = norskHelsenettClient.getByFnr(fnr = signaturFnr, loggingMeta = loggingMeta)
+
+                        val behandlerFnr = extractFnrDnrFraBehandler(healthInformation)
+                            ?: getBehandlerFnr(
+                                avsenderHpr = extractHpr(fellesformat)?.id,
+                                signerendeBehandler = signerendeBehandler,
+                                loggingMeta = loggingMeta
+                            ) ?: signaturFnr
 
                         val sykmelding = healthInformation.toSykmelding(
                             sykmeldingId = UUID.randomUUID().toString(),
@@ -377,7 +383,7 @@ class BlockingApplicationRunner(
                             legeAktoerId = doctorAktorId,
                             msgId = msgId,
                             signaturDato = getLocalDateTime(msgHead.msgInfo.genDate),
-                            behandlerFnrFallback = avsenderFnr ?: signaturFnr
+                            behandlerFnr = behandlerFnr
                         )
                         val receivedSykmelding = ReceivedSykmelding(
                             sykmelding = sykmelding,
@@ -405,7 +411,7 @@ class BlockingApplicationRunner(
                             partnerreferanse = receiverBlock.partnerReferanse
                         )
 
-                        if (avsenderFnr != signaturFnr) {
+                        if (behandlerFnr != signaturFnr) {
                             logUlikBehandler(loggingMeta)
                         }
 
@@ -526,12 +532,11 @@ class BlockingApplicationRunner(
     /**
      * Finds the sender's FNR, either by matching HPR against signerende behandler or by doing a lookup against HPR
      */
-    private suspend fun getAvsenderFnr(fellesformat: XMLEIFellesformat, signerendeBehandler: Behandler?, loggingMeta: LoggingMeta): String? {
-        val hpr = extractHpr(fellesformat = fellesformat)?.id
-        return if (hpr == signerendeBehandler?.hprNummer) {
+    private suspend fun getBehandlerFnr(avsenderHpr: String?, signerendeBehandler: Behandler?, loggingMeta: LoggingMeta): String? {
+        return if (avsenderHpr == signerendeBehandler?.hprNummer) {
             signerendeBehandler?.fnr
         } else {
-            norskHelsenettClient.getByHpr(hpr, loggingMeta)?.fnr
+            norskHelsenettClient.getByHpr(avsenderHpr, loggingMeta)?.fnr
         }
     }
 
