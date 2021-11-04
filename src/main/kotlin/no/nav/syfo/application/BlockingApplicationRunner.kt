@@ -166,7 +166,6 @@ class BlockingApplicationRunner(
                     val signaturFnr = receiverBlock.avsenderFnrFraDigSignatur
 
                     val signerendeBehandler = norskHelsenettClient.getByFnr(fnr = signaturFnr, loggingMeta = loggingMeta)
-                    val avsenderFnr = getAvsenderFnr(fellesformat, signerendeBehandler, loggingMeta)
 
                     val identer = pdlPersonService.getAktorids(listOf(signaturFnr, pasientFnr), loggingMeta)
 
@@ -369,6 +368,8 @@ class BlockingApplicationRunner(
                             )
                             continue@loop
                         }
+
+                        val avsenderFnr = getAvsenderFnr(fellesformat, signerendeBehandler, loggingMeta)
 
                         val sykmelding = healthInformation.toSykmelding(
                             sykmeldingId = UUID.randomUUID().toString(),
