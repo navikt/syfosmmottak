@@ -9,6 +9,8 @@ import no.nav.helse.eiFellesformat.XMLMottakenhetBlokk
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.syfo.Environment
 import no.nav.syfo.apprec.Apprec
+import no.nav.syfo.client.Behandler
+import no.nav.syfo.client.Godkjenning
 import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
@@ -40,7 +42,6 @@ import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
 import no.nav.syfo.metrics.MANGLER_TSSIDENT
 import no.nav.syfo.metrics.REQUEST_TIME
 import no.nav.syfo.metrics.SYKMELDING_VEDLEGG_COUNTER
-import no.nav.syfo.metrics.ULIK_SENDER_OG_BEHANDLER
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.Status
@@ -58,6 +59,7 @@ import no.nav.syfo.util.arbeidsplassenArsakskodeHarUgyldigVerdi
 import no.nav.syfo.util.arbeidsplassenArsakskodeMangler
 import no.nav.syfo.util.countNewDiagnoseCode
 import no.nav.syfo.util.erTestFnr
+import no.nav.syfo.util.extractFnrDnrFraBehandler
 import no.nav.syfo.util.extractHelseOpplysningerArbeidsuforhet
 import no.nav.syfo.util.extractHpr
 import no.nav.syfo.util.extractOrganisationHerNumberFromSender
@@ -70,7 +72,7 @@ import no.nav.syfo.util.get
 import no.nav.syfo.util.getLocalDateTime
 import no.nav.syfo.util.getVedlegg
 import no.nav.syfo.util.hprMangler
-import no.nav.syfo.util.hprManglerFraSignatur
+import no.nav.syfo.util.logUlikBehandler
 import no.nav.syfo.util.medisinskeArsakskodeHarUgyldigVerdi
 import no.nav.syfo.util.medisinskeArsakskodeMangler
 import no.nav.syfo.util.removeVedleggFromFellesformat
@@ -87,29 +89,31 @@ import javax.jms.MessageProducer
 import javax.jms.Session
 import javax.jms.TextMessage
 
-class BlockingApplicationRunner {
+class BlockingApplicationRunner(
+    private val env: Environment,
+    private val applicationState: ApplicationState,
+    private val subscriptionEmottak: SubscriptionPort,
+    private val syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
+    private val norskHelsenettClient: NorskHelsenettClient,
+    private val kuhrSarClient: SarClient,
+    private val pdlPersonService: PdlPersonService,
+    private val jedis: Jedis,
+    private val session: Session
+) {
 
     @KtorExperimentalAPI
     suspend fun run(
         inputconsumer: MessageConsumer,
         syfoserviceProducer: MessageProducer,
         backoutProducer: MessageProducer,
-        subscriptionEmottak: SubscriptionPort,
         kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
         kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
-        syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
-        kuhrSarClient: SarClient,
-        pdlPersonService: PdlPersonService,
-        env: Environment,
-        applicationState: ApplicationState,
-        jedis: Jedis,
         kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
-        session: Session,
         kafkaproducerApprec: KafkaProducer<String, Apprec>,
         kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
-        norskHelsenettClient: NorskHelsenettClient,
         kafkaVedleggProducer: KafkaVedleggProducer
     ) {
+
         wrapExceptions {
 
             loop@ while (applicationState.ready) {
@@ -159,33 +163,12 @@ class BlockingApplicationRunner {
                     val legekontorOrgNr = extractOrganisationNumberFromSender(fellesformat)?.id
                     val legekontorOrgName = msgHead.msgInfo.sender.organisation.organisationName
 
-                    val personNumberPatient = healthInformation.pasient.fodselsnummer.id
+                    val pasientFnr = healthInformation.pasient.fodselsnummer.id
+                    val signaturFnr = receiverBlock.avsenderFnrFraDigSignatur
 
-                    val personNumberDoctor = if (!fnrOgDnrMangler(healthInformation)) {
-                        receiverBlock.avsenderFnrFraDigSignatur
-                    } else if (!hprManglerFraSignatur(fellesformat)) {
-                        val fnr = getFnrFromHpr(norskHelsenettClient, fellesformat, msgId)
-                        if (fnr.isNullOrEmpty()) {
-                            handleFnrAndDnrAndHprIsmissingFromBehandler(
-                                loggingMeta, fellesformat,
-                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
-                            )
-                            continue@loop
-                        } else {
-                            fnr
-                        }
-                    } else {
-                        handleFnrAndDnrAndHprIsmissingFromBehandler(
-                            loggingMeta, fellesformat,
-                            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
-                        )
-                        continue@loop
-                    }
+                    val identer = pdlPersonService.getAktorids(listOf(signaturFnr, pasientFnr), loggingMeta)
 
-                    val identer =
-                        pdlPersonService.getAktorids(listOf(personNumberDoctor, personNumberPatient), loggingMeta)
-
-                    val samhandlerInfo = kuhrSarClient.getSamhandler(personNumberDoctor)
+                    val samhandlerInfo = kuhrSarClient.getSamhandler(signaturFnr)
                     val samhandlerPraksisMatch = findBestSamhandlerPraksis(
                         samhandlerInfo,
                         legekontorOrgName,
@@ -253,8 +236,8 @@ class BlockingApplicationRunner {
                         )
                         continue@loop
                     } else {
-                        val patientAktorId = identer[personNumberPatient]
-                        val doctorAktorId = identer[personNumberDoctor]
+                        val patientAktorId = identer[pasientFnr]
+                        val doctorAktorId = identer[signaturFnr]
 
                         if (patientAktorId == null) {
                             handlePatientNotFoundInPDL(
@@ -369,7 +352,7 @@ class BlockingApplicationRunner {
                             continue@loop
                         }
 
-                        if (erTestFnr(personNumberPatient) && env.cluster == "prod-fss") {
+                        if (erTestFnr(pasientFnr) && env.cluster == "prod-fss") {
                             handleTestFnrInProd(
                                 loggingMeta, fellesformat,
                                 ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
@@ -385,21 +368,36 @@ class BlockingApplicationRunner {
                             continue@loop
                         }
 
+                        val signerendeBehandler = norskHelsenettClient.getByFnr(fnr = signaturFnr, loggingMeta = loggingMeta)
+
+                        val behandlerFnr = extractFnrDnrFraBehandler(healthInformation)
+                            ?: getBehandlerFnr(
+                                avsenderHpr = extractHpr(fellesformat)?.id,
+                                signerendeBehandler = signerendeBehandler,
+                                loggingMeta = loggingMeta
+                            ) ?: signaturFnr
+
                         val sykmelding = healthInformation.toSykmelding(
                             sykmeldingId = UUID.randomUUID().toString(),
                             pasientAktoerId = patientAktorId,
                             legeAktoerId = doctorAktorId,
                             msgId = msgId,
                             signaturDato = getLocalDateTime(msgHead.msgInfo.genDate),
-                            hprFnrBehandler = personNumberDoctor
+                            behandlerFnr = behandlerFnr
                         )
                         val receivedSykmelding = ReceivedSykmelding(
                             sykmelding = sykmelding,
-                            personNrPasient = personNumberPatient,
+                            personNrPasient = pasientFnr,
                             tlfPasient = healthInformation.pasient.kontaktInfo.firstOrNull()?.teleAddress?.v,
-                            personNrLege = personNumberDoctor,
+                            personNrLege = signaturFnr,
                             navLogId = ediLoggId,
                             msgId = msgId,
+                            legeHprNr = signerendeBehandler?.hprNummer,
+                            legeHelsepersonellkategori = signerendeBehandler?.godkjenninger?.let {
+                                getHelsepersonellKategori(
+                                    it
+                                )
+                            },
                             legekontorOrgNr = legekontorOrgNr,
                             legekontorOrgName = legekontorOrgName,
                             legekontorHerId = legekontorHerId,
@@ -413,12 +411,8 @@ class BlockingApplicationRunner {
                             partnerreferanse = receiverBlock.partnerReferanse
                         )
 
-                        if (receivedSykmelding.sykmelding.behandler.fnr != personNumberDoctor) {
-                            ULIK_SENDER_OG_BEHANDLER.inc()
-                            log.info(
-                                "Behandlers fnr og avsendres fnr stemmer ikkje {}",
-                                StructuredArguments.fields(loggingMeta)
-                            )
+                        if (behandlerFnr != signaturFnr) {
+                            logUlikBehandler(loggingMeta)
                         }
 
                         countNewDiagnoseCode(receivedSykmelding.sykmelding.medisinskVurdering)
@@ -534,17 +528,28 @@ class BlockingApplicationRunner {
             }
         }
     }
-}
 
-@KtorExperimentalAPI
-suspend fun getFnrFromHpr(
-    norskHelsenettClient: NorskHelsenettClient,
-    fellesformat: XMLEIFellesformat,
-    msgid: String
-): String? {
+    /**
+     * Finds the sender's FNR, either by matching HPR against signerende behandler or by doing a lookup against HPR
+     */
+    private suspend fun getBehandlerFnr(avsenderHpr: String?, signerendeBehandler: Behandler?, loggingMeta: LoggingMeta): String? {
+        return if (avsenderHpr == signerendeBehandler?.hprNummer) {
+            signerendeBehandler?.fnr
+        } else {
+            norskHelsenettClient.getByHpr(avsenderHpr, loggingMeta)?.fnr
+        }
+    }
 
-    val hprnummer = extractHpr(fellesformat)!!.id
-    val behandlerFraHpr = norskHelsenettClient.finnBehandler(hprnummer, msgid)
-
-    return behandlerFraHpr?.fnr
+    private fun getHelsepersonellKategori(godkjenninger: List<Godkjenning>): String? = when {
+        godkjenninger.find { it.helsepersonellkategori?.verdi == "LE" } != null -> "LE"
+        godkjenninger.find { it.helsepersonellkategori?.verdi == "TL" } != null -> "TL"
+        godkjenninger.find { it.helsepersonellkategori?.verdi == "MT" } != null -> "MT"
+        godkjenninger.find { it.helsepersonellkategori?.verdi == "FT" } != null -> "FT"
+        godkjenninger.find { it.helsepersonellkategori?.verdi == "KI" } != null -> "KI"
+        else -> {
+            val verdi = godkjenninger.firstOrNull()?.helsepersonellkategori?.verdi
+            log.warn("Signerende behandler har ikke en helsepersonellkategori($verdi) vi kjenner igjen")
+            verdi
+        }
+    }
 }

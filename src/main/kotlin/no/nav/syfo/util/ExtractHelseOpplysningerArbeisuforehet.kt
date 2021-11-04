@@ -38,4 +38,7 @@ fun hprManglerFraSignatur(fellesformat: XMLEIFellesformat): Boolean =
         it.typeId.v == "HPR"
     }?.id.isNullOrBlank()
 
+fun extractFnrDnrFraBehandler(healthInformation: HelseOpplysningerArbeidsuforhet): String? =
+    healthInformation.behandler.id.find { it.typeId.v == "FNR" || it.typeId.v == "DNR" }?.id
+
 inline fun <reified T> XMLEIFellesformat.get() = this.any.find { it is T } as T
