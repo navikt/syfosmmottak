@@ -21,7 +21,7 @@ fun arbeidsplassenArsakskodeMangler(healthInformation: HelseOpplysningerArbeidsu
     healthInformation.aktivitet.periode.any { periode -> aktivitetIkkeMuligArbeidsplassenArsakskodeMangler(periode.aktivitetIkkeMulig) }
 
 fun arbeidsplassenArsakskodeHarUgyldigVerdi(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean =
-    healthInformation.aktivitet.periode.any { periode -> aktivitetIkkeMuligArbeidsplassenArsakskodeMangler(periode.aktivitetIkkeMulig) }
+    healthInformation.aktivitet.periode.any { periode -> aktivitetIkkeMuligArbeidsplassenArsakskodeHarUgyldigVerdi(periode.aktivitetIkkeMulig) }
 
 fun aktivitetIkkeMuligMedisinskeArsakskodeMangler(aktivitetIkkeMulig: HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig?): Boolean {
     return if (aktivitetIkkeMulig == null)

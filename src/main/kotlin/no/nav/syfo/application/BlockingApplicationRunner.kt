@@ -26,8 +26,8 @@ import no.nav.syfo.handlestatus.handleDoctorNotFoundInPDL
 import no.nav.syfo.handlestatus.handleDuplicateEdiloggid
 import no.nav.syfo.handlestatus.handleDuplicateSM2013Content
 import no.nav.syfo.handlestatus.handleFnrAndDnrAndHprIsmissingFromBehandler
-import no.nav.syfo.handlestatus.handleHouvedDiagnoseDiagnoseBeskrivelseMissing
-import no.nav.syfo.handlestatus.handleHouvedDiagnoseDiagnosekodeMissing
+import no.nav.syfo.handlestatus.handleHovedDiagnoseDiagnoseBeskrivelseMissing
+import no.nav.syfo.handlestatus.handleHovedDiagnoseDiagnosekodeMissing
 import no.nav.syfo.handlestatus.handleMedisinskeArsakskodeHarUgyldigVerdi
 import no.nav.syfo.handlestatus.handleMedisinskeArsakskodeIsmissing
 import no.nav.syfo.handlestatus.handlePatientNotFoundInPDL
@@ -303,7 +303,7 @@ class BlockingApplicationRunner(
                         if (healthInformation.medisinskVurdering?.hovedDiagnose?.diagnosekode != null &&
                             healthInformation.medisinskVurdering.hovedDiagnose.diagnosekode.v == null
                         ) {
-                            handleHouvedDiagnoseDiagnosekodeMissing(
+                            handleHovedDiagnoseDiagnosekodeMissing(
                                 loggingMeta, fellesformat,
                                 ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
                             )
@@ -313,7 +313,7 @@ class BlockingApplicationRunner(
                         if (healthInformation.medisinskVurdering?.hovedDiagnose?.diagnosekode != null &&
                             healthInformation.medisinskVurdering.hovedDiagnose.diagnosekode.dn == null
                         ) {
-                            handleHouvedDiagnoseDiagnoseBeskrivelseMissing(
+                            handleHovedDiagnoseDiagnoseBeskrivelseMissing(
                                 loggingMeta, fellesformat,
                                 ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
                             )

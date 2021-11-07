@@ -63,8 +63,10 @@ fun handleDuplicateSM2013Content(
     kafkaproducerApprec: KafkaProducer<String, Apprec>
 ) {
     log.warn(
-        "Message with {} marked as duplicate, has same redisSha256String {}",
-        keyValue("originalEdiLoggId", redisSha256String), fields(loggingMeta)
+        "Melding med {} har samme innhold som tidligere mottatt sykmelding og er avvist som duplikat {}",
+        keyValue("originalEdiLoggId", redisSha256String),
+        fields(loggingMeta),
+        keyValue("avvistAv", env.applicationName)
     )
 
     val apprec = fellesformatToAppprec(
@@ -92,8 +94,10 @@ fun handleDuplicateEdiloggid(
     kafkaproducerApprec: KafkaProducer<String, Apprec>
 ) {
     log.warn(
-        "Message with {} marked as duplicate, has same redisEdiloggid {}",
-        keyValue("originalEdiLoggId", redisEdiloggid), fields(loggingMeta)
+        "Melding med {} har samme ediLoggId som tidligere mottatt sykmelding og er avvist som duplikat {}",
+        keyValue("originalEdiLoggId", redisEdiloggid),
+        fields(loggingMeta),
+        keyValue("avvistAv", env.applicationName)
     )
 
     val apprec = fellesformatToAppprec(
@@ -121,7 +125,11 @@ fun handlePatientNotFoundInPDL(
     jedis: Jedis,
     sha256String: String
 ) {
-    log.warn("Patient not found i PDL, {}", fields(loggingMeta))
+    log.warn(
+        "Sykmeldingen er avvist fordi pasienten ikke finnes i folkeregisteret {}",
+        fields(loggingMeta),
+        keyValue("avvistAv", env.applicationName)
+    )
 
     val apprec = fellesformatToAppprec(
         fellesformat,
@@ -145,7 +153,11 @@ fun handleDoctorNotFoundInPDL(
     jedis: Jedis,
     sha256String: String
 ) {
-    log.warn("Doctor not found in PDL, {}", fields(loggingMeta))
+    log.warn(
+        "Sykmeldingen er avvist fordi legen ikke finnes i folkeregisteret {}",
+        fields(loggingMeta),
+        keyValue("avvistAv", env.applicationName)
+    )
 
     val apprec = fellesformatToAppprec(
         fellesformat,
@@ -169,7 +181,11 @@ fun handleAktivitetOrPeriodeIsMissing(
     jedis: Jedis,
     sha256String: String
 ) {
-    log.warn("Periode is missing {}", fields(loggingMeta))
+    log.warn(
+        "Sykmeldingen er avvist fordi det ikke er oppgitt noen sykmeldingsperioder {}",
+        fields(loggingMeta),
+        keyValue("avvistAv", env.applicationName)
+    )
 
     val apprec = fellesformatToAppprec(
         fellesformat,
@@ -193,7 +209,11 @@ fun handleBiDiagnoserDiagnosekodeIsMissing(
     jedis: Jedis,
     sha256String: String
 ) {
-    log.warn("diagnosekode is missing {}", fields(loggingMeta))
+    log.warn(
+        "Sykmeldingen er avvist fordi bidiagnoser er angitt, men mangler diagnosekode (v) {}",
+        fields(loggingMeta),
+        keyValue("avvistAv", env.applicationName)
+    )
 
     val apprec = fellesformatToAppprec(
         fellesformat,
@@ -217,7 +237,11 @@ fun handleBiDiagnoserDiagnosekodeVerkIsMissing(
     jedis: Jedis,
     sha256String: String
 ) {
-    log.warn("Diagnosekodeverk S is missing {}", fields(loggingMeta))
+    log.warn(
+        "Sykmeldingen er avvist fordi bidiagnoser er angitt, men mangler diagnosekodeverk (s) {}",
+        fields(loggingMeta),
+        keyValue("avvistAv", env.applicationName)
+    )
 
     val apprec = fellesformatToAppprec(
         fellesformat,
@@ -241,37 +265,17 @@ fun handleBiDiagnoserDiagnosekodeBeskrivelseMissing(
     jedis: Jedis,
     sha256String: String
 ) {
-    log.warn("Diagnosekodebeskrivelse DN is missing {}", fields(loggingMeta))
+    log.warn(
+        "Sykmeldingen er avvist fordi bidiagnoser er angitt, men mangler diagnosekodebeskrivelse (dn) {}",
+        fields(loggingMeta),
+        keyValue("avvistAv", env.applicationName)
+    )
 
     val apprec = fellesformatToAppprec(
         fellesformat,
         "Sykmeldingen kan ikke rettes, det må skrives en ny." +
             "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
             "Diagnosekode beskrivelse på bidiagnose mangler. Kontakt din EPJ-leverandør",
-        ediLoggId, msgId, msgHead
-    )
-
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
-}
-
-fun handleHRPNotFound(
-    loggingMeta: LoggingMeta,
-    fellesformat: XMLEIFellesformat,
-    ediLoggId: String,
-    msgId: String,
-    msgHead: XMLMsgHead,
-    env: Environment,
-    kafkaproducerApprec: KafkaProducer<String, Apprec>,
-    jedis: Jedis,
-    sha256String: String
-) {
-    log.warn("HPR number not found in HPR {}", fields(loggingMeta))
-
-    val apprec = fellesformatToAppprec(
-        fellesformat,
-        "Sykmeldingen kan ikke rettes, det må skrives en ny." +
-            "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
-            "Ugyldig HPR-nummer, det finnes ikke i HPR registeret",
         ediLoggId, msgId, msgHead
     )
 
@@ -289,7 +293,11 @@ fun handleFnrAndDnrAndHprIsmissingFromBehandler(
     jedis: Jedis,
     sha256String: String
 ) {
-    log.warn("FNR or DNR or HPR is missing on behandler {}", fields(loggingMeta))
+    log.warn(
+        "Sykmeldingen er avvist fordi den mangler både fnr/dnr og HPR-nummer for behandler {}",
+        fields(loggingMeta),
+        keyValue("avvistAv", env.applicationName)
+    )
 
     val apprec = fellesformatToAppprec(
         fellesformat,
@@ -302,7 +310,7 @@ fun handleFnrAndDnrAndHprIsmissingFromBehandler(
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
 }
 
-fun handleHouvedDiagnoseDiagnosekodeMissing(
+fun handleHovedDiagnoseDiagnosekodeMissing(
     loggingMeta: LoggingMeta,
     fellesformat: XMLEIFellesformat,
     ediLoggId: String,
@@ -313,7 +321,11 @@ fun handleHouvedDiagnoseDiagnosekodeMissing(
     jedis: Jedis,
     sha256String: String
 ) {
-    log.warn("Houveddiagnose diagnosekode V mangler {}", fields(loggingMeta))
+    log.warn(
+        "Sykmeldingen er avvist fordi hoveddiagnose mangler diagnosekode (v) {}",
+        fields(loggingMeta),
+        keyValue("avvistAv", env.applicationName)
+    )
 
     val apprec = fellesformatToAppprec(
         fellesformat,
@@ -326,7 +338,7 @@ fun handleHouvedDiagnoseDiagnosekodeMissing(
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
 }
 
-fun handleHouvedDiagnoseDiagnoseBeskrivelseMissing(
+fun handleHovedDiagnoseDiagnoseBeskrivelseMissing(
     loggingMeta: LoggingMeta,
     fellesformat: XMLEIFellesformat,
     ediLoggId: String,
@@ -337,7 +349,11 @@ fun handleHouvedDiagnoseDiagnoseBeskrivelseMissing(
     jedis: Jedis,
     sha256String: String
 ) {
-    log.warn("Houveddiagnose diagnosekode beskrivelse DN mangler {}", fields(loggingMeta))
+    log.warn(
+        "Sykmeldingen er avvist fordi hoveddiagnose mangler diagnosekodebeskrivelse (dn) {}",
+        fields(loggingMeta),
+        keyValue("avvistAv", env.applicationName)
+    )
 
     val apprec = fellesformatToAppprec(
         fellesformat,
@@ -361,7 +377,11 @@ fun handleMedisinskeArsakskodeIsmissing(
     jedis: Jedis,
     sha256String: String
 ) {
-    log.warn("MedisinskeArsaker Arsakskode V mangler {}", fields(loggingMeta))
+    log.warn(
+        "Sykmeldingen er avvist fordi medisinsk årsak er angitt, men årsakskode (v) mangler {}",
+        fields(loggingMeta),
+        keyValue("avvistAv", env.applicationName)
+    )
 
     val apprec = fellesformatToAppprec(
         fellesformat,
@@ -385,7 +405,11 @@ fun handleMedisinskeArsakskodeHarUgyldigVerdi(
     jedis: Jedis,
     sha256String: String
 ) {
-    log.warn("MedisinskeArsaker Arsakskode V har ugyldig verdi", fields(loggingMeta))
+    log.warn(
+        "Sykmeldingen er avvist fordi medisinsk årsak er angitt, men årsakskode (v) har ugyldig verdi {}",
+        fields(loggingMeta),
+        keyValue("avvistAv", env.applicationName)
+    )
 
     val apprec = fellesformatToAppprec(
         fellesformat,
@@ -409,7 +433,11 @@ fun handleArbeidsplassenArsakskodeIsmissing(
     jedis: Jedis,
     sha256String: String
 ) {
-    log.warn("Arbeidsplassen Arsakskode V mangler {}", fields(loggingMeta))
+    log.warn(
+        "Sykmeldingen er avvist fordi arbeidsplassen er angitt som årsak, men årsakskode (v) mangler {}",
+        fields(loggingMeta),
+        keyValue("avvistAv", env.applicationName)
+    )
 
     val apprec = fellesformatToAppprec(
         fellesformat,
@@ -433,7 +461,11 @@ fun handleArbeidsplassenArsakskodeHarUgyldigVerdi(
     jedis: Jedis,
     sha256String: String
 ) {
-    log.warn("Arbeidsplassen Arsakskode V har ugyldig verdi {}", fields(loggingMeta))
+    log.warn(
+        "Sykmeldingen er avvist fordi arbeidsplassen er angitt som årsak, men årsakskode (v) har ugyldig verdi {}",
+        fields(loggingMeta),
+        keyValue("avvistAv", env.applicationName)
+    )
 
     val apprec = fellesformatToAppprec(
         fellesformat,
@@ -457,11 +489,15 @@ fun handleTestFnrInProd(
     jedis: Jedis,
     sha256String: String
 ) {
-    log.warn("Test fødselsnummer er kommet inn i produksjon {}", fields(loggingMeta))
+    log.warn(
+        "Sykmelding avvist: Testfødselsnummer er kommet inn i produksjon! {}",
+        fields(loggingMeta),
+        keyValue("avvistAv", env.applicationName)
+    )
 
     val apprec = fellesformatToAppprec(
         fellesformat,
-        "Test fødselsnummer er kommet inn i produksjon, " +
+        "Testfødselsnummer er kommet inn i produksjon, " +
             "dette er eit alvorlig brudd som aldri burde oppstå. Kontakt din EPJ-leverandør snarest",
         ediLoggId, msgId, msgHead
     )
@@ -484,7 +520,11 @@ fun handleAnnenFraversArsakkodeVIsmissing(
     jedis: Jedis,
     sha256String: String
 ) {
-    log.warn("AnnenFravers Arsakskode V mangler {}", fields(loggingMeta))
+    log.warn(
+        "Sykmeldingen er avvist fordi annen fraværsårsak er angitt, men årsakskode (v) mangler {}",
+        fields(loggingMeta),
+        keyValue("avvistAv", env.applicationName)
+    )
 
     val apprec = fellesformatToAppprec(
         fellesformat,
