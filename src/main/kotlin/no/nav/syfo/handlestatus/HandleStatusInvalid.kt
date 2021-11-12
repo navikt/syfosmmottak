@@ -198,6 +198,34 @@ fun handleAktivitetOrPeriodeIsMissing(
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
 }
 
+fun handlePeriodetypeMangler(
+    loggingMeta: LoggingMeta,
+    fellesformat: XMLEIFellesformat,
+    ediLoggId: String,
+    msgId: String,
+    msgHead: XMLMsgHead,
+    env: Environment,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    jedis: Jedis,
+    sha256String: String
+) {
+    log.warn(
+        "Sykmeldingen er avvist fordi det ikke er oppgitt noen type for en eller flere sykmeldingsperioder {}",
+        fields(loggingMeta),
+        keyValue("avvistAv", env.applicationName)
+    )
+
+    val apprec = fellesformatToAppprec(
+        fellesformat,
+        "Sykmeldingen kan ikke rettes, det må skrives en ny." +
+            "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
+            "Sykmeldingen inneholder en eller flere perioder uten type (100%, gradert, reisetilskudd, avventende eller behandlingsdager).",
+        ediLoggId, msgId, msgHead
+    )
+
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
+}
+
 fun handleBiDiagnoserDiagnosekodeIsMissing(
     loggingMeta: LoggingMeta,
     fellesformat: XMLEIFellesformat,

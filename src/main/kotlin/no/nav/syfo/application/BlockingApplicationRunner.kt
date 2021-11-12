@@ -31,6 +31,7 @@ import no.nav.syfo.handlestatus.handleHovedDiagnoseDiagnosekodeMissing
 import no.nav.syfo.handlestatus.handleMedisinskeArsakskodeHarUgyldigVerdi
 import no.nav.syfo.handlestatus.handleMedisinskeArsakskodeIsmissing
 import no.nav.syfo.handlestatus.handlePatientNotFoundInPDL
+import no.nav.syfo.handlestatus.handlePeriodetypeMangler
 import no.nav.syfo.handlestatus.handleStatusINVALID
 import no.nav.syfo.handlestatus.handleStatusMANUALPROCESSING
 import no.nav.syfo.handlestatus.handleStatusOK
@@ -75,6 +76,7 @@ import no.nav.syfo.util.hprMangler
 import no.nav.syfo.util.logUlikBehandler
 import no.nav.syfo.util.medisinskeArsakskodeHarUgyldigVerdi
 import no.nav.syfo.util.medisinskeArsakskodeMangler
+import no.nav.syfo.util.periodetypeIkkeAngitt
 import no.nav.syfo.util.removeVedleggFromFellesformat
 import no.nav.syfo.util.toString
 import no.nav.syfo.util.wrapExceptions
@@ -256,6 +258,14 @@ class BlockingApplicationRunner(
 
                         if (healthInformation.aktivitet == null || healthInformation.aktivitet.periode.isNullOrEmpty()) {
                             handleAktivitetOrPeriodeIsMissing(
+                                loggingMeta, fellesformat,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
+                            )
+                            continue@loop
+                        }
+
+                        if (periodetypeIkkeAngitt(healthInformation.aktivitet)) {
+                            handlePeriodetypeMangler(
                                 loggingMeta, fellesformat,
                                 ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
                             )
