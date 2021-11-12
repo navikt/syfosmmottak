@@ -59,3 +59,10 @@ fun annenFraversArsakkodeVMangler(healthInformation: HelseOpplysningerArbeidsufo
         else -> healthInformation.medisinskVurdering.annenFraversArsak.arsakskode.any { it.v.isNullOrEmpty() }
     }
 }
+
+fun periodetypeIkkeAngitt(aktivitet: HelseOpplysningerArbeidsuforhet.Aktivitet): Boolean {
+    return aktivitet.periode.any {
+        it.aktivitetIkkeMulig == null && it.gradertSykmelding == null && it.avventendeSykmelding == null &&
+            it.behandlingsdager == null && it.isReisetilskudd != true
+    }
+}
