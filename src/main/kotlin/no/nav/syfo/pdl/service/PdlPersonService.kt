@@ -5,6 +5,7 @@ import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.client.AccessTokenClientV2
 import no.nav.syfo.log
 import no.nav.syfo.pdl.client.PdlClient
+import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.util.LoggingMeta
 
 @KtorExperimentalAPI
@@ -14,9 +15,9 @@ class PdlPersonService(
     private val pdlScope: String
 ) {
 
-    suspend fun getAktorids(identer: List<String>, loggingMeta: LoggingMeta): Map<String, String?> {
+    suspend fun getIdenter(identer: List<String>, loggingMeta: LoggingMeta): Map<String, PdlPerson?> {
         val stsToken = accessTokenClientV2.getAccessTokenV2(pdlScope)
-        val pdlResponse = pdlClient.getAktorids(identer, stsToken)
+        val pdlResponse = pdlClient.getIdenter(identer, stsToken)
 
         if (pdlResponse.errors != null) {
             pdlResponse.errors.forEach {
@@ -34,12 +35,8 @@ class PdlPersonService(
             }
         }
 
-        return pdlResponse.data.hentIdenterBolk.map {
-            it.ident to it.identer?.firstOrNull { ident -> ident.gruppe == AKTORID }?.ident
-        }.toMap()
-    }
-
-    companion object {
-        private const val AKTORID = "AKTORID"
+        return pdlResponse.data.hentIdenterBolk.associate { hentIdenterBolk ->
+            hentIdenterBolk.ident to hentIdenterBolk.identer?.let { PdlPerson(it) }
+        }
     }
 }

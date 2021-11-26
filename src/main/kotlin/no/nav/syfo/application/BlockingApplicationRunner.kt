@@ -165,10 +165,10 @@ class BlockingApplicationRunner(
                     val legekontorOrgNr = extractOrganisationNumberFromSender(fellesformat)?.id
                     val legekontorOrgName = msgHead.msgInfo.sender.organisation.organisationName
 
-                    val pasientFnr = healthInformation.pasient.fodselsnummer.id
+                    val originaltPasientFnr = healthInformation.pasient.fodselsnummer.id
                     val signaturFnr = receiverBlock.avsenderFnrFraDigSignatur
 
-                    val identer = pdlPersonService.getAktorids(listOf(signaturFnr, pasientFnr), loggingMeta)
+                    val identer = pdlPersonService.getIdenter(listOf(signaturFnr, originaltPasientFnr), loggingMeta)
 
                     val samhandlerInfo = kuhrSarClient.getSamhandler(signaturFnr)
                     val samhandlerPraksisMatch = findBestSamhandlerPraksis(
@@ -238,17 +238,17 @@ class BlockingApplicationRunner(
                         )
                         continue@loop
                     } else {
-                        val patientAktorId = identer[pasientFnr]
-                        val doctorAktorId = identer[signaturFnr]
+                        val pasient = identer[originaltPasientFnr]
+                        val behandler = identer[signaturFnr]
 
-                        if (patientAktorId == null) {
+                        if (pasient?.aktorId == null || pasient.fnr == null) {
                             handlePatientNotFoundInPDL(
                                 loggingMeta, fellesformat,
                                 ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
                             )
                             continue@loop
                         }
-                        if (doctorAktorId == null) {
+                        if (behandler?.aktorId == null) {
                             handleDoctorNotFoundInPDL(
                                 loggingMeta, fellesformat,
                                 ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
@@ -362,7 +362,7 @@ class BlockingApplicationRunner(
                             continue@loop
                         }
 
-                        if (erTestFnr(pasientFnr) && env.cluster == "prod-fss") {
+                        if (erTestFnr(originaltPasientFnr) && env.cluster == "prod-fss") {
                             handleTestFnrInProd(
                                 loggingMeta, fellesformat,
                                 ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
@@ -389,15 +389,18 @@ class BlockingApplicationRunner(
 
                         val sykmelding = healthInformation.toSykmelding(
                             sykmeldingId = UUID.randomUUID().toString(),
-                            pasientAktoerId = patientAktorId,
-                            legeAktoerId = doctorAktorId,
+                            pasientAktoerId = pasient.aktorId,
+                            legeAktoerId = behandler.aktorId,
                             msgId = msgId,
                             signaturDato = getLocalDateTime(msgHead.msgInfo.genDate),
                             behandlerFnr = behandlerFnr
                         )
+                        if (originaltPasientFnr != pasient.fnr) {
+                            log.info("Sykmeldingen inneholder eldre ident for pasient, benytter nyeste fra PDL {}", StructuredArguments.fields(loggingMeta))
+                        }
                         val receivedSykmelding = ReceivedSykmelding(
                             sykmelding = sykmelding,
-                            personNrPasient = pasientFnr,
+                            personNrPasient = pasient.fnr,
                             tlfPasient = healthInformation.pasient.kontaktInfo.firstOrNull()?.teleAddress?.v,
                             personNrLege = signaturFnr,
                             navLogId = ediLoggId,

@@ -1,21 +1,10 @@
 package no.nav.syfo.pdl.model
 
+import no.nav.syfo.pdl.client.model.PdlIdent
+
 data class PdlPerson(
-    val navn: Navn,
-    val fnr: String?,
-    val aktorId: String?,
-    val adressebeskyttelse: String?
-)
-
-data class Navn(
-    val fornavn: String,
-    val mellomnavn: String?,
-    val etternavn: String
-)
-
-fun Navn.format(): String =
-    if (mellomnavn != null) {
-        "$fornavn $mellomnavn $etternavn"
-    } else {
-        "$fornavn $etternavn"
-    }
+    val identer: List<PdlIdent>
+) {
+    val fnr: String? = identer.firstOrNull { it.gruppe == "FOLKEREGISTERIDENT" && !it.historisk }?.ident
+    val aktorId: String? = identer.firstOrNull { it.gruppe == "AKTORID" && !it.historisk }?.ident
+}

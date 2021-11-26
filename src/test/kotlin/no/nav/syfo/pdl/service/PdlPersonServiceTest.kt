@@ -32,47 +32,69 @@ object PdlPersonServiceTest : Spek({
 
     describe("Test av PdlPersonService") {
         it("Henter aktørid for pasient og lege") {
-            coEvery { pdlClient.getAktorids(any(), any()) } returns GetPersonResponse(
+            coEvery { pdlClient.getIdenter(any(), any()) } returns GetPersonResponse(
                 ResponseData(
                     hentIdenterBolk = listOf(
-                        HentIdenterBolk("fnrPasient", listOf(PdlIdent("aktorIdPasient", "AKTORID"), PdlIdent("fnrPasient", "FOLKEREGISTERIDENT")), "ok"),
-                        HentIdenterBolk("fnrLege", listOf(PdlIdent("aktorIdLege", "AKTORID"), PdlIdent("fnrLege", "FOLKEREGISTERIDENT")), "ok")
+                        HentIdenterBolk("fnrPasient", listOf(PdlIdent("aktorIdPasient", false, "AKTORID"), PdlIdent("fnrPasient", false, "FOLKEREGISTERIDENT")), "ok"),
+                        HentIdenterBolk("fnrLege", listOf(PdlIdent("aktorIdLege", false, "AKTORID"), PdlIdent("fnrLege", false, "FOLKEREGISTERIDENT")), "ok")
                     )
                 ),
                 errors = null
             )
 
             runBlocking {
-                val aktorids = pdlPersonService.getAktorids(listOf("fnrPasient", "fnrLege"), loggingMeta)
+                val identer = pdlPersonService.getIdenter(listOf("fnrPasient", "fnrLege"), loggingMeta)
 
-                aktorids["fnrPasient"] shouldBeEqualTo "aktorIdPasient"
-                aktorids["fnrLege"] shouldBeEqualTo "aktorIdLege"
+                identer["fnrPasient"]?.aktorId shouldBeEqualTo "aktorIdPasient"
+                identer["fnrLege"]?.aktorId shouldBeEqualTo "aktorIdLege"
+            }
+        }
+        it("Henter nyeste fnr som fnr for pasient med flere identer") {
+            coEvery { pdlClient.getIdenter(any(), any()) } returns GetPersonResponse(
+                ResponseData(
+                    hentIdenterBolk = listOf(
+                        HentIdenterBolk("fnrPasient", listOf(
+                            PdlIdent("aktorIdPasient", false, "AKTORID"),
+                            PdlIdent("gammeltFnrPasient", true, "FOLKEREGISTERIDENT"),
+                            PdlIdent("fnrPasient", false, "FOLKEREGISTERIDENT")
+                        ), "ok"),
+                        HentIdenterBolk("fnrLege", listOf(PdlIdent("aktorIdLege", false, "AKTORID"), PdlIdent("fnrLege", false, "FOLKEREGISTERIDENT")), "ok")
+                    )
+                ),
+                errors = null
+            )
+
+            runBlocking {
+                val identer = pdlPersonService.getIdenter(listOf("fnrPasient", "fnrLege"), loggingMeta)
+
+                identer["fnrPasient"]?.aktorId shouldBeEqualTo "aktorIdPasient"
+                identer["fnrLege"]?.aktorId shouldBeEqualTo "aktorIdLege"
             }
         }
         it("Pasient-aktørid er null hvis pasient ikke finnes i PDL") {
-            coEvery { pdlClient.getAktorids(any(), any()) } returns GetPersonResponse(
+            coEvery { pdlClient.getIdenter(any(), any()) } returns GetPersonResponse(
                 ResponseData(
                     hentIdenterBolk = listOf(
                         HentIdenterBolk("fnrPasient", null, "not_found"),
-                        HentIdenterBolk("fnrLege", listOf(PdlIdent("aktorIdLege", "AKTORID"), PdlIdent("fnrLege", "FOLKEREGISTERIDENT")), "ok")
+                        HentIdenterBolk("fnrLege", listOf(PdlIdent("aktorIdLege", false, "AKTORID"), PdlIdent("fnrLege", false, "FOLKEREGISTERIDENT")), "ok")
                     )
                 ),
                 errors = null
             )
 
             runBlocking {
-                val aktorids = pdlPersonService.getAktorids(listOf("fnrPasient", "fnrLege"), loggingMeta)
+                val identer = pdlPersonService.getIdenter(listOf("fnrPasient", "fnrLege"), loggingMeta)
 
-                aktorids["fnrPasient"] shouldBeEqualTo null
-                aktorids["fnrLege"] shouldBeEqualTo "aktorIdLege"
+                identer["fnrPasient"]?.aktorId shouldBeEqualTo null
+                identer["fnrLege"]?.aktorId shouldBeEqualTo "aktorIdLege"
             }
         }
         it("Skal feile når ingen identer finnes") {
-            coEvery { pdlClient.getAktorids(any(), any()) } returns GetPersonResponse(ResponseData(hentIdenterBolk = emptyList()), errors = null)
+            coEvery { pdlClient.getIdenter(any(), any()) } returns GetPersonResponse(ResponseData(hentIdenterBolk = emptyList()), errors = null)
 
             assertFailsWith<IllegalStateException> {
                 runBlocking {
-                    pdlPersonService.getAktorids(listOf("fnrPasient", "fnrLege"), loggingMeta)
+                    pdlPersonService.getIdenter(listOf("fnrPasient", "fnrLege"), loggingMeta)
                 }
             }
         }
