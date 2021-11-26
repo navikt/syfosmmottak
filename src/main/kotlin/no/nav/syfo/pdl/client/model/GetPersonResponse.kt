@@ -22,7 +22,11 @@ data class HentIdenterBolk(
     val code: String
 )
 
-data class PdlIdent(val ident: String, val gruppe: String)
+data class PdlIdent(
+    val ident: String,
+    val historisk: Boolean,
+    val gruppe: String
+)
 
 data class ErrorLocation(
     val line: String?,

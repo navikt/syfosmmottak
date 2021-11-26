@@ -16,7 +16,7 @@ class PdlClient(
     private val temaHeader = "TEMA"
     private val tema = "SYM"
 
-    suspend fun getAktorids(fnrs: List<String>, stsToken: String): GetPersonResponse {
+    suspend fun getIdenter(fnrs: List<String>, stsToken: String): GetPersonResponse {
         val getPersonRequest = GetPersonRequest(query = graphQlQuery, variables = GetPersonVariables(identer = fnrs))
         return getGraphQLResponse(getPersonRequest, stsToken)
     }
