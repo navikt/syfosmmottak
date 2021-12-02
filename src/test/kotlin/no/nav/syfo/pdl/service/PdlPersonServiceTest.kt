@@ -53,11 +53,15 @@ object PdlPersonServiceTest : Spek({
             coEvery { pdlClient.getIdenter(any(), any()) } returns GetPersonResponse(
                 ResponseData(
                     hentIdenterBolk = listOf(
-                        HentIdenterBolk("fnrPasient", listOf(
-                            PdlIdent("aktorIdPasient", false, "AKTORID"),
-                            PdlIdent("gammeltFnrPasient", true, "FOLKEREGISTERIDENT"),
-                            PdlIdent("fnrPasient", false, "FOLKEREGISTERIDENT")
-                        ), "ok"),
+                        HentIdenterBolk(
+                            "fnrPasient",
+                            listOf(
+                                PdlIdent("aktorIdPasient", false, "AKTORID"),
+                                PdlIdent("gammeltFnrPasient", true, "FOLKEREGISTERIDENT"),
+                                PdlIdent("fnrPasient", false, "FOLKEREGISTERIDENT")
+                            ),
+                            "ok"
+                        ),
                         HentIdenterBolk("fnrLege", listOf(PdlIdent("aktorIdLege", false, "AKTORID"), PdlIdent("fnrLege", false, "FOLKEREGISTERIDENT")), "ok")
                     )
                 ),
