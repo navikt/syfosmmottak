@@ -546,10 +546,16 @@ class BlockingApplicationRunner(
      * Finds the sender's FNR, either by matching HPR against signerende behandler or by doing a lookup against HPR
      */
     private suspend fun getBehandlerFnr(avsenderHpr: String?, signerendeBehandler: Behandler?, loggingMeta: LoggingMeta): String? {
-        return if (avsenderHpr == signerendeBehandler?.hprNummer) {
-            signerendeBehandler?.fnr
-        } else {
-            norskHelsenettClient.getByHpr(avsenderHpr, loggingMeta)?.fnr
+        return when (avsenderHpr) {
+            null -> {
+                null
+            }
+            signerendeBehandler?.hprNummer -> {
+                signerendeBehandler.fnr
+            }
+            else -> {
+                norskHelsenettClient.getByHpr(avsenderHpr, loggingMeta)?.fnr
+            }
         }
     }
 

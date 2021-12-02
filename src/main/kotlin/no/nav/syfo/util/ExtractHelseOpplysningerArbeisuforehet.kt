@@ -29,7 +29,7 @@ fun extractOrganisationHerNumberFromSender(fellesformat: XMLEIFellesformat): XML
     }
 
 fun extractHpr(fellesformat: XMLEIFellesformat): XMLIdent? =
-    fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.healthcareProfessional.ident.find {
+    fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.healthcareProfessional?.ident?.find {
         it.typeId.v == "HPR"
     }
 
