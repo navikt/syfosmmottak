@@ -7,7 +7,6 @@ import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.client.statement.HttpStatement
 import io.ktor.http.ContentType
-import io.ktor.util.KtorExperimentalAPI
 import net.logstash.logback.argument.StructuredArguments.fields
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.syfo.helpers.retry
@@ -17,7 +16,6 @@ import org.apache.commons.text.similarity.LevenshteinDistance
 import java.util.Date
 import kotlin.math.max
 
-@KtorExperimentalAPI
 class SarClient(
     private val endpointUrl: String,
     private val httpClient: HttpClient
@@ -26,7 +24,7 @@ class SarClient(
         httpClient.get<HttpStatement>("$endpointUrl/rest/sar/samh") {
             accept(ContentType.Application.Json)
             parameter("ident", ident)
-        }.execute().call.response.receive<List<Samhandler>>()
+        }.execute().call.response.receive()
     }
 }
 
@@ -196,7 +194,7 @@ fun findBestSamhandlerPraksis(
     return aktiveSamhandlereMedNavn
         .map { samhandlerPraksis ->
             SamhandlerPraksisMatch(samhandlerPraksis, calculatePercentageStringMatch(samhandlerPraksis.navn, orgName) * 100)
-        }.maxBy { it.percentageMatch }
+        }.maxByOrNull { it.percentageMatch }
 }
 
 fun samhandlerMatchingPaaOrganisjonsNavn(samhandlere: List<Samhandler>, orgName: String): SamhandlerPraksisMatch? {
@@ -207,7 +205,7 @@ fun samhandlerMatchingPaaOrganisjonsNavn(samhandlere: List<Samhandler>, orgName:
         inaktiveSamhandlereMedNavn
             .map { samhandlerPraksis ->
                 SamhandlerPraksisMatch(samhandlerPraksis, calculatePercentageStringMatch(samhandlerPraksis.navn?.toLowerCase(), orgName.toLowerCase()) * 100)
-            }.maxBy { it.percentageMatch }
+            }.maxByOrNull { it.percentageMatch }
     } else {
         null
     }

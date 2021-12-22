@@ -12,7 +12,6 @@ import io.ktor.client.features.auth.Auth
 import io.ktor.client.features.auth.providers.basic
 import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
-import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.Environment
 import no.nav.syfo.VaultCredentials
 import no.nav.syfo.client.AccessTokenClientV2
@@ -79,19 +78,18 @@ class HttpClients(environment: Environment, credentials: VaultCredentials) {
 
     private val httpClientWithProxy = HttpClient(Apache, proxyConfig)
 
-    @KtorExperimentalAPI
     val syfoSykemeldingRuleClient = SyfoSykemeldingRuleClient(environment.syfosmreglerApiUrl, httpClientMedBasicAuth)
-    @KtorExperimentalAPI
+
     val sarClient = SarClient(environment.kuhrSarApiUrl, simpleHttpClient)
-    @KtorExperimentalAPI
+
     val accessTokenClientV2 = AccessTokenClientV2(
         environment.aadAccessTokenV2Url,
         environment.clientIdV2,
         environment.clientSecretV2,
         httpClientWithProxy
     )
-    @KtorExperimentalAPI
+
     val norskHelsenettClient = NorskHelsenettClient(environment.norskHelsenettEndpointURL, accessTokenClientV2, environment.helsenettproxyScope, simpleHttpClient)
-    @KtorExperimentalAPI
+
     val pdlPersonService = PdlFactory.getPdlService(environment, simpleHttpClient, accessTokenClientV2, environment.pdlScope)
 }

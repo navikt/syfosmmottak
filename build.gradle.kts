@@ -1,50 +1,48 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransformer
-import no.nils.wsdl2java.Wsdl2JavaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "no.nav.syfo"
 version = "1.0.0"
 
 val artemisVersion = "2.6.4"
-val coroutinesVersion = "1.4.2"
+val coroutinesVersion = "1.5.2"
 val fellesformatVersion = "1.c22de09"
-val ibmMqVersion = "9.2.1.0"
+val ibmMqVersion = "9.2.4.0"
 val javaxActivationVersion = "1.1.1"
-val jacksonVersion = "2.12.3"
+val jacksonVersion = "2.13.0"
 val jaxbApiVersion = "2.4.0-b180830.0359"
 val jaxbVersion = "2.3.0.1"
 val jedisVersion = "3.1.0"
-val kafkaVersion = "2.4.0"
-val kafkaEmbeddedVersion = "2.4.0"
+val kafkaVersion = "3.0.0"
 val kithHodemeldingVersion = "1.c22de09"
 val kithApprecVersion = "1.c22de09"
-val kluentVersion = "1.65"
-val ktorVersion = "1.5.1"
-val logbackVersion = "1.2.3"
-val logstashEncoderVersion = "6.5"
-val prometheusVersion = "0.9.0"
-val smCommonVersion = "1.e6f10d8"
-val spekVersion = "2.0.9"
+val kluentVersion = "1.68"
+val ktorVersion = "1.6.7"
+val logbackVersion = "1.2.8"
+val logstashEncoderVersion = "7.0.1"
+val prometheusVersion = "0.12.0"
+val smCommonVersion = "1.a92720c"
+val spekVersion = "2.0.17"
 val sykmeldingVersion = "1.c22de09"
 val cxfVersion = "3.2.7"
 val jaxwsApiVersion = "2.3.1"
 val commonsTextVersion = "1.4"
 val syfooppgaveSchemasVersion = "c8be932543e7356a34690ce7979d494c5d8516d8"
-val confluentVersion = "5.3.1"
+val confluentVersion = "6.2.2"
 val javaxAnnotationApiVersion = "1.3.2"
-val jaxwsToolsVersion = "2.3.1"
+val jaxwsToolsVersion = "2.3.2"
 val jaxbRuntimeVersion = "2.4.0-b180830.0438"
 val javaTimeAdapterVersion = "1.1.3"
-val mockkVersion = "1.9.3"
+val mockkVersion = "1.12.1"
+val kotlinVersion = "1.6.0"
 
 plugins {
-    java
-    id("no.nils.wsdl2java") version "0.10"
-    kotlin("jvm") version "1.4.21"
-    id("org.jmailen.kotlinter") version "3.3.0"
-    id("com.diffplug.spotless") version "5.8.2"
-    id("com.github.johnrengelman.shadow") version "6.1.0"
+    id("io.mateo.cxf-codegen") version "1.0.0-rc.3"
+    kotlin("jvm") version "1.6.0"
+    id("org.jmailen.kotlinter") version "3.6.0"
+    id("com.diffplug.spotless") version "5.16.0"
+    id("com.github.johnrengelman.shadow") version "7.0.0"
 }
 
 
@@ -64,10 +62,7 @@ val githubPassword: String by project
 
 repositories {
     mavenCentral()
-    jcenter()
-    maven(url= "https://dl.bintray.com/spekframework/spek-dev")
     maven(url= "https://packages.confluent.io/maven/")
-    maven(url= "https://kotlin.bintray.com/kotlinx")
     maven {
         url = uri("https://maven.pkg.github.com/navikt/syfosm-common")
         credentials {
@@ -78,14 +73,17 @@ repositories {
 }
 
 dependencies {
-    wsdl2java("javax.annotation:javax.annotation-api:$javaxAnnotationApiVersion")
-    wsdl2java("javax.activation:activation:$javaxActivationVersion")
-    wsdl2java("org.glassfish.jaxb:jaxb-runtime:$jaxbRuntimeVersion")
-    wsdl2java("javax.xml.bind:jaxb-api:$jaxbApiVersion")
-    wsdl2java ("javax.xml.ws:jaxws-api:$jaxwsApiVersion")
-    wsdl2java ("com.sun.xml.ws:jaxws-tools:$jaxwsToolsVersion") {
+    cxfCodegen("javax.annotation:javax.annotation-api:$javaxAnnotationApiVersion")
+    cxfCodegen("javax.activation:activation:$javaxActivationVersion")
+    cxfCodegen("org.glassfish.jaxb:jaxb-runtime:$jaxbRuntimeVersion")
+    cxfCodegen("javax.xml.bind:jaxb-api:$jaxbApiVersion")
+    cxfCodegen ("javax.xml.ws:jaxws-api:$jaxwsApiVersion")
+    cxfCodegen ("com.sun.xml.ws:jaxws-tools:$jaxwsToolsVersion") {
         exclude(group = "com.sun.xml.ws", module = "policy")
     }
+    cxfCodegen("com.sun.xml.bind:jaxb-impl:2.3.3")
+    cxfCodegen("jakarta.xml.ws:jakarta.xml.ws-api:2.3.3")
+    cxfCodegen("jakarta.annotation:jakarta.annotation-api:1.3.5")
 
     implementation(kotlin("stdlib"))
 
@@ -137,13 +135,13 @@ dependencies {
     implementation("com.sun.xml.ws:jaxws-tools:$jaxwsToolsVersion") {
         exclude(group = "com.sun.xml.ws", module = "policy")
     }
+    testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
         exclude(group = "org.eclipse.jetty")
     }
-    testImplementation("no.nav:kafka-embedded-env:$kafkaEmbeddedVersion")
     testImplementation("org.apache.activemq:artemis-server:$artemisVersion")
     testImplementation("org.apache.activemq:artemis-jms-client:$artemisVersion")
 
@@ -161,7 +159,14 @@ tasks {
     withType<Jar> {
         manifest.attributes["Main-Class"] = "no.nav.syfo.BootstrapKt"
     }
-
+    cxfCodegen {
+        wsdl2java {
+            register("subscription") {
+                wsdl.set(file("$projectDir/src/main/resources/wsdl/subscription.wsdl"))
+                bindingFiles.add("$projectDir/src/main/resources/xjb/binding.xml")
+            }
+        }
+    }
     create("printVersion") {
 
         doLast {
@@ -169,17 +174,11 @@ tasks {
         }
     }
     withType<KotlinCompile> {
-        dependsOn("wsdl2java")
-
-        kotlinOptions.jvmTarget = "12"
+        dependsOn("wsdl2javaSubscription")
+        kotlinOptions.jvmTarget = "17"
     }
 
-    withType<Wsdl2JavaTask> {
-        wsdlDir = file("$projectDir/src/main/resources/wsdl")
-        wsdlsToGenerate = listOf(
-                mutableListOf("-xjc", "-b", "$projectDir/src/main/resources/xjb/binding.xml", "$projectDir/src/main/resources/wsdl/subscription.wsdl")
-        )
-    }
+
 
     withType<ShadowJar> {
         transform(ServiceFileTransformer::class.java) {
