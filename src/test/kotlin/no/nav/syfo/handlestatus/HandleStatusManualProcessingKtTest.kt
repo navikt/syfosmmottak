@@ -1,6 +1,5 @@
 package no.nav.syfo.handlestatus
 
-import io.ktor.util.KtorExperimentalAPI
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
@@ -31,7 +30,6 @@ import javax.jms.MessageProducer
 import javax.jms.Session
 import kotlin.test.assertFailsWith
 
-@KtorExperimentalAPI
 class HandleStatusManualProcessingKtTest : Spek({
     val kafkaApprecProducer = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
     val session = mockk<Session>(relaxed = true)

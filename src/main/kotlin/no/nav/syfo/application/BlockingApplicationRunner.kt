@@ -1,6 +1,5 @@
 package no.nav.syfo.application
 
-import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.delay
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.emottak.subscription.SubscriptionPort
@@ -103,7 +102,6 @@ class BlockingApplicationRunner(
     private val session: Session
 ) {
 
-    @KtorExperimentalAPI
     suspend fun run(
         inputconsumer: MessageConsumer,
         syfoserviceProducer: MessageProducer,

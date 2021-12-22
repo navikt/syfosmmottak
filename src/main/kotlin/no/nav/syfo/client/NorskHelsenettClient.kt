@@ -9,7 +9,6 @@ import io.ktor.client.statement.HttpStatement
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.HttpStatusCode.Companion.NotFound
-import io.ktor.util.KtorExperimentalAPI
 import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.helpers.retry
 import no.nav.syfo.log
@@ -24,7 +23,6 @@ class NorskHelsenettClient(
     private val httpClient: HttpClient
 ) {
 
-    @KtorExperimentalAPI
     suspend fun getByHpr(hprNummer: String?, loggingMeta: LoggingMeta): Behandler? {
         return retry(
             callName = "finnbehandler",
@@ -65,7 +63,6 @@ class NorskHelsenettClient(
         }
     }
 
-    @KtorExperimentalAPI
     suspend fun getByFnr(fnr: String, loggingMeta: LoggingMeta): Behandler? {
         return retry(
             callName = "finnbehandler",
