@@ -8,7 +8,7 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import no.nav.syfo.client.KuhrSarClientSpek
 import no.nav.syfo.client.Samhandler
 import no.nav.syfo.service.samhandlerParksisisLegevakt
-import org.amshove.kluent.shouldEqualTo
+import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
@@ -25,15 +25,15 @@ object StartSubscription : Spek({
         val samhandlerfale: List<Samhandler> = objectMapper.readValue(KuhrSarClientSpek::class.java.getResourceAsStream("/kuhr_sahr_fale.json").readBytes().toString(Charsets.UTF_8))
 
         it("Skal opprette subscription") {
-            !samhandlerParksisisLegevakt(samhandlerfale.first().samh_praksis.first()) shouldEqualTo true
+            !samhandlerParksisisLegevakt(samhandlerfale.first().samh_praksis.first()) shouldBeEqualTo true
         }
 
         it("Skal ikkje opprette subscription når samhanlder praksis er legevakt") {
-            !samhandlerParksisisLegevakt(samhandlerleva.first().samh_praksis.first()) shouldEqualTo false
+            !samhandlerParksisisLegevakt(samhandlerleva.first().samh_praksis.first()) shouldBeEqualTo false
         }
 
         it("Skal ikkje opprette subscription når samhanlder praksis er legevakt") {
-            !samhandlerParksisisLegevakt(samhandlerleko.first().samh_praksis.first()) shouldEqualTo false
+            !samhandlerParksisisLegevakt(samhandlerleko.first().samh_praksis.first()) shouldBeEqualTo false
         }
     }
 })

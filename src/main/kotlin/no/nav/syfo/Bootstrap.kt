@@ -7,6 +7,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -88,6 +89,7 @@ fun main() {
     )
 }
 
+@DelicateCoroutinesApi
 fun createListener(applicationState: ApplicationState, action: suspend CoroutineScope.() -> Unit): Job =
     GlobalScope.launch {
         try {
@@ -99,6 +101,7 @@ fun createListener(applicationState: ApplicationState, action: suspend Coroutine
         }
     }
 
+@DelicateCoroutinesApi
 fun launchListeners(
     env: Environment,
     applicationState: ApplicationState,

@@ -204,7 +204,7 @@ fun samhandlerMatchingPaaOrganisjonsNavn(samhandlere: List<Samhandler>, orgName:
     return if (!inaktiveSamhandlereMedNavn.isNullOrEmpty()) {
         inaktiveSamhandlereMedNavn
             .map { samhandlerPraksis ->
-                SamhandlerPraksisMatch(samhandlerPraksis, calculatePercentageStringMatch(samhandlerPraksis.navn?.toLowerCase(), orgName.toLowerCase()) * 100)
+                SamhandlerPraksisMatch(samhandlerPraksis, calculatePercentageStringMatch(samhandlerPraksis.navn?.lowercase(), orgName.lowercase()) * 100)
             }.maxByOrNull { it.percentageMatch }
     } else {
         null

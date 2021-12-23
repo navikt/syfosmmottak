@@ -8,12 +8,16 @@ import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.apache.Apache
 import io.ktor.client.engine.apache.ApacheEngineConfig
+import io.ktor.client.features.HttpResponseValidator
 import io.ktor.client.features.auth.Auth
+import io.ktor.client.features.auth.providers.BasicAuthCredentials
 import io.ktor.client.features.auth.providers.basic
 import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
+import io.ktor.network.sockets.SocketTimeoutException
 import no.nav.syfo.Environment
 import no.nav.syfo.VaultCredentials
+import no.nav.syfo.application.exception.ServiceUnavailableException
 import no.nav.syfo.client.AccessTokenClientV2
 import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SarClient
@@ -33,15 +37,26 @@ class HttpClients(environment: Environment, credentials: VaultCredentials) {
                 configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             }
         }
+        HttpResponseValidator {
+            handleResponseException { exception ->
+                when (exception) {
+                    is SocketTimeoutException -> throw ServiceUnavailableException(exception.message)
+                }
+            }
+        }
         expectSuccess = false
     }
 
     private val httpClientMedBasicAuth = HttpClient(Apache) {
         install(Auth) {
             basic {
-                username = credentials.serviceuserUsername
-                password = credentials.serviceuserPassword
-                sendWithoutRequest = true
+                credentials {
+                    BasicAuthCredentials(
+                        username = credentials.serviceuserUsername,
+                        password = credentials.serviceuserPassword
+                    )
+                }
+                sendWithoutRequest { true }
             }
         }
         install(JsonFeature) {
