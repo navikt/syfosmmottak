@@ -43,12 +43,12 @@ import no.nav.syfo.metrics.MANGLER_TSSIDENT
 import no.nav.syfo.metrics.REQUEST_TIME
 import no.nav.syfo.metrics.SYKMELDING_VEDLEGG_COUNTER
 import no.nav.syfo.model.ManuellOppgave
+import no.nav.syfo.model.OpprettOppgaveKafkaMessage
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.model.toSykmelding
 import no.nav.syfo.pdl.service.PdlPersonService
-import no.nav.syfo.sak.avro.ProduceTask
 import no.nav.syfo.service.samhandlerParksisisLegevakt
 import no.nav.syfo.service.sha256hashstring
 import no.nav.syfo.service.startSubscription
@@ -108,7 +108,7 @@ class BlockingApplicationRunner(
         backoutProducer: MessageProducer,
         kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
         kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
-        kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
+        kafkaManuelTaskProducer: KafkaProducer<String, OpprettOppgaveKafkaMessage>,
         kafkaproducerApprec: KafkaProducer<String, Apprec>,
         kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
         kafkaVedleggProducer: KafkaVedleggProducer
@@ -442,14 +442,14 @@ class BlockingApplicationRunner(
                                 ediLoggId,
                                 msgId,
                                 msgHead,
-                                env.sm2013Apprec,
+                                env.apprecTopic,
                                 kafkaproducerApprec,
                                 loggingMeta,
                                 session,
                                 syfoserviceProducer,
                                 healthInformation,
                                 env.syfoserviceQueueName,
-                                env.sm2013AutomaticHandlingTopic,
+                                env.okSykmeldingTopic,
                                 receivedSykmelding,
                                 kafkaproducerreceivedSykmelding
                             )
@@ -460,7 +460,7 @@ class BlockingApplicationRunner(
                                 ediLoggId,
                                 msgId,
                                 msgHead,
-                                env.sm2013Apprec,
+                                env.apprecTopic,
                                 kafkaproducerApprec,
                                 session,
                                 syfoserviceProducer,
@@ -469,23 +469,24 @@ class BlockingApplicationRunner(
                                 validationResult,
                                 kafkaManuelTaskProducer,
                                 kafkaproducerreceivedSykmelding,
-                                env.sm2013ManualHandlingTopic,
+                                env.manuellBehandlingSykmeldingTopic,
                                 kafkaproducervalidationResult,
-                                env.sm2013BehandlingsUtfallTopic,
+                                env.behandlingsUtfallTopic,
                                 kafkaproducerManuellOppgave,
-                                env.syfoSmManuellTopic
+                                env.syfoSmManuellTopic,
+                                env.produserOppgaveTopic
                             )
 
                             Status.INVALID -> handleStatusINVALID(
                                 validationResult,
                                 kafkaproducerreceivedSykmelding,
                                 kafkaproducervalidationResult,
-                                env.sm2013InvalidHandlingTopic,
+                                env.avvistSykmeldingTopic,
                                 receivedSykmelding,
                                 loggingMeta,
                                 fellesformat,
-                                env.sm2013Apprec,
-                                env.sm2013BehandlingsUtfallTopic,
+                                env.apprecTopic,
+                                env.behandlingsUtfallTopic,
                                 kafkaproducerApprec,
                                 ediLoggId,
                                 msgId,

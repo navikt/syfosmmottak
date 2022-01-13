@@ -22,19 +22,19 @@ fun handleStatusOK(
     ediLoggId: String,
     msgId: String,
     msgHead: XMLMsgHead,
-    sm2013ApprecTopic: String,
+    apprecTopic: String,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     loggingMeta: LoggingMeta,
     session: Session,
     syfoserviceProducer: MessageProducer,
     healthInformation: HelseOpplysningerArbeidsuforhet,
     syfoserviceQueueName: String,
-    sm2013AutomaticHandlingTopic: String,
+    okSykmeldingTopic: String,
     receivedSykmelding: ReceivedSykmelding,
     kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>
 ) {
 
-    sendReceivedSykmelding(sm2013AutomaticHandlingTopic, receivedSykmelding, kafkaproducerreceivedSykmelding)
+    sendReceivedSykmelding(okSykmeldingTopic, receivedSykmelding, kafkaproducerreceivedSykmelding)
 
     val apprec = fellesformat.toApprec(
         ediLoggId,
@@ -46,7 +46,7 @@ fun handleStatusOK(
         msgHead.msgInfo.sender.organisation,
         msgHead.msgInfo.genDate
     )
-    sendReceipt(apprec, sm2013ApprecTopic, kafkaproducerApprec)
+    sendReceipt(apprec, apprecTopic, kafkaproducerApprec)
 
     notifySyfoService(
         session = session, receiptProducer = syfoserviceProducer, ediLoggId = ediLoggId,

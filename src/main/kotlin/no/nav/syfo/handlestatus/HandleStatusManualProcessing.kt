@@ -9,11 +9,11 @@ import no.nav.syfo.apprec.ApprecStatus
 import no.nav.syfo.apprec.toApprec
 import no.nav.syfo.log
 import no.nav.syfo.model.ManuellOppgave
+import no.nav.syfo.model.OpprettOppgaveKafkaMessage
+import no.nav.syfo.model.PrioritetType
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.RuleInfo
 import no.nav.syfo.model.ValidationResult
-import no.nav.syfo.sak.avro.PrioritetType
-import no.nav.syfo.sak.avro.ProduceTask
 import no.nav.syfo.sendReceipt
 import no.nav.syfo.sendReceivedSykmelding
 import no.nav.syfo.sendValidationResult
@@ -34,20 +34,21 @@ fun handleStatusMANUALPROCESSING(
     ediLoggId: String,
     msgId: String,
     msgHead: XMLMsgHead,
-    sm2013ApprecTopic: String,
+    apprecTopic: String,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     session: Session,
     syfoserviceProducer: MessageProducer,
     healthInformation: HelseOpplysningerArbeidsuforhet,
     syfoserviceQueueName: String,
     validationResult: ValidationResult,
-    kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
+    kafkaManuelTaskProducer: KafkaProducer<String, OpprettOppgaveKafkaMessage>,
     kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
-    sm2013ManualHandlingTopic: String,
+    manuellBehandlingSykmeldingTopic: String,
     kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
-    sm2013BehandlingsUtfallTopic: String,
+    behandlingsUtfallTopic: String,
     kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
-    syfoSmManuellTopic: String
+    syfoSmManuellTopic: String,
+    produserOppgaveTopic: String
 ) {
     val sendToSyfosmManuell = sendToSyfosmManuell(ruleHits = validationResult.ruleHits)
 
@@ -66,11 +67,11 @@ fun handleStatusMANUALPROCESSING(
         sendManuellTask(receivedSykmelding, validationResult, apprec, syfoSmManuellTopic, kafkaproducerManuellOppgave)
     } else {
         log.info("Sending manuell oppgave to syfosmoppgave {}", StructuredArguments.fields(loggingMeta))
-        opprettOppgave(kafkaManuelTaskProducer, receivedSykmelding, validationResult, loggingMeta)
+        opprettOppgave(kafkaManuelTaskProducer, receivedSykmelding, validationResult, produserOppgaveTopic, loggingMeta)
 
-        sendReceivedSykmelding(sm2013ManualHandlingTopic, receivedSykmelding, kafkaproducerreceivedSykmelding)
+        sendReceivedSykmelding(manuellBehandlingSykmeldingTopic, receivedSykmelding, kafkaproducerreceivedSykmelding)
 
-        sendValidationResult(validationResult, kafkaproducervalidationResult, sm2013BehandlingsUtfallTopic, receivedSykmelding, loggingMeta)
+        sendValidationResult(validationResult, kafkaproducervalidationResult, behandlingsUtfallTopic, receivedSykmelding, loggingMeta)
 
         val apprec = fellesformat.toApprec(
             ediLoggId,
@@ -82,8 +83,8 @@ fun handleStatusMANUALPROCESSING(
             msgHead.msgInfo.sender.organisation,
             msgHead.msgInfo.genDate
         )
-        sendReceipt(apprec, sm2013ApprecTopic, kafkaproducerApprec)
-        log.info("Apprec receipt sent to kafka topic {}, {}", sm2013ApprecTopic, StructuredArguments.fields(loggingMeta))
+        sendReceipt(apprec, apprecTopic, kafkaproducerApprec)
+        log.info("Apprec receipt sent to kafka topic {}, {}", apprecTopic, StructuredArguments.fields(loggingMeta))
 
         notifySyfoService(
             session = session, receiptProducer = syfoserviceProducer, ediLoggId = ediLoggId,
@@ -94,50 +95,53 @@ fun handleStatusMANUALPROCESSING(
 }
 
 fun opprettOppgave(
-    kafkaProducer: KafkaProducer<String, ProduceTask>,
+    kafkaProducer: KafkaProducer<String, OpprettOppgaveKafkaMessage>,
     receivedSykmelding: ReceivedSykmelding,
     results: ValidationResult,
+    produserOppgaveTopic: String,
     loggingMeta: LoggingMeta
 ) {
     try {
         kafkaProducer.send(
             ProducerRecord(
-                "aapen-syfo-oppgave-produserOppgave",
+                produserOppgaveTopic,
                 receivedSykmelding.sykmelding.id,
-                opprettProduceTask(receivedSykmelding, results, loggingMeta)
+                opprettOpprettOppgaveKafkaMessage(receivedSykmelding, results, loggingMeta)
             )
         ).get()
-        log.info("Message sendt to topic: aapen-syfo-oppgave-produserOppgave {}", StructuredArguments.fields(loggingMeta))
+        log.info("Message sendt to topic: $produserOppgaveTopic {}", StructuredArguments.fields(loggingMeta))
     } catch (ex: Exception) {
         log.error("Failed to send producer task for sykmelding {} to kafka", receivedSykmelding.sykmelding.id)
         throw ex
     }
 }
 
-fun opprettProduceTask(receivedSykmelding: ReceivedSykmelding, validationResult: ValidationResult, loggingMeta: LoggingMeta): ProduceTask {
-    val oppgave = ProduceTask().apply {
-        messageId = receivedSykmelding.msgId
-        aktoerId = receivedSykmelding.sykmelding.pasientAktoerId
-        tildeltEnhetsnr = ""
-        opprettetAvEnhetsnr = "9999"
-        behandlesAvApplikasjon = "FS22" // Gosys
-        orgnr = receivedSykmelding.legekontorOrgNr ?: ""
-        beskrivelse = "Manuell behandling av sykmelding grunnet følgende regler: ${validationResult.ruleHits.joinToString(", ", "(", ")") { it.messageForSender }}"
-        temagruppe = "ANY"
-        tema = "SYM"
-        behandlingstema = "ANY"
-        oppgavetype = "BEH_EL_SYM"
-        behandlingstype = "ANY"
-        mappeId = 1
-        aktivDato = DateTimeFormatter.ISO_DATE.format(LocalDate.now())
-        fristFerdigstillelse = DateTimeFormatter.ISO_DATE.format(finnFristForFerdigstillingAvOppgave(LocalDate.now().plusDays(4)))
-        prioritet = PrioritetType.NORM
+fun opprettOpprettOppgaveKafkaMessage(receivedSykmelding: ReceivedSykmelding, validationResult: ValidationResult, loggingMeta: LoggingMeta): OpprettOppgaveKafkaMessage {
+    val oppgave = OpprettOppgaveKafkaMessage(
+        messageId = receivedSykmelding.msgId,
+        aktoerId = receivedSykmelding.sykmelding.pasientAktoerId,
+        tildeltEnhetsnr = "",
+        opprettetAvEnhetsnr = "9999",
+        behandlesAvApplikasjon = "FS22", // Gosys
+        orgnr = receivedSykmelding.legekontorOrgNr ?: "",
+        beskrivelse = "Manuell behandling av sykmelding grunnet følgende regler: ${validationResult.ruleHits.joinToString(", ", "(", ")") { it.messageForSender }}",
+        temagruppe = "ANY",
+        tema = "SYM",
+        behandlingstema = if (validationResult.ruleHits.find { it.ruleName == "SYKMELDING_MED_BEHANDLINGSDAGER" } != null) {
+            log.info("Sykmelding inneholder behandlingsdager, {}", StructuredArguments.fields(loggingMeta))
+            "ab0351"
+        } else {
+            "ANY"
+        },
+        oppgavetype = "BEH_EL_SYM",
+        behandlingstype = "ANY",
+        mappeId = 1,
+        aktivDato = DateTimeFormatter.ISO_DATE.format(LocalDate.now()),
+        fristFerdigstillelse = DateTimeFormatter.ISO_DATE.format(finnFristForFerdigstillingAvOppgave(LocalDate.now().plusDays(4))),
+        prioritet = PrioritetType.NORM,
         metadata = mapOf()
-    }
-    if (validationResult.ruleHits.find { it.ruleName == "SYKMELDING_MED_BEHANDLINGSDAGER" } != null) {
-        log.info("Sykmelding inneholder behandlingsdager, {}", StructuredArguments.fields(loggingMeta))
-        oppgave.behandlingstema = "ab0351"
-    }
+    )
+
     return oppgave
 }
 

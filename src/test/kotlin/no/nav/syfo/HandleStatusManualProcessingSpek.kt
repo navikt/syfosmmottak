@@ -1,7 +1,7 @@
 package no.nav.syfo
 
 import io.mockk.mockk
-import no.nav.syfo.handlestatus.opprettProduceTask
+import no.nav.syfo.handlestatus.opprettOpprettOppgaveKafkaMessage
 import no.nav.syfo.handlestatus.sendToSyfosmManuell
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.RuleInfo
@@ -63,7 +63,7 @@ object HandleStatusManualProcessingSpek : Spek({
                 )
             )
 
-            val oppgave = opprettProduceTask(receivedSykmelding, validationResults, loggingMeta)
+            val oppgave = opprettOpprettOppgaveKafkaMessage(receivedSykmelding, validationResults, loggingMeta)
 
             oppgave.behandlingstema shouldBeEqualTo "ab0351"
         }

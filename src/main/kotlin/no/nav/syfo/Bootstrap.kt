@@ -25,13 +25,13 @@ import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.kafka.vedlegg.producer.KafkaVedleggProducer
 import no.nav.syfo.model.ManuellOppgave
+import no.nav.syfo.model.OpprettOppgaveKafkaMessage
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.mq.connectionFactory
 import no.nav.syfo.mq.consumerForQueue
 import no.nav.syfo.mq.producerForQueue
 import no.nav.syfo.pdl.service.PdlPersonService
-import no.nav.syfo.sak.avro.ProduceTask
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.TrackableException
 import no.nav.syfo.util.getFileAsString
@@ -112,7 +112,7 @@ fun launchListeners(
     kuhrSarClient: SarClient,
     pdlPersonService: PdlPersonService,
     credentials: VaultCredentials,
-    kafkaManuelTaskProducer: KafkaProducer<String, ProduceTask>,
+    kafkaManuelTaskProducer: KafkaProducer<String, OpprettOppgaveKafkaMessage>,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
     norskHelsenettClient: NorskHelsenettClient,
@@ -160,12 +160,12 @@ fun launchListeners(
 
 fun sendReceipt(
     apprec: Apprec,
-    sm2013ApprecTopic: String,
+    apprecTopic: String,
     kafkaproducerApprec: KafkaProducer<String, Apprec>
 ) {
     try {
-        kafkaproducerApprec.send(ProducerRecord(sm2013ApprecTopic, apprec)).get()
-        log.info("Apprec receipt sent to kafka topic {}", sm2013ApprecTopic)
+        kafkaproducerApprec.send(ProducerRecord(apprecTopic, apprec)).get()
+        log.info("Apprec receipt sent to kafka topic {}", apprecTopic)
     } catch (ex: Exception) {
         log.error("failed to send apprec to kafka")
         throw ex
@@ -175,16 +175,16 @@ fun sendReceipt(
 fun sendValidationResult(
     validationResult: ValidationResult,
     kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
-    sm2013BehandlingsUtfallToipic: String,
+    behandlingsUtfallTopic: String,
     receivedSykmelding: ReceivedSykmelding,
     loggingMeta: LoggingMeta
 ) {
 
     try {
         kafkaproducervalidationResult.send(
-            ProducerRecord(sm2013BehandlingsUtfallToipic, receivedSykmelding.sykmelding.id, validationResult)
+            ProducerRecord(behandlingsUtfallTopic, receivedSykmelding.sykmelding.id, validationResult)
         ).get()
-        log.info("Validation results send to kafka {}, {}", sm2013BehandlingsUtfallToipic, fields(loggingMeta))
+        log.info("Validation results send to kafka {}, {}", behandlingsUtfallTopic, fields(loggingMeta))
     } catch (ex: Exception) {
         log.error("failed to send validation result for sykmelding {}", receivedSykmelding.sykmelding.id)
         throw ex
