@@ -13,7 +13,7 @@ data class Environment(
     val applicationPort: Int = getEnvVar("APPLICATION_PORT", "8080").toInt(),
     val applicationName: String = getEnvVar("NAIS_APP_NAME", "syfosmmottak"),
     override val kafkaBootstrapServers: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS_URL"),
-    val syfoSmManuellTopic: String = getEnvVar("KAFKA_SYFO_SM_MANUELL_TOPIC", "privat-syfo-sm2013-manuell"),
+    val syfoSmManuellTopic: String = "teamsykmelding.sykmelding-manuell",
     val okSykmeldingTopic: String = "teamsykmelding.ok-sykmelding",
     val manuellBehandlingSykmeldingTopic: String = "teamsykmelding.manuell-behandling-sykmelding",
     val avvistSykmeldingTopic: String = "teamsykmelding.avvist-sykmelding",

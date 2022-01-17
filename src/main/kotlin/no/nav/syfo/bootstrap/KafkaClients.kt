@@ -18,14 +18,10 @@ import org.apache.kafka.clients.producer.ProducerConfig
 class KafkaClients constructor(env: Environment, credentials: VaultCredentials) {
 
     private val kafkaBaseConfig = loadBaseConfig(env, credentials)
-    private val producerProperties = kafkaBaseConfig
-        .toProducerConfig(env.applicationName, valueSerializer = JacksonKafkaSerializer::class)
     private val vedleggProducerProperties = kafkaBaseConfig.toProducerConfig(env.applicationName, valueSerializer = JacksonKafkaSerializer::class)
     private val producerPropertiesAiven = KafkaUtils.getAivenKafkaConfig()
         .toProducerConfig(env.applicationName, valueSerializer = JacksonKafkaSerializer::class)
     init {
-        producerProperties[ProducerConfig.RETRIES_CONFIG] = 100_000
-        producerProperties[ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG] = true
         vedleggProducerProperties[ProducerConfig.RETRIES_CONFIG] = 100_000
         vedleggProducerProperties[ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG] = true
         vedleggProducerProperties[ProducerConfig.MAX_REQUEST_SIZE_CONFIG] = "8388608"
@@ -37,6 +33,6 @@ class KafkaClients constructor(env: Environment, credentials: VaultCredentials) 
     val kafkaProducerValidationResult = KafkaProducer<String, ValidationResult>(producerPropertiesAiven)
     val kafkaProducerApprec = KafkaProducer<String, Apprec>(producerPropertiesAiven)
     val manualValidationKafkaProducer = KafkaProducer<String, OpprettOppgaveKafkaMessage>(producerPropertiesAiven)
-    val kafkaproducerManuellOppgave = KafkaProducer<String, ManuellOppgave>(producerProperties)
+    val kafkaproducerManuellOppgave = KafkaProducer<String, ManuellOppgave>(producerPropertiesAiven)
     val kafkaVedleggProducer = KafkaVedleggProducer(env, KafkaProducer(vedleggProducerProperties))
 }

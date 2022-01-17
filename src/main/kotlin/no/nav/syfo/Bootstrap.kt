@@ -52,6 +52,7 @@ val objectMapper: ObjectMapper = ObjectMapper()
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.syfosmmottak")
 
+@DelicateCoroutinesApi
 fun main() {
     val env = Environment()
     val credentials = VaultCredentials(
