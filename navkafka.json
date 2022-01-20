@@ -22,10 +22,8 @@
         {"member":"srvisprediksjon", "role":"CONSUMER"},
         {"member":"srvsyfoservice-dat", "role":"PRODUCER"},
         {"member":"srvsparenaproxy", "role":"CONSUMER"},
-        {"member":"s151890", "role":"MANAGER"},
         {"member":"f133008", "role":"MANAGER"},
         {"member":"n157016", "role":"MANAGER"},
-        {"member":"k157140", "role":"MANAGER"},
         {"member":"g153850", "role":"MANAGER"}
       ],
       "numPartitions": 3,
@@ -51,10 +49,8 @@
         {"member":"srvregpapirsm", "role":"PRODUCER"},
         {"member":"srvisprediksjon", "role":"CONSUMER"},
         {"member":"srvsparenaproxy", "role":"CONSUMER"},
-        {"member":"s151890", "role":"MANAGER"},
         {"member":"f133008", "role":"MANAGER"},
         {"member":"n157016", "role":"MANAGER"},
-        {"member":"k157140", "role":"MANAGER"},
         {"member":"g153850", "role":"MANAGER"}
       ],
       "numPartitions": 3,
@@ -74,10 +70,8 @@
         {"member":"srvsyfosmmanuell-b", "role":"PRODUCER"},
         {"member":"srvargussm", "role":"CONSUMER"},
         {"member":"srvisprediksjon", "role":"CONSUMER"},
-        {"member":"s151890", "role":"MANAGER"},
         {"member":"f133008", "role":"MANAGER"},
         {"member":"n157016", "role":"MANAGER"},
-        {"member":"k157140", "role":"MANAGER"},
         {"member":"g153850", "role":"MANAGER"}
       ],
       "numPartitions": 3,
@@ -98,10 +92,8 @@
         {"member":"srvsyfosmpapirmottak", "role":"PRODUCER"},
         {"member":"srvisprediksjon", "role":"CONSUMER"},
         {"member":"srvsyfoservice-dat", "role":"PRODUCER"},
-        {"member":"s151890", "role":"MANAGER"},
         {"member":"f133008", "role":"MANAGER"},
         {"member":"n157016", "role":"MANAGER"},
-        {"member":"k157140", "role":"MANAGER"},
         {"member":"g153850", "role":"MANAGER"}
       ],
       "numPartitions": 3,
@@ -115,10 +107,8 @@
         {"member":"srvsyfosmmottak", "role":"PRODUCER"},
         {"member":"srvsyfosmapprec", "role":"CONSUMER"},
         {"member":"srvsyfosmmanuell-b", "role":"PRODUCER"},
-        {"member":"s151890", "role":"MANAGER"},
         {"member":"f133008", "role":"MANAGER"},
         {"member":"n157016", "role":"MANAGER"},
-        {"member":"k157140", "role":"MANAGER"},
         {"member":"g153850", "role":"MANAGER"}
       ],
       "numPartitions": 3
@@ -128,10 +118,8 @@
       "members": [
         {"member":"srvsyfosmmottak", "role":"PRODUCER"},
         {"member":"srvsyfosmmanuell-b", "role":"CONSUMER"},
-        {"member":"s151890", "role":"MANAGER"},
         {"member":"f133008", "role":"MANAGER"},
         {"member":"n157016", "role":"MANAGER"},
-        {"member":"k157140", "role":"MANAGER"},
         {"member":"g153850", "role":"MANAGER"}
       ],
       "numPartitions": 3,
@@ -145,10 +133,9 @@
         {"member":"srvpale2", "role":"PRODUCER"},
         {"member":"srvsyfosmmottak", "role":"PRODUCER"},
         {"member":"srvsyfosmsak", "role":"CONSUMER"},
-        {"member":"s151890", "role":"MANAGER"},
+        {"member":"srvsyfoservice-dat", "role":"CONSUMER"},
         {"member":"f133008", "role":"MANAGER"},
         {"member":"n157016", "role":"MANAGER"},
-        {"member":"k157140", "role":"MANAGER"},
         {"member":"g153850", "role":"MANAGER"}
       ],
       "numPartitions": 3,

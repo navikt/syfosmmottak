@@ -22,7 +22,7 @@ val ktorVersion = "1.6.7"
 val logbackVersion = "1.2.8"
 val logstashEncoderVersion = "7.0.1"
 val prometheusVersion = "0.12.0"
-val smCommonVersion = "1.a92720c"
+val smCommonVersion = "1.381992d"
 val spekVersion = "2.0.17"
 val sykmeldingVersion = "1.c22de09"
 val cxfVersion = "3.2.7"
@@ -34,6 +34,7 @@ val jaxbRuntimeVersion = "2.4.0-b180830.0438"
 val javaTimeAdapterVersion = "1.1.3"
 val mockkVersion = "1.12.1"
 val kotlinVersion = "1.6.0"
+val googleCloudStorageVersion = "2.3.0"
 
 plugins {
     id("io.mateo.cxf-codegen") version "1.0.0-rc.3"
@@ -83,7 +84,7 @@ dependencies {
     cxfCodegen("jakarta.xml.ws:jakarta.xml.ws-api:2.3.3")
     cxfCodegen("jakarta.annotation:jakarta.annotation-api:1.3.5")
 
-    implementation(kotlin("stdlib"))
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
     implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
@@ -117,6 +118,7 @@ dependencies {
     implementation("no.nav.helse:syfosm-common-mq:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-ws:$smCommonVersion")
 
+    implementation("com.google.cloud:google-cloud-storage:$googleCloudStorageVersion")
     implementation("redis.clients:jedis:$jedisVersion")
 
     implementation("org.apache.commons:commons-text:$commonsTextVersion")

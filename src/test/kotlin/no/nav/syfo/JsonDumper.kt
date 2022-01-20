@@ -45,7 +45,8 @@ fun main() {
             .writeValueAsString(inputMessageText),
         tssid = "13415",
         merknader = null,
-        partnerreferanse = "16524"
+        partnerreferanse = "16524",
+        vedlegg = null
     )
 
     println(objectMapper.writeValueAsString(receivedSykmelding))

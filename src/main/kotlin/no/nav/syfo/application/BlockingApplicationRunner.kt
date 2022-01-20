@@ -35,7 +35,6 @@ import no.nav.syfo.handlestatus.handleStatusINVALID
 import no.nav.syfo.handlestatus.handleStatusMANUALPROCESSING
 import no.nav.syfo.handlestatus.handleStatusOK
 import no.nav.syfo.handlestatus.handleTestFnrInProd
-import no.nav.syfo.kafka.vedlegg.producer.KafkaVedleggProducer
 import no.nav.syfo.log
 import no.nav.syfo.metrics.IKKE_OPPDATERT_PARTNERREG
 import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
@@ -79,6 +78,8 @@ import no.nav.syfo.util.periodetypeIkkeAngitt
 import no.nav.syfo.util.removeVedleggFromFellesformat
 import no.nav.syfo.util.toString
 import no.nav.syfo.util.wrapExceptions
+import no.nav.syfo.vedlegg.google.BucketUploadService
+import no.nav.syfo.vedlegg.model.BehandlerInfo
 import org.apache.kafka.clients.producer.KafkaProducer
 import redis.clients.jedis.Jedis
 import redis.clients.jedis.exceptions.JedisConnectionException
@@ -99,7 +100,8 @@ class BlockingApplicationRunner(
     private val kuhrSarClient: SarClient,
     private val pdlPersonService: PdlPersonService,
     private val jedis: Jedis,
-    private val session: Session
+    private val session: Session,
+    private val bucketUploadService: BucketUploadService
 ) {
 
     suspend fun run(
@@ -110,8 +112,7 @@ class BlockingApplicationRunner(
         kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
         kafkaManuelTaskProducer: KafkaProducer<String, OpprettOppgaveKafkaMessage>,
         kafkaproducerApprec: KafkaProducer<String, Apprec>,
-        kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
-        kafkaVedleggProducer: KafkaVedleggProducer
+        kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>
     ) {
 
         wrapExceptions {
@@ -396,6 +397,25 @@ class BlockingApplicationRunner(
                         if (originaltPasientFnr != pasient.fnr) {
                             log.info("Sykmeldingen inneholder eldre ident for pasient, benytter nyeste fra PDL {}", StructuredArguments.fields(loggingMeta))
                         }
+
+                        val vedleggListe: List<String> = if (vedlegg.isNotEmpty()) {
+                            bucketUploadService.lastOppVedlegg(
+                                vedlegg = vedlegg,
+                                msgId = msgId,
+                                personNrPasient = pasient.fnr,
+                                behandlerInfo = BehandlerInfo(
+                                    fornavn = sykmelding.behandler.fornavn,
+                                    etternavn = sykmelding.behandler.etternavn,
+                                    fnr = signaturFnr
+                                ),
+                                pasientAktoerId = sykmelding.pasientAktoerId,
+                                sykmeldingId = sykmelding.id,
+                                loggingMeta = loggingMeta
+                            )
+                        } else {
+                            emptyList()
+                        }
+
                         val receivedSykmelding = ReceivedSykmelding(
                             sykmelding = sykmelding,
                             personNrPasient = pasient.fnr,
@@ -419,7 +439,8 @@ class BlockingApplicationRunner(
                             fellesformat = fellesformatText,
                             tssid = samhandlerPraksis?.tss_ident ?: "",
                             merknader = null,
-                            partnerreferanse = receiverBlock.partnerReferanse
+                            partnerreferanse = receiverBlock.partnerReferanse,
+                            vedlegg = vedleggListe
                         )
 
                         if (behandlerFnr != signaturFnr) {
@@ -492,10 +513,6 @@ class BlockingApplicationRunner(
                                 msgId,
                                 msgHead
                             )
-                        }
-
-                        if (vedlegg.isNotEmpty()) {
-                            kafkaVedleggProducer.sendVedlegg(vedlegg, receivedSykmelding, loggingMeta)
                         }
 
                         val currentRequestLatency = requestLatency.observeDuration()

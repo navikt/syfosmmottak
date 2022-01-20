@@ -46,14 +46,14 @@ spec:
         mountPath: /secrets/default
       - kvPath: serviceuser/data/prod/srvsyfosmmottak
         mountPath: /secrets/serviceuser
+      - kvPath: /kv/prod/fss/syfosmmottak/teamsykmelding
+        mountPath: /var/run/secrets/nais.io/vault
   webproxy: true
   envFrom:
     - secret: syfosmmottak-redis-password
   env:
     - name: SUBSCRIPTION_ENDPOINT_URL
       value: https://wasapp.adeo.no/nav-emottak-eletter-web/services/
-    - name: KAFKA_BOOTSTRAP_SERVERS_URL
-      value: SASL_SSL://a01apvl00145.adeo.no:8443,SASL_SSL://a01apvl00146.adeo.no:8443,SASL_SSL://a01apvl00147.adeo.no:8443,SASL_SSL://a01apvl00149.adeo.no:8443
     - name: MQ_HOST_NAME
       value: a01apvl271.adeo.no
     - name: MQ_PORT
@@ -76,3 +76,5 @@ spec:
       value: api://prod-fss.pdl.pdl-api/.default
     - name: HELSENETT_SCOPE
       value: api://prod-fss.teamsykmelding.syfohelsenettproxy/.default
+    - name: SYKMELDING_VEDLEGG_BUCKET_NAME
+      value: teamsykmelding-sykmelding-vedlegg-bucket-prod
