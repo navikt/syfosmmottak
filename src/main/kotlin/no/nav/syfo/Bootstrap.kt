@@ -5,6 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import com.google.auth.Credentials
+import com.google.auth.oauth2.GoogleCredentials
+import com.google.cloud.storage.Storage
+import com.google.cloud.storage.StorageOptions
 import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -23,7 +27,6 @@ import no.nav.syfo.bootstrap.KafkaClients
 import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
-import no.nav.syfo.kafka.vedlegg.producer.KafkaVedleggProducer
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.OpprettOppgaveKafkaMessage
 import no.nav.syfo.model.ReceivedSykmelding
@@ -35,6 +38,7 @@ import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.TrackableException
 import no.nav.syfo.util.getFileAsString
+import no.nav.syfo.vedlegg.google.BucketUploadService
 import no.nav.syfo.ws.createPort
 import org.apache.cxf.ws.addressing.WSAddressingFeature
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -42,6 +46,7 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import redis.clients.jedis.Jedis
+import java.io.FileInputStream
 import javax.jms.Session
 
 val objectMapper: ObjectMapper = ObjectMapper()
@@ -72,12 +77,16 @@ fun main() {
     DefaultExports.initialize()
 
     val httpClients = HttpClients(env, credentials)
-    val kafkaClients = KafkaClients(env, credentials)
+    val kafkaClients = KafkaClients(env)
 
     val subscriptionEmottak = createPort<SubscriptionPort>(env.subscriptionEndpointURL) {
         proxy { features.add(WSAddressingFeature()) }
         port { withBasicAuth(credentials.serviceuserUsername, credentials.serviceuserPassword) }
     }
+
+    val sykmeldingVedleggStorageCredentials: Credentials = GoogleCredentials.fromStream(FileInputStream("/var/run/secrets/nais.io/vault/sykmelding-google-creds.json"))
+    val sykmeldingVedleggStorage: Storage = StorageOptions.newBuilder().setCredentials(sykmeldingVedleggStorageCredentials).build().service
+    val bucketUploadService = BucketUploadService(env.sykmeldingVedleggBucketName, sykmeldingVedleggStorage)
 
     launchListeners(
         env, applicationState,
@@ -86,7 +95,7 @@ fun main() {
         httpClients.syfoSykemeldingRuleClient, httpClients.sarClient, httpClients.pdlPersonService,
         credentials, kafkaClients.manualValidationKafkaProducer,
         kafkaClients.kafkaProducerApprec, kafkaClients.kafkaproducerManuellOppgave,
-        httpClients.norskHelsenettClient, kafkaClients.kafkaVedleggProducer
+        httpClients.norskHelsenettClient, bucketUploadService
     )
 }
 
@@ -117,7 +126,7 @@ fun launchListeners(
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
     norskHelsenettClient: NorskHelsenettClient,
-    kafkaVedleggProducer: KafkaVedleggProducer
+    bucketUploadService: BucketUploadService
 ) {
     createListener(applicationState) {
         connectionFactory(env).createConnection(credentials.serviceuserUsername, credentials.serviceuserPassword).use { connection ->
@@ -143,6 +152,7 @@ fun launchListeners(
                     pdlPersonService,
                     jedis,
                     session,
+                    bucketUploadService
                 ).run(
                     inputconsumer,
                     syfoserviceProducer,
@@ -151,8 +161,7 @@ fun launchListeners(
                     kafkaproducervalidationResult,
                     kafkaManuelTaskProducer,
                     kafkaproducerApprec,
-                    kafkaproducerManuellOppgave,
-                    kafkaVedleggProducer
+                    kafkaproducerManuellOppgave
                 )
             }
         }

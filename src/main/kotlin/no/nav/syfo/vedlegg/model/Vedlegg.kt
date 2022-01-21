@@ -1,4 +1,4 @@
-package no.nav.syfo.kafka.vedlegg.model
+package no.nav.syfo.vedlegg.model
 
 data class Vedlegg(
     val content: Content,
@@ -6,7 +6,7 @@ data class Vedlegg(
     val description: String
 )
 
-data class VedleggKafkaMessage(
+data class VedleggMessage(
     val vedlegg: Vedlegg,
     val behandler: BehandlerInfo,
     val pasientAktorId: String,
