@@ -95,14 +95,14 @@ class HttpClients(environment: Environment, credentials: VaultCredentials) {
 
     val syfoSykemeldingRuleClient = SyfoSykemeldingRuleClient(environment.syfosmreglerApiUrl, httpClientMedBasicAuth)
 
-    val sarClient = SarClient(environment.kuhrSarApiUrl, simpleHttpClient)
-
-    val accessTokenClientV2 = AccessTokenClientV2(
+    private val accessTokenClientV2 = AccessTokenClientV2(
         environment.aadAccessTokenV2Url,
         environment.clientIdV2,
         environment.clientSecretV2,
         httpClientWithProxy
     )
+
+    val sarClient = SarClient(environment.kuhrSarApiUrl, accessTokenClientV2, environment.kuhrSarApiScope, simpleHttpClient)
 
     val norskHelsenettClient = NorskHelsenettClient(environment.norskHelsenettEndpointURL, accessTokenClientV2, environment.helsenettproxyScope, simpleHttpClient)
 

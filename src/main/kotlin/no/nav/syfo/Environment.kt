@@ -4,10 +4,10 @@ import no.nav.syfo.mq.MqConfig
 
 data class Environment(
     val legeSuspensjonEndpointURL: String = getEnvVar("LEGE_SUSPENSJON_ENDPOINT_URL", "http://btsys.default"),
-    val kuhrSarApiUrl: String = getEnvVar("KUHR_SAR_API_URL", "http://kuhr-sar-api.teamkuhr.svc.nais.local"),
+    val kuhrSarApiUrl: String = getEnvVar("KUHR_SAR_API_URL"),
+    val kuhrSarApiScope: String = getEnvVar("KUHR_SAR_API_SCOPE"),
     val syfosmreglerApiUrl: String = getEnvVar("SYFOSMREGLER_API_URL", "http://syfosmregler"),
     val subscriptionEndpointURL: String = getEnvVar("SUBSCRIPTION_ENDPOINT_URL"),
-    val securityTokenServiceUrl: String = getEnvVar("SECURITY_TOKEN_SERVICE_URL", "http://security-token-service.default/rest/v1/sts/token"),
     val applicationPort: Int = getEnvVar("APPLICATION_PORT", "8080").toInt(),
     val applicationName: String = getEnvVar("NAIS_APP_NAME", "syfosmmottak"),
     val syfoSmManuellTopic: String = "teamsykmelding.sykmelding-manuell",

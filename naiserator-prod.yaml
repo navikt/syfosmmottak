@@ -78,3 +78,7 @@ spec:
       value: api://prod-fss.teamsykmelding.syfohelsenettproxy/.default
     - name: SYKMELDING_VEDLEGG_BUCKET_NAME
       value: teamsykmelding-sykmelding-vedlegg-bucket-prod
+    - name: KUHR_SAR_API_SCOPE
+      value: api://prod-fss.teamkuhr.kuhr-sar-api/.default
+    - name: KUHR_SAR_API_URL
+      value: https://kuhr-sar-api.nais.adeo.no
