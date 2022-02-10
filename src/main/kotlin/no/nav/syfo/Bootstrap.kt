@@ -76,7 +76,7 @@ fun main() {
 
     DefaultExports.initialize()
 
-    val httpClients = HttpClients(env, credentials)
+    val httpClients = HttpClients(env)
     val kafkaClients = KafkaClients(env)
 
     val subscriptionEmottak = createPort<SubscriptionPort>(env.subscriptionEndpointURL) {

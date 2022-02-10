@@ -82,3 +82,5 @@ spec:
       value: api://prod-fss.teamkuhr.kuhr-sar-api/.default
     - name: KUHR_SAR_API_URL
       value: https://kuhr-sar-api.nais.adeo.no
+    - name: SYFOSMREGLER_API_SCOPE
+      value: api://prod-fss.teamsykmelding.syfosmregler/.default
