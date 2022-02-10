@@ -7,6 +7,7 @@ data class Environment(
     val kuhrSarApiUrl: String = getEnvVar("KUHR_SAR_API_URL"),
     val kuhrSarApiScope: String = getEnvVar("KUHR_SAR_API_SCOPE"),
     val syfosmreglerApiUrl: String = getEnvVar("SYFOSMREGLER_API_URL", "http://syfosmregler"),
+    val syfosmreglerApiScope: String = getEnvVar("SYFOSMREGLER_API_SCOPE"),
     val subscriptionEndpointURL: String = getEnvVar("SUBSCRIPTION_ENDPOINT_URL"),
     val applicationPort: Int = getEnvVar("APPLICATION_PORT", "8080").toInt(),
     val applicationName: String = getEnvVar("NAIS_APP_NAME", "syfosmmottak"),

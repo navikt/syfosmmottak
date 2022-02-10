@@ -3,6 +3,7 @@ package no.nav.syfo.client
 import io.ktor.client.HttpClient
 import io.ktor.client.features.ResponseException
 import io.ktor.client.request.accept
+import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
@@ -14,13 +15,20 @@ import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.util.LoggingMeta
 import java.io.IOException
 
-class SyfoSykemeldingRuleClient(private val endpointUrl: String, private val client: HttpClient) {
+class SyfoSykemeldingRuleClient(
+    private val endpointUrl: String,
+    private val accessTokenClientV2: AccessTokenClientV2,
+    private val resourceId: String,
+    private val client: HttpClient
+) {
     suspend fun executeRuleValidation(payload: ReceivedSykmelding, loggingMeta: LoggingMeta): ValidationResult =
         retry("syfosmregler_validate") {
             try {
+                val accessToken = accessTokenClientV2.getAccessTokenV2(resourceId)
                 client.post<ValidationResult>("$endpointUrl/v1/rules/validate") {
                     contentType(ContentType.Application.Json)
                     accept(ContentType.Application.Json)
+                    header("Authorization", "Bearer $accessToken")
                     body = payload
                 }
             } catch (e: ResponseException) {
