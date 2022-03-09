@@ -10,7 +10,7 @@
             <Sender xmlns="http://www.kith.no/xmlstds/msghead/2006-05-24" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                 <ComMethod DN="EDI" V="EDI"/>
                 <Organisation>
-                    <OrganisationName>Legesenter 2</OrganisationName>
+                    <OrganisationName>Helseforetak 1</OrganisationName>
                     <Ident>
                         <Id>123</Id>
                         <TypeId DN="HER-id" S="2.16.578.1.12.4.1.1.9051" V="HER"/>
@@ -29,6 +29,13 @@
                         <TypeTelecom DN="Arbeidsplass, direktenummer" V="WD"/>
                         <TeleAddress V="tel:12345678"/>
                     </TeleCom>
+                    <Organisation>
+                        <OrganisationName>Avdeling 2</OrganisationName>//apprec hvis finnes?
+                        <Ident>
+                            <Id>234</Id>
+                            <TypeId DN="HER-id" S="2.16.578.1.12.4.1.1.9051" V="HER"/>
+                        </Ident>
+                    </Organisation>
                     <HealthcareProfessional>
                         <FamilyName>Family</FamilyName>
                         <GivenName>Given</GivenName>
@@ -168,7 +175,7 @@
                                 <Fornavn>Fornavn</Fornavn>
                             </Navn>
                             <Id>
-                                <Id xmlns="http://www.kith.no/xmlstds/felleskomponent1">12345678912</Id>
+                                <Id xmlns="http://www.kith.no/xmlstds/felleskomponent1">behandlerfnr</Id>
                                 <TypeId xmlns="http://www.kith.no/xmlstds/felleskomponent1" DN="Fødselsnummer" S="2.16.578.1.12.4.1.1.8116" V="FNR"/>
                             </Id>
                             <Id>
@@ -194,17 +201,6 @@
                 </Content>
             </RefDoc>
         </Document>
-        <Document>
-            <DocumentConnection DN="Vedlegg" V="V"/>
-            <RefDoc>
-                <MsgType DN="Vedlegg" V="A"/>
-                <MimeType>application/pdf</MimeType>
-                <Description>vedlegg.pdf</Description>
-                <Content>
-                    <Base64Container xmlns="http://www.kith.no/xmlstds/base64container">base64</Base64Container>
-                </Content>
-            </RefDoc>
-        </Document>
         <Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
             <SignedInfo>
                 <CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
@@ -226,5 +222,5 @@
             </KeyInfo>
         </Signature>
     </MsgHead>
-    <MottakenhetBlokk avsender="123" avsenderFnrFraDigSignatur="12345678912" avsenderRef="SERIALNUMBER=123456789, CN=LEGESENTER, O=LEGESENTER AS, C=NO" ebAction="Registrering" ebRole="Sykmelder" ebService="Sykmelding" ebXMLSamtaleId="b51f9b19-db75-482c-9ed8-a2a35b9c96bc" ediLoggId="ediloggid" herIdentifikator="" meldingsType="xml" mottattDatotid="2020-06-23T04:38:57" partnerReferanse="12345"/>
+    <MottakenhetBlokk avsender="123" avsenderOrgNrFraDigSignatur="123456789" avsenderRef="SERIALNUMBER=123456789, CN=LEGESENTER, O=LEGESENTER AS, C=NO" ebAction="Registrering" ebRole="Sykmelder" ebService="SykmeldingVirksomhet" ebXMLSamtaleId="b51f9b19-db75-482c-9ed8-a2a35b9c96bc" ediLoggId="ediloggid" herIdentifikator="" meldingsType="xml" mottattDatotid="2020-06-23T04:38:57" partnerReferanse="12345"/>
 </EI_fellesformat>
