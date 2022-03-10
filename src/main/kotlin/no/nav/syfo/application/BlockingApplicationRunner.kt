@@ -43,6 +43,7 @@ import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
 import no.nav.syfo.metrics.MANGLER_TSSIDENT
 import no.nav.syfo.metrics.REQUEST_TIME
 import no.nav.syfo.metrics.SYKMELDING_VEDLEGG_COUNTER
+import no.nav.syfo.metrics.VIRKSOMHETSYKMELDING
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.OpprettOppgaveKafkaMessage
 import no.nav.syfo.model.ReceivedSykmelding
@@ -171,6 +172,7 @@ class BlockingApplicationRunner(
 
                     val signaturFnr = if (erVirksomhetSykmelding) {
                         log.info("Mottatt virksomhetssykmelding, {}", StructuredArguments.fields(loggingMeta))
+                        VIRKSOMHETSYKMELDING.inc()
                         val hpr = extractHpr(fellesformat)?.id
                         if (hpr == null) {
                             handleVirksomhetssykmeldingOgHprMangler(
