@@ -30,7 +30,7 @@
                         <TeleAddress V="tel:12345678"/>
                     </TeleCom>
                     <Organisation>
-                        <OrganisationName>Avdeling 2</OrganisationName>//apprec hvis finnes?
+                        <OrganisationName>Avdeling 2</OrganisationName>
                         <Ident>
                             <Id>234</Id>
                             <TypeId DN="HER-id" S="2.16.578.1.12.4.1.1.9051" V="HER"/>
