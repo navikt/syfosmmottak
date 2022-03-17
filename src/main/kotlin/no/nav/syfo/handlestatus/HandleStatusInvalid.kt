@@ -565,6 +565,62 @@ fun handleAnnenFraversArsakkodeVIsmissing(
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
 }
 
+fun handleVirksomhetssykmeldingOgHprMangler(
+    loggingMeta: LoggingMeta,
+    fellesformat: XMLEIFellesformat,
+    ediLoggId: String,
+    msgId: String,
+    msgHead: XMLMsgHead,
+    env: Environment,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    jedis: Jedis,
+    sha256String: String
+) {
+    log.warn(
+        "Virksomhetsykmeldingen er avvist fordi den mangler HPR-nummer for behandler {}",
+        fields(loggingMeta),
+        keyValue("avvistAv", env.applicationName)
+    )
+
+    val apprec = fellesformatToAppprec(
+        fellesformat,
+        "Sykmeldingen kan ikke rettes, det må skrives en ny." +
+            "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
+            "HPR-nummer for juridisk behandler mangler",
+        ediLoggId, msgId, msgHead
+    )
+
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
+}
+
+fun handleVirksomhetssykmeldingOgFnrManglerIHPR(
+    loggingMeta: LoggingMeta,
+    fellesformat: XMLEIFellesformat,
+    ediLoggId: String,
+    msgId: String,
+    msgHead: XMLMsgHead,
+    env: Environment,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    jedis: Jedis,
+    sha256String: String
+) {
+    log.warn(
+        "Virksomhetsykmeldingen er avvist fordi den mangler HPR-nummer for behandler {}",
+        fields(loggingMeta),
+        keyValue("avvistAv", env.applicationName)
+    )
+
+    val apprec = fellesformatToAppprec(
+        fellesformat,
+        "Sykmeldingen kan ikke rettes, det må skrives en ny." +
+            "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
+            "Fødselsnummer for juridisk behandler mangler i HPR",
+        ediLoggId, msgId, msgHead
+    )
+
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
+}
+
 private fun sendApprec(
     apprec: Apprec,
     env: Environment,

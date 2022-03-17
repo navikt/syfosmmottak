@@ -152,16 +152,16 @@ fun launchListeners(
                     pdlPersonService,
                     jedis,
                     session,
-                    bucketUploadService
-                ).run(
-                    inputconsumer,
-                    syfoserviceProducer,
-                    backoutProducer,
+                    bucketUploadService,
                     kafkaproducerreceivedSykmelding,
                     kafkaproducervalidationResult,
                     kafkaManuelTaskProducer,
                     kafkaproducerApprec,
                     kafkaproducerManuellOppgave
+                ).run(
+                    inputconsumer,
+                    syfoserviceProducer,
+                    backoutProducer
                 )
             }
         }

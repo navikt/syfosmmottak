@@ -35,12 +35,15 @@ import no.nav.syfo.handlestatus.handleStatusINVALID
 import no.nav.syfo.handlestatus.handleStatusMANUALPROCESSING
 import no.nav.syfo.handlestatus.handleStatusOK
 import no.nav.syfo.handlestatus.handleTestFnrInProd
+import no.nav.syfo.handlestatus.handleVirksomhetssykmeldingOgFnrManglerIHPR
+import no.nav.syfo.handlestatus.handleVirksomhetssykmeldingOgHprMangler
 import no.nav.syfo.log
 import no.nav.syfo.metrics.IKKE_OPPDATERT_PARTNERREG
 import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
 import no.nav.syfo.metrics.MANGLER_TSSIDENT
 import no.nav.syfo.metrics.REQUEST_TIME
 import no.nav.syfo.metrics.SYKMELDING_VEDLEGG_COUNTER
+import no.nav.syfo.metrics.VIRKSOMHETSYKMELDING
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.OpprettOppgaveKafkaMessage
 import no.nav.syfo.model.ReceivedSykmelding
@@ -101,18 +104,18 @@ class BlockingApplicationRunner(
     private val pdlPersonService: PdlPersonService,
     private val jedis: Jedis,
     private val session: Session,
-    private val bucketUploadService: BucketUploadService
+    private val bucketUploadService: BucketUploadService,
+    private val kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
+    private val kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
+    private val kafkaManuelTaskProducer: KafkaProducer<String, OpprettOppgaveKafkaMessage>,
+    private val kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    private val kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>
 ) {
 
     suspend fun run(
         inputconsumer: MessageConsumer,
         syfoserviceProducer: MessageProducer,
-        backoutProducer: MessageProducer,
-        kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
-        kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
-        kafkaManuelTaskProducer: KafkaProducer<String, OpprettOppgaveKafkaMessage>,
-        kafkaproducerApprec: KafkaProducer<String, Apprec>,
-        kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>
+        backoutProducer: MessageProducer
     ) {
 
         wrapExceptions {
@@ -165,7 +168,32 @@ class BlockingApplicationRunner(
                     val legekontorOrgName = msgHead.msgInfo.sender.organisation.organisationName
 
                     val originaltPasientFnr = healthInformation.pasient.fodselsnummer.id
-                    val signaturFnr = receiverBlock.avsenderFnrFraDigSignatur
+                    val erVirksomhetSykmelding = receiverBlock.ebService == "SykmeldingVirksomhet"
+
+                    val signaturFnr = if (erVirksomhetSykmelding) {
+                        log.info("Mottatt virksomhetssykmelding, {}", StructuredArguments.fields(loggingMeta))
+                        VIRKSOMHETSYKMELDING.inc()
+                        val hpr = extractHpr(fellesformat)?.id
+                        if (hpr == null) {
+                            handleVirksomhetssykmeldingOgHprMangler(
+                                loggingMeta, fellesformat,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
+                            )
+                            continue@loop
+                        }
+                        val fnr = norskHelsenettClient.getByHpr(hprNummer = hpr, loggingMeta = loggingMeta)?.fnr
+                        if (fnr == null) {
+                            handleVirksomhetssykmeldingOgFnrManglerIHPR(
+                                loggingMeta, fellesformat,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
+                            )
+                            continue@loop
+                        } else {
+                            fnr
+                        }
+                    } else {
+                        receiverBlock.avsenderFnrFraDigSignatur
+                    }
 
                     val identer = pdlPersonService.getIdenter(listOf(signaturFnr, originaltPasientFnr), loggingMeta)
 
