@@ -158,7 +158,7 @@ fun sendManuellTask(
             validationResult,
             apprec
         )
-        kafkaproducerManuellOppgave.send(ProducerRecord(syfoSmManuellTopic, manuellOppgave)).get()
+        kafkaproducerManuellOppgave.send(ProducerRecord(syfoSmManuellTopic, receivedSykmelding.sykmelding.id, manuellOppgave)).get()
     } catch (ex: Exception) {
         log.error("Failed to send manuell oppgave for sykmelding {} to kafka", receivedSykmelding.sykmelding.id)
         throw ex
