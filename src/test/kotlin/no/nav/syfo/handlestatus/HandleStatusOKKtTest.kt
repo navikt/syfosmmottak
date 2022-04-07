@@ -1,5 +1,6 @@
 package no.nav.syfo.handlestatus
 
+import io.kotest.core.spec.style.FunSpec
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
@@ -16,8 +17,6 @@ import no.nav.syfo.utils.getFileAsString
 import org.amshove.kluent.shouldBeInstanceOf
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.RecordMetadata
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.io.StringReader
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
@@ -25,7 +24,7 @@ import javax.jms.MessageProducer
 import javax.jms.Session
 import kotlin.test.assertFailsWith
 
-class HandleStatusOKKtTest() : Spek({
+class HandleStatusOKKtTest() : FunSpec({
 
     val kafkaApprecProducer = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
     val session = mockk<Session>(relaxed = true)
@@ -38,10 +37,10 @@ class HandleStatusOKKtTest() : Spek({
     val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
     val msgHead = fellesformat.get<XMLMsgHead>()
 
-    beforeEachTest { clearAllMocks() }
+    beforeTest { clearAllMocks() }
 
-    describe("Test sending") {
-        it("test ok producer") {
+    context("Test sending") {
+        test("test ok producer") {
             handleStatusOK(
                 fellesformat,
                 "123",
@@ -59,7 +58,7 @@ class HandleStatusOKKtTest() : Spek({
             verify(exactly = 1) { syfoserviceProducer.send(any()) }
         }
 
-        it("test failing producer") {
+        test("test failing producer") {
 
             val future = CompletableFuture<RecordMetadata>()
 
@@ -89,7 +88,7 @@ class HandleStatusOKKtTest() : Spek({
             verify(exactly = 0) { syfoserviceProducer.send(any()) }
         }
 
-        it("test apprec producer fails") {
+        test("test apprec producer fails") {
             val ff = CompletableFuture<RecordMetadata>()
             ff.completeAsync {
                 throw RuntimeException()

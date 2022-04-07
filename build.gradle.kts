@@ -25,7 +25,6 @@ val logbackVersion = "1.2.11"
 val logstashEncoderVersion = "7.0.1"
 val prometheusVersion = "0.15.0"
 val smCommonVersion = "1.18fb664"
-val spekVersion = "2.0.17"
 val sykmeldingVersion = "1.c22de09"
 val cxfVersion = "3.2.7"
 val jaxwsApiVersion = "2.3.1"
@@ -37,6 +36,7 @@ val javaTimeAdapterVersion = "1.1.3"
 val mockkVersion = "1.12.3"
 val kotlinVersion = "1.6.0"
 val googleCloudStorageVersion = "2.3.0"
+val kotestVersion = "5.2.2"
 
 plugins {
     id("io.mateo.cxf-codegen") version "1.0.0-rc.3"
@@ -138,20 +138,13 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
-    testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
         exclude(group = "org.eclipse.jetty")
     }
     testImplementation("org.apache.activemq:artemis-server:$artemisVersion")
     testImplementation("org.apache.activemq:artemis-jms-client:$artemisVersion")
 
-    testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion") {
-        exclude(group = "org.jetbrains.kotlin")
-    }
-    testRuntimeOnly ("org.spekframework.spek2:spek-runner-junit5:$spekVersion") {
-        exclude(group = "org.jetbrains.kotlin")
-    }
-
+    testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
 }
 
 
@@ -188,9 +181,7 @@ tasks {
     }
 
     withType<Test> {
-        useJUnitPlatform {
-            includeEngines("spek2")
-        }
+        useJUnitPlatform {}
         testLogging {
             showStandardStreams = true
         }

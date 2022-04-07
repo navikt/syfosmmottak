@@ -1,5 +1,6 @@
 package no.nav.syfo.handlestatus
 
+import io.kotest.core.spec.style.FunSpec
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
@@ -16,14 +17,12 @@ import no.nav.syfo.util.get
 import no.nav.syfo.utils.getFileAsString
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.RecordMetadata
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.io.StringReader
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
 import kotlin.test.assertFailsWith
 
-class HandleStatusInvalidKtTest : Spek({
+class HandleStatusInvalidKtTest : FunSpec({
     val kafkaApprecProducer = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
     val receivedSykmelding = mockk<ReceivedSykmelding>(relaxed = true)
     val kafkaProducerReceviedSykmelding = mockk<KafkaProducer<String, ReceivedSykmelding>>(relaxed = true)
@@ -37,9 +36,9 @@ class HandleStatusInvalidKtTest : Spek({
         every { validationResultKafkaProducer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
         every { kafkaProducerReceviedSykmelding.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
     }
-    beforeEachTest { clearAllMocks() }
-    describe("Test Invalid status") {
-        it("Send invalid OK") {
+    beforeTest { clearAllMocks() }
+    context("Test Invalid status") {
+        test("Send invalid OK") {
             setUpMocks()
             handleStatusInvalid(validationResult, kafkaProducerReceviedSykmelding, validationResultKafkaProducer, receivedSykmelding, fellesformat, kafkaApprecProducer, msgHead)
 
@@ -48,7 +47,7 @@ class HandleStatusInvalidKtTest : Spek({
             verify(exactly = 1) { kafkaProducerReceviedSykmelding.send(any()) }
         }
 
-        it("Should fail when apprecProducer fails") {
+        test("Should fail when apprecProducer fails") {
             setUpMocks()
             every { kafkaApprecProducer.send(any()) } returns getFailingFuture()
             assertFailsWith<ExecutionException> {
@@ -56,21 +55,21 @@ class HandleStatusInvalidKtTest : Spek({
             }
         }
 
-        it("Should fail when validationResultProducer fails") {
+        test("Should fail when validationResultProducer fails") {
             setUpMocks()
             every { validationResultKafkaProducer.send(any()) } returns getFailingFuture()
             assertFailsWith<ExecutionException> {
                 handleStatusInvalid(validationResult, kafkaProducerReceviedSykmelding, validationResultKafkaProducer, receivedSykmelding, fellesformat, kafkaApprecProducer, msgHead)
             }
         }
-        it("Should fail when ReceivedSykmeldingKafkaProducer fails") {
+        test("Should fail when ReceivedSykmeldingKafkaProducer fails") {
             setUpMocks()
             every { kafkaProducerReceviedSykmelding.send(any()) } returns getFailingFuture()
             assertFailsWith<ExecutionException> {
                 handleStatusInvalid(validationResult, kafkaProducerReceviedSykmelding, validationResultKafkaProducer, receivedSykmelding, fellesformat, kafkaApprecProducer, msgHead)
             }
         }
-        it("Should fail when ReceivedSykmeldingKafkaProducer fails") {
+        test("Should fail when ReceivedSykmeldingKafkaProducer fails") {
             setUpMocks()
             every { kafkaProducerReceviedSykmelding.send(any()) } returns getFailingFuture()
             assertFailsWith<ExecutionException> {

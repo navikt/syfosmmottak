@@ -1,5 +1,6 @@
 package no.nav.syfo
 
+import io.kotest.core.spec.style.FunSpec
 import no.nav.helse.sm2013.Address
 import no.nav.helse.sm2013.ArsakType
 import no.nav.helse.sm2013.CS
@@ -11,16 +12,14 @@ import no.nav.helse.sm2013.NavnType
 import no.nav.helse.sm2013.TeleCom
 import no.nav.syfo.model.toSykmelding
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-object SykmeldingMapperSpek : Spek({
+class SykmeldingMapperSpek : FunSpec({
 
-    describe("Check sykmeldings mapping") {
+    context("Check sykmeldings mapping") {
 
-        it("Validate MedisinskeArsaker Arsakskode is mapped") {
+        test("Validate MedisinskeArsaker Arsakskode is mapped") {
 
             val medisinskeArsakerArsakskodeV = " 1"
 
@@ -118,7 +117,7 @@ object SykmeldingMapperSpek : Spek({
             sykmelding.perioder.first().aktivitetIkkeMulig?.medisinskArsak?.arsak?.first()?.codeValue shouldBeEqualTo medisinskeArsakerArsakskodeV.trim()
         }
 
-        it("Validate Restriksjonskode is mapped") {
+        test("Validate Restriksjonskode is mapped") {
 
             val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
                 arbeidsgiver = HelseOpplysningerArbeidsuforhet.Arbeidsgiver().apply {
