@@ -5,7 +5,6 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val artemisVersion = "2.6.4"
 val coroutinesVersion = "1.6.0"
 val fellesformatVersion = "1.c22de09"
 val ibmMqVersion = "9.2.4.0"
@@ -141,8 +140,6 @@ dependencies {
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
         exclude(group = "org.eclipse.jetty")
     }
-    testImplementation("org.apache.activemq:artemis-server:$artemisVersion")
-    testImplementation("org.apache.activemq:artemis-jms-client:$artemisVersion")
 
     testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
 }
