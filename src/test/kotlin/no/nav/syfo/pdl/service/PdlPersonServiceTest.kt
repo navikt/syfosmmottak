@@ -1,5 +1,6 @@
 package no.nav.syfo.pdl.service
 
+import io.kotest.core.spec.style.FunSpec
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.mockkClass
@@ -12,24 +13,22 @@ import no.nav.syfo.pdl.client.model.PdlIdent
 import no.nav.syfo.pdl.client.model.ResponseData
 import no.nav.syfo.util.LoggingMeta
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import kotlin.test.assertFailsWith
 
-object PdlPersonServiceTest : Spek({
+class PdlPersonServiceTest : FunSpec({
     val pdlClient = mockkClass(PdlClient::class)
     val accessTokenClientV2 = mockkClass(AccessTokenClientV2::class)
     val pdlPersonService = PdlPersonService(pdlClient, accessTokenClientV2, "littaScope")
 
     val loggingMeta = LoggingMeta("mottakid", "orgnr", "msgid")
 
-    beforeEachTest {
+    beforeTest {
         clearAllMocks()
         coEvery { accessTokenClientV2.getAccessTokenV2(any()) } returns "token"
     }
 
-    describe("Test av PdlPersonService") {
-        it("Henter aktørid for pasient og lege") {
+    context("Test av PdlPersonService") {
+        test("Henter aktørid for pasient og lege") {
             coEvery { pdlClient.getIdenter(any(), any()) } returns GetPersonResponse(
                 ResponseData(
                     hentIdenterBolk = listOf(
@@ -40,14 +39,12 @@ object PdlPersonServiceTest : Spek({
                 errors = null
             )
 
-            runBlocking {
-                val identer = pdlPersonService.getIdenter(listOf("fnrPasient", "fnrLege"), loggingMeta)
+            val identer = pdlPersonService.getIdenter(listOf("fnrPasient", "fnrLege"), loggingMeta)
 
-                identer["fnrPasient"]?.aktorId shouldBeEqualTo "aktorIdPasient"
-                identer["fnrLege"]?.aktorId shouldBeEqualTo "aktorIdLege"
-            }
+            identer["fnrPasient"]?.aktorId shouldBeEqualTo "aktorIdPasient"
+            identer["fnrLege"]?.aktorId shouldBeEqualTo "aktorIdLege"
         }
-        it("Henter nyeste fnr som fnr for pasient med flere identer") {
+        test("Henter nyeste fnr som fnr for pasient med flere identer") {
             coEvery { pdlClient.getIdenter(any(), any()) } returns GetPersonResponse(
                 ResponseData(
                     hentIdenterBolk = listOf(
@@ -66,14 +63,12 @@ object PdlPersonServiceTest : Spek({
                 errors = null
             )
 
-            runBlocking {
-                val identer = pdlPersonService.getIdenter(listOf("fnrPasient", "fnrLege"), loggingMeta)
+            val identer = pdlPersonService.getIdenter(listOf("fnrPasient", "fnrLege"), loggingMeta)
 
-                identer["fnrPasient"]?.aktorId shouldBeEqualTo "aktorIdPasient"
-                identer["fnrLege"]?.aktorId shouldBeEqualTo "aktorIdLege"
-            }
+            identer["fnrPasient"]?.aktorId shouldBeEqualTo "aktorIdPasient"
+            identer["fnrLege"]?.aktorId shouldBeEqualTo "aktorIdLege"
         }
-        it("Pasient-aktørid er null hvis pasient ikke finnes i PDL") {
+        test("Pasient-aktørid er null hvis pasient ikke finnes i PDL") {
             coEvery { pdlClient.getIdenter(any(), any()) } returns GetPersonResponse(
                 ResponseData(
                     hentIdenterBolk = listOf(
@@ -84,14 +79,12 @@ object PdlPersonServiceTest : Spek({
                 errors = null
             )
 
-            runBlocking {
-                val identer = pdlPersonService.getIdenter(listOf("fnrPasient", "fnrLege"), loggingMeta)
+            val identer = pdlPersonService.getIdenter(listOf("fnrPasient", "fnrLege"), loggingMeta)
 
-                identer["fnrPasient"]?.aktorId shouldBeEqualTo null
-                identer["fnrLege"]?.aktorId shouldBeEqualTo "aktorIdLege"
-            }
+            identer["fnrPasient"]?.aktorId shouldBeEqualTo null
+            identer["fnrLege"]?.aktorId shouldBeEqualTo "aktorIdLege"
         }
-        it("Skal feile når ingen identer finnes") {
+        test("Skal feile når ingen identer finnes") {
             coEvery { pdlClient.getIdenter(any(), any()) } returns GetPersonResponse(ResponseData(hentIdenterBolk = emptyList()), errors = null)
 
             assertFailsWith<IllegalStateException> {

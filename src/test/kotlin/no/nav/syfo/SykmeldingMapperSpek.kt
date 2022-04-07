@@ -1,5 +1,6 @@
 package no.nav.syfo
 
+import io.kotest.core.spec.style.FunSpec
 import no.nav.helse.sm2013.Address
 import no.nav.helse.sm2013.ArsakType
 import no.nav.helse.sm2013.CS
@@ -9,18 +10,17 @@ import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 import no.nav.helse.sm2013.Ident
 import no.nav.helse.sm2013.NavnType
 import no.nav.helse.sm2013.TeleCom
+import no.nav.syfo.model.toDiagnose
 import no.nav.syfo.model.toSykmelding
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-object SykmeldingMapperSpek : Spek({
+class SykmeldingMapperSpek : FunSpec({
 
-    describe("Check sykmeldings mapping") {
+    context("Check sykmeldings mapping") {
 
-        it("Validate MedisinskeArsaker Arsakskode is mapped") {
+        test("Validate MedisinskeArsaker Arsakskode is mapped") {
 
             val medisinskeArsakerArsakskodeV = " 1"
 
@@ -118,7 +118,7 @@ object SykmeldingMapperSpek : Spek({
             sykmelding.perioder.first().aktivitetIkkeMulig?.medisinskArsak?.arsak?.first()?.codeValue shouldBeEqualTo medisinskeArsakerArsakskodeV.trim()
         }
 
-        it("Validate Restriksjonskode is mapped") {
+        test("Validate Restriksjonskode is mapped") {
 
             val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
                 arbeidsgiver = HelseOpplysningerArbeidsuforhet.Arbeidsgiver().apply {
@@ -232,6 +232,30 @@ object SykmeldingMapperSpek : Spek({
             )
 
             sykmelding.utdypendeOpplysninger.getValue("6.1").getValue("6.1.3").restriksjoner shouldBeEqualTo emptyList()
+        }
+
+        test("Fjerner . fra diagnosekode") {
+            val originalDiagnosekode = CV().apply {
+                dn = "Problem med jus/politi"
+                s = "2.16.578.1.12.4.1.1.7110"
+                v = "Z.09"
+            }
+
+            val mappetDiagnosekode = originalDiagnosekode.toDiagnose()
+
+            mappetDiagnosekode.kode shouldBeEqualTo "Z09"
+        }
+
+        test("Endrer ikke diagnosekode uten .") {
+            val originalDiagnosekode = CV().apply {
+                dn = "Problem med jus/politi"
+                s = "2.16.578.1.12.4.1.1.7110"
+                v = "Z09"
+            }
+
+            val mappetDiagnosekode = originalDiagnosekode.toDiagnose()
+
+            mappetDiagnosekode.kode shouldBeEqualTo "Z09"
         }
     }
 })

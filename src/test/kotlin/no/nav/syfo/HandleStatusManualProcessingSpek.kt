@@ -1,5 +1,6 @@
 package no.nav.syfo
 
+import io.kotest.core.spec.style.FunSpec
 import io.mockk.mockk
 import no.nav.syfo.handlestatus.opprettOpprettOppgaveKafkaMessage
 import no.nav.syfo.handlestatus.sendToSyfosmManuell
@@ -9,14 +10,12 @@ import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.util.LoggingMeta
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 
-object HandleStatusManualProcessingSpek : Spek({
+class HandleStatusManualProcessingSpek : FunSpec({
     val loggingMeta = LoggingMeta("", "", "")
 
-    describe("Sending til syfosmmanuell") {
-        it("Should return true when the only rule hit is ruleName is TILBAKEDATERT_MER_ENN_8_DAGER_FORSTE_SYKMELDING_MED_BEGRUNNELSE") {
+    context("Sending til syfosmmanuell") {
+        test("Should return true when the only rule hit is ruleName is TILBAKEDATERT_MER_ENN_8_DAGER_FORSTE_SYKMELDING_MED_BEGRUNNELSE") {
             val validationResult = ValidationResult(
                 status = Status.MANUAL_PROCESSING,
                 ruleHits = listOf(
@@ -31,7 +30,7 @@ object HandleStatusManualProcessingSpek : Spek({
 
             sendToSyfosmManuell(validationResult.ruleHits) shouldBeEqualTo true
         }
-        it("Should return false when rulehits contain SYKMELDING_MED_BEHANDLINGSDAGER") {
+        test("Should return false when rulehits contain SYKMELDING_MED_BEHANDLINGSDAGER") {
             val validationResult = ValidationResult(
                 status = Status.MANUAL_PROCESSING,
                 ruleHits = listOf(
@@ -48,9 +47,9 @@ object HandleStatusManualProcessingSpek : Spek({
         }
     }
 
-    describe("Oppretter manuelle oppgaver med riktige parametre") {
+    context("Oppretter manuelle oppgaver med riktige parametre") {
         val receivedSykmelding = mockk<ReceivedSykmelding>(relaxed = true)
-        it("Behandlingstema er ab0351 hvis sykmelding har behandlingsdager") {
+        test("Behandlingstema er ab0351 hvis sykmelding har behandlingsdager") {
             val validationResults = ValidationResult(
                 Status.MANUAL_PROCESSING,
                 listOf(

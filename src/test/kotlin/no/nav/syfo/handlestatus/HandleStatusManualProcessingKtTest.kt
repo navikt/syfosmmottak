@@ -1,5 +1,6 @@
 package no.nav.syfo.handlestatus
 
+import io.kotest.core.spec.style.FunSpec
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
@@ -21,8 +22,6 @@ import no.nav.syfo.util.get
 import no.nav.syfo.utils.getFileAsString
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.RecordMetadata
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.io.StringReader
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
@@ -30,7 +29,7 @@ import javax.jms.MessageProducer
 import javax.jms.Session
 import kotlin.test.assertFailsWith
 
-class HandleStatusManualProcessingKtTest : Spek({
+class HandleStatusManualProcessingKtTest : FunSpec({
     val kafkaApprecProducer = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
     val session = mockk<Session>(relaxed = true)
     val syfoserviceProducer = mockk<MessageProducer>(relaxed = true)
@@ -64,14 +63,14 @@ class HandleStatusManualProcessingKtTest : Spek({
         every { kafkaProducerReceviedSykmelding.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
     }
 
-    beforeEachTest { clearAllMocks() }
+    beforeTest { clearAllMocks() }
 
-    describe("Send manual processing") {
-        it("Should send to manuel") {
+    context("Send manual processing") {
+        test("Should send to manuel") {
             setUpMocks()
-            runBlocking {
-                handleManualProcessing(receivedSykmelding, loggingMeta, fellesformat, msgHead, kafkaApprecProducer, session, syfoserviceProducer, healthInformation, validationResult, kafkaManualTaskProducer, kafkaProducerReceviedSykmelding, validationResultKafkaProducer, manuellOppgaveProducer)
-            }
+
+            handleManualProcessing(receivedSykmelding, loggingMeta, fellesformat, msgHead, kafkaApprecProducer, session, syfoserviceProducer, healthInformation, validationResult, kafkaManualTaskProducer, kafkaProducerReceviedSykmelding, validationResultKafkaProducer, manuellOppgaveProducer)
+
             verify(exactly = 0) { kafkaApprecProducer.send(any()) }
             verify(exactly = 0) { kafkaManualTaskProducer.send(any()) }
             verify(exactly = 1) { manuellOppgaveProducer.send(any()) }
@@ -79,7 +78,7 @@ class HandleStatusManualProcessingKtTest : Spek({
             verify(exactly = 0) { kafkaProducerReceviedSykmelding.send(any()) }
             verify(exactly = 0) { syfoserviceProducer.send(any()) }
         }
-        it("Should throw exception when kafkaproducer for manueloppgave") {
+        test("Should throw exception when kafkaproducer for manueloppgave") {
             setUpMocks()
             every { manuellOppgaveProducer.send(any()) } returns getFailingFuture()
             assertFailsWith<ExecutionException> {
@@ -89,7 +88,7 @@ class HandleStatusManualProcessingKtTest : Spek({
             }
         }
 
-        it("Should throw exeption when sending ReceivedSykmelding fails") {
+        test("Should throw exeption when sending ReceivedSykmelding fails") {
             setUpMocks()
             every { kafkaProducerReceviedSykmelding.send(any()) } returns getFailingFuture()
             assertFailsWith<ExecutionException> {
@@ -99,7 +98,7 @@ class HandleStatusManualProcessingKtTest : Spek({
             }
         }
 
-        it("Should throw exeption when sending validationResults fails") {
+        test("Should throw exeption when sending validationResults fails") {
             setUpMocks()
             every { validationResultKafkaProducer.send(any()) } returns getFailingFuture()
             assertFailsWith<ExecutionException> {
@@ -108,7 +107,7 @@ class HandleStatusManualProcessingKtTest : Spek({
                 }
             }
         }
-        it("Should throw exeption when sending apprec fails") {
+        test("Should throw exeption when sending apprec fails") {
             setUpMocks()
             every { kafkaApprecProducer.send(any()) } returns getFailingFuture()
             assertFailsWith<ExecutionException> {
@@ -118,7 +117,7 @@ class HandleStatusManualProcessingKtTest : Spek({
             }
         }
 
-        it("should throw exception when kafkaManualTaskProducer fails") {
+        test("should throw exception when kafkaManualTaskProducer fails") {
             setUpMocks()
             every { kafkaManualTaskProducer.send(any()) } returns getFailingFuture()
             assertFailsWith<ExecutionException> {

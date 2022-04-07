@@ -1,5 +1,6 @@
 package no.nav.syfo
 
+import io.kotest.core.spec.style.FunSpec
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.eiFellesformat.XMLMottakenhetBlokk
 import no.nav.helse.msgHead.XMLMsgHead
@@ -13,17 +14,15 @@ import no.nav.syfo.util.get
 import no.nav.syfo.util.getLocalDateTime
 import no.nav.syfo.utils.getFileAsString
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.io.StringReader
 
-object ApprecMapperSpek : Spek({
+class ApprecMapperSpek : FunSpec({
     val stringInput = getFileAsString("src/test/resources/sykemelding2013Regelsettversjon2.xml")
     val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
     val receiverBlock = fellesformat.get<XMLMottakenhetBlokk>()
     val msgHead = fellesformat.get<XMLMsgHead>()
 
-    describe("Duplicate AppRec") {
+    context("Duplicate AppRec") {
         val tekstTilSykmelder = "Duplikat! - Denne sykmeldingen er mottatt tidligere. \" +\n" +
             "                                        \"Skal ikke sendes på nytt"
         val apprec = fellesformat.toApprec(
@@ -37,102 +36,102 @@ object ApprecMapperSpek : Spek({
             msgGenDate = msgHead.msgInfo.genDate
         )
 
-        it("Has same msgGenDate") {
+        test("Has same msgGenDate") {
             apprec.msgGenDate shouldBeEqualTo fellesformat.get<XMLMsgHead>().msgInfo.genDate
         }
 
-        it("Has the same ediLoggId as the source") {
+        test("Has the same ediLoggId as the source") {
             apprec.ediloggid shouldBeEqualTo fellesformat.get<XMLMottakenhetBlokk>().ediLoggId
         }
-        it("Has the same msgId as the source") {
+        test("Has the same msgId as the source") {
             apprec.msgId shouldBeEqualTo fellesformat.get<XMLMsgHead>().msgInfo.msgId
         }
-        it("Has the same genDate as the source") {
+        test("Has the same genDate as the source") {
             apprec.genDate shouldBeEqualTo getLocalDateTime(fellesformat.get<XMLMsgHead>().msgInfo.genDate)
         }
-        it("Has the same msgTypeVerdi as the source") {
+        test("Has the same msgTypeVerdi as the source") {
             apprec.msgTypeVerdi shouldBeEqualTo fellesformat.get<XMLMsgHead>().msgInfo.type.v
         }
-        it("Has the same msgTypeBeskrivelse as the source") {
+        test("Has the same msgTypeBeskrivelse as the source") {
             apprec.msgTypeBeskrivelse shouldBeEqualTo fellesformat.get<XMLMsgHead>().msgInfo.type.dn
         }
-        it("Has the same apprecStatusDN as the source") {
+        test("Has the same apprecStatusDN as the source") {
             apprec.apprecStatus.dn shouldBeEqualTo ApprecStatus.AVVIST.dn
         }
-        it("Has the same apprecStatusv as the source") {
+        test("Has the same apprecStatusv as the source") {
             apprec.apprecStatus.v shouldBeEqualTo ApprecStatus.AVVIST.v
         }
-        it("Has the same tekstTilSykmelder as the source") {
+        test("Has the same tekstTilSykmelder as the source") {
             apprec.tekstTilSykmelder shouldBeEqualTo tekstTilSykmelder
         }
-        it("Has the same id on the sender organisation") {
+        test("Has the same id on the sender organisation") {
             apprec.mottakerOrganisasjon.hovedIdent.id shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.first().id
         }
-        it("Has the same id.typeid.dn on the sender organisation") {
+        test("Has the same id.typeid.dn on the sender organisation") {
             apprec.mottakerOrganisasjon.hovedIdent.typeId.beskrivelse shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.first().typeId.dn
         }
-        it("Has the same id.typeid.v on the sender organisation") {
+        test("Has the same id.typeid.v on the sender organisation") {
             apprec.mottakerOrganisasjon.hovedIdent.typeId.verdi shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.first().typeId.v
         }
-        it("Has the same organisationName on the sender organisation") {
+        test("Has the same organisationName on the sender organisation") {
             apprec.mottakerOrganisasjon.navn shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.organisationName
         }
-        it("Has the same id on additionalIds on the sender organisation") {
+        test("Has the same id on additionalIds on the sender organisation") {
             apprec.mottakerOrganisasjon.tilleggsIdenter?.last()?.id shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident?.last()?.id
         }
-        it("Has the same id on additionalIds.typeid.dn on the sender organisation") {
+        test("Has the same id on additionalIds.typeid.dn on the sender organisation") {
             apprec.mottakerOrganisasjon.tilleggsIdenter?.last()?.typeId?.beskrivelse shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident?.last()?.typeId?.dn
         }
-        it("Has the same id on additionalIds.typeId.v on the sender organisation") {
+        test("Has the same id on additionalIds.typeId.v on the sender organisation") {
             apprec.mottakerOrganisasjon.tilleggsIdenter?.last()?.typeId?.verdi shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident?.last()?.typeId?.v
         }
-        it("Has the same healthcareProfessional name on the sender organisation") {
+        test("Has the same healthcareProfessional name on the sender organisation") {
             apprec.mottakerOrganisasjon.helsepersonell?.navn shouldBeEqualTo "Sødal Ingvild Fos"
         }
-        it("Has the same healthcareProfessional ident on the sender organisation") {
+        test("Has the same healthcareProfessional ident on the sender organisation") {
             apprec.mottakerOrganisasjon.helsepersonell?.hovedIdent?.id shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.healthcareProfessional.ident?.first()?.id
         }
-        it("Has the same id.typeid.dn on the receiver organisation") {
+        test("Has the same id.typeid.dn on the receiver organisation") {
             apprec.senderOrganisasjon.hovedIdent.typeId.beskrivelse shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.receiver.organisation.ident.first().typeId.dn
         }
-        it("Has the same id.typeid.v on the receiver organisation") {
+        test("Has the same id.typeid.v on the receiver organisation") {
             apprec.senderOrganisasjon.hovedIdent.typeId.verdi shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.receiver.organisation.ident.first().typeId.v
         }
-        it("Has the same organisationName on the receiver organisation") {
+        test("Has the same organisationName on the receiver organisation") {
             apprec.senderOrganisasjon.navn shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.receiver.organisation.organisationName
         }
-        it("Has the same id on additionalIds on the receiver organisation") {
+        test("Has the same id on additionalIds on the receiver organisation") {
             apprec.senderOrganisasjon.tilleggsIdenter?.last()?.id shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.receiver.organisation.ident?.last()?.id
         }
-        it("Has the same id on additionalIds.typeid.dn on the receiver organisation") {
+        test("Has the same id on additionalIds.typeid.dn on the receiver organisation") {
             apprec.senderOrganisasjon.tilleggsIdenter?.last()?.typeId?.beskrivelse shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.receiver.organisation.ident?.last()?.typeId?.dn
         }
-        it("Has the same id on additionalIds.typeId.v on the receiver organisation") {
+        test("Has the same id on additionalIds.typeId.v on the receiver organisation") {
             apprec.senderOrganisasjon.tilleggsIdenter?.last()?.typeId?.verdi shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.receiver.organisation.ident?.last()?.typeId?.v
         }
-        it("Has the same healthcareProfessional name on the receiver organisation") {
+        test("Has the same healthcareProfessional name on the receiver organisation") {
             apprec.senderOrganisasjon.helsepersonell?.navn shouldBeEqualTo null
         }
-        it("Has the same healthcareProfessional ident on the receiver organisation") {
+        test("Has the same healthcareProfessional ident on the receiver organisation") {
             apprec.senderOrganisasjon.helsepersonell?.hovedIdent?.id shouldBeEqualTo null
         }
     }
 
-    describe("OK AppRec") {
+    context("OK AppRec") {
         val apprec = fellesformat.toApprec(
             ediloggid = receiverBlock.ediLoggId,
             msgId = msgHead.msgInfo.msgId,
@@ -143,98 +142,98 @@ object ApprecMapperSpek : Spek({
             senderOrganisation = msgHead.msgInfo.receiver.organisation,
             msgGenDate = msgHead.msgInfo.genDate
         )
-        it("Has the same ediLoggId as the source") {
+        test("Has the same ediLoggId as the source") {
             apprec.ediloggid shouldBeEqualTo fellesformat.get<XMLMottakenhetBlokk>().ediLoggId
         }
-        it("Has the same msgId as the source") {
+        test("Has the same msgId as the source") {
             apprec.msgId shouldBeEqualTo fellesformat.get<XMLMsgHead>().msgInfo.msgId
         }
-        it("Has the same genDate as the source") {
+        test("Has the same genDate as the source") {
             apprec.genDate shouldBeEqualTo getLocalDateTime(fellesformat.get<XMLMsgHead>().msgInfo.genDate)
         }
-        it("Has the same msgTypeVerdi as the source") {
+        test("Has the same msgTypeVerdi as the source") {
             apprec.msgTypeVerdi shouldBeEqualTo fellesformat.get<XMLMsgHead>().msgInfo.type.v
         }
-        it("Has the same msgTypeBeskrivelse as the source") {
+        test("Has the same msgTypeBeskrivelse as the source") {
             apprec.msgTypeBeskrivelse shouldBeEqualTo fellesformat.get<XMLMsgHead>().msgInfo.type.dn
         }
-        it("Has the same apprecStatusDN as the source") {
+        test("Has the same apprecStatusDN as the source") {
             apprec.apprecStatus.dn shouldBeEqualTo ApprecStatus.OK.dn
         }
-        it("Has the same apprecStatusv as the source") {
+        test("Has the same apprecStatusv as the source") {
             apprec.apprecStatus.v shouldBeEqualTo ApprecStatus.OK.v
         }
-        it("Has the same tekstTilSykmelder as the source") {
+        test("Has the same tekstTilSykmelder as the source") {
             apprec.tekstTilSykmelder shouldBeEqualTo null
         }
-        it("Has the same id on the sender organisation") {
+        test("Has the same id on the sender organisation") {
             apprec.mottakerOrganisasjon.hovedIdent.id shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.first().id
         }
-        it("Has the same id.typeid.dn on the sender organisation") {
+        test("Has the same id.typeid.dn on the sender organisation") {
             apprec.mottakerOrganisasjon.hovedIdent.typeId.beskrivelse shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.first().typeId.dn
         }
-        it("Has the same id.typeid.v on the sender organisation") {
+        test("Has the same id.typeid.v on the sender organisation") {
             apprec.mottakerOrganisasjon.hovedIdent.typeId.verdi shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.first().typeId.v
         }
-        it("Has the same organisationName on the sender organisation") {
+        test("Has the same organisationName on the sender organisation") {
             apprec.mottakerOrganisasjon.navn shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.organisationName
         }
-        it("Has the same id on additionalIds on the sender organisation") {
+        test("Has the same id on additionalIds on the sender organisation") {
             apprec.mottakerOrganisasjon.tilleggsIdenter?.last()?.id shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident?.last()?.id
         }
-        it("Has the same id on additionalIds.typeid.dn on the sender organisation") {
+        test("Has the same id on additionalIds.typeid.dn on the sender organisation") {
             apprec.mottakerOrganisasjon.tilleggsIdenter?.last()?.typeId?.beskrivelse shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident?.last()?.typeId?.dn
         }
-        it("Has the same id on additionalIds.typeId.v on the sender organisation") {
+        test("Has the same id on additionalIds.typeId.v on the sender organisation") {
             apprec.mottakerOrganisasjon.tilleggsIdenter?.last()?.typeId?.verdi shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident?.last()?.typeId?.v
         }
-        it("Has the same healthcareProfessional name on the sender organisation") {
+        test("Has the same healthcareProfessional name on the sender organisation") {
             apprec.mottakerOrganisasjon.helsepersonell?.navn shouldBeEqualTo "Sødal Ingvild Fos"
         }
-        it("Has the same healthcareProfessional ident on the sender organisation") {
+        test("Has the same healthcareProfessional ident on the sender organisation") {
             apprec.mottakerOrganisasjon.helsepersonell?.hovedIdent?.id shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.healthcareProfessional.ident?.first()?.id
         }
-        it("Has the same id.typeid.dn on the receiver organisation") {
+        test("Has the same id.typeid.dn on the receiver organisation") {
             apprec.senderOrganisasjon.hovedIdent.typeId.beskrivelse shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.receiver.organisation.ident.first().typeId.dn
         }
-        it("Has the same id.typeid.v on the receiver organisation") {
+        test("Has the same id.typeid.v on the receiver organisation") {
             apprec.senderOrganisasjon.hovedIdent.typeId.verdi shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.receiver.organisation.ident.first().typeId.v
         }
-        it("Has the same organisationName on the receiver organisation") {
+        test("Has the same organisationName on the receiver organisation") {
             apprec.senderOrganisasjon.navn shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.receiver.organisation.organisationName
         }
-        it("Has the same id on additionalIds on the receiver organisation") {
+        test("Has the same id on additionalIds on the receiver organisation") {
             apprec.senderOrganisasjon.tilleggsIdenter?.last()?.id shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.receiver.organisation.ident?.last()?.id
         }
-        it("Has the same id on additionalIds.typeid.dn on the receiver organisation") {
+        test("Has the same id on additionalIds.typeid.dn on the receiver organisation") {
             apprec.senderOrganisasjon.tilleggsIdenter?.last()?.typeId?.beskrivelse shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.receiver.organisation.ident?.last()?.typeId?.dn
         }
-        it("Has the same id on additionalIds.typeId.v on the receiver organisation") {
+        test("Has the same id on additionalIds.typeId.v on the receiver organisation") {
             apprec.senderOrganisasjon.tilleggsIdenter?.last()?.typeId?.verdi shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.receiver.organisation.ident?.last()?.typeId?.v
         }
-        it("Has the same healthcareProfessional name on the receiver organisation") {
+        test("Has the same healthcareProfessional name on the receiver organisation") {
             apprec.senderOrganisasjon.helsepersonell?.navn shouldBeEqualTo null
         }
-        it("Has the same healthcareProfessional ident on the receiver organisation") {
+        test("Has the same healthcareProfessional ident on the receiver organisation") {
             apprec.senderOrganisasjon.helsepersonell?.hovedIdent?.id shouldBeEqualTo null
         }
     }
 
-    describe("Avisst AppRec with validationResult") {
+    context("Avisst AppRec with validationResult") {
 
         val validationResult = ValidationResult(
             status = Status.INVALID,
@@ -266,97 +265,97 @@ object ApprecMapperSpek : Spek({
             validationResult = validationResult,
             msgGenDate = msgHead.msgInfo.genDate
         )
-        it("Has the same validationResult as the source") {
+        test("Has the same validationResult as the source") {
             apprec.validationResult shouldBeEqualTo validationResult
         }
 
-        it("Has the same ediLoggId as the source") {
+        test("Has the same ediLoggId as the source") {
             apprec.ediloggid shouldBeEqualTo fellesformat.get<XMLMottakenhetBlokk>().ediLoggId
         }
-        it("Has the same msgId as the source") {
+        test("Has the same msgId as the source") {
             apprec.msgId shouldBeEqualTo fellesformat.get<XMLMsgHead>().msgInfo.msgId
         }
-        it("Has the same genDate as the source") {
+        test("Has the same genDate as the source") {
             apprec.genDate shouldBeEqualTo getLocalDateTime(fellesformat.get<XMLMsgHead>().msgInfo.genDate)
         }
-        it("Has the same msgTypeVerdi as the source") {
+        test("Has the same msgTypeVerdi as the source") {
             apprec.msgTypeVerdi shouldBeEqualTo fellesformat.get<XMLMsgHead>().msgInfo.type.v
         }
-        it("Has the same msgTypeBeskrivelse as the source") {
+        test("Has the same msgTypeBeskrivelse as the source") {
             apprec.msgTypeBeskrivelse shouldBeEqualTo fellesformat.get<XMLMsgHead>().msgInfo.type.dn
         }
-        it("Has the same apprecStatusDN as the source") {
+        test("Has the same apprecStatusDN as the source") {
             apprec.apprecStatus.dn shouldBeEqualTo ApprecStatus.OK.dn
         }
-        it("Has the same apprecStatusv as the source") {
+        test("Has the same apprecStatusv as the source") {
             apprec.apprecStatus.v shouldBeEqualTo ApprecStatus.OK.v
         }
-        it("Has the same tekstTilSykmelder as the source") {
+        test("Has the same tekstTilSykmelder as the source") {
             apprec.tekstTilSykmelder shouldBeEqualTo null
         }
-        it("Has the same id on the sender organisation") {
+        test("Has the same id on the sender organisation") {
             apprec.mottakerOrganisasjon.hovedIdent.id shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.first().id
         }
-        it("Has the same id.typeid.dn on the sender organisation") {
+        test("Has the same id.typeid.dn on the sender organisation") {
             apprec.mottakerOrganisasjon.hovedIdent.typeId.beskrivelse shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.first().typeId.dn
         }
-        it("Has the same id.typeid.v on the sender organisation") {
+        test("Has the same id.typeid.v on the sender organisation") {
             apprec.mottakerOrganisasjon.hovedIdent.typeId.verdi shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.first().typeId.v
         }
-        it("Has the same organisationName on the sender organisation") {
+        test("Has the same organisationName on the sender organisation") {
             apprec.mottakerOrganisasjon.navn shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.organisationName
         }
-        it("Has the same id on additionalIds on the sender organisation") {
+        test("Has the same id on additionalIds on the sender organisation") {
             apprec.mottakerOrganisasjon.tilleggsIdenter?.last()?.id shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident?.last()?.id
         }
-        it("Has the same id on additionalIds.typeid.dn on the sender organisation") {
+        test("Has the same id on additionalIds.typeid.dn on the sender organisation") {
             apprec.mottakerOrganisasjon.tilleggsIdenter?.last()?.typeId?.beskrivelse shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident?.last()?.typeId?.dn
         }
-        it("Has the same id on additionalIds.typeId.v on the sender organisation") {
+        test("Has the same id on additionalIds.typeId.v on the sender organisation") {
             apprec.mottakerOrganisasjon.tilleggsIdenter?.last()?.typeId?.verdi shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident?.last()?.typeId?.v
         }
-        it("Has the same healthcareProfessional name on the sender organisation") {
+        test("Has the same healthcareProfessional name on the sender organisation") {
             apprec.mottakerOrganisasjon.helsepersonell?.navn shouldBeEqualTo "Sødal Ingvild Fos"
         }
-        it("Has the same healthcareProfessional ident on the sender organisation") {
+        test("Has the same healthcareProfessional ident on the sender organisation") {
             apprec.mottakerOrganisasjon.helsepersonell?.hovedIdent?.id shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.healthcareProfessional.ident?.first()?.id
         }
-        it("Has the same id.typeid.dn on the receiver organisation") {
+        test("Has the same id.typeid.dn on the receiver organisation") {
             apprec.senderOrganisasjon.hovedIdent.typeId.beskrivelse shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.receiver.organisation.ident.first().typeId.dn
         }
-        it("Has the same id.typeid.v on the receiver organisation") {
+        test("Has the same id.typeid.v on the receiver organisation") {
             apprec.senderOrganisasjon.hovedIdent.typeId.verdi shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.receiver.organisation.ident.first().typeId.v
         }
-        it("Has the same organisationName on the receiver organisation") {
+        test("Has the same organisationName on the receiver organisation") {
             apprec.senderOrganisasjon.navn shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.receiver.organisation.organisationName
         }
-        it("Has the same id on additionalIds on the receiver organisation") {
+        test("Has the same id on additionalIds on the receiver organisation") {
             apprec.senderOrganisasjon.tilleggsIdenter?.last()?.id shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.receiver.organisation.ident?.last()?.id
         }
-        it("Has the same id on additionalIds.typeid.dn on the receiver organisation") {
+        test("Has the same id on additionalIds.typeid.dn on the receiver organisation") {
             apprec.senderOrganisasjon.tilleggsIdenter?.last()?.typeId?.beskrivelse shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.receiver.organisation.ident?.last()?.typeId?.dn
         }
-        it("Has the same id on additionalIds.typeId.v on the receiver organisation") {
+        test("Has the same id on additionalIds.typeId.v on the receiver organisation") {
             apprec.senderOrganisasjon.tilleggsIdenter?.last()?.typeId?.verdi shouldBeEqualTo
                 fellesformat.get<XMLMsgHead>().msgInfo.receiver.organisation.ident?.last()?.typeId?.v
         }
-        it("Has the same healthcareProfessional name on the receiver organisation") {
+        test("Has the same healthcareProfessional name on the receiver organisation") {
             apprec.senderOrganisasjon.helsepersonell?.navn shouldBeEqualTo null
         }
-        it("Has the same healthcareProfessional ident on the receiver organisation") {
+        test("Has the same healthcareProfessional ident on the receiver organisation") {
             apprec.senderOrganisasjon.helsepersonell?.hovedIdent?.id shouldBeEqualTo null
         }
     }

@@ -1,14 +1,13 @@
 package no.nav.syfo
 
+import io.kotest.core.spec.style.FunSpec
 import no.nav.syfo.model.RuleInfo
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 
-object TaskDescriptionSpek : Spek({
-    describe("Notify syfo service payload") {
-        it("Produces a parsable XML") {
+class TaskDescriptionSpek : FunSpec({
+    context("Notify syfo service payload") {
+        test("Produces a parsable XML") {
             val results = ValidationResult(
                 status = Status.MANUAL_PROCESSING,
                 ruleHits = listOf(

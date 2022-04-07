@@ -1,16 +1,15 @@
 package no.nav.syfo.util
 
+import io.kotest.core.spec.style.FunSpec
 import no.nav.helse.sm2013.ArsakType
 import no.nav.helse.sm2013.CS
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
 
-class ValidateHelseOpplysningerArbeidsuforhetTest : Spek({
-    describe("Validering av mottatt sykmelding") {
-        it("periodetypeIkkeAngitt er true hvis periodetype mangler (en periode)") {
+class ValidateHelseOpplysningerArbeidsuforhetTest : FunSpec({
+    context("Validering av mottatt sykmelding") {
+        test("periodetypeIkkeAngitt er true hvis periodetype mangler (en periode)") {
             val aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
                 periode.add(
                     HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
@@ -22,7 +21,7 @@ class ValidateHelseOpplysningerArbeidsuforhetTest : Spek({
 
             periodetypeIkkeAngitt(aktivitet) shouldBeEqualTo true
         }
-        it("periodetypeIkkeAngitt er true hvis periodetype mangler for en av to perioder") {
+        test("periodetypeIkkeAngitt er true hvis periodetype mangler for en av to perioder") {
             val aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
                 periode.add(
                     HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
@@ -52,7 +51,7 @@ class ValidateHelseOpplysningerArbeidsuforhetTest : Spek({
 
             periodetypeIkkeAngitt(aktivitet) shouldBeEqualTo true
         }
-        it("periodetypeIkkeAngitt er false hvis periodetype er angitt") {
+        test("periodetypeIkkeAngitt er false hvis periodetype er angitt") {
             val aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
                 periode.add(
                     HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {

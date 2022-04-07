@@ -1,11 +1,11 @@
 package no.nav.syfo.application
 
+import io.kotest.core.spec.style.FunSpec
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.runBlocking
 import no.nav.emottak.subscription.SubscriptionPort
 import no.nav.syfo.Environment
 import no.nav.syfo.apprec.Apprec
@@ -25,15 +25,13 @@ import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.utils.getFileAsString
 import no.nav.syfo.vedlegg.google.BucketUploadService
 import org.apache.kafka.clients.producer.KafkaProducer
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import redis.clients.jedis.Jedis
 import javax.jms.MessageConsumer
 import javax.jms.MessageProducer
 import javax.jms.Session
 import javax.jms.TextMessage
 
-class BlockingApplicationRunnerTest : Spek({
+class BlockingApplicationRunnerTest : FunSpec({
     val inputconsumer = mockk<MessageConsumer>(relaxed = true)
     val syfoserviceProducer = mockk<MessageProducer>(relaxed = true)
     val backoutProducer = mockk<MessageProducer>(relaxed = true)
@@ -59,7 +57,7 @@ class BlockingApplicationRunnerTest : Spek({
         kafkaproducerreceivedSykmelding, kafkaproducervalidationResult, kafkaManuelTaskProducer, kafkaproducerApprec, kafkaproducerManuellOppgave
     )
 
-    beforeEachTest {
+    beforeTest {
         clearMocks(kafkaproducerApprec, kafkaproducerreceivedSykmelding)
     }
 
@@ -72,21 +70,19 @@ class BlockingApplicationRunnerTest : Spek({
     coEvery { norskHelsenettClient.getByFnr(any(), any()) } returns Behandler(emptyList(), "", "HPR", null, null, null)
     coEvery { syfoSykemeldingRuleClient.executeRuleValidation(any(), any()) } returns ValidationResult(Status.OK, emptyList())
 
-    describe("Mottak av sykmelding") {
-        it("Vanlig sykmelding skal gi ok apprec") {
+    context("Mottak av sykmelding") {
+        test("Vanlig sykmelding skal gi ok apprec") {
             every { applicationState.ready } returns true andThen false
             val stringInput = getFileAsString("src/test/resources/fellesformat.xml")
             val textMessage = mockk<TextMessage>(relaxed = true)
             every { textMessage.text } returns stringInput
             every { inputconsumer.receiveNoWait() } returns textMessage
 
-            runBlocking {
-                blockingApplicationRunner.run(inputconsumer, syfoserviceProducer, backoutProducer)
-            }
+            blockingApplicationRunner.run(inputconsumer, syfoserviceProducer, backoutProducer)
 
             coVerify { kafkaproducerApprec.send(match { it.value().apprecStatus == ApprecStatus.OK }) }
         }
-        it("Virksomhetsykmelding skal gi ok apprec") {
+        test("Virksomhetsykmelding skal gi ok apprec") {
             every { applicationState.ready } returns true andThen false
             val stringInput = getFileAsString("src/test/resources/sykmelding_virksomhet.xml")
             val textMessage = mockk<TextMessage>(relaxed = true)
@@ -94,9 +90,7 @@ class BlockingApplicationRunnerTest : Spek({
             every { inputconsumer.receiveNoWait() } returns textMessage
             coEvery { norskHelsenettClient.getByHpr(any(), any()) } returns Behandler(emptyList(), "12345678912", "HPR", null, null, null)
 
-            runBlocking {
-                blockingApplicationRunner.run(inputconsumer, syfoserviceProducer, backoutProducer)
-            }
+            blockingApplicationRunner.run(inputconsumer, syfoserviceProducer, backoutProducer)
 
             coVerify {
                 kafkaproducerApprec.send(
