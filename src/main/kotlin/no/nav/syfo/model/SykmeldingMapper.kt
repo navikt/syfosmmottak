@@ -74,7 +74,12 @@ fun HelseOpplysningerArbeidsuforhet.MedisinskVurdering.toMedisinskVurdering() = 
     annenFraversArsak = annenFraversArsak?.toAnnenFraversArsak()
 )
 
-fun CV.toDiagnose() = Diagnose(s, v, dn)
+fun CV.toDiagnose() =
+    if (v.contains(".")) {
+        Diagnose(s, v.replace(".", ""), dn)
+    } else {
+        Diagnose(s, v, dn)
+    }
 
 fun ArsakType.toAnnenFraversArsak() = AnnenFraversArsak(
     beskrivelse = beskriv,
