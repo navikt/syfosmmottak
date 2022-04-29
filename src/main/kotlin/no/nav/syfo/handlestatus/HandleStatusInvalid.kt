@@ -605,7 +605,7 @@ fun handleVirksomhetssykmeldingOgFnrManglerIHPR(
     sha256String: String
 ) {
     log.warn(
-        "Virksomhetsykmeldingen er avvist fordi den mangler HPR-nummer for behandler {}",
+        "Virksomhetsykmeldingen er avvist fordi fødselsnummer mangler i HPR for behandler {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName)
     )
