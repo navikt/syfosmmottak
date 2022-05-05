@@ -5,25 +5,25 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val coroutinesVersion = "1.6.0"
+val coroutinesVersion = "1.6.1"
 val fellesformatVersion = "1.c22de09"
 val ibmMqVersion = "9.2.4.0"
 val javaxActivationVersion = "1.1.1"
 val jacksonVersion = "2.13.2"
-val jacksonPatchVersion = "2.13.2.1"
-val jacksonBomVersion = "2.13.2.20220324"
+val jacksonPatchVersion = "2.13.2.2"
+val jacksonBomVersion = "2.13.2.20220328"
 val jaxbApiVersion = "2.4.0-b180830.0359"
 val jaxbVersion = "2.3.0.1"
-val jedisVersion = "3.1.0"
+val jedisVersion = "4.2.2"
 val kafkaVersion = "3.0.0"
 val kithHodemeldingVersion = "1.c22de09"
 val kithApprecVersion = "1.c22de09"
 val kluentVersion = "1.68"
-val ktorVersion = "1.6.8"
+val ktorVersion = "2.0.1"
 val logbackVersion = "1.2.11"
-val logstashEncoderVersion = "7.0.1"
+val logstashEncoderVersion = "7.1.1"
 val prometheusVersion = "0.15.0"
-val smCommonVersion = "1.18fb664"
+val smCommonVersion = "1.c55f4d2"
 val sykmeldingVersion = "1.c22de09"
 val cxfVersion = "3.2.7"
 val jaxwsApiVersion = "2.3.1"
@@ -33,16 +33,16 @@ val jaxwsToolsVersion = "2.3.2"
 val jaxbRuntimeVersion = "2.4.0-b180830.0438"
 val javaTimeAdapterVersion = "1.1.3"
 val mockkVersion = "1.12.3"
-val kotlinVersion = "1.6.0"
-val googleCloudStorageVersion = "2.3.0"
-val kotestVersion = "5.2.2"
+val kotlinVersion = "1.6.20"
+val googleCloudStorageVersion = "2.6.1"
+val kotestVersion = "5.2.3"
 
 plugins {
     id("io.mateo.cxf-codegen") version "1.0.0-rc.3"
-    kotlin("jvm") version "1.6.0"
-    id("org.jmailen.kotlinter") version "3.6.0"
-    id("com.diffplug.spotless") version "5.16.0"
-    id("com.github.johnrengelman.shadow") version "7.0.0"
+    kotlin("jvm") version "1.6.20"
+    id("org.jmailen.kotlinter") version "3.10.0"
+    id("com.diffplug.spotless") version "6.5.0"
+    id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
 
@@ -91,11 +91,12 @@ dependencies {
     implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
     implementation("io.prometheus:simpleclient_common:$prometheusVersion")
 
+    implementation("io.ktor:ktor-server-core:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
+    implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-apache:$ktorVersion")
-    implementation("io.ktor:ktor-client-cio:$ktorVersion")
-    implementation("io.ktor:ktor-client-auth-jvm:$ktorVersion")
-    implementation("io.ktor:ktor-client-jackson:$ktorVersion")
+    implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+    implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
 
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")

@@ -1,14 +1,15 @@
 package no.nav.syfo.client
 
 import io.ktor.client.HttpClient
-import io.ktor.client.features.ResponseException
+import io.ktor.client.call.body
 import io.ktor.client.request.accept
 import io.ktor.client.request.header
 import io.ktor.client.request.post
+import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import net.logstash.logback.argument.StructuredArguments.fields
-import no.nav.syfo.helpers.retry
 import no.nav.syfo.log
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
@@ -21,19 +22,19 @@ class SyfoSykemeldingRuleClient(
     private val resourceId: String,
     private val client: HttpClient
 ) {
-    suspend fun executeRuleValidation(payload: ReceivedSykmelding, loggingMeta: LoggingMeta): ValidationResult =
-        retry("syfosmregler_validate") {
-            try {
-                val accessToken = accessTokenClientV2.getAccessTokenV2(resourceId)
-                client.post<ValidationResult>("$endpointUrl/v1/rules/validate") {
-                    contentType(ContentType.Application.Json)
-                    accept(ContentType.Application.Json)
-                    header("Authorization", "Bearer $accessToken")
-                    body = payload
-                }
-            } catch (e: ResponseException) {
-                log.error("Syfosmregler kastet feilmelding {} for {}", e.message, fields(loggingMeta))
-                throw IOException("Syfosmregler kastet feilmelding ${e.message}")
-            }
+    suspend fun executeRuleValidation(payload: ReceivedSykmelding, loggingMeta: LoggingMeta): ValidationResult {
+        val accessToken = accessTokenClientV2.getAccessTokenV2(resourceId)
+        val httpResponse = client.post("$endpointUrl/v1/rules/validate") {
+            contentType(ContentType.Application.Json)
+            accept(ContentType.Application.Json)
+            header("Authorization", "Bearer $accessToken")
+            setBody(payload)
         }
+        if (httpResponse.status == HttpStatusCode.OK) {
+            return httpResponse.body<ValidationResult>()
+        } else {
+            log.error("Syfosmregler svarte med feilkode {} for {}", httpResponse.status, fields(loggingMeta))
+            throw IOException("Syfosmregler svarte med feilkode ${httpResponse.status}")
+        }
+    }
 }

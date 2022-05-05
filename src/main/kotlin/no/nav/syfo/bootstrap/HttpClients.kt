@@ -8,10 +8,11 @@ import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.apache.Apache
 import io.ktor.client.engine.apache.ApacheEngineConfig
-import io.ktor.client.features.HttpResponseValidator
-import io.ktor.client.features.json.JacksonSerializer
-import io.ktor.client.features.json.JsonFeature
+import io.ktor.client.plugins.HttpRequestRetry
+import io.ktor.client.plugins.HttpResponseValidator
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.network.sockets.SocketTimeoutException
+import io.ktor.serialization.jackson.jackson
 import no.nav.syfo.Environment
 import no.nav.syfo.application.exception.ServiceUnavailableException
 import no.nav.syfo.client.AccessTokenClientV2
@@ -23,10 +24,9 @@ import org.apache.http.impl.conn.SystemDefaultRoutePlanner
 import java.net.ProxySelector
 
 class HttpClients(environment: Environment) {
-
-    private val simpleHttpClient = HttpClient(Apache) {
-        install(JsonFeature) {
-            serializer = JacksonSerializer {
+    private val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
+        install(ContentNegotiation) {
+            jackson {
                 registerKotlinModule()
                 registerModule(JavaTimeModule())
                 configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
@@ -34,7 +34,7 @@ class HttpClients(environment: Environment) {
             }
         }
         HttpResponseValidator {
-            handleResponseException { exception ->
+            handleResponseExceptionWithRequest { exception, _ ->
                 when (exception) {
                     is SocketTimeoutException -> throw ServiceUnavailableException(exception.message)
                 }
@@ -42,19 +42,16 @@ class HttpClients(environment: Environment) {
         }
         expectSuccess = false
     }
-
-    val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
-        install(JsonFeature) {
-            serializer = JacksonSerializer {
-                registerKotlinModule()
-                registerModule(JavaTimeModule())
-                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    private val retryConfig: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
+        config().apply {
+            install(HttpRequestRetry) {
+                maxRetries = 3
+                delayMillis { retry ->
+                    retry * 500L
+                }
             }
         }
-        expectSuccess = false
     }
-
     private val proxyConfig: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
         config()
         engine {
@@ -64,6 +61,8 @@ class HttpClients(environment: Environment) {
         }
     }
 
+    private val simpleHttpClient = HttpClient(Apache, config)
+    private val httpClientWithRetry = HttpClient(Apache, retryConfig)
     private val httpClientWithProxy = HttpClient(Apache, proxyConfig)
 
     private val accessTokenClientV2 = AccessTokenClientV2(
@@ -77,12 +76,12 @@ class HttpClients(environment: Environment) {
         environment.syfosmreglerApiUrl,
         accessTokenClientV2,
         environment.syfosmreglerApiScope,
-        simpleHttpClient
+        httpClientWithRetry
     )
 
-    val sarClient = SarClient(environment.kuhrSarApiUrl, accessTokenClientV2, environment.kuhrSarApiScope, simpleHttpClient)
+    val sarClient = SarClient(environment.kuhrSarApiUrl, accessTokenClientV2, environment.kuhrSarApiScope, httpClientWithRetry)
 
-    val norskHelsenettClient = NorskHelsenettClient(environment.norskHelsenettEndpointURL, accessTokenClientV2, environment.helsenettproxyScope, simpleHttpClient)
+    val norskHelsenettClient = NorskHelsenettClient(environment.norskHelsenettEndpointURL, accessTokenClientV2, environment.helsenettproxyScope, httpClientWithRetry)
 
     val pdlPersonService = PdlFactory.getPdlService(environment, simpleHttpClient, accessTokenClientV2, environment.pdlScope)
 }
