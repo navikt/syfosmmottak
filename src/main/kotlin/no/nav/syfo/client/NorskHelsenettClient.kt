@@ -1,20 +1,19 @@
 package no.nav.syfo.client
 
 import io.ktor.client.HttpClient
-import io.ktor.client.call.receive
+import io.ktor.client.call.body
 import io.ktor.client.request.accept
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
-import io.ktor.client.statement.HttpStatement
 import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
+import io.ktor.http.HttpStatusCode.Companion.InternalServerError
 import io.ktor.http.HttpStatusCode.Companion.NotFound
+import io.ktor.http.HttpStatusCode.Companion.OK
+import io.ktor.http.HttpStatusCode.Companion.Unauthorized
 import net.logstash.logback.argument.StructuredArguments.fields
-import no.nav.syfo.helpers.retry
 import no.nav.syfo.log
 import no.nav.syfo.util.LoggingMeta
 import java.io.IOException
-import java.lang.RuntimeException
 
 class NorskHelsenettClient(
     private val endpointUrl: String,
@@ -24,81 +23,77 @@ class NorskHelsenettClient(
 ) {
 
     suspend fun getByHpr(hprNummer: String?, loggingMeta: LoggingMeta): Behandler? {
-        return retry(
-            callName = "finnbehandler",
-            retryIntervals = arrayOf(500L, 1000L, 3000L, 5000L)
-        ) {
-            val accessToken = accessTokenClient.getAccessTokenV2(resourceId)
+        val accessToken = accessTokenClient.getAccessTokenV2(resourceId)
 
-            val httpResponse = httpClient.get<HttpStatement>("$endpointUrl/api/v2/behandlerMedHprNummer") {
-                accept(ContentType.Application.Json)
-                headers {
-                    append("Authorization", "Bearer $accessToken")
-                    append("Nav-CallId", loggingMeta.msgId)
-                    append("hprNummer", hprNummer!!)
-                }
-            }.execute()
-            if (httpResponse.status == HttpStatusCode.InternalServerError) {
-                log.error("Syfohelsenettproxy kastet feilmelding for loggingMeta {} ved henting av behandler for hprNummer", fields(loggingMeta))
+        val httpResponse = httpClient.get("$endpointUrl/api/v2/behandlerMedHprNummer") {
+            accept(ContentType.Application.Json)
+            headers {
+                append("Authorization", "Bearer $accessToken")
+                append("Nav-CallId", loggingMeta.msgId)
+                append("hprNummer", hprNummer!!)
+            }
+        }
+        when (httpResponse.status) {
+            InternalServerError -> {
+                log.error(
+                    "Syfohelsenettproxy kastet feilmelding for loggingMeta {} ved henting av behandler for hprNummer",
+                    fields(loggingMeta)
+                )
                 throw IOException("Syfohelsenettproxy kastet feilmelding og svarte status ${httpResponse.status} ved søk på hprNummer")
             }
-            when (httpResponse.status) {
-                NotFound -> {
-                    log.warn("Fant ikke behandler for hprNummer {}", fields(loggingMeta))
-                    null
-                }
-                HttpStatusCode.Unauthorized -> {
-                    log.error("Norsk helsenett returnerte Unauthorized for henting av behandler for hprNummer")
-                    throw RuntimeException("Norsk helsenett returnerte Unauthorized ved henting av behandler for hprNummer")
-                }
-                HttpStatusCode.OK -> {
-                    log.info("Hentet behandler for hprNummer {}", fields(loggingMeta))
-                    httpResponse.call.response.receive<Behandler>()
-                }
-                else -> {
-                    log.error("Feil ved henting av behandler. Statuskode: ${httpResponse.status}")
-                    throw RuntimeException("En ukjent feil oppsto ved ved henting av behandler ved søk på hprNummer. Statuskode: ${httpResponse.status}")
-                }
+            NotFound -> {
+                log.warn("Fant ikke behandler for hprNummer {}", fields(loggingMeta))
+                return null
+            }
+            Unauthorized -> {
+                log.error("Norsk helsenett returnerte Unauthorized for henting av behandler for hprNummer")
+                throw RuntimeException("Norsk helsenett returnerte Unauthorized ved henting av behandler for hprNummer")
+            }
+            OK -> {
+                log.info("Hentet behandler for hprNummer {}", fields(loggingMeta))
+                return httpResponse.body<Behandler>()
+            }
+            else -> {
+                log.error("Feil ved henting av behandler. Statuskode: ${httpResponse.status}")
+                throw RuntimeException("En ukjent feil oppsto ved ved henting av behandler ved søk på hprNummer. Statuskode: ${httpResponse.status}")
             }
         }
     }
 
     suspend fun getByFnr(fnr: String, loggingMeta: LoggingMeta): Behandler? {
-        return retry(
-            callName = "finnbehandler",
-            retryIntervals = arrayOf(500L, 1000L, 3000L, 5000L)
-        ) {
-            val accessToken = accessTokenClient.getAccessTokenV2(resourceId)
+        val accessToken = accessTokenClient.getAccessTokenV2(resourceId)
 
-            val httpResponse = httpClient.get<HttpStatement>("$endpointUrl/api/v2/behandler") {
-                accept(ContentType.Application.Json)
-                headers {
-                    append("Authorization", "Bearer $accessToken")
-                    append("Nav-CallId", loggingMeta.msgId)
-                    append("behandlerFnr", fnr)
-                }
-            }.execute()
-            if (httpResponse.status == HttpStatusCode.InternalServerError) {
-                log.error("Syfohelsenettproxy kastet feilmelding for loggingMeta {} ved henting av behandler for fnr", fields(loggingMeta))
+        val httpResponse = httpClient.get("$endpointUrl/api/v2/behandler") {
+            accept(ContentType.Application.Json)
+            headers {
+                append("Authorization", "Bearer $accessToken")
+                append("Nav-CallId", loggingMeta.msgId)
+                append("behandlerFnr", fnr)
+            }
+        }
+        when (httpResponse.status) {
+            InternalServerError -> {
+                log.error(
+                    "Syfohelsenettproxy kastet feilmelding for loggingMeta {} ved henting av behandler for fnr",
+                    fields(loggingMeta)
+                )
                 throw IOException("Syfohelsenettproxy kastet feilmelding og svarte status ${httpResponse.status} ved søk på fnr")
             }
-            when (httpResponse.status) {
-                NotFound -> {
-                    log.warn("Fant ikke behandler for fnr {}", fields(loggingMeta))
-                    null
-                }
-                HttpStatusCode.Unauthorized -> {
-                    log.error("Norsk helsenett returnerte Unauthorized for henting av behandler")
-                    throw RuntimeException("Norsk helsenett returnerte Unauthorized ved henting av behandler")
-                }
-                HttpStatusCode.OK -> {
-                    log.info("Hentet behandler for fnr {}", fields(loggingMeta))
-                    httpResponse.call.response.receive<Behandler>()
-                }
-                else -> {
-                    log.error("Feil ved henting av behandler. Statuskode: ${httpResponse.status}")
-                    throw RuntimeException("En ukjent feil oppsto ved ved henting av behandler. Statuskode: ${httpResponse.status}")
-                }
+            NotFound -> {
+                log.warn("Fant ikke behandler for fnr {}", fields(loggingMeta))
+                return null
+            }
+            Unauthorized -> {
+                log.error("Norsk helsenett returnerte Unauthorized for henting av behandler")
+                throw RuntimeException("Norsk helsenett returnerte Unauthorized ved henting av behandler")
+            }
+            OK -> {
+                log.info("Hentet behandler for fnr {}", fields(loggingMeta))
+                return httpResponse.body<Behandler>()
+            }
+            else -> {
+                log.error("Feil ved henting av behandler. Statuskode: ${httpResponse.status}")
+                throw RuntimeException("En ukjent feil oppsto ved ved henting av behandler. Statuskode: ${httpResponse.status}")
             }
         }
     }
