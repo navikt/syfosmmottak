@@ -140,8 +140,6 @@ fun launchListeners(
                 val syfoserviceProducer = session.producerForQueue(env.syfoserviceQueueName)
                 val backoutProducer = session.producerForQueue(env.inputBackoutQueueName)
 
-                applicationState.ready = true
-
                 jedis.auth(credentials.redisSecret)
 
                 BlockingApplicationRunner(
