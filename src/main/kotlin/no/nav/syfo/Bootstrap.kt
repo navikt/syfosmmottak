@@ -72,7 +72,6 @@ fun main() {
     )
 
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
-    applicationServer.start()
 
     DefaultExports.initialize()
 
@@ -97,6 +96,8 @@ fun main() {
         kafkaClients.kafkaProducerApprec, kafkaClients.kafkaproducerManuellOppgave,
         httpClients.norskHelsenettClient, bucketUploadService
     )
+
+    applicationServer.start()
 }
 
 @DelicateCoroutinesApi
@@ -107,6 +108,7 @@ fun createListener(applicationState: ApplicationState, action: suspend Coroutine
         } catch (e: TrackableException) {
             log.error("En uhåndtert feil oppstod, applikasjonen restarter {}", e.cause)
         } finally {
+            applicationState.ready = false
             applicationState.alive = false
         }
     }
