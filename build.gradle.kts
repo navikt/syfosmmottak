@@ -9,21 +9,19 @@ val coroutinesVersion = "1.6.1"
 val fellesformatVersion = "1.c22de09"
 val ibmMqVersion = "9.2.4.0"
 val javaxActivationVersion = "1.1.1"
-val jacksonVersion = "2.13.2"
-val jacksonPatchVersion = "2.13.2.2"
-val jacksonBomVersion = "2.13.2.20220328"
+val jacksonVersion = "2.13.3"
 val jaxbApiVersion = "2.4.0-b180830.0359"
 val jaxbVersion = "2.3.0.1"
-val jedisVersion = "4.2.2"
+val jedisVersion = "4.2.3"
 val kafkaVersion = "3.1.0"
 val kithHodemeldingVersion = "1.c22de09"
 val kithApprecVersion = "1.c22de09"
 val kluentVersion = "1.68"
-val ktorVersion = "2.0.0"
+val ktorVersion = "2.0.1"
 val logbackVersion = "1.2.11"
 val logstashEncoderVersion = "7.1.1"
 val prometheusVersion = "0.15.0"
-val smCommonVersion = "1.c55f4d2"
+val smCommonVersion = "1.f132f2b"
 val sykmeldingVersion = "1.c22de09"
 val cxfVersion = "3.2.7"
 val jaxwsApiVersion = "2.3.1"
@@ -32,14 +30,14 @@ val javaxAnnotationApiVersion = "1.3.2"
 val jaxwsToolsVersion = "2.3.2"
 val jaxbRuntimeVersion = "2.4.0-b180830.0438"
 val javaTimeAdapterVersion = "1.1.3"
-val mockkVersion = "1.12.3"
-val kotlinVersion = "1.6.20"
+val mockkVersion = "1.12.4"
+val kotlinVersion = "1.6.21"
 val googleCloudStorageVersion = "2.6.1"
-val kotestVersion = "5.2.3"
+val kotestVersion = "5.3.0"
 
 plugins {
     id("io.mateo.cxf-codegen") version "1.0.0-rc.3"
-    kotlin("jvm") version "1.6.20"
+    kotlin("jvm") version "1.6.21"
     id("org.jmailen.kotlinter") version "3.10.0"
     id("com.diffplug.spotless") version "6.5.0"
     id("com.github.johnrengelman.shadow") version "7.1.2"
@@ -107,8 +105,6 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
-    implementation("com.fasterxml.jackson:jackson-bom:$jacksonBomVersion")
-    implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonPatchVersion")
     implementation("no.nav.helse.xml:sm2013:$sykmeldingVersion")
     implementation("no.nav.helse.xml:xmlfellesformat:$fellesformatVersion")
     implementation("no.nav.helse.xml:kith-hodemelding:$kithHodemeldingVersion")
