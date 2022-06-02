@@ -62,8 +62,6 @@ spec:
       value: MPLS04
     - name: MQ_CHANNEL_NAME
       value: P_SYFOSMMOTTAK
-    - name: MQ_SYFOSERVICE_QUEUE_NAME
-      value: QA.P_EIA_SYFO_OUTBOUND
     - name: MQ_INPUT_QUEUE_NAME
       value: QA.P_SYFOSMMOTTAK.INPUT
     - name: MQ_INPUT_BOQ_QUEUE_NAME

@@ -6,7 +6,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.migesok.jaxb.adapter.javatime.LocalDateTimeXmlAdapter
 import com.migesok.jaxb.adapter.javatime.LocalDateXmlAdapter
-import no.nav.helse.apprecV1.XMLAppRec
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.helse.msgHead.XMLSender
@@ -36,14 +35,6 @@ val fellesformatMarshaller: Marshaller = fellesformatJaxBContext.createMarshalle
     setProperty(JAXB_ENCODING, "UTF-8")
     setProperty(JAXB_FORMATTED_OUTPUT, true)
 }
-
-val apprecJaxbContext: JAXBContext = JAXBContext.newInstance(XMLAppRec::class.java)
-val apprecJaxbMarshaller: Marshaller = apprecJaxbContext.createMarshaller()
-val apprecFFJaxbContext: JAXBContext = JAXBContext.newInstance(XMLEIFellesformat::class.java)
-val apprecFFJaxbMarshaller: Marshaller = apprecFFJaxbContext.createMarshaller()
-
-val sykmeldingMarshaller: Marshaller = JAXBContext.newInstance(HelseOpplysningerArbeidsuforhet::class.java).createMarshaller()
-    .apply { setProperty(JAXB_ENCODING, "UTF-8") }
 
 val senderMarshaller: Marshaller = JAXBContext.newInstance(XMLSender::class.java).createMarshaller()
     .apply { setProperty(JAXB_ENCODING, "ISO-8859-1") }

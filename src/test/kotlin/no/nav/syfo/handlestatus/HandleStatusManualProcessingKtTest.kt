@@ -8,7 +8,6 @@ import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.msgHead.XMLMsgHead
-import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.OpprettOppgaveKafkaMessage
@@ -25,15 +24,10 @@ import org.apache.kafka.clients.producer.RecordMetadata
 import java.io.StringReader
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
-import javax.jms.MessageProducer
-import javax.jms.Session
 import kotlin.test.assertFailsWith
 
 class HandleStatusManualProcessingKtTest : FunSpec({
     val kafkaApprecProducer = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
-    val session = mockk<Session>(relaxed = true)
-    val syfoserviceProducer = mockk<MessageProducer>(relaxed = true)
-    val healthInformation = mockk<HelseOpplysningerArbeidsuforhet>(relaxed = true)
     val receivedSykmelding = mockk<ReceivedSykmelding>(relaxed = true)
     val kafkaProducerReceviedSykmelding = mockk<KafkaProducer<String, ReceivedSykmelding>>(relaxed = true)
     val kafkaManualTaskProducer = mockk<KafkaProducer<String, OpprettOppgaveKafkaMessage>>()
@@ -69,21 +63,20 @@ class HandleStatusManualProcessingKtTest : FunSpec({
         test("Should send to manuel") {
             setUpMocks()
 
-            handleManualProcessing(receivedSykmelding, loggingMeta, fellesformat, msgHead, kafkaApprecProducer, session, syfoserviceProducer, healthInformation, validationResult, kafkaManualTaskProducer, kafkaProducerReceviedSykmelding, validationResultKafkaProducer, manuellOppgaveProducer)
+            handleManualProcessing(receivedSykmelding, loggingMeta, fellesformat, msgHead, kafkaApprecProducer, validationResult, kafkaManualTaskProducer, kafkaProducerReceviedSykmelding, validationResultKafkaProducer, manuellOppgaveProducer)
 
             verify(exactly = 0) { kafkaApprecProducer.send(any()) }
             verify(exactly = 0) { kafkaManualTaskProducer.send(any()) }
             verify(exactly = 1) { manuellOppgaveProducer.send(any()) }
             verify(exactly = 0) { validationResultKafkaProducer.send(any()) }
             verify(exactly = 0) { kafkaProducerReceviedSykmelding.send(any()) }
-            verify(exactly = 0) { syfoserviceProducer.send(any()) }
         }
         test("Should throw exception when kafkaproducer for manueloppgave") {
             setUpMocks()
             every { manuellOppgaveProducer.send(any()) } returns getFailingFuture()
             assertFailsWith<ExecutionException> {
                 runBlocking {
-                    handleManualProcessing(receivedSykmelding, loggingMeta, fellesformat, msgHead, kafkaApprecProducer, session, syfoserviceProducer, healthInformation, validationResult, kafkaManualTaskProducer, kafkaProducerReceviedSykmelding, validationResultKafkaProducer, manuellOppgaveProducer)
+                    handleManualProcessing(receivedSykmelding, loggingMeta, fellesformat, msgHead, kafkaApprecProducer, validationResult, kafkaManualTaskProducer, kafkaProducerReceviedSykmelding, validationResultKafkaProducer, manuellOppgaveProducer)
                 }
             }
         }
@@ -93,7 +86,7 @@ class HandleStatusManualProcessingKtTest : FunSpec({
             every { kafkaProducerReceviedSykmelding.send(any()) } returns getFailingFuture()
             assertFailsWith<ExecutionException> {
                 runBlocking {
-                    handleManualProcessing(receivedSykmelding, loggingMeta, fellesformat, msgHead, kafkaApprecProducer, session, syfoserviceProducer, healthInformation, validationResultIkkeManuell, kafkaManualTaskProducer, kafkaProducerReceviedSykmelding, validationResultKafkaProducer, manuellOppgaveProducer)
+                    handleManualProcessing(receivedSykmelding, loggingMeta, fellesformat, msgHead, kafkaApprecProducer, validationResultIkkeManuell, kafkaManualTaskProducer, kafkaProducerReceviedSykmelding, validationResultKafkaProducer, manuellOppgaveProducer)
                 }
             }
         }
@@ -103,7 +96,7 @@ class HandleStatusManualProcessingKtTest : FunSpec({
             every { validationResultKafkaProducer.send(any()) } returns getFailingFuture()
             assertFailsWith<ExecutionException> {
                 runBlocking {
-                    handleManualProcessing(receivedSykmelding, loggingMeta, fellesformat, msgHead, kafkaApprecProducer, session, syfoserviceProducer, healthInformation, validationResultIkkeManuell, kafkaManualTaskProducer, kafkaProducerReceviedSykmelding, validationResultKafkaProducer, manuellOppgaveProducer)
+                    handleManualProcessing(receivedSykmelding, loggingMeta, fellesformat, msgHead, kafkaApprecProducer, validationResultIkkeManuell, kafkaManualTaskProducer, kafkaProducerReceviedSykmelding, validationResultKafkaProducer, manuellOppgaveProducer)
                 }
             }
         }
@@ -112,7 +105,7 @@ class HandleStatusManualProcessingKtTest : FunSpec({
             every { kafkaApprecProducer.send(any()) } returns getFailingFuture()
             assertFailsWith<ExecutionException> {
                 runBlocking {
-                    handleManualProcessing(receivedSykmelding, loggingMeta, fellesformat, msgHead, kafkaApprecProducer, session, syfoserviceProducer, healthInformation, validationResultIkkeManuell, kafkaManualTaskProducer, kafkaProducerReceviedSykmelding, validationResultKafkaProducer, manuellOppgaveProducer)
+                    handleManualProcessing(receivedSykmelding, loggingMeta, fellesformat, msgHead, kafkaApprecProducer, validationResultIkkeManuell, kafkaManualTaskProducer, kafkaProducerReceviedSykmelding, validationResultKafkaProducer, manuellOppgaveProducer)
                 }
             }
         }
@@ -122,7 +115,7 @@ class HandleStatusManualProcessingKtTest : FunSpec({
             every { kafkaManualTaskProducer.send(any()) } returns getFailingFuture()
             assertFailsWith<ExecutionException> {
                 runBlocking {
-                    handleManualProcessing(receivedSykmelding, loggingMeta, fellesformat, msgHead, kafkaApprecProducer, session, syfoserviceProducer, healthInformation, validationResultIkkeManuell, kafkaManualTaskProducer, kafkaProducerReceviedSykmelding, validationResultKafkaProducer, manuellOppgaveProducer)
+                    handleManualProcessing(receivedSykmelding, loggingMeta, fellesformat, msgHead, kafkaApprecProducer, validationResultIkkeManuell, kafkaManualTaskProducer, kafkaProducerReceviedSykmelding, validationResultKafkaProducer, manuellOppgaveProducer)
                 }
             }
         }
@@ -138,7 +131,7 @@ fun getFailingFuture(): CompletableFuture<RecordMetadata> {
     return future
 }
 
-private fun handleManualProcessing(receivedSykmelding: ReceivedSykmelding, loggingMeta: LoggingMeta, fellesformat: XMLEIFellesformat, msgHead: XMLMsgHead, kafkaApprecProducer: KafkaProducer<String, Apprec>, session: Session, syfoserviceProducer: MessageProducer, healthInformation: HelseOpplysningerArbeidsuforhet, validationResutl: ValidationResult, kafkaManualTaskProducer: KafkaProducer<String, OpprettOppgaveKafkaMessage>, kafkaProducerReceviedSykmelding: KafkaProducer<String, ReceivedSykmelding>, validationResultKafkaProducer: KafkaProducer<String, ValidationResult>, manuellOppgaveProducer: KafkaProducer<String, ManuellOppgave>) {
+private fun handleManualProcessing(receivedSykmelding: ReceivedSykmelding, loggingMeta: LoggingMeta, fellesformat: XMLEIFellesformat, msgHead: XMLMsgHead, kafkaApprecProducer: KafkaProducer<String, Apprec>, validationResutl: ValidationResult, kafkaManualTaskProducer: KafkaProducer<String, OpprettOppgaveKafkaMessage>, kafkaProducerReceviedSykmelding: KafkaProducer<String, ReceivedSykmelding>, validationResultKafkaProducer: KafkaProducer<String, ValidationResult>, manuellOppgaveProducer: KafkaProducer<String, ManuellOppgave>) {
     handleStatusMANUALPROCESSING(
         receivedSykmelding,
         loggingMeta,
@@ -148,10 +141,6 @@ private fun handleManualProcessing(receivedSykmelding: ReceivedSykmelding, loggi
         msgHead,
         "",
         kafkaApprecProducer,
-        session,
-        syfoserviceProducer,
-        healthInformation,
-        "",
         validationResutl,
         kafkaManualTaskProducer,
         kafkaProducerReceviedSykmelding,

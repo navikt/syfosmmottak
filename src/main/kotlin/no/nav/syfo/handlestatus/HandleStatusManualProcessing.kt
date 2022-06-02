@@ -3,7 +3,6 @@ package no.nav.syfo.handlestatus
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.msgHead.XMLMsgHead
-import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.apprec.ApprecStatus
 import no.nav.syfo.apprec.toApprec
@@ -17,15 +16,12 @@ import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.sendReceipt
 import no.nav.syfo.sendReceivedSykmelding
 import no.nav.syfo.sendValidationResult
-import no.nav.syfo.service.notifySyfoService
 import no.nav.syfo.util.LoggingMeta
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import javax.jms.MessageProducer
-import javax.jms.Session
 
 fun handleStatusMANUALPROCESSING(
     receivedSykmelding: ReceivedSykmelding,
@@ -36,10 +32,6 @@ fun handleStatusMANUALPROCESSING(
     msgHead: XMLMsgHead,
     apprecTopic: String,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
-    session: Session,
-    syfoserviceProducer: MessageProducer,
-    healthInformation: HelseOpplysningerArbeidsuforhet,
-    syfoserviceQueueName: String,
     validationResult: ValidationResult,
     kafkaManuelTaskProducer: KafkaProducer<String, OpprettOppgaveKafkaMessage>,
     kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
@@ -83,14 +75,8 @@ fun handleStatusMANUALPROCESSING(
             msgHead.msgInfo.sender.organisation,
             msgHead.msgInfo.genDate
         )
-        sendReceipt(apprec, apprecTopic, kafkaproducerApprec)
+        sendReceipt(apprec, apprecTopic, kafkaproducerApprec, loggingMeta)
         log.info("Apprec receipt sent to kafka topic {}, {}", apprecTopic, StructuredArguments.fields(loggingMeta))
-
-        notifySyfoService(
-            session = session, receiptProducer = syfoserviceProducer, ediLoggId = ediLoggId,
-            sykmeldingId = receivedSykmelding.sykmelding.id, msgId = msgId, healthInformation = healthInformation
-        )
-        log.info("Message send to syfoService {}, {}", syfoserviceQueueName, StructuredArguments.fields(loggingMeta))
     }
 }
 

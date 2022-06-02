@@ -137,7 +137,6 @@ fun launchListeners(
                 val session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE)
 
                 val inputconsumer = session.consumerForQueue(env.inputQueueName)
-                val syfoserviceProducer = session.producerForQueue(env.syfoserviceQueueName)
                 val backoutProducer = session.producerForQueue(env.inputBackoutQueueName)
 
                 jedis.auth(credentials.redisSecret)
@@ -151,7 +150,6 @@ fun launchListeners(
                     kuhrSarClient,
                     pdlPersonService,
                     jedis,
-                    session,
                     bucketUploadService,
                     kafkaproducerreceivedSykmelding,
                     kafkaproducervalidationResult,
@@ -160,7 +158,6 @@ fun launchListeners(
                     kafkaproducerManuellOppgave
                 ).run(
                     inputconsumer,
-                    syfoserviceProducer,
                     backoutProducer
                 )
             }
@@ -171,13 +168,14 @@ fun launchListeners(
 fun sendReceipt(
     apprec: Apprec,
     apprecTopic: String,
-    kafkaproducerApprec: KafkaProducer<String, Apprec>
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    loggingMeta: LoggingMeta
 ) {
     try {
         kafkaproducerApprec.send(ProducerRecord(apprecTopic, apprec)).get()
-        log.info("Apprec receipt sent to kafka topic {}", apprecTopic)
+        log.info("Apprec receipt sent to kafka topic $apprecTopic, {}", fields(loggingMeta))
     } catch (ex: Exception) {
-        log.error("failed to send apprec to kafka")
+        log.error("failed to send apprec to kafka {}", fields(loggingMeta))
         throw ex
     }
 }
