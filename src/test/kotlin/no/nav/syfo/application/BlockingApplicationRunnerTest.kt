@@ -28,12 +28,10 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import redis.clients.jedis.Jedis
 import javax.jms.MessageConsumer
 import javax.jms.MessageProducer
-import javax.jms.Session
 import javax.jms.TextMessage
 
 class BlockingApplicationRunnerTest : FunSpec({
     val inputconsumer = mockk<MessageConsumer>(relaxed = true)
-    val syfoserviceProducer = mockk<MessageProducer>(relaxed = true)
     val backoutProducer = mockk<MessageProducer>(relaxed = true)
     val env = mockk<Environment>(relaxed = true)
     val applicationState = mockk<ApplicationState>()
@@ -43,7 +41,6 @@ class BlockingApplicationRunnerTest : FunSpec({
     val kuhrSarClient = mockk<SarClient>()
     val pdlPersonService = mockk<PdlPersonService>()
     val jedis = mockk<Jedis>(relaxed = true)
-    val session = mockk<Session>(relaxed = true)
     val bucketUploadService = mockk<BucketUploadService>(relaxed = true)
     val kafkaproducerreceivedSykmelding = mockk<KafkaProducer<String, ReceivedSykmelding>>(relaxed = true)
     val kafkaproducervalidationResult = mockk<KafkaProducer<String, ValidationResult>>(relaxed = true)
@@ -53,7 +50,7 @@ class BlockingApplicationRunnerTest : FunSpec({
 
     val blockingApplicationRunner = BlockingApplicationRunner(
         env, applicationState, subscriptionEmottak,
-        syfoSykemeldingRuleClient, norskHelsenettClient, kuhrSarClient, pdlPersonService, jedis, session, bucketUploadService,
+        syfoSykemeldingRuleClient, norskHelsenettClient, kuhrSarClient, pdlPersonService, jedis, bucketUploadService,
         kafkaproducerreceivedSykmelding, kafkaproducervalidationResult, kafkaManuelTaskProducer, kafkaproducerApprec, kafkaproducerManuellOppgave
     )
 
@@ -78,7 +75,7 @@ class BlockingApplicationRunnerTest : FunSpec({
             every { textMessage.text } returns stringInput
             every { inputconsumer.receiveNoWait() } returns textMessage
 
-            blockingApplicationRunner.run(inputconsumer, syfoserviceProducer, backoutProducer)
+            blockingApplicationRunner.run(inputconsumer, backoutProducer)
 
             coVerify { kafkaproducerApprec.send(match { it.value().apprecStatus == ApprecStatus.OK }) }
         }
@@ -90,7 +87,7 @@ class BlockingApplicationRunnerTest : FunSpec({
             every { inputconsumer.receiveNoWait() } returns textMessage
             coEvery { norskHelsenettClient.getByHpr(any(), any()) } returns Behandler(emptyList(), "12345678912", "HPR", null, null, null)
 
-            blockingApplicationRunner.run(inputconsumer, syfoserviceProducer, backoutProducer)
+            blockingApplicationRunner.run(inputconsumer, backoutProducer)
 
             coVerify {
                 kafkaproducerApprec.send(

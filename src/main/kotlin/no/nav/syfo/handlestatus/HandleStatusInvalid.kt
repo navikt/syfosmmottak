@@ -49,7 +49,7 @@ fun handleStatusINVALID(
         msgHead.msgInfo.genDate,
         validationResult
     )
-    sendReceipt(apprec, apprecTopic, kafkaproducerApprec)
+    sendReceipt(apprec, apprecTopic, kafkaproducerApprec, loggingMeta)
 }
 
 fun handleDuplicateSM2013Content(
@@ -78,7 +78,7 @@ fun handleDuplicateSM2013Content(
         ediLoggId, msgId, msgHead
     )
 
-    sendReceipt(apprec, env.apprecTopic, kafkaproducerApprec)
+    sendReceipt(apprec, env.apprecTopic, kafkaproducerApprec, loggingMeta)
     log.info("Apprec receipt sent to kafka topic {}, {}", env.apprecTopic, fields(loggingMeta))
     INVALID_MESSAGE_NO_NOTICE.inc()
 }
@@ -109,7 +109,7 @@ fun handleDuplicateEdiloggid(
         ediLoggId, msgId, msgHead
     )
 
-    sendReceipt(apprec, env.apprecTopic, kafkaproducerApprec)
+    sendReceipt(apprec, env.apprecTopic, kafkaproducerApprec, loggingMeta)
     log.info("Apprec receipt sent to kafka topic {}, {}", env.apprecTopic, fields(loggingMeta))
     INVALID_MESSAGE_NO_NOTICE.inc()
 }
@@ -530,7 +530,7 @@ fun handleTestFnrInProd(
         ediLoggId, msgId, msgHead
     )
 
-    sendReceipt(apprec, env.apprecTopic, kafkaproducerApprec)
+    sendReceipt(apprec, env.apprecTopic, kafkaproducerApprec, loggingMeta)
     log.info("Apprec receipt sent to kafka topic {}, {}", env.apprecTopic, fields(loggingMeta))
     INVALID_MESSAGE_NO_NOTICE.inc()
     TEST_FNR_IN_PROD.inc()
@@ -630,7 +630,7 @@ private fun sendApprec(
     ediLoggId: String,
     sha256String: String
 ) {
-    sendReceipt(apprec, env.apprecTopic, kafkaproducerApprec)
+    sendReceipt(apprec, env.apprecTopic, kafkaproducerApprec, loggingMeta)
     log.info("Apprec receipt sent to kafka topic {}, {}", env.apprecTopic, fields(loggingMeta))
     INVALID_MESSAGE_NO_NOTICE.inc()
     updateRedis(jedis, ediLoggId, sha256String)

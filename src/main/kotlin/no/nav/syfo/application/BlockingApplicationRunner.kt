@@ -91,7 +91,6 @@ import java.time.ZoneOffset
 import java.util.UUID
 import javax.jms.MessageConsumer
 import javax.jms.MessageProducer
-import javax.jms.Session
 import javax.jms.TextMessage
 
 class BlockingApplicationRunner(
@@ -103,7 +102,6 @@ class BlockingApplicationRunner(
     private val kuhrSarClient: SarClient,
     private val pdlPersonService: PdlPersonService,
     private val jedis: Jedis,
-    private val session: Session,
     private val bucketUploadService: BucketUploadService,
     private val kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
     private val kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
@@ -114,7 +112,6 @@ class BlockingApplicationRunner(
 
     suspend fun run(
         inputconsumer: MessageConsumer,
-        syfoserviceProducer: MessageProducer,
         backoutProducer: MessageProducer
     ) {
 
@@ -487,59 +484,51 @@ class BlockingApplicationRunner(
 
                         when (validationResult.status) {
                             Status.OK -> handleStatusOK(
-                                fellesformat,
-                                ediLoggId,
-                                msgId,
-                                msgHead,
-                                env.apprecTopic,
-                                kafkaproducerApprec,
-                                loggingMeta,
-                                session,
-                                syfoserviceProducer,
-                                healthInformation,
-                                env.syfoserviceQueueName,
-                                env.okSykmeldingTopic,
-                                receivedSykmelding,
-                                kafkaproducerreceivedSykmelding
+                                fellesformat = fellesformat,
+                                ediLoggId = ediLoggId,
+                                msgId = msgId,
+                                msgHead = msgHead,
+                                apprecTopic = env.apprecTopic,
+                                kafkaproducerApprec = kafkaproducerApprec,
+                                loggingMeta = loggingMeta,
+                                okSykmeldingTopic = env.okSykmeldingTopic,
+                                receivedSykmelding = receivedSykmelding,
+                                kafkaproducerreceivedSykmelding = kafkaproducerreceivedSykmelding
                             )
                             Status.MANUAL_PROCESSING -> handleStatusMANUALPROCESSING(
-                                receivedSykmelding,
-                                loggingMeta,
-                                fellesformat,
-                                ediLoggId,
-                                msgId,
-                                msgHead,
-                                env.apprecTopic,
-                                kafkaproducerApprec,
-                                session,
-                                syfoserviceProducer,
-                                healthInformation,
-                                env.syfoserviceQueueName,
-                                validationResult,
-                                kafkaManuelTaskProducer,
-                                kafkaproducerreceivedSykmelding,
-                                env.manuellBehandlingSykmeldingTopic,
-                                kafkaproducervalidationResult,
-                                env.behandlingsUtfallTopic,
-                                kafkaproducerManuellOppgave,
-                                env.syfoSmManuellTopic,
-                                env.produserOppgaveTopic
+                                receivedSykmelding = receivedSykmelding,
+                                loggingMeta = loggingMeta,
+                                fellesformat = fellesformat,
+                                ediLoggId = ediLoggId,
+                                msgId = msgId,
+                                msgHead = msgHead,
+                                apprecTopic = env.apprecTopic,
+                                kafkaproducerApprec = kafkaproducerApprec,
+                                validationResult = validationResult,
+                                kafkaManuelTaskProducer = kafkaManuelTaskProducer,
+                                kafkaproducerreceivedSykmelding = kafkaproducerreceivedSykmelding,
+                                manuellBehandlingSykmeldingTopic = env.manuellBehandlingSykmeldingTopic,
+                                kafkaproducervalidationResult = kafkaproducervalidationResult,
+                                behandlingsUtfallTopic = env.behandlingsUtfallTopic,
+                                kafkaproducerManuellOppgave = kafkaproducerManuellOppgave,
+                                syfoSmManuellTopic = env.syfoSmManuellTopic,
+                                produserOppgaveTopic = env.produserOppgaveTopic
                             )
 
                             Status.INVALID -> handleStatusINVALID(
-                                validationResult,
-                                kafkaproducerreceivedSykmelding,
-                                kafkaproducervalidationResult,
-                                env.avvistSykmeldingTopic,
-                                receivedSykmelding,
-                                loggingMeta,
-                                fellesformat,
-                                env.apprecTopic,
-                                env.behandlingsUtfallTopic,
-                                kafkaproducerApprec,
-                                ediLoggId,
-                                msgId,
-                                msgHead
+                                validationResult = validationResult,
+                                kafkaproducerreceivedSykmelding = kafkaproducerreceivedSykmelding,
+                                kafkaproducervalidationResult = kafkaproducervalidationResult,
+                                avvistSykmeldingTopic = env.avvistSykmeldingTopic,
+                                receivedSykmelding = receivedSykmelding,
+                                loggingMeta = loggingMeta,
+                                fellesformat = fellesformat,
+                                apprecTopic = env.apprecTopic,
+                                behandlingsUtfallTopic = env.behandlingsUtfallTopic,
+                                kafkaproducerApprec = kafkaproducerApprec,
+                                ediLoggId = ediLoggId,
+                                msgId = msgId,
+                                msgHead = msgHead
                             )
                         }
 
