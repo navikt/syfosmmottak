@@ -93,7 +93,7 @@ class ApprecMapperSpek : FunSpec({
                 fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident?.last()?.typeId?.v
         }
         test("Has the same healthcareProfessional name on the sender organisation") {
-            apprec.mottakerOrganisasjon.helsepersonell?.navn shouldBeEqualTo "Sødal Ingvild Fos"
+            apprec.mottakerOrganisasjon.helsepersonell?.navn shouldBeEqualTo "Frost Frida Perma"
         }
         test("Has the same healthcareProfessional ident on the sender organisation") {
             apprec.mottakerOrganisasjon.helsepersonell?.hovedIdent?.id shouldBeEqualTo
@@ -195,7 +195,7 @@ class ApprecMapperSpek : FunSpec({
                 fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident?.last()?.typeId?.v
         }
         test("Has the same healthcareProfessional name on the sender organisation") {
-            apprec.mottakerOrganisasjon.helsepersonell?.navn shouldBeEqualTo "Sødal Ingvild Fos"
+            apprec.mottakerOrganisasjon.helsepersonell?.navn shouldBeEqualTo "Frost Frida Perma"
         }
         test("Has the same healthcareProfessional ident on the sender organisation") {
             apprec.mottakerOrganisasjon.helsepersonell?.hovedIdent?.id shouldBeEqualTo
@@ -322,7 +322,7 @@ class ApprecMapperSpek : FunSpec({
                 fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident?.last()?.typeId?.v
         }
         test("Has the same healthcareProfessional name on the sender organisation") {
-            apprec.mottakerOrganisasjon.helsepersonell?.navn shouldBeEqualTo "Sødal Ingvild Fos"
+            apprec.mottakerOrganisasjon.helsepersonell?.navn shouldBeEqualTo "Frost Frida Perma"
         }
         test("Has the same healthcareProfessional ident on the sender organisation") {
             apprec.mottakerOrganisasjon.helsepersonell?.hovedIdent?.id shouldBeEqualTo
