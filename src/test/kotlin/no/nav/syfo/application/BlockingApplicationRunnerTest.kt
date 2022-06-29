@@ -107,5 +107,16 @@ class BlockingApplicationRunnerTest : FunSpec({
                 )
             }
         }
+        test("Sykmelding med regelsettversjon 3 skal gi ok apprec") {
+            every { applicationState.ready } returns true andThen false
+            val stringInput = getFileAsString("src/test/resources/sykemelding2013Regelsettversjon3.xml")
+            val textMessage = mockk<TextMessage>(relaxed = true)
+            every { textMessage.text } returns stringInput
+            every { inputconsumer.receiveNoWait() } returns textMessage
+
+            blockingApplicationRunner.run(inputconsumer, backoutProducer)
+
+            coVerify { kafkaproducerApprec.send(match { it.value().apprecStatus == ApprecStatus.OK }) }
+        }
     }
 })
