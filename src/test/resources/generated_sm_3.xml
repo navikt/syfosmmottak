@@ -4,18 +4,18 @@
     <SyketilfelleStartDato>2018-10-11+02:00</SyketilfelleStartDato>
     <Pasient>
         <Navn>
-            <Etternavn>Hagen</Etternavn>
-            <Fornavn>Sigurd</Fornavn>
+            <Etternavn>Etternavn</Etternavn>
+            <Fornavn>Fornavn</Fornavn>
         </Navn>
         <Fodselsnummer>
-            <ns2:Id>21077811165</ns2:Id>
+            <ns2:Id>12345678910</ns2:Id>
             <ns2:TypeId V="FNR" S="2.16.578.1.12.4.1.1.8116" DN="Fødselsnummer"/>
         </Fodselsnummer>
         <KontaktInfo>
             <ns2:TypeTelecom V="MC" DN="Mobiltelefon"/>
-            <ns2:TeleAddress V="928 15 818"/>
+            <ns2:TeleAddress V="922 22 222"/>
         </KontaktInfo>
-        <NavnFastlege>Vilde Solheim</NavnFastlege>
+        <NavnFastlege>Lege Legesen</NavnFastlege>
         <NAVKontor>5801</NAVKontor>
     </Pasient>
     <Arbeidsgiver>
@@ -100,11 +100,11 @@
     </KontaktMedPasient>
     <Behandler>
         <Navn>
-            <Etternavn>Solheim</Etternavn>
-            <Fornavn>Vilde</Fornavn>
+            <Etternavn>Legesen</Etternavn>
+            <Fornavn>Lege</Fornavn>
         </Navn>
         <Id>
-            <ns2:Id>21077811165</ns2:Id>
+            <ns2:Id>01987654321</ns2:Id>
             <ns2:TypeId V="FNR" S="2.16.578.1.12.4.1.1.8116" DN="Fødselsnummer"/>
         </Id>
         <Id>
@@ -116,15 +116,15 @@
             <ns2:TypeId V="HPR" S="2.16.578.1.12.4.1.1.8116" DN="HPR-nummer"/>
         </Id>
         <Adresse>
-            <ns2:StreetAdr>Skoleveien 4</ns2:StreetAdr>
-            <ns2:PostalCode>5401</ns2:PostalCode>
-            <ns2:City>STORD</ns2:City>
-            <ns2:Postbox>19065 Kirkeveien</ns2:Postbox>
+            <ns2:StreetAdr>Testveien 1</ns2:StreetAdr>
+            <ns2:PostalCode>0101</ns2:PostalCode>
+            <ns2:City>OSLO</ns2:City>
+            <ns2:Postbox>19065 Testveien</ns2:Postbox>
             <ns2:Country V="NO"/>
         </Adresse>
         <KontaktInfo>
             <ns2:TypeTelecom V="MC" DN="Mobiltelefon"/>
-            <ns2:TeleAddress V="416 84 370"/>
+            <ns2:TeleAddress V="900 00 000"/>
         </KontaktInfo>
     </Behandler>
     <AvsenderSystem>

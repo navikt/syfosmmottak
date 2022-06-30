@@ -38,7 +38,7 @@
                             <TypeId DN="HER-id" S="2.16.578.1.12.4.1.1.8268" V="HER" />
                         </Ident>
                         <Ident>
-                            <Id>12345678910</Id>
+                            <Id>10987654321</Id>
                             <TypeId DN="Fødselsnummer" S="2.16.578.1.12.4.1.1.8327" V="FNR" />
                         </Ident>
                         <Ident>
@@ -78,7 +78,7 @@
                 <GivenName>DONALD</GivenName>
                 <DateOfBirth>1989-12-12</DateOfBirth>
                 <Ident>
-                    <Id>12345678910</Id>
+                    <Id>12345678912</Id>
                     <TypeId DN="Fødselsnummer" S="2.16.578.1.12.4.1.1.8327" V="FNR" />
                 </Ident>
                 <Address>
@@ -94,7 +94,7 @@
                 <MsgType DN="XML-instans" V="XML" />
                 <Content>
                     <HelseOpplysningerArbeidsuforhet xmlns="http://www.kith.no/xmlstds/HelseOpplysningerArbeidsuforhet/2013-10-01">
-                        <RegelSettVersjon>2</RegelSettVersjon>
+                        <RegelSettVersjon>3</RegelSettVersjon>
                         <SyketilfelleStartDato>2018-07-31</SyketilfelleStartDato>
                         <Pasient>
                             <Navn>
@@ -103,11 +103,9 @@
                                 <Fornavn>DONALD</Fornavn>
                             </Navn>
                             <Fodselsnummer>
-                                <Id xmlns="http://www.kith.no/xmlstds/felleskomponent1">12345678910</Id>
+                                <Id xmlns="http://www.kith.no/xmlstds/felleskomponent1">12345678912</Id>
                                 <TypeId xmlns="http://www.kith.no/xmlstds/felleskomponent1" DN="Fødselsnummer" S="2.16.578.1.12.4.1.1.8116" V="FNR" />
                             </Fodselsnummer>
-                            <NavnFastlege>Doktor Dyregod</NavnFastlege>
-                            <NAVKontor>0219</NAVKontor>
                         </Pasient>
                         <Arbeidsgiver>
                             <HarArbeidsgiver DN="Én arbeidsgiver" V="1" />
@@ -134,11 +132,8 @@
                         </Aktivitet>
                         <Prognose>
                             <ArbeidsforEtterEndtPeriode>true</ArbeidsforEtterEndtPeriode>
-                            <ErIArbeid />
                         </Prognose>
-                        <Tiltak />
                         <MeldingTilNav>
-                            <BistandNAVUmiddelbart>true</BistandNAVUmiddelbart>
                             <BeskrivBistandNAV>Test Ønsker Bistand</BeskrivBistandNAV>
                         </MeldingTilNav>
                         <KontaktMedPasient>
@@ -150,7 +145,7 @@
                                 <Fornavn>Frida</Fornavn>
                             </Navn>
                             <Id>
-                                <Id xmlns="http://www.kith.no/xmlstds/felleskomponent1">12345678910</Id>
+                                <Id xmlns="http://www.kith.no/xmlstds/felleskomponent1">10987654321</Id>
                                 <TypeId xmlns="http://www.kith.no/xmlstds/felleskomponent1" DN="Fødselsnummer" S="2.16.578.1.12.4.1.1.8116" V="FNR" />
                             </Id>
                             <Id>
@@ -192,5 +187,5 @@
             </KeyInfo>
         </Signature>
     </MsgHead>
-    <MottakenhetBlokk avsender="12345678910" avsenderFnrFraDigSignatur="12345678910" avsenderRef="SERIALNUMBER=2134125125, CN=TEST-Flott, OU=R&amp;D, O=Flott AS, C=NO" ebAction="Registrering" ebRole="Sykmelder" ebService="Sykmelding" ebXMLSamtaleId="deb6d7d1-139c-4885-aa22-b9362de06205" ediLoggId="1807311226joakim51343.1" herIdentifikator="" meldingsType="xml" mottattDatotid="2018-07-31T12:26:26" partnerReferanse="16524" />
+    <MottakenhetBlokk avsender="10987654321" avsenderFnrFraDigSignatur="10987654321" avsenderRef="SERIALNUMBER=2134125125, CN=TEST-Flott, OU=R&amp;D, O=Flott AS, C=NO" ebAction="Registrering" ebRole="Sykmelder" ebService="Sykmelding" ebXMLSamtaleId="deb6d7d1-139c-4885-aa22-b9362de06205" ediLoggId="1807311226joakim51343.1" herIdentifikator="" meldingsType="xml" mottattDatotid="2018-07-31T12:26:26" partnerReferanse="16524" />
 </EI_fellesformat>

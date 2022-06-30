@@ -11,6 +11,7 @@ import no.nav.helse.sm2013.Ident
 import no.nav.helse.sm2013.NavnType
 import no.nav.helse.sm2013.TeleCom
 import no.nav.syfo.model.toDiagnose
+import no.nav.syfo.model.toMeldingTilNAV
 import no.nav.syfo.model.toSykmelding
 import org.amshove.kluent.shouldBeEqualTo
 import java.time.LocalDate
@@ -256,6 +257,48 @@ class SykmeldingMapperSpek : FunSpec({
             val mappetDiagnosekode = originalDiagnosekode.toDiagnose()
 
             mappetDiagnosekode.kode shouldBeEqualTo "Z09"
+        }
+
+        test("Setter bistandUmiddelbart til true hvis beskrivBistandNAV er angitt og regelsettversjon 3") {
+            val originalMeldingTilNAV = HelseOpplysningerArbeidsuforhet.MeldingTilNav().apply {
+                isBistandNAVUmiddelbart = null
+                beskrivBistandNAV = "Trenger bistand"
+            }
+
+            val mappetMeldingTilNAV = originalMeldingTilNAV.toMeldingTilNAV("3")
+
+            mappetMeldingTilNAV.bistandUmiddelbart shouldBeEqualTo true
+            mappetMeldingTilNAV.beskrivBistand shouldBeEqualTo "Trenger bistand"
+        }
+        test("Setter bistandUmiddelbart til false hvis isBistandNAVUmiddelbart er false og regelsettversjon 2") {
+            val originalMeldingTilNAV = HelseOpplysningerArbeidsuforhet.MeldingTilNav().apply {
+                isBistandNAVUmiddelbart = false
+                beskrivBistandNAV = "Trenger bistand"
+            }
+
+            val mappetMeldingTilNAV = originalMeldingTilNAV.toMeldingTilNAV("2")
+
+            mappetMeldingTilNAV.bistandUmiddelbart shouldBeEqualTo false
+            mappetMeldingTilNAV.beskrivBistand shouldBeEqualTo "Trenger bistand"
+        }
+        test("Setter bistandUmiddelbart til true hvis isBistandNAVUmiddelbart er true") {
+            val originalMeldingTilNAV = HelseOpplysningerArbeidsuforhet.MeldingTilNav().apply {
+                isBistandNAVUmiddelbart = true
+                beskrivBistandNAV = "Trenger bistand"
+            }
+
+            val mappetMeldingTilNAV = originalMeldingTilNAV.toMeldingTilNAV("2")
+
+            mappetMeldingTilNAV.bistandUmiddelbart shouldBeEqualTo true
+            mappetMeldingTilNAV.beskrivBistand shouldBeEqualTo "Trenger bistand"
+        }
+        test("Tom meldingTilNAV gir tom meldingTilNAV for regelsettversjon 3") {
+            val originalMeldingTilNAV = HelseOpplysningerArbeidsuforhet.MeldingTilNav()
+
+            val mappetMeldingTilNAV = originalMeldingTilNAV.toMeldingTilNAV("3")
+
+            mappetMeldingTilNAV.bistandUmiddelbart shouldBeEqualTo false
+            mappetMeldingTilNAV.beskrivBistand shouldBeEqualTo null
         }
     }
 })
