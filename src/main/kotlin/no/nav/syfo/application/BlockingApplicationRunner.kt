@@ -118,7 +118,7 @@ class BlockingApplicationRunner(
         wrapExceptions {
 
             loop@ while (applicationState.ready) {
-                val message = inputconsumer.receiveNoWait()
+                val message = inputconsumer.receive(1000)
                 var loggingMeta: LoggingMeta? = null
                 if (message == null) {
                     delay(100)
