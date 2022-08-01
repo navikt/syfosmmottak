@@ -15,11 +15,11 @@ This project contains just the receiving a sykmelding2013 message
 
 #### Requirements
 
-* JDK 12
+* JDK 17
 
 ## Getting started
 ### Getting github-package-registry packages NAV-IT
-Some packages used in this repo is uploaded to the Github Package Registry which requires authentication. It can, for example, be solved like this in Gradle:
+Some packages used in this repo is uploaded to the GitHub Package Registry which requires authentication. It can, for example, be solved like this in Gradle:
 ```
 val githubUser: String by project
 val githubPassword: String by project
@@ -55,6 +55,11 @@ or the command line:
 ```
 #### Running locally
 `./gradlew run`
+
+### Upgrading the gradle wrapper
+Find the newest version of gradle here: https://gradle.org/releases/ Then run this command:
+
+```./gradlew wrapper --gradle-version $gradleVersjon```
 
 ### Building the application
 #### Compile and package application
