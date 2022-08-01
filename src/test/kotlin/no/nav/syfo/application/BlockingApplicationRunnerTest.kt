@@ -73,7 +73,7 @@ class BlockingApplicationRunnerTest : FunSpec({
             val stringInput = getFileAsString("src/test/resources/fellesformat.xml")
             val textMessage = mockk<TextMessage>(relaxed = true)
             every { textMessage.text } returns stringInput
-            every { inputconsumer.receiveNoWait() } returns textMessage
+            every { inputconsumer.receive(1000) } returns textMessage
 
             blockingApplicationRunner.run(inputconsumer, backoutProducer)
 
@@ -84,7 +84,7 @@ class BlockingApplicationRunnerTest : FunSpec({
             val stringInput = getFileAsString("src/test/resources/sykmelding_virksomhet.xml")
             val textMessage = mockk<TextMessage>(relaxed = true)
             every { textMessage.text } returns stringInput
-            every { inputconsumer.receiveNoWait() } returns textMessage
+            every { inputconsumer.receive(1000) } returns textMessage
             coEvery { norskHelsenettClient.getByHpr(any(), any()) } returns Behandler(emptyList(), "12345678912", "HPR", null, null, null)
 
             blockingApplicationRunner.run(inputconsumer, backoutProducer)
@@ -112,7 +112,7 @@ class BlockingApplicationRunnerTest : FunSpec({
             val stringInput = getFileAsString("src/test/resources/sykemelding2013Regelsettversjon3.xml")
             val textMessage = mockk<TextMessage>(relaxed = true)
             every { textMessage.text } returns stringInput
-            every { inputconsumer.receiveNoWait() } returns textMessage
+            every { inputconsumer.receive(1000) } returns textMessage
 
             blockingApplicationRunner.run(inputconsumer, backoutProducer)
 
