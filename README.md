@@ -8,7 +8,7 @@ This project contains just the receiving a sykmelding2013 message
 * Kotlin
 * Ktor
 * Gradle
-* Spek
+* Kotest
 * Jackson
 * MQ
 * Kafka
@@ -105,3 +105,14 @@ Deploying redis can be done with the following command:
 ### Deploy redis to prod:
 Deploying redis can be done with the following command:
 `kubectl apply --context prod-fss --namespace default -f redis.yaml`
+
+### Upgrading the gradle wrapper
+Find the newest version of gradle here: https://gradle.org/releases/ Then run this command:
+
+```./gradlew wrapper --gradle-version $gradleVersjon```
+
+### Inquiries
+Questions related to the code or the project can be asked as issues here on GitHub
+
+### For NAV employees
+We are available at the Slack channel #team-sykmelding
