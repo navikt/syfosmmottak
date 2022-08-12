@@ -37,6 +37,8 @@ fun extractTlfFromKontaktInfo(kontaktInfo: List<TeleCom>?): String? =
         kontaktInfo.firstOrNull()!!.teleAddress?.v?.contains("tel:") == true
     ) {
         kontaktInfo.firstOrNull()!!.teleAddress?.v?.removePrefix("tel:")
-    } else ""
+    } else {
+        kontaktInfo.firstOrNull()?.teleAddress?.v
+    }
 
 inline fun <reified T> XMLEIFellesformat.get() = this.any.find { it is T } as T

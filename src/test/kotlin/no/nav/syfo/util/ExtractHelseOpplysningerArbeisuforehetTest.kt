@@ -27,7 +27,7 @@ internal class ExtractHelseOpplysningerArbeisuforehetTest : FunSpec({
 
             val tlfFraPasient = extractTlfFromKontaktInfo(kontaktInfo)
 
-            tlfFraPasient shouldBeEqualTo ""
+            tlfFraPasient shouldBeEqualTo "mob:12345678"
         }
     }
 })
