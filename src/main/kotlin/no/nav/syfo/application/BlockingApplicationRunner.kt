@@ -67,6 +67,7 @@ import no.nav.syfo.util.extractHpr
 import no.nav.syfo.util.extractOrganisationHerNumberFromSender
 import no.nav.syfo.util.extractOrganisationNumberFromSender
 import no.nav.syfo.util.extractOrganisationRashNumberFromSender
+import no.nav.syfo.util.extractTlfFromKontaktInfo
 import no.nav.syfo.util.fellesformatMarshaller
 import no.nav.syfo.util.fellesformatUnmarshaller
 import no.nav.syfo.util.fnrOgDnrMangler
@@ -444,7 +445,7 @@ class BlockingApplicationRunner(
                         val receivedSykmelding = ReceivedSykmelding(
                             sykmelding = sykmelding,
                             personNrPasient = pasient.fnr,
-                            tlfPasient = healthInformation.pasient.kontaktInfo.firstOrNull()?.teleAddress?.v,
+                            tlfPasient = extractTlfFromKontaktInfo(healthInformation.pasient.kontaktInfo),
                             personNrLege = signaturFnr,
                             navLogId = ediLoggId,
                             msgId = msgId,
@@ -536,7 +537,7 @@ class BlockingApplicationRunner(
 
                         updateRedis(jedis, ediLoggId, sha256String)
                         log.info(
-                            "Message got outcome {}, {}, processing took {}s",
+                            "Message got outcome {}, {}, processing took {}s, {}",
                             StructuredArguments.keyValue("status", validationResult.status),
                             StructuredArguments.keyValue(
                                 "ruleHits",
