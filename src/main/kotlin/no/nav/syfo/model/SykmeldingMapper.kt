@@ -5,6 +5,7 @@ import no.nav.helse.sm2013.ArsakType
 import no.nav.helse.sm2013.CS
 import no.nav.helse.sm2013.CV
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
+import no.nav.syfo.util.extractTlfFromKontaktInfo
 import java.time.LocalDateTime
 
 fun HelseOpplysningerArbeidsuforhet.toSykmelding(
@@ -173,7 +174,7 @@ fun HelseOpplysningerArbeidsuforhet.Behandler.toBehandler(aktoerId: String, beha
     hpr = id.find { it.typeId.v == "HPR" }?.id,
     her = id.find { it.typeId.v == "HER" }?.id,
     adresse = adresse.toAdresse(),
-    tlf = kontaktInfo.firstOrNull()?.teleAddress?.v
+    tlf = extractTlfFromKontaktInfo(kontaktInfo)
 )
 
 fun HelseOpplysningerArbeidsuforhet.AvsenderSystem.toAvsenderSystem() = AvsenderSystem(
