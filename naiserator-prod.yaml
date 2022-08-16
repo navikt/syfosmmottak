@@ -43,6 +43,7 @@ spec:
     outbound:
       rules:
         - application: syfosmmottak-redis
+        - application: syfosmregler
   vault:
     enabled: false
   webproxy: false
