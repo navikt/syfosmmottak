@@ -13,19 +13,19 @@ spec:
     cpuThresholdPercentage: 90
   port: 8080
   liveness:
-    path: /is_alive
+    path: /internal/is_alive
     initialDelay: 10
     timeout: 5
     periodSeconds: 5
     failureThreshold: 30
   readiness:
-    path: /is_ready
+    path: /internal/is_ready
     initialDelay: 30
     periodSeconds: 5
     timeout: 1
   prometheus:
     enabled: true
-    path: /prometheus
+    path: /internal/prometheus
   resources:
     limits:
       cpu: 500m
@@ -40,20 +40,14 @@ spec:
       enabled: true
       tenant: nav.no
   vault:
-    enabled: true
-    paths:
-      - kvPath: /kv/prod/fss/syfosmmottak/teamsykmelding
-        mountPath: /secrets/default
-      - kvPath: serviceuser/data/prod/srvsyfosmmottak
-        mountPath: /secrets/serviceuser
-      - kvPath: /kv/prod/fss/syfosmmottak/teamsykmelding
-        mountPath: /var/run/secrets/nais.io/vault
-  webproxy: true
+    enabled: false
+  webproxy: false
   envFrom:
     - secret: syfosmmottak-redis-password
+    - secret: srvsyfosmmottak-secrets
+  filesFrom:
+    - secret: sykmeldingvedlegg-google-creds
   env:
-    - name: SUBSCRIPTION_ENDPOINT_URL
-      value: https://wasapp.adeo.no/nav-emottak-eletter-web/services/
     - name: MQ_HOST_NAME
       value: a01apvl271.adeo.no
     - name: MQ_PORT
@@ -67,18 +61,18 @@ spec:
     - name: MQ_INPUT_BOQ_QUEUE_NAME
       value: P_SYFOSMMOTTAK.INPUT_BOQ
     - name: PDL_GRAPHQL_PATH
-      value: https://pdl-api.nais.adeo.no/graphql
+      value: https://pdl-api.prod-fss-pub.nais.io/graphql
     - name: HELSENETT_ENDPOINT_URL
-      value: https://syfohelsenettproxy.nais.adeo.no
+      value: https://syfohelsenettproxy.prod-fss-pub.nais.io
     - name: PDL_SCOPE
       value: api://prod-fss.pdl.pdl-api/.default
     - name: HELSENETT_SCOPE
       value: api://prod-fss.teamsykmelding.syfohelsenettproxy/.default
     - name: SYKMELDING_VEDLEGG_BUCKET_NAME
       value: teamsykmelding-sykmelding-vedlegg-bucket-prod
-    - name: KUHR_SAR_API_SCOPE
-      value: api://prod-fss.teamkuhr.kuhr-sar-api/.default
-    - name: KUHR_SAR_API_URL
-      value: https://kuhr-sar-api.nais.adeo.no
+    - name: SMGCP_PROXY_SCOPE
+      value: api://prod-fss.teamsykmelding.smgcp-proxy/.default
+    - name: SMGCP_PROXY_URL
+      value: https://smgcp-proxy.prod-fss-pub.nais.io
     - name: SYFOSMREGLER_API_SCOPE
-      value: api://prod-fss.teamsykmelding.syfosmregler/.default
+      value: api://prod-gcp.teamsykmelding.syfosmregler/.default

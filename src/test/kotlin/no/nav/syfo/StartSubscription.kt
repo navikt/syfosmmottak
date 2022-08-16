@@ -8,7 +8,7 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.core.spec.style.FunSpec
 import no.nav.syfo.client.KuhrSarClientSpek
 import no.nav.syfo.client.Samhandler
-import no.nav.syfo.service.samhandlerParksisisLegevakt
+import no.nav.syfo.client.samhandlerpraksisIsLegevakt
 import org.amshove.kluent.shouldBeEqualTo
 
 class StartSubscription : FunSpec({
@@ -24,15 +24,15 @@ class StartSubscription : FunSpec({
         val samhandlerfale: List<Samhandler> = objectMapper.readValue(KuhrSarClientSpek::class.java.getResourceAsStream("/kuhr_sahr_fale.json").readBytes().toString(Charsets.UTF_8))
 
         test("Skal opprette subscription") {
-            !samhandlerParksisisLegevakt(samhandlerfale.first().samh_praksis.first()) shouldBeEqualTo true
+            !samhandlerpraksisIsLegevakt(samhandlerfale.first().samh_praksis.first()) shouldBeEqualTo true
         }
 
         test("Skal ikkje opprette subscription når samhanlder praksis er legevakt") {
-            !samhandlerParksisisLegevakt(samhandlerleva.first().samh_praksis.first()) shouldBeEqualTo false
+            !samhandlerpraksisIsLegevakt(samhandlerleva.first().samh_praksis.first()) shouldBeEqualTo false
         }
 
         test("Skal ikkje opprette subscription når samhanlder praksis er legevakt") {
-            !samhandlerParksisisLegevakt(samhandlerleko.first().samh_praksis.first()) shouldBeEqualTo false
+            !samhandlerpraksisIsLegevakt(samhandlerleko.first().samh_praksis.first()) shouldBeEqualTo false
         }
     }
 })

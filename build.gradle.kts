@@ -11,7 +11,6 @@ val ibmMqVersion = "9.2.5.0"
 val javaxActivationVersion = "1.1.1"
 val jacksonVersion = "2.13.3"
 val jaxbApiVersion = "2.4.0-b180830.0359"
-val jaxbVersion = "2.3.0.1"
 val jedisVersion = "4.2.3"
 val kafkaVersion = "3.1.0"
 val kithHodemeldingVersion = "1.e6fcef8"
@@ -23,7 +22,6 @@ val logstashEncoderVersion = "7.2"
 val prometheusVersion = "0.16.0"
 val smCommonVersion = "1.f132f2b"
 val sykmeldingVersion = "1.e6fcef8"
-val cxfVersion = "3.2.7"
 val jaxwsApiVersion = "2.3.1"
 val commonsTextVersion = "1.9"
 val javaxAnnotationApiVersion = "1.3.2"
@@ -32,11 +30,10 @@ val jaxbRuntimeVersion = "2.4.0-b180830.0438"
 val javaTimeAdapterVersion = "1.1.3"
 val mockkVersion = "1.12.5"
 val kotlinVersion = "1.7.10"
-val googleCloudStorageVersion = "2.6.1"
+val googleCloudStorageVersion = "2.10.0"
 val kotestVersion = "5.4.1"
 
 plugins {
-    id("io.mateo.cxf-codegen") version "1.0.0-rc.3"
     kotlin("jvm") version "1.7.10"
     id("org.jmailen.kotlinter") version "3.10.0"
     id("com.diffplug.spotless") version "6.5.0"
@@ -46,12 +43,6 @@ plugins {
 
 buildscript {
     dependencies {
-        classpath("javax.xml.bind:jaxb-api:2.4.0-b180830.0359")
-        classpath("org.glassfish.jaxb:jaxb-runtime:2.4.0-b180830.0438")
-        classpath("com.sun.activation:javax.activation:1.2.0")
-        classpath("com.sun.xml.ws:jaxws-tools:2.3.1") {
-            exclude(group = "com.sun.xml.ws", module = "policy")
-        }
     }
 }
 
@@ -71,18 +62,6 @@ repositories {
 }
 
 dependencies {
-    cxfCodegen("javax.annotation:javax.annotation-api:$javaxAnnotationApiVersion")
-    cxfCodegen("javax.activation:activation:$javaxActivationVersion")
-    cxfCodegen("org.glassfish.jaxb:jaxb-runtime:$jaxbRuntimeVersion")
-    cxfCodegen("javax.xml.bind:jaxb-api:$jaxbApiVersion")
-    cxfCodegen ("javax.xml.ws:jaxws-api:$jaxwsApiVersion")
-    cxfCodegen ("com.sun.xml.ws:jaxws-tools:$jaxwsToolsVersion") {
-        exclude(group = "com.sun.xml.ws", module = "policy")
-    }
-    cxfCodegen("com.sun.xml.bind:jaxb-impl:2.3.3")
-    cxfCodegen("jakarta.xml.ws:jakarta.xml.ws-api:2.3.3")
-    cxfCodegen("jakarta.annotation:jakarta.annotation-api:1.3.5")
-
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
@@ -114,7 +93,6 @@ dependencies {
     implementation("no.nav.helse:syfosm-common-networking:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-mq:$smCommonVersion")
-    implementation("no.nav.helse:syfosm-common-ws:$smCommonVersion")
 
     implementation("com.google.cloud:google-cloud-storage:$googleCloudStorageVersion")
     implementation("redis.clients:jedis:$jedisVersion")
@@ -123,14 +101,11 @@ dependencies {
 
     implementation("com.migesok", "jaxb-java-time-adapters", javaTimeAdapterVersion)
 
-    implementation("javax.xml.ws:jaxws-api:$jaxwsApiVersion")
     implementation("javax.annotation:javax.annotation-api:$javaxAnnotationApiVersion")
     implementation("javax.xml.bind:jaxb-api:$jaxbApiVersion")
     implementation("org.glassfish.jaxb:jaxb-runtime:$jaxbRuntimeVersion")
     implementation("javax.activation:activation:$javaxActivationVersion")
-    implementation("com.sun.xml.ws:jaxws-tools:$jaxwsToolsVersion") {
-        exclude(group = "com.sun.xml.ws", module = "policy")
-    }
+
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
@@ -146,14 +121,6 @@ tasks {
     withType<Jar> {
         manifest.attributes["Main-Class"] = "no.nav.syfo.BootstrapKt"
     }
-    cxfCodegen {
-        wsdl2java {
-            register("subscription") {
-                wsdl.set(file("$projectDir/src/main/resources/wsdl/subscription.wsdl"))
-                bindingFiles.add("$projectDir/src/main/resources/xjb/binding.xml")
-            }
-        }
-    }
     create("printVersion") {
 
         doLast {
@@ -161,7 +128,6 @@ tasks {
         }
     }
     withType<KotlinCompile> {
-        dependsOn("wsdl2javaSubscription")
         kotlinOptions.jvmTarget = "17"
     }
 

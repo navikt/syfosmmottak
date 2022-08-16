@@ -16,7 +16,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.logstash.logback.argument.StructuredArguments.fields
-import no.nav.emottak.subscription.SubscriptionPort
 import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.BlockingApplicationRunner
@@ -24,6 +23,7 @@ import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.bootstrap.HttpClients
 import no.nav.syfo.bootstrap.KafkaClients
+import no.nav.syfo.client.EmottakSubscriptionClient
 import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
@@ -37,10 +37,7 @@ import no.nav.syfo.mq.producerForQueue
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.TrackableException
-import no.nav.syfo.util.getFileAsString
 import no.nav.syfo.vedlegg.google.BucketUploadService
-import no.nav.syfo.ws.createPort
-import org.apache.cxf.ws.addressing.WSAddressingFeature
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.Logger
@@ -60,11 +57,7 @@ val log: Logger = LoggerFactory.getLogger("no.nav.syfo.syfosmmottak")
 @DelicateCoroutinesApi
 fun main() {
     val env = Environment()
-    val credentials = VaultCredentials(
-        serviceuserPassword = getFileAsString("/secrets/serviceuser/password"),
-        serviceuserUsername = getFileAsString("/secrets/serviceuser/username"),
-        redisSecret = getEnvVar("REDIS_PASSWORD")
-    )
+    val serviceUser = VaultServiceUser()
     val applicationState = ApplicationState()
     val applicationEngine = createApplicationEngine(
         env,
@@ -78,21 +71,16 @@ fun main() {
     val httpClients = HttpClients(env)
     val kafkaClients = KafkaClients(env)
 
-    val subscriptionEmottak = createPort<SubscriptionPort>(env.subscriptionEndpointURL) {
-        proxy { features.add(WSAddressingFeature()) }
-        port { withBasicAuth(credentials.serviceuserUsername, credentials.serviceuserPassword) }
-    }
-
-    val sykmeldingVedleggStorageCredentials: Credentials = GoogleCredentials.fromStream(FileInputStream("/var/run/secrets/nais.io/vault/sykmelding-google-creds.json"))
+    val sykmeldingVedleggStorageCredentials: Credentials = GoogleCredentials.fromStream(FileInputStream("/var/run/secrets/sykmeldingvedlegg-google-creds.json"))
     val sykmeldingVedleggStorage: Storage = StorageOptions.newBuilder().setCredentials(sykmeldingVedleggStorageCredentials).build().service
     val bucketUploadService = BucketUploadService(env.sykmeldingVedleggBucketName, sykmeldingVedleggStorage)
 
     launchListeners(
         env, applicationState,
-        subscriptionEmottak, kafkaClients.kafkaProducerReceivedSykmelding,
+        httpClients.emottakSubscriptionClient, kafkaClients.kafkaProducerReceivedSykmelding,
         kafkaClients.kafkaProducerValidationResult,
         httpClients.syfoSykemeldingRuleClient, httpClients.sarClient, httpClients.pdlPersonService,
-        credentials, kafkaClients.manualValidationKafkaProducer,
+        serviceUser, kafkaClients.manualValidationKafkaProducer,
         kafkaClients.kafkaProducerApprec, kafkaClients.kafkaproducerManuellOppgave,
         httpClients.norskHelsenettClient, bucketUploadService
     )
@@ -117,13 +105,13 @@ fun createListener(applicationState: ApplicationState, action: suspend Coroutine
 fun launchListeners(
     env: Environment,
     applicationState: ApplicationState,
-    subscriptionEmottak: SubscriptionPort,
+    emottakSubscriptionClient: EmottakSubscriptionClient,
     kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
     kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
     syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
     kuhrSarClient: SarClient,
     pdlPersonService: PdlPersonService,
-    credentials: VaultCredentials,
+    serviceUser: VaultServiceUser,
     kafkaManuelTaskProducer: KafkaProducer<String, OpprettOppgaveKafkaMessage>,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
@@ -131,7 +119,7 @@ fun launchListeners(
     bucketUploadService: BucketUploadService
 ) {
     createListener(applicationState) {
-        connectionFactory(env).createConnection(credentials.serviceuserUsername, credentials.serviceuserPassword).use { connection ->
+        connectionFactory(env).createConnection(serviceUser.serviceuserUsername, serviceUser.serviceuserPassword).use { connection ->
             Jedis(env.redisHost, 6379).use { jedis ->
                 connection.start()
                 val session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE)
@@ -139,12 +127,12 @@ fun launchListeners(
                 val inputconsumer = session.consumerForQueue(env.inputQueueName)
                 val backoutProducer = session.producerForQueue(env.inputBackoutQueueName)
 
-                jedis.auth(credentials.redisSecret)
+                jedis.auth(env.redisSecret)
 
                 BlockingApplicationRunner(
                     env,
                     applicationState,
-                    subscriptionEmottak,
+                    emottakSubscriptionClient,
                     syfoSykemeldingRuleClient,
                     norskHelsenettClient,
                     kuhrSarClient,
