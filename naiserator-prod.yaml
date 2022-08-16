@@ -39,6 +39,10 @@ spec:
     application:
       enabled: true
       tenant: nav.no
+  accessPolicy:
+    outbound:
+      rules:
+        - application: syfosmmottak-redis
   vault:
     enabled: false
   webproxy: false
