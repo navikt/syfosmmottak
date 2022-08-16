@@ -1,12 +1,11 @@
 package no.nav.syfo.client
 
-import com.ctc.wstx.exc.WstxException
 import io.ktor.client.HttpClient
-import io.ktor.client.request.accept
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
+import io.ktor.http.contentType
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.helse.eiFellesformat.XMLMottakenhetBlokk
 import no.nav.helse.msgHead.XMLMsgHead
@@ -16,7 +15,6 @@ import no.nav.syfo.log
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.senderMarshaller
 import java.io.ByteArrayOutputStream
-import java.io.IOException
 
 class EmottakSubscriptionClient(
     private val endpointUrl: String,
@@ -36,11 +34,11 @@ class EmottakSubscriptionClient(
         retry(
             callName = "start_subscription_emottak",
             retryIntervals = arrayOf(500L, 1000L, 3000L, 5000L, 10000L),
-            legalExceptions = arrayOf(IOException::class, WstxException::class)
+            legalExceptions = arrayOf(Exception::class)
         ) {
             val accessToken = accessTokenClientV2.getAccessTokenV2(resourceId)
             httpClient.post("$endpointUrl/emottak/startsubscription") {
-                accept(ContentType.Application.Json)
+                contentType(ContentType.Application.Json)
                 header("Authorization", "Bearer $accessToken")
                 header("Nav-Call-Id", msgId)
                 setBody(
