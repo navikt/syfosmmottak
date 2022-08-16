@@ -6,11 +6,11 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import no.nav.emottak.subscription.SubscriptionPort
 import no.nav.syfo.Environment
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.apprec.ApprecStatus
 import no.nav.syfo.client.Behandler
+import no.nav.syfo.client.EmottakSubscriptionClient
 import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
@@ -35,7 +35,7 @@ class BlockingApplicationRunnerTest : FunSpec({
     val backoutProducer = mockk<MessageProducer>(relaxed = true)
     val env = mockk<Environment>(relaxed = true)
     val applicationState = mockk<ApplicationState>()
-    val subscriptionEmottak = mockk<SubscriptionPort>()
+    val emottakSubscriptionClient = mockk<EmottakSubscriptionClient>()
     val syfoSykemeldingRuleClient = mockk<SyfoSykemeldingRuleClient>()
     val norskHelsenettClient = mockk<NorskHelsenettClient>()
     val kuhrSarClient = mockk<SarClient>()
@@ -49,7 +49,7 @@ class BlockingApplicationRunnerTest : FunSpec({
     val kafkaproducerManuellOppgave = mockk<KafkaProducer<String, ManuellOppgave>>(relaxed = true)
 
     val blockingApplicationRunner = BlockingApplicationRunner(
-        env, applicationState, subscriptionEmottak,
+        env, applicationState, emottakSubscriptionClient,
         syfoSykemeldingRuleClient, norskHelsenettClient, kuhrSarClient, pdlPersonService, jedis, bucketUploadService,
         kafkaproducerreceivedSykmelding, kafkaproducervalidationResult, kafkaManuelTaskProducer, kafkaproducerApprec, kafkaproducerManuellOppgave
     )
@@ -62,7 +62,7 @@ class BlockingApplicationRunnerTest : FunSpec({
         "10987654321" to PdlPerson(listOf(PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"), PdlIdent("aktorId", false, "AKTORID"))),
         "12345678912" to PdlPerson(listOf(PdlIdent("12345678912", false, "FOLKEREGISTERIDENT"), PdlIdent("aktorId2", false, "AKTORID")))
     )
-    coEvery { kuhrSarClient.getSamhandler(any()) } returns emptyList()
+    coEvery { kuhrSarClient.getSamhandler(any(), any()) } returns emptyList()
     every { jedis.get(any<String>()) } returns null
     coEvery { norskHelsenettClient.getByFnr(any(), any()) } returns Behandler(emptyList(), "", "HPR", null, null, null)
     coEvery { syfoSykemeldingRuleClient.executeRuleValidation(any(), any()) } returns ValidationResult(Status.OK, emptyList())

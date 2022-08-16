@@ -3,12 +3,10 @@ package no.nav.syfo
 import no.nav.syfo.mq.MqConfig
 
 data class Environment(
-    val legeSuspensjonEndpointURL: String = getEnvVar("LEGE_SUSPENSJON_ENDPOINT_URL", "http://btsys.default"),
-    val kuhrSarApiUrl: String = getEnvVar("KUHR_SAR_API_URL"),
-    val kuhrSarApiScope: String = getEnvVar("KUHR_SAR_API_SCOPE"),
+    val smgcpProxyUrl: String = getEnvVar("SMGCP_PROXY_URL"),
+    val smgcpProxyScope: String = getEnvVar("SMGCP_PROXY_SCOPE"),
     val syfosmreglerApiUrl: String = getEnvVar("SYFOSMREGLER_API_URL", "http://syfosmregler"),
     val syfosmreglerApiScope: String = getEnvVar("SYFOSMREGLER_API_SCOPE"),
-    val subscriptionEndpointURL: String = getEnvVar("SUBSCRIPTION_ENDPOINT_URL"),
     val applicationPort: Int = getEnvVar("APPLICATION_PORT", "8080").toInt(),
     val applicationName: String = getEnvVar("NAIS_APP_NAME", "syfosmmottak"),
     val syfoSmManuellTopic: String = "teamsykmelding.sykmelding-manuell",
@@ -24,7 +22,8 @@ data class Environment(
     override val mqChannelName: String = getEnvVar("MQ_CHANNEL_NAME"),
     val inputQueueName: String = getEnvVar("MQ_INPUT_QUEUE_NAME"),
     val inputBackoutQueueName: String = getEnvVar("MQ_INPUT_BOQ_QUEUE_NAME"),
-    val redisHost: String = getEnvVar("REDIS_HOST", "syfosmmottak-redis.teamsykmelding.svc.nais.local"),
+    val redisHost: String = getEnvVar("REDIS_HOST", "syfosmmottak-redis.teamsykmelding.svc.cluster.local"),
+    val redisSecret: String = getEnvVar("REDIS_PASSWORD"),
     val cluster: String = getEnvVar("NAIS_CLUSTER_NAME"),
     val norskHelsenettEndpointURL: String = getEnvVar("HELSENETT_ENDPOINT_URL"),
     val aadAccessTokenV2Url: String = getEnvVar("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
@@ -36,10 +35,9 @@ data class Environment(
     val sykmeldingVedleggBucketName: String = getEnvVar("SYKMELDING_VEDLEGG_BUCKET_NAME")
 ) : MqConfig
 
-data class VaultCredentials(
-    val serviceuserUsername: String,
-    val serviceuserPassword: String,
-    val redisSecret: String
+data class VaultServiceUser(
+    val serviceuserUsername: String = getEnvVar("SERVICEUSER_USERNAME"),
+    val serviceuserPassword: String = getEnvVar("SERVICEUSER_PASSWORD")
 )
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =

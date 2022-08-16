@@ -72,5 +72,5 @@ jobs:
         uses: nais/deploy/actions/deploy@v1
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY_TEAMSYKMELDING }}
-          CLUSTER: dev-fss
+          CLUSTER: dev-gcp
           RESOURCE: naiserator-dev.yaml

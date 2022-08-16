@@ -2,18 +2,19 @@ package no.nav.syfo.application
 
 import kotlinx.coroutines.delay
 import net.logstash.logback.argument.StructuredArguments
-import no.nav.emottak.subscription.SubscriptionPort
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.eiFellesformat.XMLMottakenhetBlokk
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.syfo.Environment
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.client.Behandler
+import no.nav.syfo.client.EmottakSubscriptionClient
 import no.nav.syfo.client.Godkjenning
 import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.client.findBestSamhandlerPraksis
+import no.nav.syfo.client.samhandlerpraksisIsLegevakt
 import no.nav.syfo.handlestatus.handleAktivitetOrPeriodeIsMissing
 import no.nav.syfo.handlestatus.handleAnnenFraversArsakkodeVIsmissing
 import no.nav.syfo.handlestatus.handleArbeidsplassenArsakskodeHarUgyldigVerdi
@@ -51,9 +52,7 @@ import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.model.toSykmelding
 import no.nav.syfo.pdl.service.PdlPersonService
-import no.nav.syfo.service.samhandlerParksisisLegevakt
 import no.nav.syfo.service.sha256hashstring
-import no.nav.syfo.service.startSubscription
 import no.nav.syfo.service.updateRedis
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.annenFraversArsakkodeVMangler
@@ -97,7 +96,7 @@ import javax.jms.TextMessage
 class BlockingApplicationRunner(
     private val env: Environment,
     private val applicationState: ApplicationState,
-    private val subscriptionEmottak: SubscriptionPort,
+    private val emottakSubscriptionClient: EmottakSubscriptionClient,
     private val syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
     private val norskHelsenettClient: NorskHelsenettClient,
     private val kuhrSarClient: SarClient,
@@ -195,7 +194,7 @@ class BlockingApplicationRunner(
 
                     val identer = pdlPersonService.getIdenter(listOf(signaturFnr, originaltPasientFnr), loggingMeta)
 
-                    val samhandlerInfo = kuhrSarClient.getSamhandler(signaturFnr)
+                    val samhandlerInfo = kuhrSarClient.getSamhandler(ident = signaturFnr, msgId = msgId)
                     val samhandlerPraksisMatch = findBestSamhandlerPraksis(
                         samhandlerInfo,
                         legekontorOrgName,
@@ -218,15 +217,15 @@ class BlockingApplicationRunner(
                                 log.info("SamhandlerPraksis is Not found, {}", StructuredArguments.fields(loggingMeta))
                                 IKKE_OPPDATERT_PARTNERREG.inc()
                             }
-                            else -> if (!samhandlerParksisisLegevakt(samhandlerPraksis) &&
+                            else -> if (!samhandlerpraksisIsLegevakt(samhandlerPraksis) &&
                                 !receiverBlock.partnerReferanse.isNullOrEmpty() &&
                                 receiverBlock.partnerReferanse.isNotBlank()
                             ) {
-                                startSubscription(
-                                    subscriptionEmottak,
+                                emottakSubscriptionClient.startSubscription(
                                     samhandlerPraksis,
                                     msgHead,
                                     receiverBlock,
+                                    msgId,
                                     loggingMeta
                                 )
                             } else {
@@ -387,7 +386,7 @@ class BlockingApplicationRunner(
                             continue@loop
                         }
 
-                        if (erTestFnr(originaltPasientFnr) && env.cluster == "prod-fss") {
+                        if (erTestFnr(originaltPasientFnr) && env.cluster == "prod-gcp") {
                             handleTestFnrInProd(
                                 loggingMeta, fellesformat,
                                 ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String

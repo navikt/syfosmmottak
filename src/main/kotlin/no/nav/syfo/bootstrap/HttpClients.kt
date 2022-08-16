@@ -16,12 +16,11 @@ import io.ktor.serialization.jackson.jackson
 import no.nav.syfo.Environment
 import no.nav.syfo.application.exception.ServiceUnavailableException
 import no.nav.syfo.client.AccessTokenClientV2
+import no.nav.syfo.client.EmottakSubscriptionClient
 import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.pdl.PdlFactory
-import org.apache.http.impl.conn.SystemDefaultRoutePlanner
-import java.net.ProxySelector
 
 class HttpClients(environment: Environment) {
     private val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
@@ -52,24 +51,15 @@ class HttpClients(environment: Environment) {
             }
         }
     }
-    private val proxyConfig: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
-        config()
-        engine {
-            customizeClient {
-                setRoutePlanner(SystemDefaultRoutePlanner(ProxySelector.getDefault()))
-            }
-        }
-    }
 
     private val simpleHttpClient = HttpClient(Apache, config)
     private val httpClientWithRetry = HttpClient(Apache, retryConfig)
-    private val httpClientWithProxy = HttpClient(Apache, proxyConfig)
 
     private val accessTokenClientV2 = AccessTokenClientV2(
         environment.aadAccessTokenV2Url,
         environment.clientIdV2,
         environment.clientSecretV2,
-        httpClientWithProxy
+        simpleHttpClient
     )
 
     val syfoSykemeldingRuleClient = SyfoSykemeldingRuleClient(
@@ -79,7 +69,9 @@ class HttpClients(environment: Environment) {
         httpClientWithRetry
     )
 
-    val sarClient = SarClient(environment.kuhrSarApiUrl, accessTokenClientV2, environment.kuhrSarApiScope, httpClientWithRetry)
+    val sarClient = SarClient(environment.smgcpProxyUrl, accessTokenClientV2, environment.smgcpProxyScope, httpClientWithRetry)
+
+    val emottakSubscriptionClient = EmottakSubscriptionClient(environment.smgcpProxyUrl, accessTokenClientV2, environment.smgcpProxyScope, simpleHttpClient)
 
     val norskHelsenettClient = NorskHelsenettClient(environment.norskHelsenettEndpointURL, accessTokenClientV2, environment.helsenettproxyScope, httpClientWithRetry)
 
