@@ -16,6 +16,7 @@ import no.nav.syfo.model.toSykmelding
 import org.amshove.kluent.shouldBeEqualTo
 import java.time.LocalDate
 import java.time.LocalDateTime
+import no.nav.syfo.model.toPrognose
 
 class SykmeldingMapperSpek : FunSpec({
 
@@ -162,17 +163,18 @@ class SykmeldingMapperSpek : FunSpec({
                         HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
                             periodeFOMDato = LocalDate.now()
                             periodeTOMDato = LocalDate.now().plusDays(4)
-                            aktivitetIkkeMulig = HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig().apply {
-                                medisinskeArsaker = ArsakType().apply {
-                                    arsakskode.add(
-                                        CS().apply {
-                                            v = "1"
-                                            dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                        }
-                                    )
-                                    beskriv = "Kan ikkje jobbe"
+                            aktivitetIkkeMulig =
+                                HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig().apply {
+                                    medisinskeArsaker = ArsakType().apply {
+                                        arsakskode.add(
+                                            CS().apply {
+                                                v = "1"
+                                                dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
+                                            }
+                                        )
+                                        beskriv = "Kan ikkje jobbe"
+                                    }
                                 }
-                            }
                         }
                     )
                 }
@@ -300,5 +302,24 @@ class SykmeldingMapperSpek : FunSpec({
             mappetMeldingTilNAV.bistandUmiddelbart shouldBeEqualTo false
             mappetMeldingTilNAV.beskrivBistand shouldBeEqualTo null
         }
+
+        test("Setter arbeidsforEtterPeriode til true") {
+            val originalPrognose =
+                HelseOpplysningerArbeidsuforhet.Prognose().apply { isArbeidsforEtterEndtPeriode = true }
+
+            val mappetMeldingTilNAV = originalPrognose.toPrognose()
+
+            mappetMeldingTilNAV.arbeidsforEtterPeriode shouldBeEqualTo true
+        }
+
+        test("Setter arbeidsforEtterPeriode til false") {
+            val originalPrognose =
+                HelseOpplysningerArbeidsuforhet.Prognose().apply { isArbeidsforEtterEndtPeriode = false }
+
+            val mappetMeldingTilNAV = originalPrognose.toPrognose()
+
+            mappetMeldingTilNAV.arbeidsforEtterPeriode shouldBeEqualTo false
+        }
+
     }
 })
