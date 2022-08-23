@@ -69,4 +69,4 @@ fun samhandlerpraksisIsLegevakt(samhandlerPraksis: SamhandlerPraksis): Boolean =
     !samhandlerPraksis.samh_praksis_type_kode.isNullOrEmpty() && (
         samhandlerPraksis.samh_praksis_type_kode == "LEVA" ||
             samhandlerPraksis.samh_praksis_type_kode == "LEKO"
-        )
+        ).also { log.info("SamhandlerpraksisIsLegevakt: $it") }

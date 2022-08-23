@@ -203,6 +203,7 @@ class BlockingApplicationRunner(
                     )
                     val samhandlerPraksis = samhandlerPraksisMatch?.samhandlerPraksis
                     if (samhandlerPraksis?.tss_ident == null) {
+                        log.info("SamhandlerPraksis mangler tss_ident, {}", StructuredArguments.fields(loggingMeta))
                         MANGLER_TSSIDENT.inc()
                     }
                     if (samhandlerPraksisMatch?.percentageMatch != null && samhandlerPraksisMatch.percentageMatch == 999.0) {
@@ -217,6 +218,7 @@ class BlockingApplicationRunner(
                                 log.info("SamhandlerPraksis is Not found, {}", StructuredArguments.fields(loggingMeta))
                                 IKKE_OPPDATERT_PARTNERREG.inc()
                             }
+
                             else -> if (!samhandlerpraksisIsLegevakt(samhandlerPraksis) &&
                                 !receiverBlock.partnerReferanse.isNullOrEmpty() &&
                                 receiverBlock.partnerReferanse.isNotBlank()
@@ -229,10 +231,19 @@ class BlockingApplicationRunner(
                                     loggingMeta
                                 )
                             } else {
-                                log.info(
-                                    "SamhandlerPraksis is Legevakt or partnerReferanse is empty or blank, subscription_emottak is not created, {}",
-                                    StructuredArguments.fields(loggingMeta)
-                                )
+                                if (!receiverBlock.partnerReferanse.isNullOrEmpty() &&
+                                    receiverBlock.partnerReferanse.isNotBlank()
+                                ) {
+                                    log.info(
+                                        "PartnerReferanse is empty or blank, subscription_emottak is not created, {}",
+                                        StructuredArguments.fields(loggingMeta)
+                                    )
+                                } else {
+                                    log.info(
+                                        "SamhandlerPraksis is Legevakt, subscription_emottak is not created, {}",
+                                        StructuredArguments.fields(loggingMeta)
+                                    )
+                                }
                                 IKKE_OPPDATERT_PARTNERREG.inc()
                             }
                         }
@@ -402,7 +413,8 @@ class BlockingApplicationRunner(
                             continue@loop
                         }
 
-                        val signerendeBehandler = norskHelsenettClient.getByFnr(fnr = signaturFnr, loggingMeta = loggingMeta)
+                        val signerendeBehandler =
+                            norskHelsenettClient.getByFnr(fnr = signaturFnr, loggingMeta = loggingMeta)
 
                         val behandlerFnr = extractFnrDnrFraBehandler(healthInformation)
                             ?: getBehandlerFnr(
@@ -420,7 +432,10 @@ class BlockingApplicationRunner(
                             behandlerFnr = behandlerFnr
                         )
                         if (originaltPasientFnr != pasient.fnr) {
-                            log.info("Sykmeldingen inneholder eldre ident for pasient, benytter nyeste fra PDL {}", StructuredArguments.fields(loggingMeta))
+                            log.info(
+                                "Sykmeldingen inneholder eldre ident for pasient, benytter nyeste fra PDL {}",
+                                StructuredArguments.fields(loggingMeta)
+                            )
                         }
 
                         val vedleggListe: List<String> = if (vedlegg.isNotEmpty()) {
@@ -495,6 +510,7 @@ class BlockingApplicationRunner(
                                 receivedSykmelding = receivedSykmelding,
                                 kafkaproducerreceivedSykmelding = kafkaproducerreceivedSykmelding
                             )
+
                             Status.MANUAL_PROCESSING -> handleStatusMANUALPROCESSING(
                                 receivedSykmelding = receivedSykmelding,
                                 loggingMeta = loggingMeta,
@@ -578,14 +594,20 @@ class BlockingApplicationRunner(
     /**
      * Finds the sender's FNR, either by matching HPR against signerende behandler or by doing a lookup against HPR
      */
-    private suspend fun getBehandlerFnr(avsenderHpr: String?, signerendeBehandler: Behandler?, loggingMeta: LoggingMeta): String? {
+    private suspend fun getBehandlerFnr(
+        avsenderHpr: String?,
+        signerendeBehandler: Behandler?,
+        loggingMeta: LoggingMeta
+    ): String? {
         return when (avsenderHpr) {
             null -> {
                 null
             }
+
             signerendeBehandler?.hprNummer -> {
                 signerendeBehandler.fnr
             }
+
             else -> {
                 norskHelsenettClient.getByHpr(avsenderHpr, loggingMeta)?.fnr
             }
