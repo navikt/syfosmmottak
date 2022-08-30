@@ -9,7 +9,6 @@ import no.nav.syfo.Environment
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.client.Behandler
 import no.nav.syfo.client.EmottakSubscriptionClient
-import no.nav.syfo.client.Godkjenning
 import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
@@ -92,6 +91,7 @@ import java.util.UUID
 import javax.jms.MessageConsumer
 import javax.jms.MessageProducer
 import javax.jms.TextMessage
+import no.nav.syfo.client.getHelsepersonellKategori
 
 class BlockingApplicationRunner(
     private val env: Environment,
@@ -611,19 +611,6 @@ class BlockingApplicationRunner(
             else -> {
                 norskHelsenettClient.getByHpr(avsenderHpr, loggingMeta)?.fnr
             }
-        }
-    }
-
-    private fun getHelsepersonellKategori(godkjenninger: List<Godkjenning>): String? = when {
-        godkjenninger.find { it.helsepersonellkategori?.verdi == "LE" } != null -> "LE"
-        godkjenninger.find { it.helsepersonellkategori?.verdi == "TL" } != null -> "TL"
-        godkjenninger.find { it.helsepersonellkategori?.verdi == "MT" } != null -> "MT"
-        godkjenninger.find { it.helsepersonellkategori?.verdi == "FT" } != null -> "FT"
-        godkjenninger.find { it.helsepersonellkategori?.verdi == "KI" } != null -> "KI"
-        else -> {
-            val verdi = godkjenninger.firstOrNull()?.helsepersonellkategori?.verdi
-            log.warn("Signerende behandler har ikke en helsepersonellkategori($verdi) vi kjenner igjen")
-            verdi
         }
     }
 }
