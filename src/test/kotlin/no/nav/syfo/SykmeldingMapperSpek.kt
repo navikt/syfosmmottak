@@ -12,11 +12,11 @@ import no.nav.helse.sm2013.NavnType
 import no.nav.helse.sm2013.TeleCom
 import no.nav.syfo.model.toDiagnose
 import no.nav.syfo.model.toMeldingTilNAV
+import no.nav.syfo.model.toPrognose
 import no.nav.syfo.model.toSykmelding
 import org.amshove.kluent.shouldBeEqualTo
 import java.time.LocalDate
 import java.time.LocalDateTime
-import no.nav.syfo.model.toPrognose
 
 class SykmeldingMapperSpek : FunSpec({
 
@@ -320,6 +320,5 @@ class SykmeldingMapperSpek : FunSpec({
 
             mappetMeldingTilNAV.arbeidsforEtterPeriode shouldBeEqualTo false
         }
-
     }
 })

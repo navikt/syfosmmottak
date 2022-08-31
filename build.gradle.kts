@@ -17,7 +17,7 @@ val kithHodemeldingVersion = "1.e6fcef8"
 val kithApprecVersion = "1.e6fcef8"
 val kluentVersion = "1.68"
 val ktorVersion = "2.1.0"
-val logbackVersion = "1.2.11"
+val logbackVersion = "1.4.0"
 val logstashEncoderVersion = "7.2"
 val prometheusVersion = "0.16.0"
 val smCommonVersion = "1.f132f2b"
@@ -40,11 +40,6 @@ plugins {
     id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
-
-buildscript {
-    dependencies {
-    }
-}
 
 val githubUser: String by project
 val githubPassword: String by project

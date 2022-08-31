@@ -5,7 +5,6 @@ import org.amshove.kluent.shouldBeEqualTo
 
 internal class NorskHelsenettClientSpek : FunSpec({
 
-
     context("NorskHelsenettClient") {
 
         test("Finding helsepersonell kategori for LE") {
@@ -17,11 +16,8 @@ internal class NorskHelsenettClientSpek : FunSpec({
                 )
             )
 
-
             val getHelsepersonellKategori = getHelsepersonellKategori(godkjenninger)
             getHelsepersonellKategori shouldBeEqualTo "LE"
         }
     }
-
-
 })

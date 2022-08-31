@@ -24,6 +24,7 @@ import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.utils.getFileAsString
 import no.nav.syfo.vedlegg.google.BucketUploadService
+import org.amshove.kluent.shouldBeEqualTo
 import org.apache.kafka.clients.producer.KafkaProducer
 import redis.clients.jedis.Jedis
 import javax.jms.MessageConsumer
@@ -117,6 +118,19 @@ class BlockingApplicationRunnerTest : FunSpec({
             blockingApplicationRunner.run(inputconsumer, backoutProducer)
 
             coVerify { kafkaproducerApprec.send(match { it.value().apprecStatus == ApprecStatus.OK }) }
+        }
+
+        test("Sykmelding med melding er ikke byte message eller text message skal gi RuntimeException") {
+            every { applicationState.ready } returns true andThen false
+            val textMessage = mockk<TextMessage>(relaxed = true)
+            every { textMessage.text } returns null
+            every { inputconsumer.receive(1000) } returns textMessage
+
+            try {
+                blockingApplicationRunner.run(inputconsumer, backoutProducer)
+            } catch (exception: Exception) {
+                exception.message shouldBeEqualTo "Incoming message needs to be a byte message or text message"
+            }
         }
     }
 })
