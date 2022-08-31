@@ -52,6 +52,8 @@ spec:
     - secret: srvsyfosmmottak-secrets
   filesFrom:
     - secret: sykmeldingvedlegg-google-creds
+  secureLogs:
+    enabled: true
   env:
     - name: MQ_HOST_NAME
       value: b27apvl222.preprod.local

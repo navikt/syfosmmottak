@@ -9,33 +9,17 @@ import no.nav.syfo.Environment
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.client.Behandler
 import no.nav.syfo.client.EmottakSubscriptionClient
-import no.nav.syfo.client.Godkjenning
 import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.client.findBestSamhandlerPraksis
+import no.nav.syfo.client.getHelsepersonellKategori
 import no.nav.syfo.client.samhandlerpraksisIsLegevakt
-import no.nav.syfo.handlestatus.handleAktivitetOrPeriodeIsMissing
-import no.nav.syfo.handlestatus.handleAnnenFraversArsakkodeVIsmissing
-import no.nav.syfo.handlestatus.handleArbeidsplassenArsakskodeHarUgyldigVerdi
-import no.nav.syfo.handlestatus.handleArbeidsplassenArsakskodeIsmissing
-import no.nav.syfo.handlestatus.handleBiDiagnoserDiagnosekodeBeskrivelseMissing
-import no.nav.syfo.handlestatus.handleBiDiagnoserDiagnosekodeIsMissing
-import no.nav.syfo.handlestatus.handleBiDiagnoserDiagnosekodeVerkIsMissing
-import no.nav.syfo.handlestatus.handleDoctorNotFoundInPDL
 import no.nav.syfo.handlestatus.handleDuplicateEdiloggid
 import no.nav.syfo.handlestatus.handleDuplicateSM2013Content
-import no.nav.syfo.handlestatus.handleFnrAndDnrAndHprIsmissingFromBehandler
-import no.nav.syfo.handlestatus.handleHovedDiagnoseDiagnoseBeskrivelseMissing
-import no.nav.syfo.handlestatus.handleHovedDiagnoseDiagnosekodeMissing
-import no.nav.syfo.handlestatus.handleMedisinskeArsakskodeHarUgyldigVerdi
-import no.nav.syfo.handlestatus.handleMedisinskeArsakskodeIsmissing
-import no.nav.syfo.handlestatus.handlePatientNotFoundInPDL
-import no.nav.syfo.handlestatus.handlePeriodetypeMangler
 import no.nav.syfo.handlestatus.handleStatusINVALID
 import no.nav.syfo.handlestatus.handleStatusMANUALPROCESSING
 import no.nav.syfo.handlestatus.handleStatusOK
-import no.nav.syfo.handlestatus.handleTestFnrInProd
 import no.nav.syfo.handlestatus.handleVirksomhetssykmeldingOgFnrManglerIHPR
 import no.nav.syfo.handlestatus.handleVirksomhetssykmeldingOgHprMangler
 import no.nav.syfo.log
@@ -55,11 +39,8 @@ import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.service.sha256hashstring
 import no.nav.syfo.service.updateRedis
 import no.nav.syfo.util.LoggingMeta
-import no.nav.syfo.util.annenFraversArsakkodeVMangler
-import no.nav.syfo.util.arbeidsplassenArsakskodeHarUgyldigVerdi
-import no.nav.syfo.util.arbeidsplassenArsakskodeMangler
+import no.nav.syfo.util.checkSM2013Content
 import no.nav.syfo.util.countNewDiagnoseCode
-import no.nav.syfo.util.erTestFnr
 import no.nav.syfo.util.extractFnrDnrFraBehandler
 import no.nav.syfo.util.extractHelseOpplysningerArbeidsuforhet
 import no.nav.syfo.util.extractHpr
@@ -69,21 +50,17 @@ import no.nav.syfo.util.extractOrganisationRashNumberFromSender
 import no.nav.syfo.util.extractTlfFromKontaktInfo
 import no.nav.syfo.util.fellesformatMarshaller
 import no.nav.syfo.util.fellesformatUnmarshaller
-import no.nav.syfo.util.fnrOgDnrMangler
 import no.nav.syfo.util.get
 import no.nav.syfo.util.getLocalDateTime
 import no.nav.syfo.util.getVedlegg
-import no.nav.syfo.util.hprMangler
 import no.nav.syfo.util.logUlikBehandler
-import no.nav.syfo.util.medisinskeArsakskodeHarUgyldigVerdi
-import no.nav.syfo.util.medisinskeArsakskodeMangler
-import no.nav.syfo.util.periodetypeIkkeAngitt
 import no.nav.syfo.util.removeVedleggFromFellesformat
 import no.nav.syfo.util.toString
 import no.nav.syfo.util.wrapExceptions
 import no.nav.syfo.vedlegg.google.BucketUploadService
 import no.nav.syfo.vedlegg.model.BehandlerInfo
 import org.apache.kafka.clients.producer.KafkaProducer
+import org.slf4j.LoggerFactory
 import redis.clients.jedis.Jedis
 import redis.clients.jedis.exceptions.JedisConnectionException
 import java.io.StringReader
@@ -92,6 +69,8 @@ import java.util.UUID
 import javax.jms.MessageConsumer
 import javax.jms.MessageProducer
 import javax.jms.TextMessage
+
+private val sikkerlogg = LoggerFactory.getLogger("securelog")
 
 class BlockingApplicationRunner(
     private val env: Environment,
@@ -276,140 +255,11 @@ class BlockingApplicationRunner(
                         val pasient = identer[originaltPasientFnr]
                         val behandler = identer[signaturFnr]
 
-                        if (pasient?.aktorId == null || pasient.fnr == null) {
-                            handlePatientNotFoundInPDL(
-                                loggingMeta, fellesformat,
+                        if (checkSM2013Content(
+                                pasient, behandler, healthInformation, originaltPasientFnr, loggingMeta, fellesformat,
                                 ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
                             )
-                            continue@loop
-                        }
-                        if (behandler?.aktorId == null) {
-                            handleDoctorNotFoundInPDL(
-                                loggingMeta, fellesformat,
-                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
-                            )
-                            continue@loop
-                        }
-
-                        if (healthInformation.aktivitet == null || healthInformation.aktivitet.periode.isNullOrEmpty()) {
-                            handleAktivitetOrPeriodeIsMissing(
-                                loggingMeta, fellesformat,
-                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
-                            )
-                            continue@loop
-                        }
-
-                        if (periodetypeIkkeAngitt(healthInformation.aktivitet)) {
-                            handlePeriodetypeMangler(
-                                loggingMeta, fellesformat,
-                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
-                            )
-                            continue@loop
-                        }
-
-                        if (healthInformation.medisinskVurdering?.biDiagnoser != null &&
-                            healthInformation.medisinskVurdering.biDiagnoser.diagnosekode.any { it.v.isNullOrEmpty() }
                         ) {
-                            handleBiDiagnoserDiagnosekodeIsMissing(
-                                loggingMeta, fellesformat,
-                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
-                            )
-                            continue@loop
-                        }
-
-                        if (healthInformation.medisinskVurdering?.biDiagnoser != null &&
-                            healthInformation.medisinskVurdering.biDiagnoser.diagnosekode.any { it.s.isNullOrEmpty() }
-                        ) {
-                            handleBiDiagnoserDiagnosekodeVerkIsMissing(
-                                loggingMeta, fellesformat,
-                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
-                            )
-                            continue@loop
-                        }
-
-                        if (healthInformation.medisinskVurdering?.biDiagnoser != null &&
-                            healthInformation.medisinskVurdering.biDiagnoser.diagnosekode.any { it.dn.isNullOrEmpty() }
-                        ) {
-                            handleBiDiagnoserDiagnosekodeBeskrivelseMissing(
-                                loggingMeta, fellesformat,
-                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
-                            )
-                            continue@loop
-                        }
-
-                        if (fnrOgDnrMangler(healthInformation) && hprMangler(healthInformation)) {
-                            handleFnrAndDnrAndHprIsmissingFromBehandler(
-                                loggingMeta, fellesformat,
-                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
-                            )
-                            continue@loop
-                        }
-
-                        if (healthInformation.medisinskVurdering?.hovedDiagnose?.diagnosekode != null &&
-                            healthInformation.medisinskVurdering.hovedDiagnose.diagnosekode.v == null
-                        ) {
-                            handleHovedDiagnoseDiagnosekodeMissing(
-                                loggingMeta, fellesformat,
-                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
-                            )
-                            continue@loop
-                        }
-
-                        if (healthInformation.medisinskVurdering?.hovedDiagnose?.diagnosekode != null &&
-                            healthInformation.medisinskVurdering.hovedDiagnose.diagnosekode.dn == null
-                        ) {
-                            handleHovedDiagnoseDiagnoseBeskrivelseMissing(
-                                loggingMeta, fellesformat,
-                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
-                            )
-                            continue@loop
-                        }
-
-                        if (medisinskeArsakskodeMangler(healthInformation)) {
-                            handleMedisinskeArsakskodeIsmissing(
-                                loggingMeta, fellesformat,
-                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
-                            )
-                            continue@loop
-                        }
-
-                        if (medisinskeArsakskodeHarUgyldigVerdi(healthInformation)) {
-                            handleMedisinskeArsakskodeHarUgyldigVerdi(
-                                loggingMeta, fellesformat,
-                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
-                            )
-                            continue@loop
-                        }
-
-                        if (arbeidsplassenArsakskodeMangler(healthInformation)) {
-                            handleArbeidsplassenArsakskodeIsmissing(
-                                loggingMeta, fellesformat,
-                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
-                            )
-                            continue@loop
-                        }
-
-                        if (arbeidsplassenArsakskodeHarUgyldigVerdi(healthInformation)) {
-                            handleArbeidsplassenArsakskodeHarUgyldigVerdi(
-                                loggingMeta, fellesformat,
-                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
-                            )
-                            continue@loop
-                        }
-
-                        if (erTestFnr(originaltPasientFnr) && env.cluster == "prod-gcp") {
-                            handleTestFnrInProd(
-                                loggingMeta, fellesformat,
-                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
-                            )
-                            continue@loop
-                        }
-
-                        if (annenFraversArsakkodeVMangler(healthInformation)) {
-                            handleAnnenFraversArsakkodeVIsmissing(
-                                loggingMeta, fellesformat,
-                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
-                            )
                             continue@loop
                         }
 
@@ -425,8 +275,8 @@ class BlockingApplicationRunner(
 
                         val sykmelding = healthInformation.toSykmelding(
                             sykmeldingId = UUID.randomUUID().toString(),
-                            pasientAktoerId = pasient.aktorId,
-                            legeAktoerId = behandler.aktorId,
+                            pasientAktoerId = pasient?.aktorId!!,
+                            legeAktoerId = behandler?.aktorId!!,
                             msgId = msgId,
                             signaturDato = getLocalDateTime(msgHead.msgInfo.genDate),
                             behandlerFnr = behandlerFnr
@@ -436,13 +286,19 @@ class BlockingApplicationRunner(
                                 "Sykmeldingen inneholder eldre ident for pasient, benytter nyeste fra PDL {}",
                                 StructuredArguments.fields(loggingMeta)
                             )
+                            sikkerlogg.info(
+                                "Sykmeldingen inneholder eldre ident for pasient, benytter nyeste fra PDL" +
+                                    "originaltPasientFnr: {}, pasientFnr: {}, {}",
+                                originaltPasientFnr, pasient.fnr,
+                                StructuredArguments.fields(loggingMeta)
+                            )
                         }
 
                         val vedleggListe: List<String> = if (vedlegg.isNotEmpty()) {
                             bucketUploadService.lastOppVedlegg(
                                 vedlegg = vedlegg,
                                 msgId = msgId,
-                                personNrPasient = pasient.fnr,
+                                personNrPasient = pasient.fnr!!,
                                 behandlerInfo = BehandlerInfo(
                                     fornavn = sykmelding.behandler.fornavn,
                                     etternavn = sykmelding.behandler.etternavn,
@@ -458,7 +314,7 @@ class BlockingApplicationRunner(
 
                         val receivedSykmelding = ReceivedSykmelding(
                             sykmelding = sykmelding,
-                            personNrPasient = pasient.fnr,
+                            personNrPasient = pasient.fnr!!,
                             tlfPasient = extractTlfFromKontaktInfo(healthInformation.pasient.kontaktInfo),
                             personNrLege = signaturFnr,
                             navLogId = ediLoggId,
@@ -611,19 +467,6 @@ class BlockingApplicationRunner(
             else -> {
                 norskHelsenettClient.getByHpr(avsenderHpr, loggingMeta)?.fnr
             }
-        }
-    }
-
-    private fun getHelsepersonellKategori(godkjenninger: List<Godkjenning>): String? = when {
-        godkjenninger.find { it.helsepersonellkategori?.verdi == "LE" } != null -> "LE"
-        godkjenninger.find { it.helsepersonellkategori?.verdi == "TL" } != null -> "TL"
-        godkjenninger.find { it.helsepersonellkategori?.verdi == "MT" } != null -> "MT"
-        godkjenninger.find { it.helsepersonellkategori?.verdi == "FT" } != null -> "FT"
-        godkjenninger.find { it.helsepersonellkategori?.verdi == "KI" } != null -> "KI"
-        else -> {
-            val verdi = godkjenninger.firstOrNull()?.helsepersonellkategori?.verdi
-            log.warn("Signerende behandler har ikke en helsepersonellkategori($verdi) vi kjenner igjen")
-            verdi
         }
     }
 }

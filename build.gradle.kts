@@ -16,8 +16,8 @@ val kafkaVersion = "3.1.0"
 val kithHodemeldingVersion = "1.e6fcef8"
 val kithApprecVersion = "1.e6fcef8"
 val kluentVersion = "1.68"
-val ktorVersion = "2.0.3"
-val logbackVersion = "1.2.11"
+val ktorVersion = "2.1.0"
+val logbackVersion = "1.4.0"
 val logstashEncoderVersion = "7.2"
 val prometheusVersion = "0.16.0"
 val smCommonVersion = "1.f132f2b"
@@ -28,10 +28,10 @@ val javaxAnnotationApiVersion = "1.3.2"
 val jaxwsToolsVersion = "2.3.2"
 val jaxbRuntimeVersion = "2.4.0-b180830.0438"
 val javaTimeAdapterVersion = "1.1.3"
-val mockkVersion = "1.12.5"
+val mockkVersion = "1.12.7"
 val kotlinVersion = "1.7.10"
-val googleCloudStorageVersion = "2.10.0"
-val kotestVersion = "5.4.1"
+val googleCloudStorageVersion = "2.11.3"
+val kotestVersion = "5.4.2"
 
 plugins {
     kotlin("jvm") version "1.7.10"
@@ -40,11 +40,6 @@ plugins {
     id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
-
-buildscript {
-    dependencies {
-    }
-}
 
 val githubUser: String by project
 val githubPassword: String by project
