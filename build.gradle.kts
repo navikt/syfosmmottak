@@ -20,7 +20,7 @@ val ktorVersion = "2.1.0"
 val logbackVersion = "1.4.0"
 val logstashEncoderVersion = "7.2"
 val prometheusVersion = "0.16.0"
-val smCommonVersion = "1.f132f2b"
+val smCommonVersion = "1.d3282a0"
 val sykmeldingVersion = "1.e6fcef8"
 val jaxwsApiVersion = "2.3.1"
 val commonsTextVersion = "1.9"
@@ -66,7 +66,7 @@ dependencies {
     implementation("io.ktor:ktor-server-core:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("io.ktor:ktor-client-core:$ktorVersion")
-    implementation("io.ktor:ktor-client-apache:$ktorVersion")
+    implementation("io.ktor:ktor-client-cio:$ktorVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
 

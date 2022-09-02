@@ -6,8 +6,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
-import io.ktor.client.engine.apache.Apache
-import io.ktor.client.engine.apache.ApacheEngineConfig
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.engine.cio.CIOEngineConfig
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpResponseValidator
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -23,7 +23,7 @@ import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.pdl.PdlFactory
 
 class HttpClients(environment: Environment) {
-    private val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
+    private val config: HttpClientConfig<CIOEngineConfig>.() -> Unit = {
         install(ContentNegotiation) {
             jackson {
                 registerKotlinModule()
@@ -41,7 +41,7 @@ class HttpClients(environment: Environment) {
         }
         expectSuccess = false
     }
-    private val retryConfig: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
+    private val retryConfig: HttpClientConfig<CIOEngineConfig>.() -> Unit = {
         config().apply {
             install(HttpRequestRetry) {
                 maxRetries = 3
@@ -52,8 +52,8 @@ class HttpClients(environment: Environment) {
         }
     }
 
-    private val simpleHttpClient = HttpClient(Apache, config)
-    private val httpClientWithRetry = HttpClient(Apache, retryConfig)
+    private val simpleHttpClient = HttpClient(CIO, config)
+    private val httpClientWithRetry = HttpClient(CIO, retryConfig)
 
     private val accessTokenClientV2 = AccessTokenClientV2(
         environment.aadAccessTokenV2Url,

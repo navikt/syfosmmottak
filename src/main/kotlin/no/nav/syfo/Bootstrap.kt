@@ -31,6 +31,7 @@ import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.OpprettOppgaveKafkaMessage
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
+import no.nav.syfo.mq.MqTlsUtils
 import no.nav.syfo.mq.connectionFactory
 import no.nav.syfo.mq.consumerForQueue
 import no.nav.syfo.mq.producerForQueue
@@ -58,6 +59,7 @@ val log: Logger = LoggerFactory.getLogger("no.nav.syfo.syfosmmottak")
 fun main() {
     val env = Environment()
     val serviceUser = VaultServiceUser()
+    MqTlsUtils.getMqTlsConfig().forEach { key, value -> System.setProperty(key as String, value as String) }
     val applicationState = ApplicationState()
     val applicationEngine = createApplicationEngine(
         env,
