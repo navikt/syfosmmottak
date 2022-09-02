@@ -14,7 +14,8 @@ fun HelseOpplysningerArbeidsuforhet.toSykmelding(
     legeAktoerId: String,
     msgId: String,
     signaturDato: LocalDateTime,
-    behandlerFnr: String
+    behandlerFnr: String,
+    behandlerHprNr: String?
 ) = Sykmelding(
     id = sykmeldingId,
     msgId = msgId,
@@ -32,7 +33,7 @@ fun HelseOpplysningerArbeidsuforhet.toSykmelding(
     meldingTilArbeidsgiver = meldingTilArbeidsgiver,
     kontaktMedPasient = kontaktMedPasient.toKontaktMedPasient(),
     behandletTidspunkt = kontaktMedPasient.behandletDato,
-    behandler = behandler.toBehandler(legeAktoerId, behandlerFnr),
+    behandler = behandler.toBehandler(legeAktoerId, behandlerFnr, behandlerHprNr),
     avsenderSystem = avsenderSystem.toAvsenderSystem(),
     syketilfelleStartDato = syketilfelleStartDato,
     signaturDato = signaturDato,
@@ -165,13 +166,13 @@ fun HelseOpplysningerArbeidsuforhet.KontaktMedPasient.toKontaktMedPasient() = Ko
     begrunnelseIkkeKontakt = begrunnIkkeKontakt
 )
 
-fun HelseOpplysningerArbeidsuforhet.Behandler.toBehandler(aktoerId: String, behandlerFnr: String) = Behandler(
+fun HelseOpplysningerArbeidsuforhet.Behandler.toBehandler(aktoerId: String, behandlerFnr: String, behandlerHprNr: String?) = Behandler(
     fornavn = navn.fornavn,
     mellomnavn = navn.mellomnavn,
     etternavn = navn.etternavn,
     aktoerId = aktoerId,
     fnr = behandlerFnr,
-    hpr = id.find { it.typeId.v == "HPR" }?.id,
+    hpr = behandlerHprNr ?: id.find { it.typeId.v == "HPR" }?.id,
     her = id.find { it.typeId.v == "HER" }?.id,
     adresse = adresse.toAdresse(),
     tlf = extractTlfFromKontaktInfo(kontaktInfo)

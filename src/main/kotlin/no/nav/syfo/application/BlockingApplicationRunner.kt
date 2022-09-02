@@ -273,13 +273,20 @@ class BlockingApplicationRunner(
                                 loggingMeta = loggingMeta
                             ) ?: signaturFnr
 
+                        val behandlerHprNr = try {
+                            norskHelsenettClient.getByFnr(fnr = behandlerFnr, loggingMeta = loggingMeta)?.hprNummer
+                        } catch (e: Exception) {
+                            null
+                        }
+
                         val sykmelding = healthInformation.toSykmelding(
                             sykmeldingId = UUID.randomUUID().toString(),
                             pasientAktoerId = pasient?.aktorId!!,
                             legeAktoerId = behandler?.aktorId!!,
                             msgId = msgId,
                             signaturDato = getLocalDateTime(msgHead.msgInfo.genDate),
-                            behandlerFnr = behandlerFnr
+                            behandlerFnr = behandlerFnr,
+                            behandlerHprNr = behandlerHprNr
                         )
                         if (originaltPasientFnr != pasient.fnr) {
                             log.info(
