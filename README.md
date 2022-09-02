@@ -2,8 +2,6 @@
 # SYFOsmmottak
 This project contains just the receiving a sykmelding2013 message
 
-<img src="./src/svg/flyttdiagram.svg" alt="Image of the flow of the syfosmmottak application">
-
 ## Technologies used
 * Kotlin
 * Ktor
@@ -16,6 +14,19 @@ This project contains just the receiving a sykmelding2013 message
 #### Requirements
 
 * JDK 17
+
+## FlowChart
+This the high level flow for the application
+```mermaid
+  graph LR;
+        
+      EPJ -- norskhelsenett ---eMottak;
+      eMottak -- sykmleding --- id1([SYFOSMMOTTAK.INPUT]);
+      id1([MQ queue: SYFOSMMOTTAK.INPUT]) -- read and consume --- syfosmmottak;
+       B[\teamsykmelding.sykmelding-apprec/]
+  
+ 
+```
 
 ## Getting started
 ### Getting github-package-registry packages NAV-IT
