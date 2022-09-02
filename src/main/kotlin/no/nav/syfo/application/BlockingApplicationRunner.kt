@@ -266,18 +266,29 @@ class BlockingApplicationRunner(
                         val signerendeBehandler =
                             norskHelsenettClient.getByFnr(fnr = signaturFnr, loggingMeta = loggingMeta)
 
-                        val behandlerFnr = extractFnrDnrFraBehandler(healthInformation)
+                        val behandlenedeBehandler =
+                            if (extractFnrDnrFraBehandler(healthInformation) != null || extractHpr(fellesformat)?.id != null) {
+                                getBehandlenedeBehandler(
+                                    extractHpr(fellesformat)?.id,
+                                    extractFnrDnrFraBehandler(healthInformation),
+                                    loggingMeta
+                                )
+                            } else {
+                                null
+                            }
+
+                        val behandlenedeBehandlerFnr = extractFnrDnrFraBehandler(healthInformation)
                             ?: getBehandlerFnr(
                                 avsenderHpr = extractHpr(fellesformat)?.id,
                                 signerendeBehandler = signerendeBehandler,
-                                loggingMeta = loggingMeta
+                                behandlenedeBehandler = behandlenedeBehandler
                             ) ?: signaturFnr
 
-                        val behandlerHprNr = try {
-                            norskHelsenettClient.getByFnr(fnr = behandlerFnr, loggingMeta = loggingMeta)?.hprNummer
-                        } catch (e: Exception) {
-                            null
-                        }
+                        val behandlenedeBehandlerhprNummer = extractHpr(fellesformat)?.id
+                            ?: getBehandlerHprNr(
+                                avsenderHpr = extractHpr(fellesformat)?.id,
+                                behandlenedeBehandler = behandlenedeBehandler
+                            )
 
                         val sykmelding = healthInformation.toSykmelding(
                             sykmeldingId = UUID.randomUUID().toString(),
@@ -285,8 +296,8 @@ class BlockingApplicationRunner(
                             legeAktoerId = behandler?.aktorId!!,
                             msgId = msgId,
                             signaturDato = getLocalDateTime(msgHead.msgInfo.genDate),
-                            behandlerFnr = behandlerFnr,
-                            behandlerHprNr = behandlerHprNr
+                            behandlerFnr = behandlenedeBehandlerFnr,
+                            behandlerHprNr = behandlenedeBehandlerhprNummer
                         )
                         if (originaltPasientFnr != pasient.fnr) {
                             log.info(
@@ -346,7 +357,7 @@ class BlockingApplicationRunner(
                             vedlegg = vedleggListe
                         )
 
-                        if (behandlerFnr != signaturFnr) {
+                        if (behandlenedeBehandlerFnr != signaturFnr) {
                             logUlikBehandler(loggingMeta)
                         }
 
@@ -457,10 +468,28 @@ class BlockingApplicationRunner(
     /**
      * Finds the sender's FNR, either by matching HPR against signerende behandler or by doing a lookup against HPR
      */
-    private suspend fun getBehandlerFnr(
+
+    private suspend fun getBehandlenedeBehandler(
+        behandlenedeBehandlerHpr: String?,
+        behandlenedeBehandlerfnr: String?,
+        loggingMeta: LoggingMeta
+    ): Behandler? {
+        return if (behandlenedeBehandlerHpr != null) {
+            norskHelsenettClient.getByHpr(behandlenedeBehandlerHpr, loggingMeta)
+        } else if (behandlenedeBehandlerfnr != null) {
+            norskHelsenettClient.getByFnr(behandlenedeBehandlerfnr, loggingMeta)
+        } else {
+            null
+        }
+    }
+
+    /**
+     * Finds the sender's FNR, either by matching HPR against signerende behandler or by doing a lookup against HPR
+     */
+    private fun getBehandlerFnr(
         avsenderHpr: String?,
         signerendeBehandler: Behandler?,
-        loggingMeta: LoggingMeta
+        behandlenedeBehandler: Behandler?
     ): String? {
         return when (avsenderHpr) {
             null -> {
@@ -472,8 +501,15 @@ class BlockingApplicationRunner(
             }
 
             else -> {
-                norskHelsenettClient.getByHpr(avsenderHpr, loggingMeta)?.fnr
+                behandlenedeBehandler?.fnr
             }
         }
+    }
+
+    private fun getBehandlerHprNr(
+        avsenderHpr: String?,
+        behandlenedeBehandler: Behandler?
+    ): String? {
+        return avsenderHpr ?: behandlenedeBehandler?.hprNummer
     }
 }
