@@ -22,11 +22,24 @@ This the high level flow of the application
         
       EPJ---eMottak;
       eMottak --- id1([SYFOSMMOTTAK.INPUT]);
-      id1([MQ queue: SYFOSMMOTTAK.INPUT]) --- syfosmmottak;
-      syfosmmottak ---  B[\teamsykmelding.sykmelding-apprec/];
-      syfosmmottak ---  id2([MQ queue: SYFOSMMOTTAK.INPUT_BOQ]);
-      id2([MQ queue: SYFOSMMOTTAK.INPUT_BOQ]) ---  id1([MQ queue: SYFOSMMOTTAK.INPUT]);
- 
+      id1([MQ queue: SYFOSMMOTTAK.INPUT]) ---> syfosmmottak;
+      syfosmmottak --->  B[\teamsykmelding.sykmelding-apprec/];
+      syfosmmottak --->  id2([SYFOSMMOTTAK.INPUT_BOQ]);
+      id2([SYFOSMMOTTAK.INPUT_BOQ]) --->  id1([SYFOSMMOTTAK.INPUT]);
+      syfosmmottak --- redis;
+      syfosmmottak --- Azure-AD;
+      syfosmmottak --- PDL;
+      syfosmmottak --- Kuhr-SAR;
+      syfosmmottak --- eMottak-subscription;
+      syfosmmottak --- syfohelsenettproxy;
+      syfosmmottak --- GCP-Bucket;
+      syfosmmottak --- syfosmregler;
+      syfosmmottak ---- C[\teamsykmelding.ok-sykmelding/];
+      syfosmmottak ---- D[\teamsykmelding.manuell-behandling-sykmelding/];
+      syfosmmottak ---- E[\teamsykmelding.avvist-sykmelding/];
+      syfosmmottak ---- F[\teamsykmelding.sykmelding-behandlingsutfall/];
+      syfosmmottak ---- G[\teamsykmelding.sykmelding-manuell/];
+      syfosmmottak ---- H[\teamsykmelding.oppgave-produser-oppgave/];
 ```
 
 ## Getting started
