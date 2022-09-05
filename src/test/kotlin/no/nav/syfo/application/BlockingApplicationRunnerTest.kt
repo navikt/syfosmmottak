@@ -66,6 +66,7 @@ class BlockingApplicationRunnerTest : FunSpec({
     coEvery { kuhrSarClient.getSamhandler(any(), any()) } returns emptyList()
     every { jedis.get(any<String>()) } returns null
     coEvery { norskHelsenettClient.getByFnr(any(), any()) } returns Behandler(emptyList(), "", "HPR", null, null, null)
+    coEvery { norskHelsenettClient.getByHpr(any(), any()) } returns Behandler(emptyList(), "", "HPR", null, null, null)
     coEvery { syfoSykemeldingRuleClient.executeRuleValidation(any(), any()) } returns ValidationResult(Status.OK, emptyList())
 
     context("Mottak av sykmelding") {

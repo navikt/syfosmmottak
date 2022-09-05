@@ -114,7 +114,8 @@ class SykmeldingMapperSpek : FunSpec({
                 legeAktoerId = "756564124",
                 msgId = "12313-12313-123123as-asda",
                 signaturDato = LocalDateTime.now(),
-                behandlerFnr = "1213415151"
+                behandlerFnr = "1213415151",
+                behandlerHprNr = "00415151"
             )
 
             sykmelding.perioder.first().aktivitetIkkeMulig?.medisinskArsak?.arsak?.first()?.codeValue shouldBeEqualTo medisinskeArsakerArsakskodeV.trim()
@@ -231,7 +232,8 @@ class SykmeldingMapperSpek : FunSpec({
                 legeAktoerId = "756564124",
                 msgId = "12313-12313-123123as-asda",
                 signaturDato = LocalDateTime.now(),
-                behandlerFnr = "1213415151"
+                behandlerFnr = "1213415151",
+                behandlerHprNr = "00415151"
             )
 
             sykmelding.utdypendeOpplysninger.getValue("6.1").getValue("6.1.3").restriksjoner shouldBeEqualTo emptyList()
