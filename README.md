@@ -16,15 +16,16 @@ This project contains just the receiving a sykmelding2013 message
 * JDK 17
 
 ## FlowChart
-This the high level flow for the application
+This the high level flow of the application
 ```mermaid
   graph LR;
         
-      EPJ -- norskhelsenett ---eMottak;
-      eMottak -- sykmleding --- id1([SYFOSMMOTTAK.INPUT]);
-      id1([MQ queue: SYFOSMMOTTAK.INPUT]) -- read and consume --- syfosmmottak;
-       B[\teamsykmelding.sykmelding-apprec/]
-  
+      EPJ---eMottak;
+      eMottak --- id1([SYFOSMMOTTAK.INPUT]);
+      id1([MQ queue: SYFOSMMOTTAK.INPUT]) --- syfosmmottak;
+      syfosmmottak ---  B[\teamsykmelding.sykmelding-apprec/];
+      syfosmmottak ---  id2([MQ queue: SYFOSMMOTTAK.INPUT_BOQ]);
+      id2([MQ queue: SYFOSMMOTTAK.INPUT_BOQ]) ---  id1([MQ queue: SYFOSMMOTTAK.INPUT]);
  
 ```
 
@@ -80,40 +81,6 @@ Creating a docker image should be as simple as `docker build -t syfosmmottak .`
 
 #### Running a docker image
 `docker run --rm -it -p 8080:8080 syfosmmottak`
-
-### Importing flowchart from gliffy confluence
-1. Open a web browser and go the confluence site that has the gliffy diagram you want to import, example site:
-https://confluence.adeo.no/display/KES/SyfoSmMottak.
-2. Click on the gliffy diagram and the "Edit Digram" buttom
-3. Then go to File -> Export... and choose the Gliffy File Format (The gliffy diagram, should now be downloaded to you computer)
-4. Open a web browser and go to: https://app.diagrams.net/
-5. Choose the "Open Existing Diagram", then choose the file that was downloaded from step 3.
-6. Click on File -> Save (The diagram is now saved as a drawio format, store it in the source code)
-7. Click on File -> Export as SVG...(The diagram is now saved as SVG, store it in the source code)
-8. Commit and push the changes so its up to date
-
-### Editing existing flowchart
-1. Open a web browser and go to: https://app.diagrams.net/
-2. Choose the "Open Existing Diagram", then choose the file /src/flowchart/flyttdiagram.drawio
-3. Do the changes you want, and the save it as a drawio, back to /src/flowchart/flyttdiagram.drawio
-4. Click on File -> Export as SVG... save the file to here: file here: /src/svg/flytdiagram.svg
-5. Commit and push the changes so its up to date
-
-### Creating a new flowchart
-1. Open a web browser and go to: https://app.diagrams.net/
-2. Choose the "Create New diagram",
-3. Do the changes you want, and the save it as a drawio, back to /src/flowchart/flyttdiagram.drawio
-4. Click on File -> Export as SVG... save the file to here: file here: /src/svg/flytdiagram.svg
-5. Commit and push the changes so its up to date
-
-
-### Deploy redis to dev:
-Deploying redis can be done with the following command:
-`kubectl apply --context dev-fss --namespace default -f redis.yaml`
-
-### Deploy redis to prod:
-Deploying redis can be done with the following command:
-`kubectl apply --context prod-fss --namespace default -f redis.yaml`
 
 ### Upgrading the gradle wrapper
 Find the newest version of gradle here: https://gradle.org/releases/ Then run this command:
