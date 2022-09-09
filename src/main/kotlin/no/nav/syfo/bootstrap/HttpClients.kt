@@ -39,41 +39,36 @@ class HttpClients(environment: Environment) {
                 }
             }
         }
-        expectSuccess = false
-    }
-    private val retryConfig: HttpClientConfig<CIOEngineConfig>.() -> Unit = {
-        config().apply {
-            install(HttpRequestRetry) {
-                maxRetries = 3
-                delayMillis { retry ->
-                    retry * 500L
-                }
+        install(HttpRequestRetry) {
+            maxRetries = 3
+            delayMillis { retry ->
+                retry * 500L
             }
         }
+        expectSuccess = false
     }
 
-    private val simpleHttpClient = HttpClient(CIO, config)
-    private val httpClientWithRetry = HttpClient(CIO, retryConfig)
+    private val httpClient = HttpClient(CIO, config)
 
     private val accessTokenClientV2 = AccessTokenClientV2(
         environment.aadAccessTokenV2Url,
         environment.clientIdV2,
         environment.clientSecretV2,
-        simpleHttpClient
+        httpClient
     )
 
     val syfoSykemeldingRuleClient = SyfoSykemeldingRuleClient(
         environment.syfosmreglerApiUrl,
         accessTokenClientV2,
         environment.syfosmreglerApiScope,
-        httpClientWithRetry
+        httpClient
     )
 
-    val sarClient = SarClient(environment.smgcpProxyUrl, accessTokenClientV2, environment.smgcpProxyScope, httpClientWithRetry)
+    val sarClient = SarClient(environment.smgcpProxyUrl, accessTokenClientV2, environment.smgcpProxyScope, httpClient)
 
-    val emottakSubscriptionClient = EmottakSubscriptionClient(environment.smgcpProxyUrl, accessTokenClientV2, environment.smgcpProxyScope, simpleHttpClient)
+    val emottakSubscriptionClient = EmottakSubscriptionClient(environment.smgcpProxyUrl, accessTokenClientV2, environment.smgcpProxyScope, httpClient)
 
-    val norskHelsenettClient = NorskHelsenettClient(environment.norskHelsenettEndpointURL, accessTokenClientV2, environment.helsenettproxyScope, httpClientWithRetry)
+    val norskHelsenettClient = NorskHelsenettClient(environment.norskHelsenettEndpointURL, accessTokenClientV2, environment.helsenettproxyScope, httpClient)
 
-    val pdlPersonService = PdlFactory.getPdlService(environment, simpleHttpClient, accessTokenClientV2, environment.pdlScope)
+    val pdlPersonService = PdlFactory.getPdlService(environment, httpClient, accessTokenClientV2, environment.pdlScope)
 }
