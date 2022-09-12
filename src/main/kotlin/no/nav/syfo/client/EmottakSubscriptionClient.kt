@@ -30,18 +30,18 @@ class EmottakSubscriptionClient(
         loggingMeta: LoggingMeta
     ) {
         log.info("Update subscription emottak for {}", StructuredArguments.fields(loggingMeta))
-            val accessToken = accessTokenClientV2.getAccessTokenV2(resourceId)
-            httpClient.post("$endpointUrl/emottak/startsubscription") {
-                contentType(ContentType.Application.Json)
-                header("Authorization", "Bearer $accessToken")
-                header("Nav-Call-Id", msgId)
-                setBody(
-                    StartSubscriptionRequest(
-                        tssIdent = samhandlerPraksis.tss_ident,
-                        sender = convertSenderToBase64(msgHead.msgInfo.sender),
-                        partnerreferanse = receiverBlock.partnerReferanse.toInt()
-                    )
+        val accessToken = accessTokenClientV2.getAccessTokenV2(resourceId)
+        httpClient.post("$endpointUrl/emottak/startsubscription") {
+            contentType(ContentType.Application.Json)
+            header("Authorization", "Bearer $accessToken")
+            header("Nav-Call-Id", msgId)
+            setBody(
+                StartSubscriptionRequest(
+                    tssIdent = samhandlerPraksis.tss_ident,
+                    sender = convertSenderToBase64(msgHead.msgInfo.sender),
+                    partnerreferanse = receiverBlock.partnerReferanse.toInt()
                 )
+            )
         }
     }
 

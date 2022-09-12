@@ -50,7 +50,7 @@ import no.nav.syfo.util.fellesformatUnmarshaller
 import no.nav.syfo.util.get
 import no.nav.syfo.util.getLocalDateTime
 import no.nav.syfo.util.getVedlegg
-import no.nav.syfo.util.handleSamhandlerPraksis
+import no.nav.syfo.util.handleEmottakSubscription
 import no.nav.syfo.util.logUlikBehandler
 import no.nav.syfo.util.removeVedleggFromFellesformat
 import no.nav.syfo.util.toString
@@ -184,7 +184,7 @@ class BlockingApplicationRunner(
                     )
                     val samhandlerPraksis = samhandlerPraksisMatch?.samhandlerPraksis
 
-                    handleSamhandlerPraksis(
+                    handleEmottakSubscription(
                         samhandlerPraksisMatch,
                         samhandlerPraksis,
                         receiverBlock,
@@ -206,7 +206,7 @@ class BlockingApplicationRunner(
                     } else if (redisEdiloggid != null && redisEdiloggid.length != 21) {
                         log.error(
                             "Redis returned a redisEdiloggid that is longer than 21" +
-                                    "characters redisEdiloggid: {} {}",
+                                "characters redisEdiloggid: {} {}",
                             redisEdiloggid,
                             StructuredArguments.fields(loggingMeta)
                         )
@@ -272,7 +272,7 @@ class BlockingApplicationRunner(
                             )
                             sikkerlogg.info(
                                 "Sykmeldingen inneholder eldre ident for pasient, benytter nyeste fra PDL" +
-                                        "originaltPasientFnr: {}, pasientFnr: {}, {}",
+                                    "originaltPasientFnr: {}, pasientFnr: {}, {}",
                                 originaltPasientFnr, pasient.fnr,
                                 StructuredArguments.fields(loggingMeta)
                             )
@@ -405,9 +405,9 @@ class BlockingApplicationRunner(
                 } catch (jedisException: JedisConnectionException) {
                     log.error(
                         "Exception caught, redis issue while handling message, sending to backout ${
-                            StructuredArguments.fields(
-                                loggingMeta
-                            )
+                        StructuredArguments.fields(
+                            loggingMeta
+                        )
                         }",
                         jedisException
                     )
@@ -417,9 +417,9 @@ class BlockingApplicationRunner(
                 } catch (e: Exception) {
                     log.error(
                         "Exception caught while handling message, sending to backout ${
-                            StructuredArguments.fields(
-                                loggingMeta
-                            )
+                        StructuredArguments.fields(
+                            loggingMeta
+                        )
                         }",
                         e
                     )

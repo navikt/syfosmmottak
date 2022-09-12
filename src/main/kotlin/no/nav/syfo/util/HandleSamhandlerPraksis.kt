@@ -11,7 +11,7 @@ import no.nav.syfo.log
 import no.nav.syfo.metrics.IKKE_OPPDATERT_PARTNERREG
 import no.nav.syfo.metrics.MANGLER_TSSIDENT
 
-suspend fun handleSamhandlerPraksis(
+suspend fun handleEmottakSubscription(
     samhandlerPraksisMatch: SamhandlerPraksisMatch?,
     samhandlerPraksis: SamhandlerPraksis?,
     receiverBlock: XMLMottakenhetBlokk,
