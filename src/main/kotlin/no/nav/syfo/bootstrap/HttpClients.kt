@@ -20,6 +20,7 @@ import no.nav.syfo.client.EmottakSubscriptionClient
 import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
+import no.nav.syfo.log
 import no.nav.syfo.pdl.PdlFactory
 
 class HttpClients(environment: Environment) {
@@ -40,9 +41,18 @@ class HttpClients(environment: Environment) {
             }
         }
         install(HttpRequestRetry) {
-            maxRetries = 3
-            delayMillis { retry ->
-                retry * 500L
+            constantDelay(100, 0, false)
+            retryOnExceptionIf(3) { _, throwable ->
+                log.warn("Caught exception ${throwable.message}")
+                true
+            }
+            retryIf(maxRetries) { _, response ->
+                if (response.status.value.let { it in 500..599 }) {
+                    log.warn("Retrying for statuscode ${response.status.value}")
+                    true
+                } else {
+                    false
+                }
             }
         }
         expectSuccess = false
