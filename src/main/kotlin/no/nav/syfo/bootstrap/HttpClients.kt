@@ -20,6 +20,7 @@ import no.nav.syfo.client.EmottakSubscriptionClient
 import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
+import no.nav.syfo.log
 import no.nav.syfo.pdl.PdlFactory
 
 class HttpClients(environment: Environment) {
@@ -39,41 +40,45 @@ class HttpClients(environment: Environment) {
                 }
             }
         }
-        expectSuccess = false
-    }
-    private val retryConfig: HttpClientConfig<CIOEngineConfig>.() -> Unit = {
-        config().apply {
-            install(HttpRequestRetry) {
-                maxRetries = 3
-                delayMillis { retry ->
-                    retry * 500L
+        install(HttpRequestRetry) {
+            constantDelay(100, 0, false)
+            retryOnExceptionIf(3) { request, throwable ->
+                log.warn("Caught exception ${throwable.message}, for url ${request.url}")
+                true
+            }
+            retryIf(maxRetries) { request, response ->
+                if (response.status.value.let { it in 500..599 }) {
+                    log.warn("Retrying for statuscode ${response.status.value}, for url ${request.url}")
+                    true
+                } else {
+                    false
                 }
             }
         }
+        expectSuccess = false
     }
 
-    private val simpleHttpClient = HttpClient(CIO, config)
-    private val httpClientWithRetry = HttpClient(CIO, retryConfig)
+    private val httpClient = HttpClient(CIO, config)
 
     private val accessTokenClientV2 = AccessTokenClientV2(
         environment.aadAccessTokenV2Url,
         environment.clientIdV2,
         environment.clientSecretV2,
-        simpleHttpClient
+        httpClient
     )
 
     val syfoSykemeldingRuleClient = SyfoSykemeldingRuleClient(
         environment.syfosmreglerApiUrl,
         accessTokenClientV2,
         environment.syfosmreglerApiScope,
-        httpClientWithRetry
+        httpClient
     )
 
-    val sarClient = SarClient(environment.smgcpProxyUrl, accessTokenClientV2, environment.smgcpProxyScope, httpClientWithRetry)
+    val sarClient = SarClient(environment.smgcpProxyUrl, accessTokenClientV2, environment.smgcpProxyScope, httpClient)
 
-    val emottakSubscriptionClient = EmottakSubscriptionClient(environment.smgcpProxyUrl, accessTokenClientV2, environment.smgcpProxyScope, simpleHttpClient)
+    val emottakSubscriptionClient = EmottakSubscriptionClient(environment.smgcpProxyUrl, accessTokenClientV2, environment.smgcpProxyScope, httpClient)
 
-    val norskHelsenettClient = NorskHelsenettClient(environment.norskHelsenettEndpointURL, accessTokenClientV2, environment.helsenettproxyScope, httpClientWithRetry)
+    val norskHelsenettClient = NorskHelsenettClient(environment.norskHelsenettEndpointURL, accessTokenClientV2, environment.helsenettproxyScope, httpClient)
 
-    val pdlPersonService = PdlFactory.getPdlService(environment, simpleHttpClient, accessTokenClientV2, environment.pdlScope)
+    val pdlPersonService = PdlFactory.getPdlService(environment, httpClient, accessTokenClientV2, environment.pdlScope)
 }

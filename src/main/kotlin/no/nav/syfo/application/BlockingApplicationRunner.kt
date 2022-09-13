@@ -14,7 +14,6 @@ import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.client.findBestSamhandlerPraksis
 import no.nav.syfo.client.getHelsepersonellKategori
-import no.nav.syfo.client.samhandlerpraksisIsLegevakt
 import no.nav.syfo.handlestatus.handleDuplicateEdiloggid
 import no.nav.syfo.handlestatus.handleDuplicateSM2013Content
 import no.nav.syfo.handlestatus.handleStatusINVALID
@@ -23,9 +22,7 @@ import no.nav.syfo.handlestatus.handleStatusOK
 import no.nav.syfo.handlestatus.handleVirksomhetssykmeldingOgFnrManglerIHPR
 import no.nav.syfo.handlestatus.handleVirksomhetssykmeldingOgHprMangler
 import no.nav.syfo.log
-import no.nav.syfo.metrics.IKKE_OPPDATERT_PARTNERREG
 import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
-import no.nav.syfo.metrics.MANGLER_TSSIDENT
 import no.nav.syfo.metrics.REQUEST_TIME
 import no.nav.syfo.metrics.SYKMELDING_VEDLEGG_COUNTER
 import no.nav.syfo.metrics.VIRKSOMHETSYKMELDING
@@ -53,6 +50,7 @@ import no.nav.syfo.util.fellesformatUnmarshaller
 import no.nav.syfo.util.get
 import no.nav.syfo.util.getLocalDateTime
 import no.nav.syfo.util.getVedlegg
+import no.nav.syfo.util.handleEmottakSubscription
 import no.nav.syfo.util.logUlikBehandler
 import no.nav.syfo.util.removeVedleggFromFellesformat
 import no.nav.syfo.util.toString
@@ -146,6 +144,10 @@ class BlockingApplicationRunner(
                     val originaltPasientFnr = healthInformation.pasient.fodselsnummer.id
                     val erVirksomhetSykmelding = receiverBlock.ebService == "SykmeldingVirksomhet"
 
+                    log.info(
+                        "Extracted data, ready to make sync calls to get more data, {}",
+                        StructuredArguments.fields(loggingMeta)
+                    )
                     val signaturFnr = if (erVirksomhetSykmelding) {
                         log.info("Mottatt virksomhetssykmelding, {}", StructuredArguments.fields(loggingMeta))
                         VIRKSOMHETSYKMELDING.inc()
@@ -181,52 +183,16 @@ class BlockingApplicationRunner(
                         loggingMeta
                     )
                     val samhandlerPraksis = samhandlerPraksisMatch?.samhandlerPraksis
-                    if (samhandlerPraksis?.tss_ident == null) {
-                        log.info("SamhandlerPraksis mangler tss_ident, {}", StructuredArguments.fields(loggingMeta))
-                        MANGLER_TSSIDENT.inc()
-                    }
-                    if (samhandlerPraksisMatch?.percentageMatch != null && samhandlerPraksisMatch.percentageMatch == 999.0) {
-                        log.info(
-                            "SamhandlerPraksis is found but is FALE or FALO, subscription_emottak is not created, {}",
-                            StructuredArguments.fields(loggingMeta)
-                        )
-                        IKKE_OPPDATERT_PARTNERREG.inc()
-                    } else {
-                        when (samhandlerPraksis) {
-                            null -> {
-                                log.info("SamhandlerPraksis is Not found, {}", StructuredArguments.fields(loggingMeta))
-                                IKKE_OPPDATERT_PARTNERREG.inc()
-                            }
 
-                            else -> if (!samhandlerpraksisIsLegevakt(samhandlerPraksis) &&
-                                !receiverBlock.partnerReferanse.isNullOrEmpty() &&
-                                receiverBlock.partnerReferanse.isNotBlank()
-                            ) {
-                                emottakSubscriptionClient.startSubscription(
-                                    samhandlerPraksis,
-                                    msgHead,
-                                    receiverBlock,
-                                    msgId,
-                                    loggingMeta
-                                )
-                            } else {
-                                if (!receiverBlock.partnerReferanse.isNullOrEmpty() &&
-                                    receiverBlock.partnerReferanse.isNotBlank()
-                                ) {
-                                    log.info(
-                                        "PartnerReferanse is empty or blank, subscription_emottak is not created, {}",
-                                        StructuredArguments.fields(loggingMeta)
-                                    )
-                                } else {
-                                    log.info(
-                                        "SamhandlerPraksis is Legevakt, subscription_emottak is not created, {}",
-                                        StructuredArguments.fields(loggingMeta)
-                                    )
-                                }
-                                IKKE_OPPDATERT_PARTNERREG.inc()
-                            }
-                        }
-                    }
+                    handleEmottakSubscription(
+                        samhandlerPraksisMatch,
+                        samhandlerPraksis,
+                        receiverBlock,
+                        emottakSubscriptionClient,
+                        msgHead,
+                        msgId,
+                        loggingMeta
+                    )
 
                     val redisSha256String = jedis.get(sha256String)
                     val redisEdiloggid = jedis.get(ediLoggId)
@@ -464,10 +430,6 @@ class BlockingApplicationRunner(
             }
         }
     }
-
-    /**
-     * Finds the sender's FNR, either by matching HPR against signerende behandler or by doing a lookup against HPR
-     */
 
     private suspend fun getBehandlenedeBehandler(
         behandlenedeBehandlerHpr: String?,

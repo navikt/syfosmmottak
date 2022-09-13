@@ -10,7 +10,6 @@ import net.logstash.logback.argument.StructuredArguments
 import no.nav.helse.eiFellesformat.XMLMottakenhetBlokk
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.helse.msgHead.XMLSender
-import no.nav.syfo.helpers.retry
 import no.nav.syfo.log
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.senderMarshaller
@@ -30,25 +29,19 @@ class EmottakSubscriptionClient(
         msgId: String,
         loggingMeta: LoggingMeta
     ) {
-        log.info("Oppdate subscription emottak for {}", StructuredArguments.fields(loggingMeta))
-        retry(
-            callName = "start_subscription_emottak",
-            retryIntervals = arrayOf(500L, 1000L, 3000L, 5000L, 10000L),
-            legalExceptions = arrayOf(Exception::class)
-        ) {
-            val accessToken = accessTokenClientV2.getAccessTokenV2(resourceId)
-            httpClient.post("$endpointUrl/emottak/startsubscription") {
-                contentType(ContentType.Application.Json)
-                header("Authorization", "Bearer $accessToken")
-                header("Nav-Call-Id", msgId)
-                setBody(
-                    StartSubscriptionRequest(
-                        tssIdent = samhandlerPraksis.tss_ident,
-                        sender = convertSenderToBase64(msgHead.msgInfo.sender),
-                        partnerreferanse = receiverBlock.partnerReferanse.toInt()
-                    )
+        log.info("Update subscription emottak for {}", StructuredArguments.fields(loggingMeta))
+        val accessToken = accessTokenClientV2.getAccessTokenV2(resourceId)
+        httpClient.post("$endpointUrl/emottak/startsubscription") {
+            contentType(ContentType.Application.Json)
+            header("Authorization", "Bearer $accessToken")
+            header("Nav-Call-Id", msgId)
+            setBody(
+                StartSubscriptionRequest(
+                    tssIdent = samhandlerPraksis.tss_ident,
+                    sender = convertSenderToBase64(msgHead.msgInfo.sender),
+                    partnerreferanse = receiverBlock.partnerReferanse.toInt()
                 )
-            }
+            )
         }
     }
 
