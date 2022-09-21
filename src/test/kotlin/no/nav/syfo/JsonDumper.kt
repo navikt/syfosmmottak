@@ -46,7 +46,8 @@ fun main() {
         tssid = "13415",
         merknader = null,
         partnerreferanse = "16524",
-        vedlegg = null
+        vedlegg = null,
+        utenlandskSykmelding = null
     )
 
     println(objectMapper.writeValueAsString(receivedSykmelding))

@@ -320,7 +320,8 @@ class BlockingApplicationRunner(
                             tssid = samhandlerPraksis?.tss_ident ?: "",
                             merknader = null,
                             partnerreferanse = receiverBlock.partnerReferanse,
-                            vedlegg = vedleggListe
+                            vedlegg = vedleggListe,
+                            utenlandskSykmelding = null
                         )
 
                         if (behandlenedeBehandlerFnr != signaturFnr) {
