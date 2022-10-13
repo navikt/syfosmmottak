@@ -16,7 +16,7 @@ val kafkaVersion = "3.2.3"
 val kithHodemeldingVersion = "1.e6fcef8"
 val kithApprecVersion = "1.e6fcef8"
 val kluentVersion = "1.68"
-val ktorVersion = "2.1.1"
+val ktorVersion = "2.1.2"
 val logbackVersion = "1.4.0"
 val logstashEncoderVersion = "7.2"
 val prometheusVersion = "0.16.0"
@@ -66,7 +66,7 @@ dependencies {
     implementation("io.ktor:ktor-server-core:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("io.ktor:ktor-client-core:$ktorVersion")
-    implementation("io.ktor:ktor-client-cio:$ktorVersion")
+    implementation("io.ktor:ktor-client-apache:$ktorVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
 
