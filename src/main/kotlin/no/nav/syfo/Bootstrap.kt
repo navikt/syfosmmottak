@@ -36,6 +36,7 @@ import no.nav.syfo.mq.connectionFactory
 import no.nav.syfo.mq.consumerForQueue
 import no.nav.syfo.mq.producerForQueue
 import no.nav.syfo.pdl.service.PdlPersonService
+import no.nav.syfo.service.VirusScanService
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.TrackableException
 import no.nav.syfo.vedlegg.google.BucketUploadService
@@ -76,6 +77,7 @@ fun main() {
     val sykmeldingVedleggStorageCredentials: Credentials = GoogleCredentials.fromStream(FileInputStream("/var/run/secrets/sykmeldingvedlegg-google-creds.json"))
     val sykmeldingVedleggStorage: Storage = StorageOptions.newBuilder().setCredentials(sykmeldingVedleggStorageCredentials).build().service
     val bucketUploadService = BucketUploadService(env.sykmeldingVedleggBucketName, sykmeldingVedleggStorage)
+    val virusScanService = VirusScanService(httpClients.clamAvClient)
 
     launchListeners(
         env, applicationState,
@@ -84,7 +86,7 @@ fun main() {
         httpClients.syfoSykemeldingRuleClient, httpClients.sarClient, httpClients.pdlPersonService,
         serviceUser, kafkaClients.manualValidationKafkaProducer,
         kafkaClients.kafkaProducerApprec, kafkaClients.kafkaproducerManuellOppgave,
-        httpClients.norskHelsenettClient, bucketUploadService
+        httpClients.norskHelsenettClient, bucketUploadService, virusScanService
     )
 
     applicationServer.start()
@@ -96,7 +98,7 @@ fun createListener(applicationState: ApplicationState, action: suspend Coroutine
         try {
             action()
         } catch (e: TrackableException) {
-            log.error("En uhåndtert feil oppstod, applikasjonen restarter {}", e.cause)
+            log.error("En uhåndtert feil oppstod, applikasjonen restarter", e.cause)
         } finally {
             applicationState.ready = false
             applicationState.alive = false
@@ -118,7 +120,8 @@ fun launchListeners(
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
     norskHelsenettClient: NorskHelsenettClient,
-    bucketUploadService: BucketUploadService
+    bucketUploadService: BucketUploadService,
+    virusScanService: VirusScanService
 ) {
     createListener(applicationState) {
         connectionFactory(env).createConnection(serviceUser.serviceuserUsername, serviceUser.serviceuserPassword).use { connection ->
@@ -145,7 +148,8 @@ fun launchListeners(
                     kafkaproducervalidationResult,
                     kafkaManuelTaskProducer,
                     kafkaproducerApprec,
-                    kafkaproducerManuellOppgave
+                    kafkaproducerManuellOppgave,
+                    virusScanService
                 ).run(
                     inputconsumer,
                     backoutProducer

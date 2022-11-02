@@ -19,6 +19,7 @@ import no.nav.syfo.handlestatus.handleDuplicateSM2013Content
 import no.nav.syfo.handlestatus.handleStatusINVALID
 import no.nav.syfo.handlestatus.handleStatusMANUALPROCESSING
 import no.nav.syfo.handlestatus.handleStatusOK
+import no.nav.syfo.handlestatus.handleVedleggContainsVirus
 import no.nav.syfo.handlestatus.handleVirksomhetssykmeldingOgFnrManglerIHPR
 import no.nav.syfo.handlestatus.handleVirksomhetssykmeldingOgHprMangler
 import no.nav.syfo.log
@@ -33,6 +34,7 @@ import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.model.toSykmelding
 import no.nav.syfo.pdl.service.PdlPersonService
+import no.nav.syfo.service.VirusScanService
 import no.nav.syfo.service.sha256hashstring
 import no.nav.syfo.service.updateRedis
 import no.nav.syfo.util.LoggingMeta
@@ -84,7 +86,8 @@ class BlockingApplicationRunner(
     private val kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
     private val kafkaManuelTaskProducer: KafkaProducer<String, OpprettOppgaveKafkaMessage>,
     private val kafkaproducerApprec: KafkaProducer<String, Apprec>,
-    private val kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>
+    private val kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
+    private val virusScanService: VirusScanService
 ) {
 
     suspend fun run(
@@ -276,6 +279,17 @@ class BlockingApplicationRunner(
                                 originaltPasientFnr, pasient.fnr,
                                 StructuredArguments.fields(loggingMeta)
                             )
+                        }
+
+                        if (vedlegg.isNotEmpty()) {
+                            if (virusScanService.vedleggContainsVirus(vedlegg)) {
+                                handleVedleggContainsVirus(
+                                    loggingMeta, fellesformat, ediLoggId,
+                                    msgId, msgHead, env, kafkaproducerApprec,
+                                    jedis, sha256String
+                                )
+                                continue@loop
+                            }
                         }
 
                         val vedleggListe: List<String> = if (vedlegg.isNotEmpty()) {

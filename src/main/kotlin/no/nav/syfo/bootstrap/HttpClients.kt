@@ -16,6 +16,7 @@ import io.ktor.serialization.jackson.jackson
 import no.nav.syfo.Environment
 import no.nav.syfo.application.exception.ServiceUnavailableException
 import no.nav.syfo.client.AccessTokenClientV2
+import no.nav.syfo.client.ClamAvClient
 import no.nav.syfo.client.EmottakSubscriptionClient
 import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SarClient
@@ -81,4 +82,6 @@ class HttpClients(environment: Environment) {
     val norskHelsenettClient = NorskHelsenettClient(environment.norskHelsenettEndpointURL, accessTokenClientV2, environment.helsenettproxyScope, httpClient)
 
     val pdlPersonService = PdlFactory.getPdlService(environment, httpClient, accessTokenClientV2, environment.pdlScope)
+
+    val clamAvClient = ClamAvClient(httpClient, environment.clamAvEndpointUrl)
 }

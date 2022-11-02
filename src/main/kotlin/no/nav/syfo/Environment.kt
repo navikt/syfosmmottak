@@ -32,7 +32,8 @@ data class Environment(
     val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH"),
     val pdlScope: String = getEnvVar("PDL_SCOPE"),
     val helsenettproxyScope: String = getEnvVar("HELSENETT_SCOPE"),
-    val sykmeldingVedleggBucketName: String = getEnvVar("SYKMELDING_VEDLEGG_BUCKET_NAME")
+    val sykmeldingVedleggBucketName: String = getEnvVar("SYKMELDING_VEDLEGG_BUCKET_NAME"),
+    val clamAvEndpointUrl: String = getEnvVar("CLAMAV_ENDPOINT_URL", "http://clamav.clamav.svc.cluster.local")
 ) : MqConfig
 
 data class VaultServiceUser(
