@@ -22,6 +22,7 @@ import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.pdl.client.model.PdlIdent
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.service.PdlPersonService
+import no.nav.syfo.service.VirusScanService
 import no.nav.syfo.utils.getFileAsString
 import no.nav.syfo.vedlegg.google.BucketUploadService
 import org.amshove.kluent.shouldBeEqualTo
@@ -48,11 +49,24 @@ class BlockingApplicationRunnerTest : FunSpec({
     val kafkaManuelTaskProducer = mockk<KafkaProducer<String, OpprettOppgaveKafkaMessage>>(relaxed = true)
     val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
     val kafkaproducerManuellOppgave = mockk<KafkaProducer<String, ManuellOppgave>>(relaxed = true)
+    val virusScanService = mockk<VirusScanService>(relaxed = true)
 
     val blockingApplicationRunner = BlockingApplicationRunner(
-        env, applicationState, emottakSubscriptionClient,
-        syfoSykemeldingRuleClient, norskHelsenettClient, kuhrSarClient, pdlPersonService, jedis, bucketUploadService,
-        kafkaproducerreceivedSykmelding, kafkaproducervalidationResult, kafkaManuelTaskProducer, kafkaproducerApprec, kafkaproducerManuellOppgave
+        env,
+        applicationState,
+        emottakSubscriptionClient,
+        syfoSykemeldingRuleClient,
+        norskHelsenettClient,
+        kuhrSarClient,
+        pdlPersonService,
+        jedis,
+        bucketUploadService,
+        kafkaproducerreceivedSykmelding,
+        kafkaproducervalidationResult,
+        kafkaManuelTaskProducer,
+        kafkaproducerApprec,
+        kafkaproducerManuellOppgave,
+        virusScanService
     )
 
     beforeTest {

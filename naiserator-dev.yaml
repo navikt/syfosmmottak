@@ -44,6 +44,8 @@ spec:
       rules:
         - application: syfosmmottak-redis
         - application: syfosmregler
+        - application: clamav
+          namespace: clamav
   vault:
     enabled: false
   webproxy: false

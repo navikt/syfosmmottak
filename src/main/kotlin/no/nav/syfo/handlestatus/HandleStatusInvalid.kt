@@ -10,6 +10,7 @@ import no.nav.syfo.apprec.ApprecStatus
 import no.nav.syfo.apprec.toApprec
 import no.nav.syfo.log
 import no.nav.syfo.metrics.INVALID_MESSAGE_NO_NOTICE
+import no.nav.syfo.metrics.SYKMELDING_AVVIST_VIRUS_VEDLEGG_COUNTER
 import no.nav.syfo.metrics.TEST_FNR_IN_PROD
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
@@ -63,7 +64,7 @@ fun handleDuplicateSM2013Content(
     kafkaproducerApprec: KafkaProducer<String, Apprec>
 ) {
     log.warn(
-        "Melding med {} har samme innhold som tidligere mottatt sykmelding og er avvist som duplikat {}",
+        "Melding med {} har samme innhold som tidligere mottatt sykmelding og er avvist som duplikat {} {}",
         keyValue("originalEdiLoggId", redisSha256String),
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName)
@@ -94,7 +95,7 @@ fun handleDuplicateEdiloggid(
     kafkaproducerApprec: KafkaProducer<String, Apprec>
 ) {
     log.warn(
-        "Melding med {} har samme ediLoggId som tidligere mottatt sykmelding og er avvist som duplikat {}",
+        "Melding med {} har samme ediLoggId som tidligere mottatt sykmelding og er avvist som duplikat {} {}",
         keyValue("originalEdiLoggId", redisEdiloggid),
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName)
@@ -126,7 +127,7 @@ fun handlePatientNotFoundInPDL(
     sha256String: String
 ) {
     log.warn(
-        "Sykmeldingen er avvist fordi pasienten ikke finnes i folkeregisteret {}",
+        "Sykmeldingen er avvist fordi pasienten ikke finnes i folkeregisteret {}, {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName)
     )
@@ -154,7 +155,7 @@ fun handleDoctorNotFoundInPDL(
     sha256String: String
 ) {
     log.warn(
-        "Sykmeldingen er avvist fordi legen ikke finnes i folkeregisteret {}",
+        "Sykmeldingen er avvist fordi legen ikke finnes i folkeregisteret {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName)
     )
@@ -182,7 +183,7 @@ fun handleAktivitetOrPeriodeIsMissing(
     sha256String: String
 ) {
     log.warn(
-        "Sykmeldingen er avvist fordi det ikke er oppgitt noen sykmeldingsperioder {}",
+        "Sykmeldingen er avvist fordi det ikke er oppgitt noen sykmeldingsperioder {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName)
     )
@@ -210,7 +211,7 @@ fun handlePeriodetypeMangler(
     sha256String: String
 ) {
     log.warn(
-        "Sykmeldingen er avvist fordi det ikke er oppgitt noen type for en eller flere sykmeldingsperioder {}",
+        "Sykmeldingen er avvist fordi det ikke er oppgitt noen type for en eller flere sykmeldingsperioder {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName)
     )
@@ -238,7 +239,7 @@ fun handleBiDiagnoserDiagnosekodeIsMissing(
     sha256String: String
 ) {
     log.warn(
-        "Sykmeldingen er avvist fordi bidiagnoser er angitt, men mangler diagnosekode (v) {}",
+        "Sykmeldingen er avvist fordi bidiagnoser er angitt, men mangler diagnosekode (v) {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName)
     )
@@ -266,7 +267,7 @@ fun handleBiDiagnoserDiagnosekodeVerkIsMissing(
     sha256String: String
 ) {
     log.warn(
-        "Sykmeldingen er avvist fordi bidiagnoser er angitt, men mangler diagnosekodeverk (s) {}",
+        "Sykmeldingen er avvist fordi bidiagnoser er angitt, men mangler diagnosekodeverk (s) {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName)
     )
@@ -294,7 +295,7 @@ fun handleBiDiagnoserDiagnosekodeBeskrivelseMissing(
     sha256String: String
 ) {
     log.warn(
-        "Sykmeldingen er avvist fordi bidiagnoser er angitt, men mangler diagnosekodebeskrivelse (dn) {}",
+        "Sykmeldingen er avvist fordi bidiagnoser er angitt, men mangler diagnosekodebeskrivelse (dn) {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName)
     )
@@ -322,7 +323,7 @@ fun handleFnrAndDnrAndHprIsmissingFromBehandler(
     sha256String: String
 ) {
     log.warn(
-        "Sykmeldingen er avvist fordi den mangler både fnr/dnr og HPR-nummer for behandler {}",
+        "Sykmeldingen er avvist fordi den mangler både fnr/dnr og HPR-nummer for behandler {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName)
     )
@@ -350,7 +351,7 @@ fun handleHovedDiagnoseDiagnosekodeMissing(
     sha256String: String
 ) {
     log.warn(
-        "Sykmeldingen er avvist fordi hoveddiagnose mangler diagnosekode (v) {}",
+        "Sykmeldingen er avvist fordi hoveddiagnose mangler diagnosekode (v) {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName)
     )
@@ -378,7 +379,7 @@ fun handleHovedDiagnoseDiagnoseBeskrivelseMissing(
     sha256String: String
 ) {
     log.warn(
-        "Sykmeldingen er avvist fordi hoveddiagnose mangler diagnosekodebeskrivelse (dn) {}",
+        "Sykmeldingen er avvist fordi hoveddiagnose mangler diagnosekodebeskrivelse (dn) {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName)
     )
@@ -406,7 +407,7 @@ fun handleMedisinskeArsakskodeIsmissing(
     sha256String: String
 ) {
     log.warn(
-        "Sykmeldingen er avvist fordi medisinsk årsak er angitt, men årsakskode (v) mangler {}",
+        "Sykmeldingen er avvist fordi medisinsk årsak er angitt, men årsakskode (v) mangler {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName)
     )
@@ -434,7 +435,7 @@ fun handleMedisinskeArsakskodeHarUgyldigVerdi(
     sha256String: String
 ) {
     log.warn(
-        "Sykmeldingen er avvist fordi medisinsk årsak er angitt, men årsakskode (v) har ugyldig verdi {}",
+        "Sykmeldingen er avvist fordi medisinsk årsak er angitt, men årsakskode (v) har ugyldig verdi {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName)
     )
@@ -462,7 +463,7 @@ fun handleArbeidsplassenArsakskodeIsmissing(
     sha256String: String
 ) {
     log.warn(
-        "Sykmeldingen er avvist fordi arbeidsplassen er angitt som årsak, men årsakskode (v) mangler {}",
+        "Sykmeldingen er avvist fordi arbeidsplassen er angitt som årsak, men årsakskode (v) mangler {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName)
     )
@@ -490,7 +491,7 @@ fun handleArbeidsplassenArsakskodeHarUgyldigVerdi(
     sha256String: String
 ) {
     log.warn(
-        "Sykmeldingen er avvist fordi arbeidsplassen er angitt som årsak, men årsakskode (v) har ugyldig verdi {}",
+        "Sykmeldingen er avvist fordi arbeidsplassen er angitt som årsak, men årsakskode (v) har ugyldig verdi {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName)
     )
@@ -518,7 +519,7 @@ fun handleTestFnrInProd(
     sha256String: String
 ) {
     log.warn(
-        "Sykmelding avvist: Testfødselsnummer er kommet inn i produksjon! {}",
+        "Sykmelding avvist: Testfødselsnummer er kommet inn i produksjon! {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName)
     )
@@ -549,7 +550,7 @@ fun handleAnnenFraversArsakkodeVIsmissing(
     sha256String: String
 ) {
     log.warn(
-        "Sykmeldingen er avvist fordi annen fraværsårsak er angitt, men årsakskode (v) mangler {}",
+        "Sykmeldingen er avvist fordi annen fraværsårsak er angitt, men årsakskode (v) mangler {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName)
     )
@@ -577,7 +578,7 @@ fun handleVirksomhetssykmeldingOgHprMangler(
     sha256String: String
 ) {
     log.warn(
-        "Virksomhetsykmeldingen er avvist fordi den mangler HPR-nummer for behandler {}",
+        "Virksomhetsykmeldingen er avvist fordi den mangler HPR-nummer for behandler {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName)
     )
@@ -605,7 +606,7 @@ fun handleVirksomhetssykmeldingOgFnrManglerIHPR(
     sha256String: String
 ) {
     log.warn(
-        "Virksomhetsykmeldingen er avvist fordi fødselsnummer mangler i HPR for behandler {}",
+        "Virksomhetsykmeldingen er avvist fordi fødselsnummer mangler i HPR for behandler {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName)
     )
@@ -617,6 +618,36 @@ fun handleVirksomhetssykmeldingOgFnrManglerIHPR(
             "Fødselsnummer for juridisk behandler mangler i HPR",
         ediLoggId, msgId, msgHead
     )
+
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
+}
+
+fun handleVedleggContainsVirus(
+    loggingMeta: LoggingMeta,
+    fellesformat: XMLEIFellesformat,
+    ediLoggId: String,
+    msgId: String,
+    msgHead: XMLMsgHead,
+    env: Environment,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    jedis: Jedis,
+    sha256String: String
+) {
+    log.warn(
+        "Sykmelding er avvist fordi eit eller flere vedlegg kan potensielt inneholde virus {} {}",
+        fields(loggingMeta),
+        keyValue("avvistAv", env.applicationName)
+    )
+
+    val apprec = fellesformatToAppprec(
+        fellesformat,
+        "Sykmeldingen kan ikke rettes, det må skrives en ny." +
+            "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
+            "Eit eller flere vedlegg kan potensielt inneholde virus",
+        ediLoggId, msgId, msgHead
+    )
+
+    SYKMELDING_AVVIST_VIRUS_VEDLEGG_COUNTER.inc()
 
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
 }
