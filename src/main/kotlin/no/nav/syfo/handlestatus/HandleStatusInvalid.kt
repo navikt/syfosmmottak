@@ -10,6 +10,7 @@ import no.nav.syfo.apprec.ApprecStatus
 import no.nav.syfo.apprec.toApprec
 import no.nav.syfo.log
 import no.nav.syfo.metrics.INVALID_MESSAGE_NO_NOTICE
+import no.nav.syfo.metrics.SYKMELDING_AVVIST_VIRUS_VEDLEGG_COUNTER
 import no.nav.syfo.metrics.TEST_FNR_IN_PROD
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
@@ -645,6 +646,8 @@ fun handleVedleggContainsVirus(
             "Eit eller flere vedlegg kan potensielt inneholde virus",
         ediLoggId, msgId, msgHead
     )
+
+    SYKMELDING_AVVIST_VIRUS_VEDLEGG_COUNTER.inc()
 
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String)
 }
