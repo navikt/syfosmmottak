@@ -3,6 +3,7 @@ package no.nav.syfo.handlestatus
 import net.logstash.logback.argument.StructuredArguments.fields
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
+import no.nav.helse.eiFellesformat.XMLMottakenhetBlokk
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.syfo.Environment
 import no.nav.syfo.apprec.Apprec
@@ -19,6 +20,7 @@ import no.nav.syfo.sendReceivedSykmelding
 import no.nav.syfo.sendValidationResult
 import no.nav.syfo.service.updateRedis
 import no.nav.syfo.util.LoggingMeta
+import no.nav.syfo.util.get
 import org.apache.kafka.clients.producer.KafkaProducer
 import redis.clients.jedis.Jedis
 
@@ -48,7 +50,8 @@ fun handleStatusINVALID(
         msgHead.msgInfo.receiver.organisation,
         msgHead.msgInfo.sender.organisation,
         msgHead.msgInfo.genDate,
-        validationResult
+        validationResult,
+        fellesformat.get<XMLMottakenhetBlokk>().ebService
     )
     sendReceipt(apprec, apprecTopic, kafkaproducerApprec, loggingMeta)
 }
@@ -682,5 +685,7 @@ fun fellesformatToAppprec(
         tekstTilSykmelder,
         msgHead.msgInfo.receiver.organisation,
         msgHead.msgInfo.sender.organisation,
-        msgHead.msgInfo.genDate
+        msgHead.msgInfo.genDate,
+        null,
+        fellesformat.get<XMLMottakenhetBlokk>().ebService
     )
