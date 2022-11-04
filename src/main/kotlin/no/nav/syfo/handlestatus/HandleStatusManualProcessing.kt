@@ -2,6 +2,7 @@ package no.nav.syfo.handlestatus
 
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
+import no.nav.helse.eiFellesformat.XMLMottakenhetBlokk
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.apprec.ApprecStatus
@@ -17,6 +18,7 @@ import no.nav.syfo.sendReceipt
 import no.nav.syfo.sendReceivedSykmelding
 import no.nav.syfo.sendValidationResult
 import no.nav.syfo.util.LoggingMeta
+import no.nav.syfo.util.get
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import java.time.DayOfWeek
@@ -54,7 +56,9 @@ fun handleStatusMANUALPROCESSING(
             null,
             msgHead.msgInfo.receiver.organisation,
             msgHead.msgInfo.sender.organisation,
-            msgHead.msgInfo.genDate
+            msgHead.msgInfo.genDate,
+            null,
+            fellesformat.get<XMLMottakenhetBlokk>().ebService
         )
         sendManuellTask(receivedSykmelding, validationResult, apprec, syfoSmManuellTopic, kafkaproducerManuellOppgave)
     } else {
@@ -73,7 +77,9 @@ fun handleStatusMANUALPROCESSING(
             null,
             msgHead.msgInfo.receiver.organisation,
             msgHead.msgInfo.sender.organisation,
-            msgHead.msgInfo.genDate
+            msgHead.msgInfo.genDate,
+            null,
+            fellesformat.get<XMLMottakenhetBlokk>().ebService
         )
         sendReceipt(apprec, apprecTopic, kafkaproducerApprec, loggingMeta)
         log.info("Apprec receipt sent to kafka topic {}, {}", apprecTopic, StructuredArguments.fields(loggingMeta))
