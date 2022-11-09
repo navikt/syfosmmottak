@@ -125,7 +125,7 @@ fun findBestSamhandlerPraksis(
     if (aktiveSamhandlere.isEmpty()) {
         log.info(
             "Fant ingen aktive samhandlere. {}  Meta: {}, {} ",
-            keyValue("praksis Informasjo", samhandlere.formaterPraksis()),
+            keyValue("praksis Informasjon", samhandlere.formaterPraksis()),
             keyValue("antall praksiser", samhandlere.size),
             fields(loggingMeta)
         )
@@ -138,7 +138,7 @@ fun findBestSamhandlerPraksis(
         if (samhandlerByHerId != null) {
             log.info(
                 "Fant samhandler basert på herid. herid: $herId, {}, {}",
-                keyValue("praksis Informasjo", samhandlere.formaterPraksis()),
+                keyValue("praksis Informasjon", samhandlere.formaterPraksis()),
                 fields(loggingMeta)
             )
             return SamhandlerPraksisMatch(samhandlerByHerId, 100.0)
@@ -155,6 +155,11 @@ fun findBestSamhandlerPraksis(
                 it.samh_praksis_type_kode == SamhandlerPraksisType.FASTLONNET.kodeVerdi
         }
         if (samhandlerFALEOrFALO != null) {
+            log.info(
+                "Fant samhandler basert på samhandler praksistype kode. praksistype: ${samhandlerFALEOrFALO.samh_praksis_type_kode}, {}, {}",
+                keyValue("praksis Informasjon", samhandlere.formaterPraksis()),
+                fields(loggingMeta)
+            )
             return SamhandlerPraksisMatch(samhandlerFALEOrFALO, 999.0)
         }
     } else if (aktiveSamhandlere.isNullOrEmpty()) {
