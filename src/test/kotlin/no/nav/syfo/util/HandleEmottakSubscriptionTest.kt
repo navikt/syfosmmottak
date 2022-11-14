@@ -49,7 +49,6 @@ class HandleEmottakSubscriptionTest : FunSpec({
             coEvery { receiverBlock.partnerReferanse } returns "12345"
             coEvery { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) } returns Unit
 
-
             handleEmottakSubscription(
                 samhandlerPraksisMatch, receiverBlock, emottakSubscriptionClient, msgHead,
                 msgId, loggingMeta

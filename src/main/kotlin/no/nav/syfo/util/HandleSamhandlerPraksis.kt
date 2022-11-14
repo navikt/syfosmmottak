@@ -4,12 +4,10 @@ import net.logstash.logback.argument.StructuredArguments
 import no.nav.helse.eiFellesformat.XMLMottakenhetBlokk
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.syfo.client.EmottakSubscriptionClient
-import no.nav.syfo.client.SamhandlerPraksis
 import no.nav.syfo.client.SamhandlerPraksisMatch
 import no.nav.syfo.client.samhandlerpraksisIsLegevakt
 import no.nav.syfo.log
 import no.nav.syfo.metrics.IKKE_OPPDATERT_PARTNERREG
-import no.nav.syfo.metrics.MANGLER_TSSIDENT
 
 suspend fun handleEmottakSubscription(
     samhandlerPraksisMatch: SamhandlerPraksisMatch?,

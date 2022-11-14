@@ -102,5 +102,23 @@ class KuhrSarClientSpek : FunSpec({
 
             match?.samhandlerPraksis?.navn shouldBeEqualTo "Testlegesenteret - org nr"
         }
+
+        test("Finner en samhandler praksis når orgNummer matcher") {
+            val samhandlerWithOrg: List<Samhandler> = objectMapper.readValue(
+                KuhrSarClientSpek::class.java.getResourceAsStream("/kuhr_sahr_response_org.json")!!.readBytes()
+                    .toString(Charsets.UTF_8)
+            )
+
+            val match = findBestSamhandlerPraksisEmottak(
+                samhandlerWithOrg,
+                "123344",
+                "23456",
+                LoggingMeta("", "", "")
+            )
+                ?: fail("Unable to find samhandler praksis")
+            match.percentageMatch shouldBeEqualTo 100.0
+            match.samhandlerPraksis.org_id shouldBeEqualTo "123344"
+            match.samhandlerPraksis.navn shouldBeEqualTo "Testlegesenteret"
+        }
     }
 })

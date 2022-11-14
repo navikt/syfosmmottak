@@ -113,7 +113,6 @@ fun List<Samhandler>.formaterPraksis() = flatMap { it.samh_praksis }
         "${praksis.navn}: ${praksis.samh_praksis_status_kode} ${praksis.samh_praksis_periode.formaterPerioder()}"
     }
 
-
 fun findBestSamhandlerPraksisEmottak(
     samhandlere: List<Samhandler>,
     orgNumber: String?,
@@ -138,7 +137,7 @@ fun findBestSamhandlerPraksisEmottak(
         }
     }
 
-    if (!orgNumber.isNullOrEmpty() && aktiveSamhandlere.isNotEmpty()){
+    if (!orgNumber.isNullOrEmpty() && aktiveSamhandlere.isNotEmpty()) {
         val samhandlerByOrgNumber = aktiveSamhandlere.find {
             it.org_id == orgNumber
         }
@@ -187,7 +186,7 @@ fun findBestSamhandlerPraksis(
         }
     }
 
-    if (!orgNumber.isNullOrEmpty() && aktiveSamhandlere.isNotEmpty()){
+    if (!orgNumber.isNullOrEmpty() && aktiveSamhandlere.isNotEmpty()) {
         val samhandlerByOrgNumber = aktiveSamhandlere.find {
             it.org_id == orgNumber
         }

@@ -13,6 +13,7 @@ import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.client.findBestSamhandlerPraksis
+import no.nav.syfo.client.findBestSamhandlerPraksisEmottak
 import no.nav.syfo.client.getHelsepersonellKategori
 import no.nav.syfo.handlestatus.handleDuplicateEdiloggid
 import no.nav.syfo.handlestatus.handleDuplicateSM2013Content
@@ -69,7 +70,6 @@ import java.util.UUID
 import javax.jms.MessageConsumer
 import javax.jms.MessageProducer
 import javax.jms.TextMessage
-import no.nav.syfo.client.findBestSamhandlerPraksisEmottak
 
 private val sikkerlogg = LoggerFactory.getLogger("securelog")
 
@@ -185,7 +185,8 @@ class BlockingApplicationRunner(
                         samhandlerInfo,
                         legekontorOrgNr,
                         legekontorHerId,
-                        loggingMeta)
+                        loggingMeta
+                    )
 
                     val samhandlerPraksisTssId = findBestSamhandlerPraksis(
                         samhandlerInfo,
