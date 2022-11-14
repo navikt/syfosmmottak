@@ -13,6 +13,7 @@ import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.client.findBestSamhandlerPraksis
+import no.nav.syfo.client.findBestSamhandlerPraksisEmottak
 import no.nav.syfo.client.getHelsepersonellKategori
 import no.nav.syfo.handlestatus.handleDuplicateEdiloggid
 import no.nav.syfo.handlestatus.handleDuplicateSM2013Content
@@ -179,17 +180,24 @@ class BlockingApplicationRunner(
                     val identer = pdlPersonService.getIdenter(listOf(signaturFnr, originaltPasientFnr), loggingMeta)
 
                     val samhandlerInfo = kuhrSarClient.getSamhandler(ident = signaturFnr, msgId = msgId)
-                    val samhandlerPraksisMatch = findBestSamhandlerPraksis(
+
+                    val samhandlerPraksisMatchEmottak = findBestSamhandlerPraksisEmottak(
                         samhandlerInfo,
-                        legekontorOrgName,
+                        legekontorOrgNr,
                         legekontorHerId,
                         loggingMeta
                     )
-                    val samhandlerPraksis = samhandlerPraksisMatch?.samhandlerPraksis
+
+                    val samhandlerPraksisTssId = findBestSamhandlerPraksis(
+                        samhandlerInfo,
+                        legekontorOrgNr,
+                        legekontorOrgName,
+                        legekontorHerId,
+                        loggingMeta
+                    )?.samhandlerPraksis?.tss_ident
 
                     handleEmottakSubscription(
-                        samhandlerPraksisMatch,
-                        samhandlerPraksis,
+                        samhandlerPraksisMatchEmottak,
                         receiverBlock,
                         emottakSubscriptionClient,
                         msgHead,
@@ -331,7 +339,7 @@ class BlockingApplicationRunner(
                                 .withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime(),
                             rulesetVersion = healthInformation.regelSettVersjon,
                             fellesformat = fellesformatText,
-                            tssid = samhandlerPraksis?.tss_ident ?: "",
+                            tssid = samhandlerPraksisTssId ?: "",
                             merknader = null,
                             partnerreferanse = receiverBlock.partnerReferanse,
                             vedlegg = vedleggListe,

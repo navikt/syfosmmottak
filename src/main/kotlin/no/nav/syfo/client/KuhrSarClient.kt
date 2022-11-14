@@ -113,8 +113,49 @@ fun List<Samhandler>.formaterPraksis() = flatMap { it.samh_praksis }
         "${praksis.navn}: ${praksis.samh_praksis_status_kode} ${praksis.samh_praksis_periode.formaterPerioder()}"
     }
 
+fun findBestSamhandlerPraksisEmottak(
+    samhandlere: List<Samhandler>,
+    orgNumber: String?,
+    herId: String?,
+    loggingMeta: LoggingMeta
+): SamhandlerPraksisMatch? {
+
+    val aktiveSamhandlere = samhandlere.flatMap { it.samh_praksis }
+        .filter { praksis -> praksis.samh_praksis_status_kode == "aktiv" }
+
+    if (!herId.isNullOrEmpty() && aktiveSamhandlere.isNotEmpty()) {
+        val samhandlerByHerId = aktiveSamhandlere.find {
+            it.her_id == herId
+        }
+        if (samhandlerByHerId != null) {
+            log.info(
+                "Fant samhandler basert på herid. herid: $herId, {}, {}",
+                keyValue("praksis Informasjon", samhandlere.formaterPraksis()),
+                fields(loggingMeta)
+            )
+            return SamhandlerPraksisMatch(samhandlerByHerId, 100.0)
+        }
+    }
+
+    if (!orgNumber.isNullOrEmpty() && aktiveSamhandlere.isNotEmpty()) {
+        val samhandlerByOrgNumber = aktiveSamhandlere.find {
+            it.org_id == orgNumber
+        }
+        if (samhandlerByOrgNumber != null) {
+            log.info(
+                "Fant samhandler basert på orgNumber. orgNumber: $orgNumber, {}, {}",
+                keyValue("praksis Informasjon", samhandlere.formaterPraksis()),
+                fields(loggingMeta)
+            )
+            return SamhandlerPraksisMatch(samhandlerByOrgNumber, 100.0)
+        }
+    }
+
+    return null
+}
 fun findBestSamhandlerPraksis(
     samhandlere: List<Samhandler>,
+    orgNumber: String?,
     orgName: String,
     herId: String?,
     loggingMeta: LoggingMeta
@@ -145,11 +186,25 @@ fun findBestSamhandlerPraksis(
         }
     }
 
+    if (!orgNumber.isNullOrEmpty() && aktiveSamhandlere.isNotEmpty()) {
+        val samhandlerByOrgNumber = aktiveSamhandlere.find {
+            it.org_id == orgNumber
+        }
+        if (samhandlerByOrgNumber != null) {
+            log.info(
+                "Fant samhandler basert på orgNumber. orgNumber: $orgNumber, {}, {}",
+                keyValue("praksis Informasjon", samhandlere.formaterPraksis()),
+                fields(loggingMeta)
+            )
+            return SamhandlerPraksisMatch(samhandlerByOrgNumber, 100.0)
+        }
+    }
+
     val aktiveSamhandlereMedNavn = samhandlere.flatMap { it.samh_praksis }
         .filter { praksis -> praksis.samh_praksis_status_kode == "aktiv" }
         .filter { !it.navn.isNullOrEmpty() }
 
-    if (aktiveSamhandlereMedNavn.isNullOrEmpty() && !aktiveSamhandlere.isNullOrEmpty()) {
+    if (aktiveSamhandlereMedNavn.isEmpty() && aktiveSamhandlere.isNotEmpty()) {
         val samhandlerFALEOrFALO = aktiveSamhandlere.find {
             it.samh_praksis_type_kode == SamhandlerPraksisType.FASTLEGE.kodeVerdi ||
                 it.samh_praksis_type_kode == SamhandlerPraksisType.FASTLONNET.kodeVerdi
@@ -162,7 +217,7 @@ fun findBestSamhandlerPraksis(
             )
             return SamhandlerPraksisMatch(samhandlerFALEOrFALO, 999.0)
         }
-    } else if (aktiveSamhandlere.isNullOrEmpty()) {
+    } else if (aktiveSamhandlere.isEmpty()) {
         val inaktiveSamhandlerMatchingPaaOrganisjonsNavn = samhandlerMatchingPaaOrganisjonsNavn(samhandlere, orgName)
         if (filtererBortSamhanlderPraksiserPaaProsentMatch(
                 inaktiveSamhandlerMatchingPaaOrganisjonsNavn,
@@ -210,7 +265,7 @@ fun samhandlerMatchingPaaOrganisjonsNavn(samhandlere: List<Samhandler>, orgName:
     val inaktiveSamhandlereMedNavn = samhandlere.flatMap { it.samh_praksis }
         .filter { samhandlerPraksis -> samhandlerPraksis.samh_praksis_status_kode == "inaktiv" }
         .filter { samhandlerPraksis -> !samhandlerPraksis.navn.isNullOrEmpty() }
-    return if (!inaktiveSamhandlereMedNavn.isNullOrEmpty()) {
+    return if (inaktiveSamhandlereMedNavn.isNotEmpty()) {
         inaktiveSamhandlereMedNavn
             .map { samhandlerPraksis ->
                 SamhandlerPraksisMatch(samhandlerPraksis, calculatePercentageStringMatch(samhandlerPraksis.navn?.lowercase(), orgName.lowercase()) * 100)
