@@ -69,6 +69,7 @@ import java.util.UUID
 import javax.jms.MessageConsumer
 import javax.jms.MessageProducer
 import javax.jms.TextMessage
+import no.nav.syfo.client.findBestSamhandlerPraksisEmottak
 
 private val sikkerlogg = LoggerFactory.getLogger("securelog")
 
@@ -179,17 +180,23 @@ class BlockingApplicationRunner(
                     val identer = pdlPersonService.getIdenter(listOf(signaturFnr, originaltPasientFnr), loggingMeta)
 
                     val samhandlerInfo = kuhrSarClient.getSamhandler(ident = signaturFnr, msgId = msgId)
-                    val samhandlerPraksisMatch = findBestSamhandlerPraksis(
+
+                    val samhandlerPraksisMatchEmottak = findBestSamhandlerPraksisEmottak(
                         samhandlerInfo,
+                        legekontorOrgNr,
+                        legekontorHerId,
+                        loggingMeta)
+
+                    val samhandlerPraksisTssId = findBestSamhandlerPraksis(
+                        samhandlerInfo,
+                        legekontorOrgNr,
                         legekontorOrgName,
                         legekontorHerId,
                         loggingMeta
-                    )
-                    val samhandlerPraksis = samhandlerPraksisMatch?.samhandlerPraksis
+                    )?.samhandlerPraksis?.tss_ident
 
                     handleEmottakSubscription(
-                        samhandlerPraksisMatch,
-                        samhandlerPraksis,
+                        samhandlerPraksisMatchEmottak,
                         receiverBlock,
                         emottakSubscriptionClient,
                         msgHead,
@@ -331,7 +338,7 @@ class BlockingApplicationRunner(
                                 .withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime(),
                             rulesetVersion = healthInformation.regelSettVersjon,
                             fellesformat = fellesformatText,
-                            tssid = samhandlerPraksis?.tss_ident ?: "",
+                            tssid = samhandlerPraksisTssId ?: "",
                             merknader = null,
                             partnerreferanse = receiverBlock.partnerReferanse,
                             vedlegg = vedleggListe,

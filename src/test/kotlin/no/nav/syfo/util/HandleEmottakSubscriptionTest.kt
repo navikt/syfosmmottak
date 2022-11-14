@@ -26,33 +26,32 @@ class HandleEmottakSubscriptionTest : FunSpec({
             coEvery { samhandlerPraksisMatch.percentageMatch } returns 999.99
             coEvery { samhandlerPraksis.samh_praksis_type_kode } returns "FAST"
             coEvery { receiverBlock.partnerReferanse } returns "12345"
+            coEvery { samhandlerPraksisMatch.samhandlerPraksis } returns samhandlerPraksis
 
             coEvery { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) } returns Unit
 
             handleEmottakSubscription(
-                samhandlerPraksisMatch, samhandlerPraksis, receiverBlock, emottakSubscriptionClient, msgHead,
+                samhandlerPraksisMatch, receiverBlock, emottakSubscriptionClient, msgHead,
                 msgId, loggingMeta
             )
 
             coVerify(exactly = 1) { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) }
         }
 
-        test("Should not call start a subscription when samhandlerPraksis is null") {
-            val samhandlerPraksisMatch = mockk<SamhandlerPraksisMatch>()
-            val samhandlerPraksis = null
+        test("Should not call start a subscription when samhandlerPraksisMatch is null") {
+            val samhandlerPraksisMatch = null
             val receiverBlock = mockk<XMLMottakenhetBlokk>()
             val emottakSubscriptionClient = mockk<EmottakSubscriptionClient>()
             val msgHead = mockk<XMLMsgHead>()
             val msgId = "21323"
             val loggingMeta = LoggingMeta("1", "", "")
 
-            coEvery { samhandlerPraksisMatch.percentageMatch } returns 999.99
             coEvery { receiverBlock.partnerReferanse } returns "12345"
-
             coEvery { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) } returns Unit
 
+
             handleEmottakSubscription(
-                samhandlerPraksisMatch, samhandlerPraksis, receiverBlock, emottakSubscriptionClient, msgHead,
+                samhandlerPraksisMatch, receiverBlock, emottakSubscriptionClient, msgHead,
                 msgId, loggingMeta
             )
 
@@ -72,11 +71,12 @@ class HandleEmottakSubscriptionTest : FunSpec({
             coEvery { samhandlerPraksisMatch.percentageMatch } returns 999.99
             coEvery { samhandlerPraksis.samh_praksis_type_kode } returns "LEVA"
             coEvery { receiverBlock.partnerReferanse } returns "12345"
+            coEvery { samhandlerPraksisMatch.samhandlerPraksis } returns samhandlerPraksis
 
             coEvery { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) } returns Unit
 
             handleEmottakSubscription(
-                samhandlerPraksisMatch, samhandlerPraksis, receiverBlock, emottakSubscriptionClient, msgHead,
+                samhandlerPraksisMatch, receiverBlock, emottakSubscriptionClient, msgHead,
                 msgId, loggingMeta
             )
 
@@ -96,11 +96,12 @@ class HandleEmottakSubscriptionTest : FunSpec({
             coEvery { samhandlerPraksisMatch.percentageMatch } returns 999.99
             coEvery { samhandlerPraksis.samh_praksis_type_kode } returns "LEKO"
             coEvery { receiverBlock.partnerReferanse } returns "12345"
+            coEvery { samhandlerPraksisMatch.samhandlerPraksis } returns samhandlerPraksis
 
             coEvery { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) } returns Unit
 
             handleEmottakSubscription(
-                samhandlerPraksisMatch, samhandlerPraksis, receiverBlock, emottakSubscriptionClient, msgHead,
+                samhandlerPraksisMatch, receiverBlock, emottakSubscriptionClient, msgHead,
                 msgId, loggingMeta
             )
 
@@ -120,11 +121,12 @@ class HandleEmottakSubscriptionTest : FunSpec({
             coEvery { samhandlerPraksisMatch.percentageMatch } returns 999.99
             coEvery { samhandlerPraksis.samh_praksis_type_kode } returns "FALE"
             coEvery { receiverBlock.partnerReferanse } returns null
+            coEvery { samhandlerPraksisMatch.samhandlerPraksis } returns samhandlerPraksis
 
             coEvery { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) } returns Unit
 
             handleEmottakSubscription(
-                samhandlerPraksisMatch, samhandlerPraksis, receiverBlock, emottakSubscriptionClient, msgHead,
+                samhandlerPraksisMatch, receiverBlock, emottakSubscriptionClient, msgHead,
                 msgId, loggingMeta
             )
 

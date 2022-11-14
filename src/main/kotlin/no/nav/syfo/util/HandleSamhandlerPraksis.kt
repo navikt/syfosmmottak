@@ -13,7 +13,6 @@ import no.nav.syfo.metrics.MANGLER_TSSIDENT
 
 suspend fun handleEmottakSubscription(
     samhandlerPraksisMatch: SamhandlerPraksisMatch?,
-    samhandlerPraksis: SamhandlerPraksis?,
     receiverBlock: XMLMottakenhetBlokk,
     emottakSubscriptionClient: EmottakSubscriptionClient,
     msgHead: XMLMsgHead,
@@ -21,10 +20,6 @@ suspend fun handleEmottakSubscription(
     loggingMeta: LoggingMeta
 ) {
 
-    if (samhandlerPraksis?.tss_ident == null) {
-        log.info("SamhandlerPraksis mangler tss_ident, {}", StructuredArguments.fields(loggingMeta))
-        MANGLER_TSSIDENT.inc()
-    }
     if (samhandlerPraksisMatch?.percentageMatch != null && samhandlerPraksisMatch.percentageMatch == 999.0) {
         log.info(
             "SamhandlerPraksis is found but is FALE or FALO, subscription_emottak is not created, {}",
@@ -32,18 +27,18 @@ suspend fun handleEmottakSubscription(
         )
         IKKE_OPPDATERT_PARTNERREG.inc()
     } else {
-        when (samhandlerPraksis) {
+        when (samhandlerPraksisMatch?.samhandlerPraksis) {
             null -> {
                 log.info("SamhandlerPraksis is Not found, {}", StructuredArguments.fields(loggingMeta))
                 IKKE_OPPDATERT_PARTNERREG.inc()
             }
 
-            else -> if (!samhandlerpraksisIsLegevakt(samhandlerPraksis) &&
+            else -> if (!samhandlerpraksisIsLegevakt(samhandlerPraksisMatch.samhandlerPraksis) &&
                 !receiverBlock.partnerReferanse.isNullOrEmpty() &&
                 receiverBlock.partnerReferanse.isNotBlank()
             ) {
                 emottakSubscriptionClient.startSubscription(
-                    samhandlerPraksis,
+                    samhandlerPraksisMatch.samhandlerPraksis,
                     msgHead,
                     receiverBlock,
                     msgId,
