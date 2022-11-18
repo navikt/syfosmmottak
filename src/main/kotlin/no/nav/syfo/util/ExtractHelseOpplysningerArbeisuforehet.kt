@@ -32,6 +32,9 @@ fun extractHpr(fellesformat: XMLEIFellesformat): XMLIdent? =
 fun extractFnrDnrFraBehandler(healthInformation: HelseOpplysningerArbeidsuforhet): String? =
     healthInformation.behandler.id.find { it.typeId.v == "FNR" || it.typeId.v == "DNR" }?.id
 
+fun extractHprBehandler(healthInformation: HelseOpplysningerArbeidsuforhet): String? =
+    healthInformation.behandler.id.find { it.typeId.v == "HPR" }?.id
+
 fun extractTlfFromKontaktInfo(kontaktInfo: List<TeleCom>?): String? =
     if (kontaktInfo?.size != 0 && kontaktInfo?.firstOrNull()!!.teleAddress != null &&
         kontaktInfo.firstOrNull()!!.teleAddress?.v?.contains("tel:") == true
