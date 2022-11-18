@@ -349,9 +349,7 @@ class BlockingApplicationRunner(
                             merknader = null,
                             partnerreferanse = receiverBlock.partnerReferanse,
                             vedlegg = vedleggListe,
-                            utenlandskSykmelding = null,
-                            behandlderPersonNr = behandlenedeBehandlerhprNummer,
-                            behandlderHprNr = behandlenedeBehandlerFnr
+                            utenlandskSykmelding = null
                         )
 
                         if (behandlenedeBehandlerFnr != signaturFnr) {
