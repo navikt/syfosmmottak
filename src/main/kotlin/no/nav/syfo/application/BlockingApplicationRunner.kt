@@ -44,6 +44,7 @@ import no.nav.syfo.util.countNewDiagnoseCode
 import no.nav.syfo.util.extractFnrDnrFraBehandler
 import no.nav.syfo.util.extractHelseOpplysningerArbeidsuforhet
 import no.nav.syfo.util.extractHpr
+import no.nav.syfo.util.extractHprBehandler
 import no.nav.syfo.util.extractOrganisationHerNumberFromSender
 import no.nav.syfo.util.extractOrganisationNumberFromSender
 import no.nav.syfo.util.extractOrganisationRashNumberFromSender
@@ -244,8 +245,12 @@ class BlockingApplicationRunner(
                             norskHelsenettClient.getByFnr(fnr = signaturFnr, loggingMeta = loggingMeta)
 
                         val behandlenedeBehandler =
-                            if (extractFnrDnrFraBehandler(healthInformation) != null || extractHpr(fellesformat)?.id != null) {
+                            if (extractFnrDnrFraBehandler(healthInformation) != null ||
+                                extractHpr(fellesformat)?.id != null ||
+                                extractHprBehandler(healthInformation) != null
+                            ) {
                                 getBehandlenedeBehandler(
+                                    extractHprBehandler(healthInformation),
                                     extractHpr(fellesformat)?.id,
                                     extractFnrDnrFraBehandler(healthInformation),
                                     loggingMeta
@@ -263,6 +268,7 @@ class BlockingApplicationRunner(
 
                         val behandlenedeBehandlerhprNummer = extractHpr(fellesformat)?.id
                             ?: getBehandlerHprNr(
+                                behandlerHpr = extractHprBehandler(healthInformation),
                                 avsenderHpr = extractHpr(fellesformat)?.id,
                                 behandlenedeBehandler = behandlenedeBehandler
                             )
@@ -343,7 +349,9 @@ class BlockingApplicationRunner(
                             merknader = null,
                             partnerreferanse = receiverBlock.partnerReferanse,
                             vedlegg = vedleggListe,
-                            utenlandskSykmelding = null
+                            utenlandskSykmelding = null,
+                            behandlderPersonNr = behandlenedeBehandlerhprNummer,
+                            behandlderHprNr = behandlenedeBehandlerFnr
                         )
 
                         if (behandlenedeBehandlerFnr != signaturFnr) {
@@ -455,14 +463,17 @@ class BlockingApplicationRunner(
     }
 
     private suspend fun getBehandlenedeBehandler(
-        behandlenedeBehandlerHpr: String?,
-        behandlenedeBehandlerfnr: String?,
+        behandlerHpr: String?,
+        organisationBehandlerHpr: String?,
+        behandlerfnr: String?,
         loggingMeta: LoggingMeta
     ): Behandler? {
-        return if (behandlenedeBehandlerHpr != null) {
-            norskHelsenettClient.getByHpr(behandlenedeBehandlerHpr, loggingMeta)
-        } else if (behandlenedeBehandlerfnr != null) {
-            norskHelsenettClient.getByFnr(behandlenedeBehandlerfnr, loggingMeta)
+        return if (behandlerHpr != null) {
+            norskHelsenettClient.getByHpr(behandlerHpr, loggingMeta)
+        } else if (behandlerfnr != null) {
+            norskHelsenettClient.getByFnr(behandlerfnr, loggingMeta)
+        } else if (organisationBehandlerHpr != null) {
+            norskHelsenettClient.getByFnr(organisationBehandlerHpr, loggingMeta)
         } else {
             null
         }
@@ -492,9 +503,16 @@ class BlockingApplicationRunner(
     }
 
     private fun getBehandlerHprNr(
+        behandlerHpr: String?,
         avsenderHpr: String?,
         behandlenedeBehandler: Behandler?
     ): String? {
-        return avsenderHpr ?: behandlenedeBehandler?.hprNummer
+        if (behandlerHpr != null) {
+            return behandlerHpr
+        } else if (avsenderHpr != null) {
+            return avsenderHpr
+        } else {
+            return behandlenedeBehandler?.hprNummer
+        }
     }
 }
