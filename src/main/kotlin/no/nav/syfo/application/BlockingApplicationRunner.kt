@@ -56,6 +56,7 @@ import no.nav.syfo.util.getLocalDateTime
 import no.nav.syfo.util.getVedlegg
 import no.nav.syfo.util.handleEmottakSubscription
 import no.nav.syfo.util.logUlikBehandler
+import no.nav.syfo.util.padHpr
 import no.nav.syfo.util.removeVedleggFromFellesformat
 import no.nav.syfo.util.toString
 import no.nav.syfo.util.wrapExceptions
@@ -71,7 +72,6 @@ import java.util.UUID
 import javax.jms.MessageConsumer
 import javax.jms.MessageProducer
 import javax.jms.TextMessage
-import no.nav.syfo.util.padHpr
 
 private val sikkerlogg = LoggerFactory.getLogger("securelog")
 
@@ -251,12 +251,12 @@ class BlockingApplicationRunner(
                         val behandlenedeBehandler =
                             if (extractFnrDnrFraBehandler(healthInformation) != null ||
                                 padHpr(extractHpr(fellesformat)?.id?.trim()) != null ||
-                                extractHprBehandler(healthInformation) != null
+                                padHpr(extractHprBehandler(healthInformation)?.trim()) != null
                             ) {
                                 getBehandlenedeBehandler(
                                     extractHprBehandler(healthInformation),
                                     padHpr(extractHpr(fellesformat)?.id?.trim()),
-                                    extractFnrDnrFraBehandler(healthInformation),
+                                    padHpr(extractFnrDnrFraBehandler(healthInformation)?.trim()),
                                     loggingMeta
                                 )
                             } else {

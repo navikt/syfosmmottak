@@ -44,7 +44,6 @@ fun extractTlfFromKontaktInfo(kontaktInfo: List<TeleCom>?): String? =
         kontaktInfo.firstOrNull()?.teleAddress?.v
     }
 
-
 fun padHpr(hprnummer: String?): String? {
     if (hprnummer?.length != null && hprnummer.length < 9) {
         return hprnummer.padStart(9, '0')
