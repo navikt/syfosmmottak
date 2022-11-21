@@ -254,7 +254,7 @@ class BlockingApplicationRunner(
                                 padHpr(extractHprBehandler(healthInformation)?.trim()) != null
                             ) {
                                 getBehandlenedeBehandler(
-                                    extractHprBehandler(healthInformation),
+                                    padHpr(extractHprBehandler(healthInformation)?.trim()),
                                     padHpr(extractHpr(fellesformat)?.id?.trim()),
                                     padHpr(extractFnrDnrFraBehandler(healthInformation)?.trim()),
                                     loggingMeta
@@ -272,7 +272,7 @@ class BlockingApplicationRunner(
 
                         val behandlenedeBehandlerhprNummer = padHpr(extractHpr(fellesformat)?.id?.trim())
                             ?: getBehandlerHprNr(
-                                behandlerHpr = extractHprBehandler(healthInformation),
+                                behandlerHpr = padHpr(extractHprBehandler(healthInformation)?.trim()),
                                 avsenderHpr = padHpr(extractHpr(fellesformat)?.id?.trim()),
                                 behandlenedeBehandler = behandlenedeBehandler
                             )
