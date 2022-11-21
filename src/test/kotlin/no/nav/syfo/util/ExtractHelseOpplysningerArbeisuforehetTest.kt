@@ -29,5 +29,14 @@ internal class ExtractHelseOpplysningerArbeisuforehetTest : FunSpec({
 
             tlfFraPasient shouldBeEqualTo "mob:12345678"
         }
+        test("Extract hpr") {
+
+            val stringInput =
+                no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
+            val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
+            val hpr = padHpr(extractHpr(fellesformat)?.id?.trim())
+
+            hpr shouldBeEqualTo "123456789"
+        }
     }
 })

@@ -71,6 +71,7 @@ import java.util.UUID
 import javax.jms.MessageConsumer
 import javax.jms.MessageProducer
 import javax.jms.TextMessage
+import no.nav.syfo.util.padHpr
 
 private val sikkerlogg = LoggerFactory.getLogger("securelog")
 
@@ -164,7 +165,10 @@ class BlockingApplicationRunner(
                             )
                             continue@loop
                         }
-                        val fnr = norskHelsenettClient.getByHpr(hprNummer = hpr, loggingMeta = loggingMeta)?.fnr
+
+                        val formatedHpr = padHpr(hpr.trim())!!
+
+                        val fnr = norskHelsenettClient.getByHpr(hprNummer = formatedHpr, loggingMeta = loggingMeta)?.fnr
                         if (fnr == null) {
                             handleVirksomhetssykmeldingOgFnrManglerIHPR(
                                 loggingMeta, fellesformat,
@@ -246,12 +250,12 @@ class BlockingApplicationRunner(
 
                         val behandlenedeBehandler =
                             if (extractFnrDnrFraBehandler(healthInformation) != null ||
-                                extractHpr(fellesformat)?.id != null ||
+                                padHpr(extractHpr(fellesformat)?.id?.trim()) != null ||
                                 extractHprBehandler(healthInformation) != null
                             ) {
                                 getBehandlenedeBehandler(
                                     extractHprBehandler(healthInformation),
-                                    extractHpr(fellesformat)?.id,
+                                    padHpr(extractHpr(fellesformat)?.id?.trim()),
                                     extractFnrDnrFraBehandler(healthInformation),
                                     loggingMeta
                                 )
@@ -261,15 +265,15 @@ class BlockingApplicationRunner(
 
                         val behandlenedeBehandlerFnr = extractFnrDnrFraBehandler(healthInformation)
                             ?: getBehandlerFnr(
-                                avsenderHpr = extractHpr(fellesformat)?.id,
+                                avsenderHpr = padHpr(extractHpr(fellesformat)?.id?.trim()),
                                 signerendeBehandler = signerendeBehandler,
                                 behandlenedeBehandler = behandlenedeBehandler
                             ) ?: signaturFnr
 
-                        val behandlenedeBehandlerhprNummer = extractHpr(fellesformat)?.id
+                        val behandlenedeBehandlerhprNummer = padHpr(extractHpr(fellesformat)?.id?.trim())
                             ?: getBehandlerHprNr(
                                 behandlerHpr = extractHprBehandler(healthInformation),
-                                avsenderHpr = extractHpr(fellesformat)?.id,
+                                avsenderHpr = padHpr(extractHpr(fellesformat)?.id?.trim()),
                                 behandlenedeBehandler = behandlenedeBehandler
                             )
 
