@@ -22,6 +22,7 @@ import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.pdl.client.model.PdlIdent
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.service.PdlPersonService
+import no.nav.syfo.service.DuplicationService
 import no.nav.syfo.service.VirusScanService
 import no.nav.syfo.utils.getFileAsString
 import no.nav.syfo.vedlegg.google.BucketUploadService
@@ -50,6 +51,7 @@ class BlockingApplicationRunnerTest : FunSpec({
     val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
     val kafkaproducerManuellOppgave = mockk<KafkaProducer<String, ManuellOppgave>>(relaxed = true)
     val virusScanService = mockk<VirusScanService>(relaxed = true)
+    val duplicationService = mockk<DuplicationService>(relaxed = true)
 
     val blockingApplicationRunner = BlockingApplicationRunner(
         env,
@@ -66,7 +68,8 @@ class BlockingApplicationRunnerTest : FunSpec({
         kafkaManuelTaskProducer,
         kafkaproducerApprec,
         kafkaproducerManuellOppgave,
-        virusScanService
+        virusScanService,
+        duplicationService
     )
 
     beforeTest {
