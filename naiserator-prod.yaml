@@ -11,7 +11,6 @@ spec:
       - name: syfosmmottak-instance
         type: POSTGRES_14
         tier: db-custom-2-5120
-        diskSize: 10
         databases:
           - name: syfosmmottak
             envVarPrefix: DB
