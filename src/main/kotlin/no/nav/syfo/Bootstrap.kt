@@ -46,7 +46,6 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import redis.clients.jedis.Jedis
 import java.io.FileInputStream
 import javax.jms.Session
 
@@ -132,37 +131,32 @@ fun launchListeners(
 ) {
     createListener(applicationState) {
         connectionFactory(env).createConnection(serviceUser.serviceuserUsername, serviceUser.serviceuserPassword).use { connection ->
-            Jedis(env.redisHost, 6379).use { jedis ->
-                connection.start()
-                val session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE)
+            connection.start()
+            val session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE)
 
-                val inputconsumer = session.consumerForQueue(env.inputQueueName)
-                val backoutProducer = session.producerForQueue(env.inputBackoutQueueName)
+            val inputconsumer = session.consumerForQueue(env.inputQueueName)
+            val backoutProducer = session.producerForQueue(env.inputBackoutQueueName)
 
-                jedis.auth(env.redisSecret)
-
-                BlockingApplicationRunner(
-                    env,
-                    applicationState,
-                    emottakSubscriptionClient,
-                    syfoSykemeldingRuleClient,
-                    norskHelsenettClient,
-                    kuhrSarClient,
-                    pdlPersonService,
-                    jedis,
-                    bucketUploadService,
-                    kafkaproducerreceivedSykmelding,
-                    kafkaproducervalidationResult,
-                    kafkaManuelTaskProducer,
-                    kafkaproducerApprec,
-                    kafkaproducerManuellOppgave,
-                    virusScanService,
-                    duplicationService
-                ).run(
-                    inputconsumer,
-                    backoutProducer
-                )
-            }
+            BlockingApplicationRunner(
+                env,
+                applicationState,
+                emottakSubscriptionClient,
+                syfoSykemeldingRuleClient,
+                norskHelsenettClient,
+                kuhrSarClient,
+                pdlPersonService,
+                bucketUploadService,
+                kafkaproducerreceivedSykmelding,
+                kafkaproducervalidationResult,
+                kafkaManuelTaskProducer,
+                kafkaproducerApprec,
+                kafkaproducerManuellOppgave,
+                virusScanService,
+                duplicationService
+            ).run(
+                inputconsumer,
+                backoutProducer
+            )
         }
     }
 }

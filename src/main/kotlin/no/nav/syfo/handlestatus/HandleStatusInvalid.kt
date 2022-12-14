@@ -20,11 +20,9 @@ import no.nav.syfo.sendReceipt
 import no.nav.syfo.sendReceivedSykmelding
 import no.nav.syfo.sendValidationResult
 import no.nav.syfo.service.DuplicationService
-import no.nav.syfo.service.updateRedis
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.get
 import org.apache.kafka.clients.producer.KafkaProducer
-import redis.clients.jedis.Jedis
 
 fun handleStatusINVALID(
     validationResult: ValidationResult,
@@ -59,7 +57,7 @@ fun handleStatusINVALID(
 }
 
 fun handleDuplicateSM2013Content(
-    redisSha256String: String,
+    originalEdiLoggId: String,
     loggingMeta: LoggingMeta,
     fellesformat: XMLEIFellesformat,
     ediLoggId: String,
@@ -70,7 +68,7 @@ fun handleDuplicateSM2013Content(
 ) {
     log.warn(
         "Melding med {} har samme innhold som tidligere mottatt sykmelding og er avvist som duplikat {} {}",
-        keyValue("originalEdiLoggId", redisSha256String),
+        keyValue("originalEdiLoggId", originalEdiLoggId),
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName)
     )
@@ -89,37 +87,6 @@ fun handleDuplicateSM2013Content(
     INVALID_MESSAGE_NO_NOTICE.inc()
 }
 
-fun handleDuplicateEdiloggid(
-    redisEdiloggid: String,
-    loggingMeta: LoggingMeta,
-    fellesformat: XMLEIFellesformat,
-    ediLoggId: String,
-    msgId: String,
-    msgHead: XMLMsgHead,
-    env: Environment,
-    kafkaproducerApprec: KafkaProducer<String, Apprec>
-) {
-    log.warn(
-        "Melding med {} har samme ediLoggId som tidligere mottatt sykmelding og er avvist som duplikat {} {}",
-        keyValue("originalEdiLoggId", redisEdiloggid),
-        fields(loggingMeta),
-        keyValue("avvistAv", env.applicationName)
-    )
-
-    val apprec = fellesformatToAppprec(
-        fellesformat,
-        "Sykmeldingen kan ikke rettes, det må skrives en ny." +
-            "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
-            "Denne sykmeldingen har ein identisk identifikator med ein sykmelding som er mottatt tidligere, og er derfor ein duplikat." +
-            "og skal ikke sendes på nytt. Dersom dette ikke stemmer, kontakt din EPJ-leverandør",
-        ediLoggId, msgId, msgHead
-    )
-
-    sendReceipt(apprec, env.apprecTopic, kafkaproducerApprec, loggingMeta)
-    log.info("Apprec receipt sent to kafka topic {}, {}", env.apprecTopic, fields(loggingMeta))
-    INVALID_MESSAGE_NO_NOTICE.inc()
-}
-
 fun handlePatientNotFoundInPDL(
     loggingMeta: LoggingMeta,
     fellesformat: XMLEIFellesformat,
@@ -128,8 +95,6 @@ fun handlePatientNotFoundInPDL(
     msgHead: XMLMsgHead,
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
-    jedis: Jedis,
-    sha256String: String,
     duplicationService: DuplicationService,
     duplicationCheck: DuplicationCheck
 ) {
@@ -147,7 +112,7 @@ fun handlePatientNotFoundInPDL(
         ediLoggId, msgId, msgHead
     )
 
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String, duplicationService, duplicationCheck)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicationCheck)
 }
 
 fun handleDoctorNotFoundInPDL(
@@ -158,8 +123,6 @@ fun handleDoctorNotFoundInPDL(
     msgHead: XMLMsgHead,
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
-    jedis: Jedis,
-    sha256String: String,
     duplicationService: DuplicationService,
     duplicationCheck: DuplicationCheck
 ) {
@@ -177,7 +140,7 @@ fun handleDoctorNotFoundInPDL(
         ediLoggId, msgId, msgHead
     )
 
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String, duplicationService, duplicationCheck)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicationCheck)
 }
 
 fun handleAktivitetOrPeriodeIsMissing(
@@ -188,8 +151,6 @@ fun handleAktivitetOrPeriodeIsMissing(
     msgHead: XMLMsgHead,
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
-    jedis: Jedis,
-    sha256String: String,
     duplicationService: DuplicationService,
     duplicationCheck: DuplicationCheck
 ) {
@@ -207,7 +168,7 @@ fun handleAktivitetOrPeriodeIsMissing(
         ediLoggId, msgId, msgHead
     )
 
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String, duplicationService, duplicationCheck)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicationCheck)
 }
 
 fun handlePeriodetypeMangler(
@@ -218,8 +179,6 @@ fun handlePeriodetypeMangler(
     msgHead: XMLMsgHead,
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
-    jedis: Jedis,
-    sha256String: String,
     duplicationService: DuplicationService,
     duplicationCheck: DuplicationCheck
 ) {
@@ -237,7 +196,7 @@ fun handlePeriodetypeMangler(
         ediLoggId, msgId, msgHead
     )
 
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String, duplicationService, duplicationCheck)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicationCheck)
 }
 
 fun handleBiDiagnoserDiagnosekodeIsMissing(
@@ -248,8 +207,6 @@ fun handleBiDiagnoserDiagnosekodeIsMissing(
     msgHead: XMLMsgHead,
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
-    jedis: Jedis,
-    sha256String: String,
     duplicationService: DuplicationService,
     duplicationCheck: DuplicationCheck
 ) {
@@ -267,7 +224,7 @@ fun handleBiDiagnoserDiagnosekodeIsMissing(
         ediLoggId, msgId, msgHead
     )
 
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String, duplicationService, duplicationCheck)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicationCheck)
 }
 
 fun handleBiDiagnoserDiagnosekodeVerkIsMissing(
@@ -278,8 +235,6 @@ fun handleBiDiagnoserDiagnosekodeVerkIsMissing(
     msgHead: XMLMsgHead,
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
-    jedis: Jedis,
-    sha256String: String,
     duplicationService: DuplicationService,
     duplicationCheck: DuplicationCheck
 ) {
@@ -297,7 +252,7 @@ fun handleBiDiagnoserDiagnosekodeVerkIsMissing(
         ediLoggId, msgId, msgHead
     )
 
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String, duplicationService, duplicationCheck)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicationCheck)
 }
 
 fun handleBiDiagnoserDiagnosekodeBeskrivelseMissing(
@@ -308,8 +263,6 @@ fun handleBiDiagnoserDiagnosekodeBeskrivelseMissing(
     msgHead: XMLMsgHead,
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
-    jedis: Jedis,
-    sha256String: String,
     duplicationService: DuplicationService,
     duplicationCheck: DuplicationCheck
 ) {
@@ -327,7 +280,7 @@ fun handleBiDiagnoserDiagnosekodeBeskrivelseMissing(
         ediLoggId, msgId, msgHead
     )
 
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String, duplicationService, duplicationCheck)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicationCheck)
 }
 
 fun handleFnrAndDnrAndHprIsmissingFromBehandler(
@@ -338,8 +291,6 @@ fun handleFnrAndDnrAndHprIsmissingFromBehandler(
     msgHead: XMLMsgHead,
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
-    jedis: Jedis,
-    sha256String: String,
     duplicationService: DuplicationService,
     duplicationCheck: DuplicationCheck
 ) {
@@ -357,7 +308,7 @@ fun handleFnrAndDnrAndHprIsmissingFromBehandler(
         ediLoggId, msgId, msgHead
     )
 
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String, duplicationService, duplicationCheck)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicationCheck)
 }
 
 fun handleHovedDiagnoseDiagnosekodeMissing(
@@ -368,8 +319,6 @@ fun handleHovedDiagnoseDiagnosekodeMissing(
     msgHead: XMLMsgHead,
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
-    jedis: Jedis,
-    sha256String: String,
     duplicationService: DuplicationService,
     duplicationCheck: DuplicationCheck
 ) {
@@ -387,7 +336,7 @@ fun handleHovedDiagnoseDiagnosekodeMissing(
         ediLoggId, msgId, msgHead
     )
 
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String, duplicationService, duplicationCheck)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicationCheck)
 }
 
 fun handleHovedDiagnoseDiagnoseBeskrivelseMissing(
@@ -398,8 +347,6 @@ fun handleHovedDiagnoseDiagnoseBeskrivelseMissing(
     msgHead: XMLMsgHead,
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
-    jedis: Jedis,
-    sha256String: String,
     duplicationService: DuplicationService,
     duplicationCheck: DuplicationCheck
 ) {
@@ -417,7 +364,7 @@ fun handleHovedDiagnoseDiagnoseBeskrivelseMissing(
         ediLoggId, msgId, msgHead
     )
 
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String, duplicationService, duplicationCheck)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicationCheck)
 }
 
 fun handleMedisinskeArsakskodeIsmissing(
@@ -428,8 +375,6 @@ fun handleMedisinskeArsakskodeIsmissing(
     msgHead: XMLMsgHead,
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
-    jedis: Jedis,
-    sha256String: String,
     duplicationService: DuplicationService,
     duplicationCheck: DuplicationCheck
 ) {
@@ -447,7 +392,7 @@ fun handleMedisinskeArsakskodeIsmissing(
         ediLoggId, msgId, msgHead
     )
 
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String, duplicationService, duplicationCheck)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicationCheck)
 }
 
 fun handleMedisinskeArsakskodeHarUgyldigVerdi(
@@ -458,8 +403,6 @@ fun handleMedisinskeArsakskodeHarUgyldigVerdi(
     msgHead: XMLMsgHead,
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
-    jedis: Jedis,
-    sha256String: String,
     duplicationService: DuplicationService,
     duplicationCheck: DuplicationCheck
 ) {
@@ -477,7 +420,7 @@ fun handleMedisinskeArsakskodeHarUgyldigVerdi(
         ediLoggId, msgId, msgHead
     )
 
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String, duplicationService, duplicationCheck)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicationCheck)
 }
 
 fun handleArbeidsplassenArsakskodeIsmissing(
@@ -488,8 +431,6 @@ fun handleArbeidsplassenArsakskodeIsmissing(
     msgHead: XMLMsgHead,
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
-    jedis: Jedis,
-    sha256String: String,
     duplicationService: DuplicationService,
     duplicationCheck: DuplicationCheck
 ) {
@@ -507,7 +448,7 @@ fun handleArbeidsplassenArsakskodeIsmissing(
         ediLoggId, msgId, msgHead
     )
 
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String, duplicationService, duplicationCheck)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicationCheck)
 }
 
 fun handleArbeidsplassenArsakskodeHarUgyldigVerdi(
@@ -518,8 +459,6 @@ fun handleArbeidsplassenArsakskodeHarUgyldigVerdi(
     msgHead: XMLMsgHead,
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
-    jedis: Jedis,
-    sha256String: String,
     duplicationService: DuplicationService,
     duplicationCheck: DuplicationCheck
 ) {
@@ -537,7 +476,7 @@ fun handleArbeidsplassenArsakskodeHarUgyldigVerdi(
         ediLoggId, msgId, msgHead
     )
 
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String, duplicationService, duplicationCheck)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicationCheck)
 }
 
 fun handleTestFnrInProd(
@@ -548,8 +487,6 @@ fun handleTestFnrInProd(
     msgHead: XMLMsgHead,
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
-    jedis: Jedis,
-    sha256String: String,
     duplicationService: DuplicationService,
     duplicationCheck: DuplicationCheck
 ) {
@@ -570,7 +507,6 @@ fun handleTestFnrInProd(
     log.info("Apprec receipt sent to kafka topic {}, {}", env.apprecTopic, fields(loggingMeta))
     INVALID_MESSAGE_NO_NOTICE.inc()
     TEST_FNR_IN_PROD.inc()
-    updateRedis(jedis, ediLoggId, sha256String)
     duplicationService.persistDuplicationCheck(duplicationCheck)
 }
 
@@ -582,8 +518,6 @@ fun handleAnnenFraversArsakkodeVIsmissing(
     msgHead: XMLMsgHead,
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
-    jedis: Jedis,
-    sha256String: String,
     duplicationService: DuplicationService,
     duplicationCheck: DuplicationCheck
 ) {
@@ -601,7 +535,7 @@ fun handleAnnenFraversArsakkodeVIsmissing(
         ediLoggId, msgId, msgHead
     )
 
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String, duplicationService, duplicationCheck)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicationCheck)
 }
 
 fun handleVirksomhetssykmeldingOgHprMangler(
@@ -612,8 +546,6 @@ fun handleVirksomhetssykmeldingOgHprMangler(
     msgHead: XMLMsgHead,
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
-    jedis: Jedis,
-    sha256String: String,
     duplicationService: DuplicationService,
     duplicationCheck: DuplicationCheck
 ) {
@@ -631,7 +563,7 @@ fun handleVirksomhetssykmeldingOgHprMangler(
         ediLoggId, msgId, msgHead
     )
 
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String, duplicationService, duplicationCheck)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicationCheck)
 }
 
 fun handleVirksomhetssykmeldingOgFnrManglerIHPR(
@@ -642,8 +574,6 @@ fun handleVirksomhetssykmeldingOgFnrManglerIHPR(
     msgHead: XMLMsgHead,
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
-    jedis: Jedis,
-    sha256String: String,
     duplicationService: DuplicationService,
     duplicationCheck: DuplicationCheck
 ) {
@@ -662,7 +592,7 @@ fun handleVirksomhetssykmeldingOgFnrManglerIHPR(
     )
 
     sendApprec(
-        apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String, duplicationService,
+        apprec, env, kafkaproducerApprec, loggingMeta, duplicationService,
         duplicationCheck
     )
 }
@@ -675,8 +605,6 @@ fun handleVedleggContainsVirus(
     msgHead: XMLMsgHead,
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
-    jedis: Jedis,
-    sha256String: String,
     duplicationService: DuplicationService,
     duplicationCheck: DuplicationCheck
 ) {
@@ -696,7 +624,7 @@ fun handleVedleggContainsVirus(
 
     SYKMELDING_AVVIST_VIRUS_VEDLEGG_COUNTER.inc()
 
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, jedis, ediLoggId, sha256String, duplicationService, duplicationCheck)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicationCheck)
 }
 
 private fun sendApprec(
@@ -704,16 +632,12 @@ private fun sendApprec(
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     loggingMeta: LoggingMeta,
-    jedis: Jedis,
-    ediLoggId: String,
-    sha256String: String,
     duplicationService: DuplicationService,
     duplicationCheck: DuplicationCheck
 ) {
     sendReceipt(apprec, env.apprecTopic, kafkaproducerApprec, loggingMeta)
     log.info("Apprec receipt sent to kafka topic {}, {}", env.apprecTopic, fields(loggingMeta))
     INVALID_MESSAGE_NO_NOTICE.inc()
-    updateRedis(jedis, ediLoggId, sha256String)
     duplicationService.persistDuplicationCheck(duplicationCheck)
 }
 

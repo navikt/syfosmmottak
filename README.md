@@ -26,7 +26,7 @@ This the high level flow of the application
       syfosmmottak --->  B[\teamsykmelding.sykmelding-apprec/];
       syfosmmottak --->  id2([SYFOSMMOTTAK.INPUT_BOQ]);
       id2([SYFOSMMOTTAK.INPUT_BOQ]) --->  id1([SYFOSMMOTTAK.INPUT]);
-      syfosmmottak --- redis;
+      syfosmmottak <---> id3[(Database)];
       syfosmmottak --- Azure-AD;
       syfosmmottak --- PDL;
       syfosmmottak --- Kuhr-SAR;

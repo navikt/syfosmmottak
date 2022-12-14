@@ -11,7 +11,6 @@ val ibmMqVersion = "9.2.5.0"
 val javaxActivationVersion = "1.1.1"
 val jacksonVersion = "2.14.0"
 val jaxbApiVersion = "2.4.0-b180830.0359"
-val jedisVersion = "4.2.3"
 val kafkaVersion = "3.3.1"
 val kithHodemeldingVersion = "1.e6fcef8"
 val kithApprecVersion = "1.e6fcef8"
@@ -98,7 +97,6 @@ dependencies {
     implementation("no.nav.helse:syfosm-common-mq:$smCommonVersion")
 
     implementation("com.google.cloud:google-cloud-storage:$googleCloudStorageVersion")
-    implementation("redis.clients:jedis:$jedisVersion")
 
     implementation("org.apache.commons:commons-text:$commonsTextVersion")
 

@@ -16,7 +16,6 @@ import no.nav.syfo.client.findBestSamhandlerPraksis
 import no.nav.syfo.client.findBestSamhandlerPraksisEmottak
 import no.nav.syfo.client.getHelsepersonellKategori
 import no.nav.syfo.duplicationcheck.model.DuplicationCheck
-import no.nav.syfo.handlestatus.handleDuplicateEdiloggid
 import no.nav.syfo.handlestatus.handleDuplicateSM2013Content
 import no.nav.syfo.handlestatus.handleStatusINVALID
 import no.nav.syfo.handlestatus.handleStatusMANUALPROCESSING
@@ -39,7 +38,6 @@ import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.service.DuplicationService
 import no.nav.syfo.service.VirusScanService
 import no.nav.syfo.service.sha256hashstring
-import no.nav.syfo.service.updateRedis
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.checkSM2013Content
 import no.nav.syfo.util.countNewDiagnoseCode
@@ -66,8 +64,6 @@ import no.nav.syfo.vedlegg.google.BucketUploadService
 import no.nav.syfo.vedlegg.model.BehandlerInfo
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
-import redis.clients.jedis.Jedis
-import redis.clients.jedis.exceptions.JedisConnectionException
 import java.io.StringReader
 import java.time.ZoneOffset
 import java.util.UUID
@@ -85,7 +81,6 @@ class BlockingApplicationRunner(
     private val norskHelsenettClient: NorskHelsenettClient,
     private val kuhrSarClient: SarClient,
     private val pdlPersonService: PdlPersonService,
-    private val jedis: Jedis,
     private val bucketUploadService: BucketUploadService,
     private val kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
     private val kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
@@ -169,7 +164,7 @@ class BlockingApplicationRunner(
                         if (hpr == null) {
                             handleVirksomhetssykmeldingOgHprMangler(
                                 loggingMeta, fellesformat,
-                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec,
                                 duplicationService, duplicationCheck
                             )
                             continue@loop
@@ -181,7 +176,7 @@ class BlockingApplicationRunner(
                         if (fnr == null) {
                             handleVirksomhetssykmeldingOgFnrManglerIHPR(
                                 loggingMeta, fellesformat,
-                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec,
                                 duplicationService, duplicationCheck
                             )
                             continue@loop
@@ -220,29 +215,11 @@ class BlockingApplicationRunner(
                         loggingMeta
                     )
 
-                    val redisSha256String = jedis.get(sha256String)
                     val duplicationServiceSha256String = duplicationService.getDuplicationCheck(sha256String, ediLoggId)
-                    val redisEdiloggid = jedis.get(ediLoggId)
 
-                    if (redisSha256String != null) {
-                        log.info("duplicationServiceSha256String: should be null $duplicationServiceSha256String")
+                    if (duplicationServiceSha256String != null) {
                         handleDuplicateSM2013Content(
-                            redisSha256String, loggingMeta, fellesformat,
-                            ediLoggId, msgId, msgHead, env, kafkaproducerApprec
-                        )
-                        continue@loop
-                    } else if (redisEdiloggid != null && redisEdiloggid.length != 21) {
-                        log.error(
-                            "Redis returned a redisEdiloggid that is longer than 21" +
-                                "characters redisEdiloggid: {} {}",
-                            redisEdiloggid,
-                            StructuredArguments.fields(loggingMeta)
-                        )
-                        throw RuntimeException("Redis has some issues with geting the redisEdiloggid")
-                    } else if (redisEdiloggid != null) {
-                        log.info("duplicationServiceSha256String: should be null $duplicationServiceSha256String")
-                        handleDuplicateEdiloggid(
-                            redisEdiloggid, loggingMeta, fellesformat,
+                            duplicationServiceSha256String.mottakId, loggingMeta, fellesformat,
                             ediLoggId, msgId, msgHead, env, kafkaproducerApprec
                         )
                         continue@loop
@@ -252,7 +229,7 @@ class BlockingApplicationRunner(
 
                         if (checkSM2013Content(
                                 pasient, behandler, healthInformation, originaltPasientFnr, loggingMeta, fellesformat,
-                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String,
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec,
                                 duplicationService, duplicationCheck
                             )
                         ) {
@@ -318,7 +295,7 @@ class BlockingApplicationRunner(
                                 handleVedleggContainsVirus(
                                     loggingMeta, fellesformat, ediLoggId,
                                     msgId, msgHead, env, kafkaproducerApprec,
-                                    jedis, sha256String, duplicationService, duplicationCheck
+                                    duplicationService, duplicationCheck
                                 )
                                 continue@loop
                             }
@@ -436,7 +413,6 @@ class BlockingApplicationRunner(
 
                         val currentRequestLatency = requestLatency.observeDuration()
 
-                        updateRedis(jedis, ediLoggId, sha256String)
                         duplicationService.persistDuplicationCheck(duplicationCheck)
                         log.info(
                             "Message got outcome {}, {}, processing took {}s, {}",
@@ -449,18 +425,6 @@ class BlockingApplicationRunner(
                             StructuredArguments.fields(loggingMeta)
                         )
                     }
-                } catch (jedisException: JedisConnectionException) {
-                    log.error(
-                        "Exception caught, redis issue while handling message, sending to backout ${
-                        StructuredArguments.fields(
-                            loggingMeta
-                        )
-                        }",
-                        jedisException
-                    )
-                    backoutProducer.send(message)
-                    log.error("Setting applicationState.alive to false")
-                    applicationState.alive = false
                 } catch (e: Exception) {
                     log.error(
                         "Exception caught while handling message, sending to backout ${

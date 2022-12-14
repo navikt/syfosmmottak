@@ -21,7 +21,6 @@ import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.service.DuplicationService
 import org.amshove.kluent.shouldBeEqualTo
 import org.apache.kafka.clients.producer.KafkaProducer
-import redis.clients.jedis.Jedis
 import java.io.StringReader
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -43,8 +42,6 @@ class CheckSM2013ContentTest : FunSpec({
             val msgHead = fellesformat.get<XMLMsgHead>()
             val env = mockk<Environment>(relaxed = true)
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
-            val jedis = mockk<Jedis>(relaxed = true)
-            val sha256String = ""
             val duplicationService = mockk<DuplicationService>(relaxed = true)
             val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
 
@@ -60,8 +57,6 @@ class CheckSM2013ContentTest : FunSpec({
                 msgHead,
                 env,
                 kafkaproducerApprec,
-                jedis,
-                sha256String,
                 duplicationService,
                 duplicationCheck
             )
@@ -89,9 +84,6 @@ class CheckSM2013ContentTest : FunSpec({
             val msgHead = fellesformat.get<XMLMsgHead>()
             val env = mockk<Environment>(relaxed = true)
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
-            val jedis = mockk<Jedis>(relaxed = true)
-            val sha256String = ""
-
             val duplicationService = mockk<DuplicationService>(relaxed = true)
             val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
 
@@ -107,8 +99,6 @@ class CheckSM2013ContentTest : FunSpec({
                 msgHead,
                 env,
                 kafkaproducerApprec,
-                jedis,
-                sha256String,
                 duplicationService,
                 duplicationCheck
             )
@@ -136,8 +126,6 @@ class CheckSM2013ContentTest : FunSpec({
             val msgHead = fellesformat.get<XMLMsgHead>()
             val env = mockk<Environment>(relaxed = true)
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
-            val jedis = mockk<Jedis>(relaxed = true)
-            val sha256String = ""
             val duplicationService = mockk<DuplicationService>(relaxed = true)
             val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
 
@@ -153,8 +141,6 @@ class CheckSM2013ContentTest : FunSpec({
                 msgHead,
                 env,
                 kafkaproducerApprec,
-                jedis,
-                sha256String,
                 duplicationService,
                 duplicationCheck
             )
@@ -269,8 +255,6 @@ class CheckSM2013ContentTest : FunSpec({
             val msgHead = fellesformat.get<XMLMsgHead>()
             val env = mockk<Environment>(relaxed = true)
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
-            val jedis = mockk<Jedis>(relaxed = true)
-            val sha256String = ""
             val duplicationService = mockk<DuplicationService>(relaxed = true)
             val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
 
@@ -286,8 +270,6 @@ class CheckSM2013ContentTest : FunSpec({
                 msgHead,
                 env,
                 kafkaproducerApprec,
-                jedis,
-                sha256String,
                 duplicationService,
                 duplicationCheck
             )
@@ -378,8 +360,6 @@ class CheckSM2013ContentTest : FunSpec({
             val msgHead = fellesformat.get<XMLMsgHead>()
             val env = mockk<Environment>(relaxed = true)
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
-            val jedis = mockk<Jedis>(relaxed = true)
-            val sha256String = ""
             val duplicationService = mockk<DuplicationService>(relaxed = true)
             val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
 
@@ -395,8 +375,6 @@ class CheckSM2013ContentTest : FunSpec({
                 msgHead,
                 env,
                 kafkaproducerApprec,
-                jedis,
-                sha256String,
                 duplicationService,
                 duplicationCheck
             )
@@ -494,8 +472,6 @@ class CheckSM2013ContentTest : FunSpec({
             val msgHead = fellesformat.get<XMLMsgHead>()
             val env = mockk<Environment>(relaxed = true)
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
-            val jedis = mockk<Jedis>(relaxed = true)
-            val sha256String = ""
             val duplicationService = mockk<DuplicationService>(relaxed = true)
             val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
 
@@ -511,8 +487,6 @@ class CheckSM2013ContentTest : FunSpec({
                 msgHead,
                 env,
                 kafkaproducerApprec,
-                jedis,
-                sha256String,
                 duplicationService,
                 duplicationCheck
             )
@@ -631,8 +605,6 @@ class CheckSM2013ContentTest : FunSpec({
             val msgHead = fellesformat.get<XMLMsgHead>()
             val env = mockk<Environment>(relaxed = true)
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
-            val jedis = mockk<Jedis>(relaxed = true)
-            val sha256String = ""
             val duplicationService = mockk<DuplicationService>(relaxed = true)
             val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
 
@@ -648,8 +620,6 @@ class CheckSM2013ContentTest : FunSpec({
                 msgHead,
                 env,
                 kafkaproducerApprec,
-                jedis,
-                sha256String,
                 duplicationService,
                 duplicationCheck
             )
@@ -768,8 +738,6 @@ class CheckSM2013ContentTest : FunSpec({
             val msgHead = fellesformat.get<XMLMsgHead>()
             val env = mockk<Environment>(relaxed = true)
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
-            val jedis = mockk<Jedis>(relaxed = true)
-            val sha256String = ""
             val duplicationService = mockk<DuplicationService>(relaxed = true)
             val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
 
@@ -785,8 +753,6 @@ class CheckSM2013ContentTest : FunSpec({
                 msgHead,
                 env,
                 kafkaproducerApprec,
-                jedis,
-                sha256String,
                 duplicationService,
                 duplicationCheck
             )
@@ -911,8 +877,6 @@ class CheckSM2013ContentTest : FunSpec({
             val msgHead = fellesformat.get<XMLMsgHead>()
             val env = mockk<Environment>(relaxed = true)
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
-            val jedis = mockk<Jedis>(relaxed = true)
-            val sha256String = ""
             val duplicationService = mockk<DuplicationService>(relaxed = true)
             val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
 
@@ -928,8 +892,6 @@ class CheckSM2013ContentTest : FunSpec({
                 msgHead,
                 env,
                 kafkaproducerApprec,
-                jedis,
-                sha256String,
                 duplicationService,
                 duplicationCheck
             )
@@ -1054,8 +1016,6 @@ class CheckSM2013ContentTest : FunSpec({
             val msgHead = fellesformat.get<XMLMsgHead>()
             val env = mockk<Environment>(relaxed = true)
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
-            val jedis = mockk<Jedis>(relaxed = true)
-            val sha256String = ""
             val duplicationService = mockk<DuplicationService>(relaxed = true)
             val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
 
@@ -1071,8 +1031,6 @@ class CheckSM2013ContentTest : FunSpec({
                 msgHead,
                 env,
                 kafkaproducerApprec,
-                jedis,
-                sha256String,
                 duplicationService,
                 duplicationCheck
             )
@@ -1197,8 +1155,6 @@ class CheckSM2013ContentTest : FunSpec({
             val msgHead = fellesformat.get<XMLMsgHead>()
             val env = mockk<Environment>(relaxed = true)
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
-            val jedis = mockk<Jedis>(relaxed = true)
-            val sha256String = ""
             val duplicationService = mockk<DuplicationService>(relaxed = true)
             val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
 
@@ -1214,8 +1170,6 @@ class CheckSM2013ContentTest : FunSpec({
                 msgHead,
                 env,
                 kafkaproducerApprec,
-                jedis,
-                sha256String,
                 duplicationService,
                 duplicationCheck
             )
@@ -1339,8 +1293,6 @@ class CheckSM2013ContentTest : FunSpec({
             val msgHead = fellesformat.get<XMLMsgHead>()
             val env = mockk<Environment>(relaxed = true)
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
-            val jedis = mockk<Jedis>(relaxed = true)
-            val sha256String = ""
             val duplicationService = mockk<DuplicationService>(relaxed = true)
             val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
 
@@ -1356,8 +1308,6 @@ class CheckSM2013ContentTest : FunSpec({
                 msgHead,
                 env,
                 kafkaproducerApprec,
-                jedis,
-                sha256String,
                 duplicationService,
                 duplicationCheck
             )
@@ -1482,8 +1432,6 @@ class CheckSM2013ContentTest : FunSpec({
             val msgHead = fellesformat.get<XMLMsgHead>()
             val env = mockk<Environment>(relaxed = true)
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
-            val jedis = mockk<Jedis>(relaxed = true)
-            val sha256String = ""
             val duplicationService = mockk<DuplicationService>(relaxed = true)
             val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
 
@@ -1499,8 +1447,6 @@ class CheckSM2013ContentTest : FunSpec({
                 msgHead,
                 env,
                 kafkaproducerApprec,
-                jedis,
-                sha256String,
                 duplicationService,
                 duplicationCheck
             )
@@ -1625,8 +1571,6 @@ class CheckSM2013ContentTest : FunSpec({
             val msgHead = fellesformat.get<XMLMsgHead>()
             val env = mockk<Environment>(relaxed = true)
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
-            val jedis = mockk<Jedis>(relaxed = true)
-            val sha256String = ""
             val duplicationService = mockk<DuplicationService>(relaxed = true)
             val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
 
@@ -1642,8 +1586,6 @@ class CheckSM2013ContentTest : FunSpec({
                 msgHead,
                 env,
                 kafkaproducerApprec,
-                jedis,
-                sha256String,
                 duplicationService,
                 duplicationCheck
             )
@@ -1767,8 +1709,6 @@ class CheckSM2013ContentTest : FunSpec({
             val msgHead = fellesformat.get<XMLMsgHead>()
             val env = mockk<Environment>(relaxed = true)
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
-            val jedis = mockk<Jedis>(relaxed = true)
-            val sha256String = ""
             val duplicationService = mockk<DuplicationService>(relaxed = true)
             val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
 
@@ -1784,8 +1724,6 @@ class CheckSM2013ContentTest : FunSpec({
                 msgHead,
                 env,
                 kafkaproducerApprec,
-                jedis,
-                sha256String,
                 duplicationService,
                 duplicationCheck
             )
@@ -1910,8 +1848,6 @@ class CheckSM2013ContentTest : FunSpec({
             val msgHead = fellesformat.get<XMLMsgHead>()
             val env = mockk<Environment>(relaxed = true)
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
-            val jedis = mockk<Jedis>(relaxed = true)
-            val sha256String = ""
             val duplicationService = mockk<DuplicationService>(relaxed = true)
             val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
 
@@ -1929,8 +1865,6 @@ class CheckSM2013ContentTest : FunSpec({
                 msgHead,
                 env,
                 kafkaproducerApprec,
-                jedis,
-                sha256String,
                 duplicationService,
                 duplicationCheck
             )
@@ -2063,8 +1997,6 @@ class CheckSM2013ContentTest : FunSpec({
             val msgHead = fellesformat.get<XMLMsgHead>()
             val env = mockk<Environment>(relaxed = true)
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
-            val jedis = mockk<Jedis>(relaxed = true)
-            val sha256String = ""
             val duplicationService = mockk<DuplicationService>(relaxed = true)
             val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
 
@@ -2082,8 +2014,6 @@ class CheckSM2013ContentTest : FunSpec({
                 msgHead,
                 env,
                 kafkaproducerApprec,
-                jedis,
-                sha256String,
                 duplicationService,
                 duplicationCheck
             )
