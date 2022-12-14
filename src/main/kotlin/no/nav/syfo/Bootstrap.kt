@@ -27,6 +27,7 @@ import no.nav.syfo.client.EmottakSubscriptionClient
 import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
+import no.nav.syfo.db.Database
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.OpprettOppgaveKafkaMessage
 import no.nav.syfo.model.ReceivedSykmelding
@@ -36,6 +37,7 @@ import no.nav.syfo.mq.connectionFactory
 import no.nav.syfo.mq.consumerForQueue
 import no.nav.syfo.mq.producerForQueue
 import no.nav.syfo.pdl.service.PdlPersonService
+import no.nav.syfo.service.DuplicationService
 import no.nav.syfo.service.VirusScanService
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.TrackableException
@@ -59,6 +61,8 @@ val log: Logger = LoggerFactory.getLogger("no.nav.syfo.syfosmmottak")
 @DelicateCoroutinesApi
 fun main() {
     val env = Environment()
+    val database = Database(env)
+
     val serviceUser = VaultServiceUser()
     MqTlsUtils.getMqTlsConfig().forEach { key, value -> System.setProperty(key as String, value as String) }
     val applicationState = ApplicationState()
@@ -79,6 +83,8 @@ fun main() {
     val bucketUploadService = BucketUploadService(env.sykmeldingVedleggBucketName, sykmeldingVedleggStorage)
     val virusScanService = VirusScanService(httpClients.clamAvClient)
 
+    val duplicationService = DuplicationService(database)
+
     launchListeners(
         env, applicationState,
         httpClients.emottakSubscriptionClient, kafkaClients.kafkaProducerReceivedSykmelding,
@@ -86,7 +92,7 @@ fun main() {
         httpClients.syfoSykemeldingRuleClient, httpClients.sarClient, httpClients.pdlPersonService,
         serviceUser, kafkaClients.manualValidationKafkaProducer,
         kafkaClients.kafkaProducerApprec, kafkaClients.kafkaproducerManuellOppgave,
-        httpClients.norskHelsenettClient, bucketUploadService, virusScanService
+        httpClients.norskHelsenettClient, bucketUploadService, virusScanService, duplicationService
     )
 
     applicationServer.start()
@@ -121,7 +127,8 @@ fun launchListeners(
     kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
     norskHelsenettClient: NorskHelsenettClient,
     bucketUploadService: BucketUploadService,
-    virusScanService: VirusScanService
+    virusScanService: VirusScanService,
+    duplicationService: DuplicationService
 ) {
     createListener(applicationState) {
         connectionFactory(env).createConnection(serviceUser.serviceuserUsername, serviceUser.serviceuserPassword).use { connection ->
@@ -149,7 +156,8 @@ fun launchListeners(
                     kafkaManuelTaskProducer,
                     kafkaproducerApprec,
                     kafkaproducerManuellOppgave,
-                    virusScanService
+                    virusScanService,
+                    duplicationService
                 ).run(
                     inputconsumer,
                     backoutProducer

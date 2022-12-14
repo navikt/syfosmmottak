@@ -1,0 +1,10 @@
+package no.nav.syfo.duplicationcheck.model
+
+import java.time.LocalDateTime
+
+data class DuplicationCheck(
+    val sha256HealthInformation: String,
+    val mottakId: String,
+    val msgId: String,
+    val mottattDate: LocalDateTime
+)

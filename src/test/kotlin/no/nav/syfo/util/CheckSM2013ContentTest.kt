@@ -15,8 +15,10 @@ import no.nav.helse.sm2013.NavnType
 import no.nav.helse.sm2013.TeleCom
 import no.nav.syfo.Environment
 import no.nav.syfo.apprec.Apprec
+import no.nav.syfo.duplicationcheck.model.DuplicationCheck
 import no.nav.syfo.pdl.client.model.PdlIdent
 import no.nav.syfo.pdl.model.PdlPerson
+import no.nav.syfo.service.DuplicationService
 import org.amshove.kluent.shouldBeEqualTo
 import org.apache.kafka.clients.producer.KafkaProducer
 import redis.clients.jedis.Jedis
@@ -43,6 +45,8 @@ class CheckSM2013ContentTest : FunSpec({
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
             val jedis = mockk<Jedis>(relaxed = true)
             val sha256String = ""
+            val duplicationService = mockk<DuplicationService>(relaxed = true)
+            val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
 
             val checkSM2013Content = checkSM2013Content(
                 pasient,
@@ -57,7 +61,9 @@ class CheckSM2013ContentTest : FunSpec({
                 env,
                 kafkaproducerApprec,
                 jedis,
-                sha256String
+                sha256String,
+                duplicationService,
+                duplicationCheck
             )
 
             checkSM2013Content shouldBeEqualTo true
@@ -86,6 +92,9 @@ class CheckSM2013ContentTest : FunSpec({
             val jedis = mockk<Jedis>(relaxed = true)
             val sha256String = ""
 
+            val duplicationService = mockk<DuplicationService>(relaxed = true)
+            val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
+
             val checkSM2013Content = checkSM2013Content(
                 pasient,
                 behandler,
@@ -99,7 +108,9 @@ class CheckSM2013ContentTest : FunSpec({
                 env,
                 kafkaproducerApprec,
                 jedis,
-                sha256String
+                sha256String,
+                duplicationService,
+                duplicationCheck
             )
 
             checkSM2013Content shouldBeEqualTo true
@@ -127,6 +138,8 @@ class CheckSM2013ContentTest : FunSpec({
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
             val jedis = mockk<Jedis>(relaxed = true)
             val sha256String = ""
+            val duplicationService = mockk<DuplicationService>(relaxed = true)
+            val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
 
             val checkSM2013Content = checkSM2013Content(
                 pasient,
@@ -141,7 +154,9 @@ class CheckSM2013ContentTest : FunSpec({
                 env,
                 kafkaproducerApprec,
                 jedis,
-                sha256String
+                sha256String,
+                duplicationService,
+                duplicationCheck
             )
 
             checkSM2013Content shouldBeEqualTo true
@@ -256,6 +271,8 @@ class CheckSM2013ContentTest : FunSpec({
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
             val jedis = mockk<Jedis>(relaxed = true)
             val sha256String = ""
+            val duplicationService = mockk<DuplicationService>(relaxed = true)
+            val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
 
             val checkSM2013Content = checkSM2013Content(
                 pasientPDL,
@@ -270,7 +287,9 @@ class CheckSM2013ContentTest : FunSpec({
                 env,
                 kafkaproducerApprec,
                 jedis,
-                sha256String
+                sha256String,
+                duplicationService,
+                duplicationCheck
             )
 
             checkSM2013Content shouldBeEqualTo false
@@ -361,6 +380,8 @@ class CheckSM2013ContentTest : FunSpec({
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
             val jedis = mockk<Jedis>(relaxed = true)
             val sha256String = ""
+            val duplicationService = mockk<DuplicationService>(relaxed = true)
+            val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
 
             val checkSM2013Content = checkSM2013Content(
                 pasientPDL,
@@ -375,7 +396,9 @@ class CheckSM2013ContentTest : FunSpec({
                 env,
                 kafkaproducerApprec,
                 jedis,
-                sha256String
+                sha256String,
+                duplicationService,
+                duplicationCheck
             )
 
             checkSM2013Content shouldBeEqualTo true
@@ -473,6 +496,8 @@ class CheckSM2013ContentTest : FunSpec({
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
             val jedis = mockk<Jedis>(relaxed = true)
             val sha256String = ""
+            val duplicationService = mockk<DuplicationService>(relaxed = true)
+            val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
 
             val checkSM2013Content = checkSM2013Content(
                 pasientPDL,
@@ -487,7 +512,9 @@ class CheckSM2013ContentTest : FunSpec({
                 env,
                 kafkaproducerApprec,
                 jedis,
-                sha256String
+                sha256String,
+                duplicationService,
+                duplicationCheck
             )
 
             checkSM2013Content shouldBeEqualTo true
@@ -606,6 +633,8 @@ class CheckSM2013ContentTest : FunSpec({
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
             val jedis = mockk<Jedis>(relaxed = true)
             val sha256String = ""
+            val duplicationService = mockk<DuplicationService>(relaxed = true)
+            val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
 
             val checkSM2013Content = checkSM2013Content(
                 pasientPDL,
@@ -620,7 +649,9 @@ class CheckSM2013ContentTest : FunSpec({
                 env,
                 kafkaproducerApprec,
                 jedis,
-                sha256String
+                sha256String,
+                duplicationService,
+                duplicationCheck
             )
 
             checkSM2013Content shouldBeEqualTo true
@@ -739,6 +770,8 @@ class CheckSM2013ContentTest : FunSpec({
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
             val jedis = mockk<Jedis>(relaxed = true)
             val sha256String = ""
+            val duplicationService = mockk<DuplicationService>(relaxed = true)
+            val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
 
             val checkSM2013Content = checkSM2013Content(
                 pasientPDL,
@@ -753,7 +786,9 @@ class CheckSM2013ContentTest : FunSpec({
                 env,
                 kafkaproducerApprec,
                 jedis,
-                sha256String
+                sha256String,
+                duplicationService,
+                duplicationCheck
             )
 
             checkSM2013Content shouldBeEqualTo true
@@ -878,6 +913,8 @@ class CheckSM2013ContentTest : FunSpec({
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
             val jedis = mockk<Jedis>(relaxed = true)
             val sha256String = ""
+            val duplicationService = mockk<DuplicationService>(relaxed = true)
+            val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
 
             val checkSM2013Content = checkSM2013Content(
                 pasientPDL,
@@ -892,7 +929,9 @@ class CheckSM2013ContentTest : FunSpec({
                 env,
                 kafkaproducerApprec,
                 jedis,
-                sha256String
+                sha256String,
+                duplicationService,
+                duplicationCheck
             )
 
             checkSM2013Content shouldBeEqualTo true
@@ -1017,6 +1056,8 @@ class CheckSM2013ContentTest : FunSpec({
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
             val jedis = mockk<Jedis>(relaxed = true)
             val sha256String = ""
+            val duplicationService = mockk<DuplicationService>(relaxed = true)
+            val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
 
             val checkSM2013Content = checkSM2013Content(
                 pasientPDL,
@@ -1031,7 +1072,9 @@ class CheckSM2013ContentTest : FunSpec({
                 env,
                 kafkaproducerApprec,
                 jedis,
-                sha256String
+                sha256String,
+                duplicationService,
+                duplicationCheck
             )
 
             checkSM2013Content shouldBeEqualTo true
@@ -1156,6 +1199,8 @@ class CheckSM2013ContentTest : FunSpec({
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
             val jedis = mockk<Jedis>(relaxed = true)
             val sha256String = ""
+            val duplicationService = mockk<DuplicationService>(relaxed = true)
+            val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
 
             val checkSM2013Content = checkSM2013Content(
                 pasientPDL,
@@ -1170,7 +1215,9 @@ class CheckSM2013ContentTest : FunSpec({
                 env,
                 kafkaproducerApprec,
                 jedis,
-                sha256String
+                sha256String,
+                duplicationService,
+                duplicationCheck
             )
 
             checkSM2013Content shouldBeEqualTo true
@@ -1294,6 +1341,8 @@ class CheckSM2013ContentTest : FunSpec({
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
             val jedis = mockk<Jedis>(relaxed = true)
             val sha256String = ""
+            val duplicationService = mockk<DuplicationService>(relaxed = true)
+            val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
 
             val checkSM2013Content = checkSM2013Content(
                 pasientPDL,
@@ -1308,7 +1357,9 @@ class CheckSM2013ContentTest : FunSpec({
                 env,
                 kafkaproducerApprec,
                 jedis,
-                sha256String
+                sha256String,
+                duplicationService,
+                duplicationCheck
             )
 
             checkSM2013Content shouldBeEqualTo true
@@ -1433,6 +1484,8 @@ class CheckSM2013ContentTest : FunSpec({
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
             val jedis = mockk<Jedis>(relaxed = true)
             val sha256String = ""
+            val duplicationService = mockk<DuplicationService>(relaxed = true)
+            val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
 
             val checkSM2013Content = checkSM2013Content(
                 pasientPDL,
@@ -1447,7 +1500,9 @@ class CheckSM2013ContentTest : FunSpec({
                 env,
                 kafkaproducerApprec,
                 jedis,
-                sha256String
+                sha256String,
+                duplicationService,
+                duplicationCheck
             )
 
             checkSM2013Content shouldBeEqualTo true
@@ -1572,6 +1627,8 @@ class CheckSM2013ContentTest : FunSpec({
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
             val jedis = mockk<Jedis>(relaxed = true)
             val sha256String = ""
+            val duplicationService = mockk<DuplicationService>(relaxed = true)
+            val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
 
             val checkSM2013Content = checkSM2013Content(
                 pasientPDL,
@@ -1586,7 +1643,9 @@ class CheckSM2013ContentTest : FunSpec({
                 env,
                 kafkaproducerApprec,
                 jedis,
-                sha256String
+                sha256String,
+                duplicationService,
+                duplicationCheck
             )
 
             checkSM2013Content shouldBeEqualTo true
@@ -1710,6 +1769,8 @@ class CheckSM2013ContentTest : FunSpec({
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
             val jedis = mockk<Jedis>(relaxed = true)
             val sha256String = ""
+            val duplicationService = mockk<DuplicationService>(relaxed = true)
+            val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
 
             val checkSM2013Content = checkSM2013Content(
                 pasientPDL,
@@ -1724,7 +1785,9 @@ class CheckSM2013ContentTest : FunSpec({
                 env,
                 kafkaproducerApprec,
                 jedis,
-                sha256String
+                sha256String,
+                duplicationService,
+                duplicationCheck
             )
 
             checkSM2013Content shouldBeEqualTo true
@@ -1849,6 +1912,8 @@ class CheckSM2013ContentTest : FunSpec({
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
             val jedis = mockk<Jedis>(relaxed = true)
             val sha256String = ""
+            val duplicationService = mockk<DuplicationService>(relaxed = true)
+            val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
 
             coEvery { env.cluster } returns "prod-gcp"
 
@@ -1865,7 +1930,9 @@ class CheckSM2013ContentTest : FunSpec({
                 env,
                 kafkaproducerApprec,
                 jedis,
-                sha256String
+                sha256String,
+                duplicationService,
+                duplicationCheck
             )
 
             checkSM2013Content shouldBeEqualTo true
@@ -1998,6 +2065,8 @@ class CheckSM2013ContentTest : FunSpec({
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
             val jedis = mockk<Jedis>(relaxed = true)
             val sha256String = ""
+            val duplicationService = mockk<DuplicationService>(relaxed = true)
+            val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
 
             coEvery { env.cluster } returns "localhost"
 
@@ -2014,7 +2083,9 @@ class CheckSM2013ContentTest : FunSpec({
                 env,
                 kafkaproducerApprec,
                 jedis,
-                sha256String
+                sha256String,
+                duplicationService,
+                duplicationCheck
             )
 
             checkSM2013Content shouldBeEqualTo true

@@ -6,6 +6,19 @@ metadata:
   labels:
     team: teamsykmelding
 spec:
+  gcp:
+    sqlInstances:
+      - name: syfosmmottak-instance
+        type: POSTGRES_14
+        diskSize: 10
+        databases:
+          - name: syfosmmottak
+            envVarPrefix: DB
+        diskAutoresize: true
+        highAvailability: false
+        diskType: SSD
+        insights:
+          enabled: true
   image: {{ image }}
   replicas:
     min: 1
@@ -32,7 +45,7 @@ spec:
       memory: 1Gi
     requests:
       cpu: 100m
-      memory: 128Mi
+      memory: 512Mi
   kafka:
     pool: nav-dev
   azure:

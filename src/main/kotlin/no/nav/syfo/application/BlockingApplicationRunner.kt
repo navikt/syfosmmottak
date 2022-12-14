@@ -15,6 +15,7 @@ import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.client.findBestSamhandlerPraksis
 import no.nav.syfo.client.findBestSamhandlerPraksisEmottak
 import no.nav.syfo.client.getHelsepersonellKategori
+import no.nav.syfo.duplicationcheck.model.DuplicationCheck
 import no.nav.syfo.handlestatus.handleDuplicateEdiloggid
 import no.nav.syfo.handlestatus.handleDuplicateSM2013Content
 import no.nav.syfo.handlestatus.handleStatusINVALID
@@ -35,6 +36,7 @@ import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.model.toSykmelding
 import no.nav.syfo.pdl.service.PdlPersonService
+import no.nav.syfo.service.DuplicationService
 import no.nav.syfo.service.VirusScanService
 import no.nav.syfo.service.sha256hashstring
 import no.nav.syfo.service.updateRedis
@@ -90,7 +92,8 @@ class BlockingApplicationRunner(
     private val kafkaManuelTaskProducer: KafkaProducer<String, OpprettOppgaveKafkaMessage>,
     private val kafkaproducerApprec: KafkaProducer<String, Apprec>,
     private val kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
-    private val virusScanService: VirusScanService
+    private val virusScanService: VirusScanService,
+    private val duplicationService: DuplicationService
 ) {
 
     suspend fun run(
@@ -150,6 +153,11 @@ class BlockingApplicationRunner(
                     val originaltPasientFnr = healthInformation.pasient.fodselsnummer.id
                     val erVirksomhetSykmelding = receiverBlock.ebService == "SykmeldingVirksomhet"
 
+                    val mottatDato = receiverBlock.mottattDatotid.toGregorianCalendar().toZonedDateTime()
+                        .withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime()
+
+                    val duplicationCheck = DuplicationCheck(sha256String, ediLoggId, msgId, mottatDato)
+
                     log.info(
                         "Extracted data, ready to make sync calls to get more data, {}",
                         StructuredArguments.fields(loggingMeta)
@@ -161,7 +169,8 @@ class BlockingApplicationRunner(
                         if (hpr == null) {
                             handleVirksomhetssykmeldingOgHprMangler(
                                 loggingMeta, fellesformat,
-                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String,
+                                duplicationService, duplicationCheck
                             )
                             continue@loop
                         }
@@ -172,7 +181,8 @@ class BlockingApplicationRunner(
                         if (fnr == null) {
                             handleVirksomhetssykmeldingOgFnrManglerIHPR(
                                 loggingMeta, fellesformat,
-                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String,
+                                duplicationService, duplicationCheck
                             )
                             continue@loop
                         } else {
@@ -211,9 +221,11 @@ class BlockingApplicationRunner(
                     )
 
                     val redisSha256String = jedis.get(sha256String)
+                    val duplicationServiceSha256String = duplicationService.getDuplicationCheck(sha256String, ediLoggId)
                     val redisEdiloggid = jedis.get(ediLoggId)
 
                     if (redisSha256String != null) {
+                        log.info("duplicationServiceSha256String: should be null $duplicationServiceSha256String")
                         handleDuplicateSM2013Content(
                             redisSha256String, loggingMeta, fellesformat,
                             ediLoggId, msgId, msgHead, env, kafkaproducerApprec
@@ -228,6 +240,7 @@ class BlockingApplicationRunner(
                         )
                         throw RuntimeException("Redis has some issues with geting the redisEdiloggid")
                     } else if (redisEdiloggid != null) {
+                        log.info("duplicationServiceSha256String: should be null $duplicationServiceSha256String")
                         handleDuplicateEdiloggid(
                             redisEdiloggid, loggingMeta, fellesformat,
                             ediLoggId, msgId, msgHead, env, kafkaproducerApprec
@@ -239,7 +252,8 @@ class BlockingApplicationRunner(
 
                         if (checkSM2013Content(
                                 pasient, behandler, healthInformation, originaltPasientFnr, loggingMeta, fellesformat,
-                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String
+                                ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String,
+                                duplicationService, duplicationCheck
                             )
                         ) {
                             continue@loop
@@ -304,7 +318,7 @@ class BlockingApplicationRunner(
                                 handleVedleggContainsVirus(
                                     loggingMeta, fellesformat, ediLoggId,
                                     msgId, msgHead, env, kafkaproducerApprec,
-                                    jedis, sha256String
+                                    jedis, sha256String, duplicationService, duplicationCheck
                                 )
                                 continue@loop
                             }
@@ -345,8 +359,7 @@ class BlockingApplicationRunner(
                             legekontorOrgName = legekontorOrgName,
                             legekontorHerId = legekontorHerId,
                             legekontorReshId = legekontorReshId,
-                            mottattDato = receiverBlock.mottattDatotid.toGregorianCalendar().toZonedDateTime()
-                                .withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime(),
+                            mottattDato = mottatDato,
                             rulesetVersion = healthInformation.regelSettVersjon,
                             fellesformat = fellesformatText,
                             tssid = samhandlerPraksisTssId ?: "",
@@ -424,6 +437,7 @@ class BlockingApplicationRunner(
                         val currentRequestLatency = requestLatency.observeDuration()
 
                         updateRedis(jedis, ediLoggId, sha256String)
+                        duplicationService.persistDuplicationCheck(duplicationCheck)
                         log.info(
                             "Message got outcome {}, {}, processing took {}s, {}",
                             StructuredArguments.keyValue("status", validationResult.status),

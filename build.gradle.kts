@@ -30,8 +30,13 @@ val jaxbRuntimeVersion = "2.4.0-b180830.0438"
 val javaTimeAdapterVersion = "1.1.3"
 val mockkVersion = "1.13.2"
 val kotlinVersion = "1.7.21"
-val googleCloudStorageVersion = "2.12.0"
+val googleCloudStorageVersion = "2.13.0"
 val kotestVersion = "5.5.4"
+val flywayVersion = "9.3.0"
+val hikariVersion = "5.0.1"
+val postgresVersion = "42.5.0"
+val embeddedPostgresVersion = "2.0.2"
+val nettyCodecVersion = "4.1.86.Final"
 
 plugins {
     kotlin("jvm") version "1.7.21"
@@ -65,6 +70,9 @@ dependencies {
 
     implementation("io.ktor:ktor-server-core:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
+    //This is to override version that is in io.ktor:ktor-server-netty
+    //https://www.cve.org/CVERecord?id=CVE-2022-41915
+    implementation("io.netty:netty-codec:$nettyCodecVersion")
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-apache:$ktorVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
@@ -101,6 +109,10 @@ dependencies {
     implementation("org.glassfish.jaxb:jaxb-runtime:$jaxbRuntimeVersion")
     implementation("javax.activation:activation:$javaxActivationVersion")
 
+    implementation("org.postgresql:postgresql:$postgresVersion")
+    implementation("com.zaxxer:HikariCP:$hikariVersion")
+    implementation("org.flywaydb:flyway-core:$flywayVersion")
+
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
@@ -109,6 +121,7 @@ dependencies {
     }
 
     testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
+    testImplementation("io.zonky.test:embedded-postgres:$embeddedPostgresVersion")
 }
 
 
