@@ -25,7 +25,6 @@ import no.nav.syfo.handlestatus.handleTestFnrInProd
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.service.DuplicationService
 import org.apache.kafka.clients.producer.KafkaProducer
-import redis.clients.jedis.Jedis
 
 fun checkSM2013Content(
     pasient: PdlPerson?,
@@ -39,15 +38,13 @@ fun checkSM2013Content(
     msgHead: XMLMsgHead,
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
-    jedis: Jedis,
-    sha256String: String,
     duplicationService: DuplicationService,
     duplicationCheck: DuplicationCheck
 ): Boolean {
     if (pasient?.aktorId == null || pasient.fnr == null) {
         handlePatientNotFoundInPDL(
             loggingMeta, fellesformat,
-            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String, duplicationService, duplicationCheck
+            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicationCheck
         )
         return true
     }
@@ -55,7 +52,7 @@ fun checkSM2013Content(
     if (behandler?.aktorId == null) {
         handleDoctorNotFoundInPDL(
             loggingMeta, fellesformat,
-            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String, duplicationService, duplicationCheck
+            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicationCheck
         )
         return true
     }
@@ -63,7 +60,7 @@ fun checkSM2013Content(
     if (healthInformation.aktivitet == null || healthInformation.aktivitet.periode.isNullOrEmpty()) {
         handleAktivitetOrPeriodeIsMissing(
             loggingMeta, fellesformat,
-            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String, duplicationService, duplicationCheck
+            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicationCheck
         )
         return true
     }
@@ -71,7 +68,7 @@ fun checkSM2013Content(
     if (periodetypeIkkeAngitt(healthInformation.aktivitet)) {
         handlePeriodetypeMangler(
             loggingMeta, fellesformat,
-            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String, duplicationService, duplicationCheck
+            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicationCheck
         )
         return true
     }
@@ -81,7 +78,7 @@ fun checkSM2013Content(
     ) {
         handleBiDiagnoserDiagnosekodeIsMissing(
             loggingMeta, fellesformat,
-            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String, duplicationService, duplicationCheck
+            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicationCheck
         )
         return true
     }
@@ -91,7 +88,7 @@ fun checkSM2013Content(
     ) {
         handleBiDiagnoserDiagnosekodeVerkIsMissing(
             loggingMeta, fellesformat,
-            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String, duplicationService, duplicationCheck
+            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicationCheck
         )
         return true
     }
@@ -101,7 +98,7 @@ fun checkSM2013Content(
     ) {
         handleBiDiagnoserDiagnosekodeBeskrivelseMissing(
             loggingMeta, fellesformat,
-            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String, duplicationService, duplicationCheck
+            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicationCheck
         )
         return true
     }
@@ -109,7 +106,7 @@ fun checkSM2013Content(
     if (fnrOgDnrMangler(healthInformation) && hprMangler(healthInformation)) {
         handleFnrAndDnrAndHprIsmissingFromBehandler(
             loggingMeta, fellesformat,
-            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String, duplicationService, duplicationCheck
+            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicationCheck
         )
         return true
     }
@@ -119,7 +116,7 @@ fun checkSM2013Content(
     ) {
         handleHovedDiagnoseDiagnosekodeMissing(
             loggingMeta, fellesformat,
-            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String, duplicationService, duplicationCheck
+            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicationCheck
         )
         return true
     }
@@ -129,7 +126,7 @@ fun checkSM2013Content(
     ) {
         handleHovedDiagnoseDiagnoseBeskrivelseMissing(
             loggingMeta, fellesformat,
-            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String, duplicationService, duplicationCheck
+            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicationCheck
         )
         return true
     }
@@ -137,7 +134,7 @@ fun checkSM2013Content(
     if (medisinskeArsakskodeMangler(healthInformation)) {
         handleMedisinskeArsakskodeIsmissing(
             loggingMeta, fellesformat,
-            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String, duplicationService, duplicationCheck
+            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicationCheck
         )
         return true
     }
@@ -145,7 +142,7 @@ fun checkSM2013Content(
     if (medisinskeArsakskodeHarUgyldigVerdi(healthInformation)) {
         handleMedisinskeArsakskodeHarUgyldigVerdi(
             loggingMeta, fellesformat,
-            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String, duplicationService, duplicationCheck
+            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicationCheck
         )
         return true
     }
@@ -153,7 +150,7 @@ fun checkSM2013Content(
     if (arbeidsplassenArsakskodeMangler(healthInformation)) {
         handleArbeidsplassenArsakskodeIsmissing(
             loggingMeta, fellesformat,
-            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String, duplicationService, duplicationCheck
+            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicationCheck
         )
         return true
     }
@@ -161,7 +158,7 @@ fun checkSM2013Content(
     if (arbeidsplassenArsakskodeHarUgyldigVerdi(healthInformation)) {
         handleArbeidsplassenArsakskodeHarUgyldigVerdi(
             loggingMeta, fellesformat,
-            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String, duplicationService, duplicationCheck
+            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicationCheck
         )
         return true
     }
@@ -169,7 +166,7 @@ fun checkSM2013Content(
     if (erTestFnr(originaltPasientFnr) && env.cluster == "prod-gcp") {
         handleTestFnrInProd(
             loggingMeta, fellesformat,
-            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String, duplicationService, duplicationCheck
+            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicationCheck
         )
         return true
     }
@@ -177,7 +174,7 @@ fun checkSM2013Content(
     if (annenFraversArsakkodeVMangler(healthInformation)) {
         handleAnnenFraversArsakkodeVIsmissing(
             loggingMeta, fellesformat,
-            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, jedis, sha256String, duplicationService, duplicationCheck
+            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicationCheck
         )
         return true
     }

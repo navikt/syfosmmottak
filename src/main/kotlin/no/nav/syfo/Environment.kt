@@ -22,8 +22,6 @@ data class Environment(
     override val mqChannelName: String = getEnvVar("MQ_CHANNEL_NAME"),
     val inputQueueName: String = getEnvVar("MQ_INPUT_QUEUE_NAME"),
     val inputBackoutQueueName: String = getEnvVar("MQ_INPUT_BOQ_QUEUE_NAME"),
-    val redisHost: String = getEnvVar("REDIS_HOST", "syfosmmottak-redis.teamsykmelding.svc.cluster.local"),
-    val redisSecret: String = getEnvVar("REDIS_PASSWORD"),
     val cluster: String = getEnvVar("NAIS_CLUSTER_NAME"),
     val norskHelsenettEndpointURL: String = getEnvVar("HELSENETT_ENDPOINT_URL"),
     val aadAccessTokenV2Url: String = getEnvVar("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),

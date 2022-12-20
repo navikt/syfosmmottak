@@ -28,7 +28,6 @@ import no.nav.syfo.utils.getFileAsString
 import no.nav.syfo.vedlegg.google.BucketUploadService
 import org.amshove.kluent.shouldBeEqualTo
 import org.apache.kafka.clients.producer.KafkaProducer
-import redis.clients.jedis.Jedis
 import javax.jms.MessageConsumer
 import javax.jms.MessageProducer
 import javax.jms.TextMessage
@@ -43,7 +42,6 @@ class BlockingApplicationRunnerTest : FunSpec({
     val norskHelsenettClient = mockk<NorskHelsenettClient>()
     val kuhrSarClient = mockk<SarClient>()
     val pdlPersonService = mockk<PdlPersonService>()
-    val jedis = mockk<Jedis>(relaxed = true)
     val bucketUploadService = mockk<BucketUploadService>(relaxed = true)
     val kafkaproducerreceivedSykmelding = mockk<KafkaProducer<String, ReceivedSykmelding>>(relaxed = true)
     val kafkaproducervalidationResult = mockk<KafkaProducer<String, ValidationResult>>(relaxed = true)
@@ -61,7 +59,6 @@ class BlockingApplicationRunnerTest : FunSpec({
         norskHelsenettClient,
         kuhrSarClient,
         pdlPersonService,
-        jedis,
         bucketUploadService,
         kafkaproducerreceivedSykmelding,
         kafkaproducervalidationResult,
@@ -81,10 +78,10 @@ class BlockingApplicationRunnerTest : FunSpec({
         "12345678912" to PdlPerson(listOf(PdlIdent("12345678912", false, "FOLKEREGISTERIDENT"), PdlIdent("aktorId2", false, "AKTORID")))
     )
     coEvery { kuhrSarClient.getSamhandler(any(), any()) } returns emptyList()
-    every { jedis.get(any<String>()) } returns null
     coEvery { norskHelsenettClient.getByFnr(any(), any()) } returns Behandler(emptyList(), "", "HPR", null, null, null)
     coEvery { norskHelsenettClient.getByHpr(any(), any()) } returns Behandler(emptyList(), "", "HPR", null, null, null)
     coEvery { syfoSykemeldingRuleClient.executeRuleValidation(any(), any()) } returns ValidationResult(Status.OK, emptyList())
+    coEvery { duplicationService.getDuplicationCheck(any(), any()) } returns null
 
     context("Mottak av sykmelding") {
         test("Vanlig sykmelding skal gi ok apprec") {
