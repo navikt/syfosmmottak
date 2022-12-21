@@ -12,6 +12,7 @@ import no.nav.syfo.apprec.toApprec
 import no.nav.syfo.duplicationcheck.model.DuplicationCheck
 import no.nav.syfo.log
 import no.nav.syfo.metrics.INVALID_MESSAGE_NO_NOTICE
+import no.nav.syfo.metrics.SYKMELDING_AVVIST_DUPLIKCATE_COUNTER
 import no.nav.syfo.metrics.SYKMELDING_AVVIST_VIRUS_VEDLEGG_COUNTER
 import no.nav.syfo.metrics.TEST_FNR_IN_PROD
 import no.nav.syfo.model.ReceivedSykmelding
@@ -85,6 +86,7 @@ fun handleDuplicateSM2013Content(
     sendReceipt(apprec, env.apprecTopic, kafkaproducerApprec, loggingMeta)
     log.info("Apprec receipt sent to kafka topic {}, {}", env.apprecTopic, fields(loggingMeta))
     INVALID_MESSAGE_NO_NOTICE.inc()
+    SYKMELDING_AVVIST_DUPLIKCATE_COUNTER.inc()
 }
 
 fun handlePatientNotFoundInPDL(
