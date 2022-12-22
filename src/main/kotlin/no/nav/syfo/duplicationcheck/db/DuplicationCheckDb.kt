@@ -14,15 +14,21 @@ fun DatabaseInterface.persistSha256(duplicationCheck: DuplicationCheck) {
                 sha256_health_information,
                 mottak_id,
                 msg_id,
-                mottatt_date
+                mottatt_date,
+                epj_system,
+                epj_version,
+                org_number 
                 )
-            values (?, ?, ?, ?)
+            values (?, ?, ?, ?, ?, ?, ?) on conflict (sha256_health_information) do nothing;
             """
         ).use { preparedStatement ->
             preparedStatement.setString(1, duplicationCheck.sha256HealthInformation)
             preparedStatement.setString(2, duplicationCheck.mottakId)
             preparedStatement.setString(3, duplicationCheck.msgId)
             preparedStatement.setTimestamp(4, Timestamp.valueOf(duplicationCheck.mottattDate))
+            preparedStatement.setString(5, duplicationCheck.epjSystem)
+            preparedStatement.setString(6, duplicationCheck.epjVersion)
+            preparedStatement.setString(7, duplicationCheck.orgNumber)
             preparedStatement.executeUpdate()
         }
         connection.commit()
@@ -64,5 +70,8 @@ fun ResultSet.toDuplicationCheck(): DuplicationCheck =
         sha256HealthInformation = getString("sha256_health_information"),
         mottakId = getString("mottak_id"),
         msgId = getString("msg_id"),
-        mottattDate = getTimestamp("mottatt_date").toLocalDateTime()
+        mottattDate = getTimestamp("mottatt_date").toLocalDateTime(),
+        epjSystem = getString("epj_system"),
+        epjVersion = getString("epj_version"),
+        orgNumber = getString("org_number")
     )

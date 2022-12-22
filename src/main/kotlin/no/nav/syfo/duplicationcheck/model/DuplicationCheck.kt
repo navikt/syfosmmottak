@@ -6,5 +6,8 @@ data class DuplicationCheck(
     val sha256HealthInformation: String,
     val mottakId: String,
     val msgId: String,
-    val mottattDate: LocalDateTime
+    val mottattDate: LocalDateTime,
+    val epjSystem: String?,
+    val epjVersion: String?,
+    val orgNumber: String?
 )

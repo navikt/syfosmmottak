@@ -33,6 +33,7 @@ import no.nav.syfo.model.OpprettOppgaveKafkaMessage
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
+import no.nav.syfo.model.toAvsenderSystem
 import no.nav.syfo.model.toSykmelding
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.service.DuplicationService
@@ -151,7 +152,12 @@ class BlockingApplicationRunner(
                     val mottatDato = receiverBlock.mottattDatotid.toGregorianCalendar().toZonedDateTime()
                         .withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime()
 
-                    val duplicationCheck = DuplicationCheck(sha256String, ediLoggId, msgId, mottatDato)
+                    val avsenderSystem = healthInformation.avsenderSystem.toAvsenderSystem()
+
+                    val duplicationCheck = DuplicationCheck(
+                        sha256String, ediLoggId, msgId, mottatDato,
+                        avsenderSystem.navn, avsenderSystem.versjon, legekontorOrgName
+                    )
 
                     log.info(
                         "Extracted data, ready to make sync calls to get more data, {}",
