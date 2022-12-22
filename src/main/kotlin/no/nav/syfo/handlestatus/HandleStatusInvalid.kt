@@ -9,6 +9,7 @@ import no.nav.syfo.Environment
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.apprec.ApprecStatus
 import no.nav.syfo.apprec.toApprec
+import no.nav.syfo.duplicationcheck.model.Duplicate
 import no.nav.syfo.duplicationcheck.model.DuplicationCheck
 import no.nav.syfo.log
 import no.nav.syfo.metrics.INVALID_MESSAGE_NO_NOTICE
@@ -65,7 +66,9 @@ fun handleDuplicateSM2013Content(
     msgId: String,
     msgHead: XMLMsgHead,
     env: Environment,
-    kafkaproducerApprec: KafkaProducer<String, Apprec>
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    duplicationService: DuplicationService,
+    duplicate: Duplicate
 ) {
     log.warn(
         "Melding med {} har samme innhold som tidligere mottatt sykmelding og er avvist som duplikat {} {}",
@@ -87,6 +90,7 @@ fun handleDuplicateSM2013Content(
     log.info("Apprec receipt sent to kafka topic {}, {}", env.apprecTopic, fields(loggingMeta))
     INVALID_MESSAGE_NO_NOTICE.inc()
     SYKMELDING_AVVIST_DUPLIKCATE_COUNTER.inc()
+    duplicationService.persistDuplication(duplicate)
 }
 
 fun handlePatientNotFoundInPDL(

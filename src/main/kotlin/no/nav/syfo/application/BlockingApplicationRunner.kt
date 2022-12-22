@@ -71,6 +71,7 @@ import java.util.UUID
 import javax.jms.MessageConsumer
 import javax.jms.MessageProducer
 import javax.jms.TextMessage
+import no.nav.syfo.duplicationcheck.model.Duplicate
 
 private val sikkerlogg = LoggerFactory.getLogger("securelog")
 
@@ -224,9 +225,12 @@ class BlockingApplicationRunner(
                     val duplicationServiceSha256String = duplicationService.getDuplicationCheck(sha256String, ediLoggId)
 
                     if (duplicationServiceSha256String != null) {
+                        val duplicate = Duplicate(UUID.randomUUID().toString(), ediLoggId, msgId,
+                            duplicationServiceSha256String.mottakId, duplicationServiceSha256String.msgId, mottatDato)
+
                         handleDuplicateSM2013Content(
                             duplicationServiceSha256String.mottakId, loggingMeta, fellesformat,
-                            ediLoggId, msgId, msgHead, env, kafkaproducerApprec
+                            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicate
                         )
                         continue@loop
                     } else {

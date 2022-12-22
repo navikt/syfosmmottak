@@ -8,12 +8,20 @@ import no.nav.syfo.duplicationcheck.db.persistSha256
 import no.nav.syfo.duplicationcheck.model.DuplicationCheck
 import no.nav.syfo.objectMapper
 import java.security.MessageDigest
+import no.nav.syfo.duplicationcheck.db.persistDuplicateMessage
+import no.nav.syfo.duplicationcheck.model.Duplicate
 
 class DuplicationService(private val database: DatabaseInterface) {
     fun persistDuplicationCheck(
         duplicationCheck: DuplicationCheck
     ) {
         database.persistSha256(duplicationCheck)
+    }
+
+    fun persistDuplication(
+        duplicate: Duplicate
+    ) {
+        database.persistDuplicateMessage(duplicate)
     }
 
     fun getDuplicationCheck(sha256HealthInformation: String, mottakId: String): DuplicationCheck? {

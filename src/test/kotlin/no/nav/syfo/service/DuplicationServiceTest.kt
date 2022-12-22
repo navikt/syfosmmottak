@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
+import java.util.UUID
+import no.nav.syfo.duplicationcheck.model.Duplicate
 
 internal class DuplicationServiceTest {
     private val testDatabase = TestDB
@@ -97,5 +99,29 @@ internal class DuplicationServiceTest {
         assertEquals(null, duplicationCheck.epjSystem)
         assertEquals(null, duplicationCheck.epjVersion)
         assertEquals(null, duplicationCheck.orgNumber)
+    }
+    @Test
+    fun `Should persiste duplication in database`() {
+        val sha256HealthInformation = "asdsadff11"
+        val mottakId = "1231-213"
+        val msgId = "12-33"
+        val epjSystem = "Kul EPJ"
+        val epjVersion = "1.3.4"
+        val orgNumber = "992312355"
+        val mottatDato = LocalDateTime.now()
+
+        val duplicationCheck = DuplicationCheck(
+            sha256HealthInformation, mottakId, msgId, mottatDato, epjSystem, epjVersion, orgNumber
+        )
+
+        duplicationService.persistDuplicationCheck(duplicationCheck)
+        val isDuplicat = duplicationService.getDuplicationCheck("1231", mottakId)!!
+
+        val duplication = Duplicate(
+            UUID.randomUUID().toString(), mottakId, msgId,
+            isDuplicat.mottakId, isDuplicat.msgId, mottatDato)
+        duplicationService.persistDuplication(duplication)
+
+        assertEquals(mottakId, isDuplicat.mottakId)
     }
 }
