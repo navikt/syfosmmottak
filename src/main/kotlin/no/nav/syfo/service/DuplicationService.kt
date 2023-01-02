@@ -2,20 +2,26 @@ package no.nav.syfo.service
 
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 import no.nav.syfo.db.DatabaseInterface
-import no.nav.syfo.duplicationcheck.db.extractDuplicationCheckByMottakId
-import no.nav.syfo.duplicationcheck.db.extractDuplicationCheckBySha256HealthInformation
+import no.nav.syfo.duplicationcheck.db.extractDuplicateCheckByMottakId
+import no.nav.syfo.duplicationcheck.db.extractDuplicateCheckBySha256HealthInformation
+import no.nav.syfo.duplicationcheck.db.extractDuplikatsjekkByMottakId
+import no.nav.syfo.duplicationcheck.db.extractDuplikatsjekkBySha256HealthInformation
+import no.nav.syfo.duplicationcheck.db.persistDuplicateCheck
+import no.nav.syfo.duplicationcheck.db.persistDuplicateMessage
 import no.nav.syfo.duplicationcheck.db.persistSha256
-import no.nav.syfo.duplicationcheck.model.DuplicationCheck
+import no.nav.syfo.duplicationcheck.model.Duplicate
+import no.nav.syfo.duplicationcheck.model.DuplicateCheck
+import no.nav.syfo.duplicationcheck.model.Duplikatsjekk
 import no.nav.syfo.objectMapper
 import java.security.MessageDigest
-import no.nav.syfo.duplicationcheck.db.persistDuplicateMessage
-import no.nav.syfo.duplicationcheck.model.Duplicate
 
 class DuplicationService(private val database: DatabaseInterface) {
     fun persistDuplicationCheck(
-        duplicationCheck: DuplicationCheck
+        duplikatsjekk: Duplikatsjekk,
+        duplicateCheck: DuplicateCheck
     ) {
-        database.persistSha256(duplicationCheck)
+        database.persistSha256(duplikatsjekk)
+        database.persistDuplicateCheck(duplicateCheck)
     }
 
     fun persistDuplication(
@@ -24,14 +30,30 @@ class DuplicationService(private val database: DatabaseInterface) {
         database.persistDuplicateMessage(duplicate)
     }
 
-    fun getDuplicationCheck(sha256HealthInformation: String, mottakId: String): DuplicationCheck? {
+    fun getDuplikatsjekk(sha256HealthInformation: String, mottakId: String): Duplikatsjekk? {
         val duplicationCheckSha256HealthInformation =
-            database.extractDuplicationCheckBySha256HealthInformation(sha256HealthInformation)
+            database.extractDuplikatsjekkBySha256HealthInformation(sha256HealthInformation)
+        if (duplicationCheckSha256HealthInformation != null) {
+            return duplicationCheckSha256HealthInformation
+        } else {
+            val duplicationCheckMottakId = getLatestDuplikatsjekk(
+                database.extractDuplikatsjekkByMottakId(mottakId)
+            )
+            if (duplicationCheckMottakId != null) {
+                return duplicationCheckMottakId
+            }
+            return null
+        }
+    }
+
+    fun getDuplicationCheck(sha256HealthInformation: String, mottakId: String): DuplicateCheck? {
+        val duplicationCheckSha256HealthInformation =
+            database.extractDuplicateCheckBySha256HealthInformation(sha256HealthInformation)
         if (duplicationCheckSha256HealthInformation != null) {
             return duplicationCheckSha256HealthInformation
         } else {
             val duplicationCheckMottakId = getLatestDuplicationCheck(
-                database.extractDuplicationCheckByMottakId(mottakId)
+                database.extractDuplicateCheckByMottakId(mottakId)
             )
             if (duplicationCheckMottakId != null) {
                 return duplicationCheckMottakId
@@ -41,7 +63,15 @@ class DuplicationService(private val database: DatabaseInterface) {
     }
 }
 
-fun getLatestDuplicationCheck(duplicationChecks: List<DuplicationCheck>): DuplicationCheck? {
+fun getLatestDuplikatsjekk(duplicationChecks: List<Duplikatsjekk>): Duplikatsjekk? {
+    val latest = duplicationChecks.maxByOrNull { it.mottattDate }
+    return when (latest) {
+        null -> null
+        else -> latest
+    }
+}
+
+fun getLatestDuplicationCheck(duplicationChecks: List<DuplicateCheck>): DuplicateCheck? {
     val latest = duplicationChecks.maxByOrNull { it.mottattDate }
     return when (latest) {
         null -> null

@@ -2,12 +2,12 @@ package no.nav.syfo.duplicationcheck.model
 
 import java.time.LocalDateTime
 
-data class Duplicate(
-    val sykmeldingId: String,
+data class Duplikatsjekk(
+    val sha256HealthInformation: String,
     val mottakId: String,
     val msgId: String,
-    val duplicateSykmeldingId: String,
     val mottattDate: LocalDateTime,
-    val epjSystem: String,
-    val epjVersion: String
+    val epjSystem: String?,
+    val epjVersion: String?,
+    val orgNumber: String?
 )

@@ -1,0 +1,1 @@
+create index sha256_health_information_idx on duplicatecheck(sha256_health_information);

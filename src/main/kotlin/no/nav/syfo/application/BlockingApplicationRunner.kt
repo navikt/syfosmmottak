@@ -15,7 +15,9 @@ import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.client.findBestSamhandlerPraksis
 import no.nav.syfo.client.findBestSamhandlerPraksisEmottak
 import no.nav.syfo.client.getHelsepersonellKategori
-import no.nav.syfo.duplicationcheck.model.DuplicationCheck
+import no.nav.syfo.duplicationcheck.model.Duplicate
+import no.nav.syfo.duplicationcheck.model.DuplicateCheck
+import no.nav.syfo.duplicationcheck.model.Duplikatsjekk
 import no.nav.syfo.handlestatus.handleDuplicateSM2013Content
 import no.nav.syfo.handlestatus.handleStatusINVALID
 import no.nav.syfo.handlestatus.handleStatusMANUALPROCESSING
@@ -71,7 +73,6 @@ import java.util.UUID
 import javax.jms.MessageConsumer
 import javax.jms.MessageProducer
 import javax.jms.TextMessage
-import no.nav.syfo.duplicationcheck.model.Duplicate
 
 private val sikkerlogg = LoggerFactory.getLogger("securelog")
 
@@ -155,8 +156,15 @@ class BlockingApplicationRunner(
 
                     val avsenderSystem = healthInformation.avsenderSystem.toAvsenderSystem()
 
-                    val duplicationCheck = DuplicationCheck(
+                    val sykmeldingId = UUID.randomUUID().toString()
+
+                    val duplikatsjekk = Duplikatsjekk(
                         sha256String, ediLoggId, msgId, mottatDato,
+                        avsenderSystem.navn, avsenderSystem.versjon, legekontorOrgName
+                    )
+
+                    val duplicateCheck = DuplicateCheck(
+                        sykmeldingId, sha256String, ediLoggId, msgId, mottatDato,
                         avsenderSystem.navn, avsenderSystem.versjon, legekontorOrgName
                     )
 
@@ -172,7 +180,7 @@ class BlockingApplicationRunner(
                             handleVirksomhetssykmeldingOgHprMangler(
                                 loggingMeta, fellesformat,
                                 ediLoggId, msgId, msgHead, env, kafkaproducerApprec,
-                                duplicationService, duplicationCheck
+                                duplicationService, duplikatsjekk, duplicateCheck
                             )
                             continue@loop
                         }
@@ -184,7 +192,7 @@ class BlockingApplicationRunner(
                             handleVirksomhetssykmeldingOgFnrManglerIHPR(
                                 loggingMeta, fellesformat,
                                 ediLoggId, msgId, msgHead, env, kafkaproducerApprec,
-                                duplicationService, duplicationCheck
+                                duplicationService, duplikatsjekk, duplicateCheck
                             )
                             continue@loop
                         } else {
@@ -222,15 +230,22 @@ class BlockingApplicationRunner(
                         loggingMeta
                     )
 
-                    val duplicationServiceSha256String = duplicationService.getDuplicationCheck(sha256String, ediLoggId)
+                    val duplicationServiceSha256String = duplicationService.getDuplikatsjekk(sha256String, ediLoggId)
+                    val DuplicationCheckSha256String = duplicationService.getDuplicationCheck(sha256String, ediLoggId)
 
                     if (duplicationServiceSha256String != null) {
-                        val duplicate = Duplicate(UUID.randomUUID().toString(), ediLoggId, msgId,
-                            duplicationServiceSha256String.mottakId, duplicationServiceSha256String.msgId, mottatDato)
+                        if (DuplicationCheckSha256String != null) {
+                            // TODO replace with if, when duplication data is approximately 7 days old
+                            val duplicate = Duplicate(
+                                sykmeldingId, ediLoggId, msgId,
+                                DuplicationCheckSha256String.sykmeldingId, mottatDato,
+                                avsenderSystem.navn, avsenderSystem.versjon
+                            )
+                        }
 
                         handleDuplicateSM2013Content(
                             duplicationServiceSha256String.mottakId, loggingMeta, fellesformat,
-                            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicate
+                            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService
                         )
                         continue@loop
                     } else {
@@ -240,7 +255,7 @@ class BlockingApplicationRunner(
                         if (checkSM2013Content(
                                 pasient, behandler, healthInformation, originaltPasientFnr, loggingMeta, fellesformat,
                                 ediLoggId, msgId, msgHead, env, kafkaproducerApprec,
-                                duplicationService, duplicationCheck
+                                duplicationService, duplikatsjekk, duplicateCheck
                             )
                         ) {
                             continue@loop
@@ -279,7 +294,7 @@ class BlockingApplicationRunner(
                             )
 
                         val sykmelding = healthInformation.toSykmelding(
-                            sykmeldingId = UUID.randomUUID().toString(),
+                            sykmeldingId = sykmeldingId,
                             pasientAktoerId = pasient?.aktorId!!,
                             legeAktoerId = behandler?.aktorId!!,
                             msgId = msgId,
@@ -305,7 +320,7 @@ class BlockingApplicationRunner(
                                 handleVedleggContainsVirus(
                                     loggingMeta, fellesformat, ediLoggId,
                                     msgId, msgHead, env, kafkaproducerApprec,
-                                    duplicationService, duplicationCheck
+                                    duplicationService, duplikatsjekk, duplicateCheck
                                 )
                                 continue@loop
                             }
@@ -423,7 +438,7 @@ class BlockingApplicationRunner(
 
                         val currentRequestLatency = requestLatency.observeDuration()
 
-                        duplicationService.persistDuplicationCheck(duplicationCheck)
+                        duplicationService.persistDuplicationCheck(duplikatsjekk, duplicateCheck)
                         log.info(
                             "Message got outcome {}, {}, processing took {}s, {}",
                             StructuredArguments.keyValue("status", validationResult.status),

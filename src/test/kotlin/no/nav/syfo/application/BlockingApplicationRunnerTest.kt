@@ -81,7 +81,7 @@ class BlockingApplicationRunnerTest : FunSpec({
     coEvery { norskHelsenettClient.getByFnr(any(), any()) } returns Behandler(emptyList(), "", "HPR", null, null, null)
     coEvery { norskHelsenettClient.getByHpr(any(), any()) } returns Behandler(emptyList(), "", "HPR", null, null, null)
     coEvery { syfoSykemeldingRuleClient.executeRuleValidation(any(), any()) } returns ValidationResult(Status.OK, emptyList())
-    coEvery { duplicationService.getDuplicationCheck(any(), any()) } returns null
+    coEvery { duplicationService.getDuplikatsjekk(any(), any()) } returns null
 
     context("Mottak av sykmelding") {
         test("Vanlig sykmelding skal gi ok apprec") {
