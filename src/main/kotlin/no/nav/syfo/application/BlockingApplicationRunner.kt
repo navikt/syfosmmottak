@@ -231,14 +231,14 @@ class BlockingApplicationRunner(
                     )
 
                     val duplicationServiceSha256String = duplicationService.getDuplikatsjekk(sha256String, ediLoggId)
-                    val DuplicationCheckSha256String = duplicationService.getDuplicationCheck(sha256String, ediLoggId)
+                    val duplicationCheckSha256String = duplicationService.getDuplicationCheck(sha256String, ediLoggId)
 
                     if (duplicationServiceSha256String != null) {
-                        if (DuplicationCheckSha256String != null) {
+                        if (duplicationCheckSha256String != null) {
                             // TODO replace with if, when duplication data is approximately 7 days old
                             val duplicate = Duplicate(
                                 sykmeldingId, ediLoggId, msgId,
-                                DuplicationCheckSha256String.sykmeldingId, mottatDato,
+                                duplicationCheckSha256String.sykmeldingId, mottatDato,
                                 avsenderSystem.navn, avsenderSystem.versjon
                             )
                         }
