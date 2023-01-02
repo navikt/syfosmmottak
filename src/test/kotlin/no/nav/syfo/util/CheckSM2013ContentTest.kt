@@ -15,7 +15,8 @@ import no.nav.helse.sm2013.NavnType
 import no.nav.helse.sm2013.TeleCom
 import no.nav.syfo.Environment
 import no.nav.syfo.apprec.Apprec
-import no.nav.syfo.duplicationcheck.model.DuplicationCheck
+import no.nav.syfo.duplicationcheck.model.DuplicateCheck
+import no.nav.syfo.duplicationcheck.model.Duplikatsjekk
 import no.nav.syfo.pdl.client.model.PdlIdent
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.service.DuplicationService
@@ -43,7 +44,14 @@ class CheckSM2013ContentTest : FunSpec({
             val env = mockk<Environment>(relaxed = true)
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
             val duplicationService = mockk<DuplicationService>(relaxed = true)
-            val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
+            val duplikatsjekk = Duplikatsjekk(
+                "", ediLoggId, msgId, LocalDateTime.now(), null, null, null
+            )
+            val duplicationCheck = DuplicateCheck(
+                "1231-232--123gds-2fad",
+                "", ediLoggId, msgId, LocalDateTime.now(),
+                "epj", "1", null
+            )
 
             val checkSM2013Content = checkSM2013Content(
                 pasient,
@@ -58,6 +66,7 @@ class CheckSM2013ContentTest : FunSpec({
                 env,
                 kafkaproducerApprec,
                 duplicationService,
+                duplikatsjekk,
                 duplicationCheck
             )
 
@@ -85,7 +94,15 @@ class CheckSM2013ContentTest : FunSpec({
             val env = mockk<Environment>(relaxed = true)
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
             val duplicationService = mockk<DuplicationService>(relaxed = true)
-            val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
+            val duplikatsjekk = Duplikatsjekk(
+                "", ediLoggId, msgId, LocalDateTime.now(),
+                null, null, null
+            )
+            val duplicationCheck = DuplicateCheck(
+                "1231-232--123gds-2fad",
+                "", ediLoggId, msgId, LocalDateTime.now(),
+                "epj", "1", null
+            )
 
             val checkSM2013Content = checkSM2013Content(
                 pasient,
@@ -100,6 +117,7 @@ class CheckSM2013ContentTest : FunSpec({
                 env,
                 kafkaproducerApprec,
                 duplicationService,
+                duplikatsjekk,
                 duplicationCheck
             )
 
@@ -127,7 +145,16 @@ class CheckSM2013ContentTest : FunSpec({
             val env = mockk<Environment>(relaxed = true)
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
             val duplicationService = mockk<DuplicationService>(relaxed = true)
-            val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
+            val duplikatsjekk = Duplikatsjekk(
+                "", ediLoggId, msgId, LocalDateTime.now(),
+                null, null, null
+            )
+
+            val duplicationCheck = DuplicateCheck(
+                "1231-232--123gds-2fad",
+                "", ediLoggId, msgId, LocalDateTime.now(),
+                "epj", "1", null
+            )
 
             val checkSM2013Content = checkSM2013Content(
                 pasient,
@@ -142,6 +169,7 @@ class CheckSM2013ContentTest : FunSpec({
                 env,
                 kafkaproducerApprec,
                 duplicationService,
+                duplikatsjekk,
                 duplicationCheck
             )
 
@@ -256,7 +284,16 @@ class CheckSM2013ContentTest : FunSpec({
             val env = mockk<Environment>(relaxed = true)
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
             val duplicationService = mockk<DuplicationService>(relaxed = true)
-            val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
+            val duplikatsjekk = Duplikatsjekk(
+                "", ediLoggId, msgId, LocalDateTime.now(),
+                null, null, null
+            )
+
+            val duplicationCheck = DuplicateCheck(
+                "1231-232--123gds-2fad",
+                "", ediLoggId, msgId, LocalDateTime.now(),
+                "epj", "1", null
+            )
 
             val checkSM2013Content = checkSM2013Content(
                 pasientPDL,
@@ -271,6 +308,7 @@ class CheckSM2013ContentTest : FunSpec({
                 env,
                 kafkaproducerApprec,
                 duplicationService,
+                duplikatsjekk,
                 duplicationCheck
             )
 
@@ -361,7 +399,15 @@ class CheckSM2013ContentTest : FunSpec({
             val env = mockk<Environment>(relaxed = true)
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
             val duplicationService = mockk<DuplicationService>(relaxed = true)
-            val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
+            val duplikatsjekk = Duplikatsjekk(
+                "", ediLoggId, msgId, LocalDateTime.now(),
+                null, null, null
+            )
+            val duplicationCheck = DuplicateCheck(
+                "1231-232--123gds-2fad",
+                "", ediLoggId, msgId, LocalDateTime.now(),
+                "epj", "1", null
+            )
 
             val checkSM2013Content = checkSM2013Content(
                 pasientPDL,
@@ -376,6 +422,7 @@ class CheckSM2013ContentTest : FunSpec({
                 env,
                 kafkaproducerApprec,
                 duplicationService,
+                duplikatsjekk,
                 duplicationCheck
             )
 
@@ -473,7 +520,15 @@ class CheckSM2013ContentTest : FunSpec({
             val env = mockk<Environment>(relaxed = true)
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
             val duplicationService = mockk<DuplicationService>(relaxed = true)
-            val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
+            val duplikatsjekk = Duplikatsjekk(
+                "", ediLoggId, msgId, LocalDateTime.now(),
+                null, null, null
+            )
+            val duplicationCheck = DuplicateCheck(
+                "1231-232--123gds-2fad",
+                "", ediLoggId, msgId, LocalDateTime.now(),
+                "epj", "1", null
+            )
 
             val checkSM2013Content = checkSM2013Content(
                 pasientPDL,
@@ -488,6 +543,7 @@ class CheckSM2013ContentTest : FunSpec({
                 env,
                 kafkaproducerApprec,
                 duplicationService,
+                duplikatsjekk,
                 duplicationCheck
             )
 
@@ -606,7 +662,15 @@ class CheckSM2013ContentTest : FunSpec({
             val env = mockk<Environment>(relaxed = true)
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
             val duplicationService = mockk<DuplicationService>(relaxed = true)
-            val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
+            val duplikatsjekk = Duplikatsjekk(
+                "", ediLoggId, msgId, LocalDateTime.now(),
+                null, null, null
+            )
+            val duplicationCheck = DuplicateCheck(
+                "1231-232--123gds-2fad",
+                "", ediLoggId, msgId, LocalDateTime.now(),
+                "epj", "1", null
+            )
 
             val checkSM2013Content = checkSM2013Content(
                 pasientPDL,
@@ -621,6 +685,7 @@ class CheckSM2013ContentTest : FunSpec({
                 env,
                 kafkaproducerApprec,
                 duplicationService,
+                duplikatsjekk,
                 duplicationCheck
             )
 
@@ -739,7 +804,15 @@ class CheckSM2013ContentTest : FunSpec({
             val env = mockk<Environment>(relaxed = true)
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
             val duplicationService = mockk<DuplicationService>(relaxed = true)
-            val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
+            val duplikatsjekk = Duplikatsjekk(
+                "", ediLoggId, msgId, LocalDateTime.now(),
+                null, null, null
+            )
+            val duplicationCheck = DuplicateCheck(
+                "1231-232--123gds-2fad",
+                "", ediLoggId, msgId, LocalDateTime.now(),
+                "epj", "1", null
+            )
 
             val checkSM2013Content = checkSM2013Content(
                 pasientPDL,
@@ -754,6 +827,7 @@ class CheckSM2013ContentTest : FunSpec({
                 env,
                 kafkaproducerApprec,
                 duplicationService,
+                duplikatsjekk,
                 duplicationCheck
             )
 
@@ -878,7 +952,15 @@ class CheckSM2013ContentTest : FunSpec({
             val env = mockk<Environment>(relaxed = true)
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
             val duplicationService = mockk<DuplicationService>(relaxed = true)
-            val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
+            val duplikatsjekk = Duplikatsjekk(
+                "", ediLoggId, msgId, LocalDateTime.now(),
+                null, null, null
+            )
+            val duplicationCheck = DuplicateCheck(
+                "1231-232--123gds-2fad",
+                "", ediLoggId, msgId, LocalDateTime.now(),
+                "epj", "1", null
+            )
 
             val checkSM2013Content = checkSM2013Content(
                 pasientPDL,
@@ -893,6 +975,7 @@ class CheckSM2013ContentTest : FunSpec({
                 env,
                 kafkaproducerApprec,
                 duplicationService,
+                duplikatsjekk,
                 duplicationCheck
             )
 
@@ -1017,7 +1100,14 @@ class CheckSM2013ContentTest : FunSpec({
             val env = mockk<Environment>(relaxed = true)
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
             val duplicationService = mockk<DuplicationService>(relaxed = true)
-            val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
+            val duplikatsjekk = Duplikatsjekk(
+                "", ediLoggId, msgId, LocalDateTime.now(), null, null, null
+            )
+            val duplicationCheck = DuplicateCheck(
+                "1231-232--123gds-2fad",
+                "", ediLoggId, msgId, LocalDateTime.now(),
+                "epj", "1", null
+            )
 
             val checkSM2013Content = checkSM2013Content(
                 pasientPDL,
@@ -1032,6 +1122,7 @@ class CheckSM2013ContentTest : FunSpec({
                 env,
                 kafkaproducerApprec,
                 duplicationService,
+                duplikatsjekk,
                 duplicationCheck
             )
 
@@ -1156,7 +1247,14 @@ class CheckSM2013ContentTest : FunSpec({
             val env = mockk<Environment>(relaxed = true)
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
             val duplicationService = mockk<DuplicationService>(relaxed = true)
-            val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
+            val duplikatsjekk = Duplikatsjekk(
+                "", ediLoggId, msgId, LocalDateTime.now(), null, null, null
+            )
+            val duplicationCheck = DuplicateCheck(
+                "1231-232--123gds-2fad",
+                "", ediLoggId, msgId, LocalDateTime.now(),
+                "epj", "1", null
+            )
 
             val checkSM2013Content = checkSM2013Content(
                 pasientPDL,
@@ -1171,6 +1269,7 @@ class CheckSM2013ContentTest : FunSpec({
                 env,
                 kafkaproducerApprec,
                 duplicationService,
+                duplikatsjekk,
                 duplicationCheck
             )
 
@@ -1294,7 +1393,14 @@ class CheckSM2013ContentTest : FunSpec({
             val env = mockk<Environment>(relaxed = true)
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
             val duplicationService = mockk<DuplicationService>(relaxed = true)
-            val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
+            val duplikatsjekk = Duplikatsjekk(
+                "", ediLoggId, msgId, LocalDateTime.now(), null, null, null
+            )
+            val duplicationCheck = DuplicateCheck(
+                "1231-232--123gds-2fad",
+                "", ediLoggId, msgId, LocalDateTime.now(),
+                "epj", "1", null
+            )
 
             val checkSM2013Content = checkSM2013Content(
                 pasientPDL,
@@ -1309,6 +1415,7 @@ class CheckSM2013ContentTest : FunSpec({
                 env,
                 kafkaproducerApprec,
                 duplicationService,
+                duplikatsjekk,
                 duplicationCheck
             )
 
@@ -1433,7 +1540,15 @@ class CheckSM2013ContentTest : FunSpec({
             val env = mockk<Environment>(relaxed = true)
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
             val duplicationService = mockk<DuplicationService>(relaxed = true)
-            val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
+            val duplikatsjekk = Duplikatsjekk(
+                "", ediLoggId, msgId, LocalDateTime.now(),
+                null, null, null
+            )
+            val duplicationCheck = DuplicateCheck(
+                "1231-232--123gds-2fad",
+                "", ediLoggId, msgId, LocalDateTime.now(),
+                "epj", "1", null
+            )
 
             val checkSM2013Content = checkSM2013Content(
                 pasientPDL,
@@ -1448,6 +1563,7 @@ class CheckSM2013ContentTest : FunSpec({
                 env,
                 kafkaproducerApprec,
                 duplicationService,
+                duplikatsjekk,
                 duplicationCheck
             )
 
@@ -1572,7 +1688,15 @@ class CheckSM2013ContentTest : FunSpec({
             val env = mockk<Environment>(relaxed = true)
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
             val duplicationService = mockk<DuplicationService>(relaxed = true)
-            val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
+            val duplikatsjekk = Duplikatsjekk(
+                "", ediLoggId, msgId, LocalDateTime.now(),
+                null, null, null
+            )
+            val duplicationCheck = DuplicateCheck(
+                "1231-232--123gds-2fad",
+                "", ediLoggId, msgId, LocalDateTime.now(),
+                "epj", "1", null
+            )
 
             val checkSM2013Content = checkSM2013Content(
                 pasientPDL,
@@ -1587,6 +1711,7 @@ class CheckSM2013ContentTest : FunSpec({
                 env,
                 kafkaproducerApprec,
                 duplicationService,
+                duplikatsjekk,
                 duplicationCheck
             )
 
@@ -1710,7 +1835,14 @@ class CheckSM2013ContentTest : FunSpec({
             val env = mockk<Environment>(relaxed = true)
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
             val duplicationService = mockk<DuplicationService>(relaxed = true)
-            val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
+            val duplikatsjekk = Duplikatsjekk(
+                "", ediLoggId, msgId, LocalDateTime.now(), null, null, null
+            )
+            val duplicationCheck = DuplicateCheck(
+                "1231-232--123gds-2fad",
+                "", ediLoggId, msgId, LocalDateTime.now(),
+                "epj", "1", null
+            )
 
             val checkSM2013Content = checkSM2013Content(
                 pasientPDL,
@@ -1725,6 +1857,7 @@ class CheckSM2013ContentTest : FunSpec({
                 env,
                 kafkaproducerApprec,
                 duplicationService,
+                duplikatsjekk,
                 duplicationCheck
             )
 
@@ -1849,7 +1982,15 @@ class CheckSM2013ContentTest : FunSpec({
             val env = mockk<Environment>(relaxed = true)
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
             val duplicationService = mockk<DuplicationService>(relaxed = true)
-            val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
+            val duplikatsjekk = Duplikatsjekk(
+                "", ediLoggId, msgId, LocalDateTime.now(),
+                null, null, null
+            )
+            val duplicationCheck = DuplicateCheck(
+                "1231-232--123gds-2fad",
+                "", ediLoggId, msgId, LocalDateTime.now(),
+                "epj", "1", null
+            )
 
             coEvery { env.cluster } returns "prod-gcp"
 
@@ -1866,6 +2007,7 @@ class CheckSM2013ContentTest : FunSpec({
                 env,
                 kafkaproducerApprec,
                 duplicationService,
+                duplikatsjekk,
                 duplicationCheck
             )
 
@@ -1998,7 +2140,15 @@ class CheckSM2013ContentTest : FunSpec({
             val env = mockk<Environment>(relaxed = true)
             val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
             val duplicationService = mockk<DuplicationService>(relaxed = true)
-            val duplicationCheck = DuplicationCheck("", ediLoggId, msgId, LocalDateTime.now())
+            val duplikatsjekk = Duplikatsjekk(
+                "", ediLoggId, msgId, LocalDateTime.now(),
+                null, null, null
+            )
+            val duplicationCheck = DuplicateCheck(
+                "1231-232--123gds-2fad",
+                "", ediLoggId, msgId, LocalDateTime.now(),
+                "epj", "1", null
+            )
 
             coEvery { env.cluster } returns "localhost"
 
@@ -2015,6 +2165,7 @@ class CheckSM2013ContentTest : FunSpec({
                 env,
                 kafkaproducerApprec,
                 duplicationService,
+                duplikatsjekk,
                 duplicationCheck
             )
 
