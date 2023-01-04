@@ -9,8 +9,8 @@ import no.nav.syfo.Environment
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.apprec.ApprecStatus
 import no.nav.syfo.apprec.toApprec
+import no.nav.syfo.duplicationcheck.model.Duplicate
 import no.nav.syfo.duplicationcheck.model.DuplicateCheck
-import no.nav.syfo.duplicationcheck.model.Duplikatsjekk
 import no.nav.syfo.log
 import no.nav.syfo.metrics.INVALID_MESSAGE_NO_NOTICE
 import no.nav.syfo.metrics.SYKMELDING_AVVIST_DUPLIKCATE_COUNTER
@@ -67,7 +67,8 @@ fun handleDuplicateSM2013Content(
     msgHead: XMLMsgHead,
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
-    duplicationService: DuplicationService
+    duplicationService: DuplicationService,
+    duplicate: Duplicate
 ) {
     log.warn(
         "Melding med {} har samme innhold som tidligere mottatt sykmelding og er avvist som duplikat {} {}",
@@ -87,10 +88,9 @@ fun handleDuplicateSM2013Content(
 
     sendReceipt(apprec, env.apprecTopic, kafkaproducerApprec, loggingMeta)
     log.info("Apprec receipt sent to kafka topic {}, {}", env.apprecTopic, fields(loggingMeta))
+    duplicationService.persistDuplication(duplicate)
     INVALID_MESSAGE_NO_NOTICE.inc()
     SYKMELDING_AVVIST_DUPLIKCATE_COUNTER.inc()
-    // TODO implement when duplication data is approximately 7 days old
-    // duplicationService.persistDuplication(duplicate)
 }
 
 fun handlePatientNotFoundInPDL(
@@ -102,7 +102,6 @@ fun handlePatientNotFoundInPDL(
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
-    duplikatsjekk: Duplikatsjekk,
     duplicateCheck: DuplicateCheck
 ) {
     log.warn(
@@ -119,7 +118,7 @@ fun handlePatientNotFoundInPDL(
         ediLoggId, msgId, msgHead
     )
 
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplikatsjekk, duplicateCheck)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
 }
 
 fun handleDoctorNotFoundInPDL(
@@ -131,7 +130,6 @@ fun handleDoctorNotFoundInPDL(
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
-    duplikatsjekk: Duplikatsjekk,
     duplicateCheck: DuplicateCheck
 ) {
     log.warn(
@@ -148,7 +146,7 @@ fun handleDoctorNotFoundInPDL(
         ediLoggId, msgId, msgHead
     )
 
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplikatsjekk, duplicateCheck)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
 }
 
 fun handleAktivitetOrPeriodeIsMissing(
@@ -160,7 +158,6 @@ fun handleAktivitetOrPeriodeIsMissing(
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
-    duplikatsjekk: Duplikatsjekk,
     duplicateCheck: DuplicateCheck
 ) {
     log.warn(
@@ -177,7 +174,7 @@ fun handleAktivitetOrPeriodeIsMissing(
         ediLoggId, msgId, msgHead
     )
 
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplikatsjekk, duplicateCheck)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
 }
 
 fun handlePeriodetypeMangler(
@@ -189,7 +186,6 @@ fun handlePeriodetypeMangler(
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
-    duplikatsjekk: Duplikatsjekk,
     duplicateCheck: DuplicateCheck
 ) {
     log.warn(
@@ -206,7 +202,7 @@ fun handlePeriodetypeMangler(
         ediLoggId, msgId, msgHead
     )
 
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplikatsjekk, duplicateCheck)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
 }
 
 fun handleBiDiagnoserDiagnosekodeIsMissing(
@@ -218,7 +214,6 @@ fun handleBiDiagnoserDiagnosekodeIsMissing(
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
-    duplikatsjekk: Duplikatsjekk,
     duplicateCheck: DuplicateCheck
 ) {
     log.warn(
@@ -235,7 +230,7 @@ fun handleBiDiagnoserDiagnosekodeIsMissing(
         ediLoggId, msgId, msgHead
     )
 
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplikatsjekk, duplicateCheck)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
 }
 
 fun handleBiDiagnoserDiagnosekodeVerkIsMissing(
@@ -247,7 +242,6 @@ fun handleBiDiagnoserDiagnosekodeVerkIsMissing(
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
-    duplikatsjekk: Duplikatsjekk,
     duplicateCheck: DuplicateCheck
 ) {
     log.warn(
@@ -264,7 +258,7 @@ fun handleBiDiagnoserDiagnosekodeVerkIsMissing(
         ediLoggId, msgId, msgHead
     )
 
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplikatsjekk, duplicateCheck)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
 }
 
 fun handleBiDiagnoserDiagnosekodeBeskrivelseMissing(
@@ -276,7 +270,6 @@ fun handleBiDiagnoserDiagnosekodeBeskrivelseMissing(
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
-    duplikatsjekk: Duplikatsjekk,
     duplicateCheck: DuplicateCheck
 ) {
     log.warn(
@@ -293,7 +286,7 @@ fun handleBiDiagnoserDiagnosekodeBeskrivelseMissing(
         ediLoggId, msgId, msgHead
     )
 
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplikatsjekk, duplicateCheck)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
 }
 
 fun handleFnrAndDnrAndHprIsmissingFromBehandler(
@@ -305,7 +298,6 @@ fun handleFnrAndDnrAndHprIsmissingFromBehandler(
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
-    duplikatsjekk: Duplikatsjekk,
     duplicateCheck: DuplicateCheck
 ) {
     log.warn(
@@ -322,7 +314,7 @@ fun handleFnrAndDnrAndHprIsmissingFromBehandler(
         ediLoggId, msgId, msgHead
     )
 
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplikatsjekk, duplicateCheck)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
 }
 
 fun handleHovedDiagnoseDiagnosekodeMissing(
@@ -334,7 +326,6 @@ fun handleHovedDiagnoseDiagnosekodeMissing(
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
-    duplikatsjekk: Duplikatsjekk,
     duplicateCheck: DuplicateCheck
 ) {
     log.warn(
@@ -351,7 +342,7 @@ fun handleHovedDiagnoseDiagnosekodeMissing(
         ediLoggId, msgId, msgHead
     )
 
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplikatsjekk, duplicateCheck)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
 }
 
 fun handleHovedDiagnoseDiagnoseBeskrivelseMissing(
@@ -363,7 +354,6 @@ fun handleHovedDiagnoseDiagnoseBeskrivelseMissing(
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
-    duplikatsjekk: Duplikatsjekk,
     duplicateCheck: DuplicateCheck
 ) {
     log.warn(
@@ -380,7 +370,7 @@ fun handleHovedDiagnoseDiagnoseBeskrivelseMissing(
         ediLoggId, msgId, msgHead
     )
 
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplikatsjekk, duplicateCheck)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
 }
 
 fun handleMedisinskeArsakskodeIsmissing(
@@ -392,7 +382,6 @@ fun handleMedisinskeArsakskodeIsmissing(
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
-    duplikatsjekk: Duplikatsjekk,
     duplicateCheck: DuplicateCheck
 ) {
     log.warn(
@@ -409,7 +398,7 @@ fun handleMedisinskeArsakskodeIsmissing(
         ediLoggId, msgId, msgHead
     )
 
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplikatsjekk, duplicateCheck)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
 }
 
 fun handleMedisinskeArsakskodeHarUgyldigVerdi(
@@ -421,7 +410,6 @@ fun handleMedisinskeArsakskodeHarUgyldigVerdi(
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
-    duplikatsjekk: Duplikatsjekk,
     duplicateCheck: DuplicateCheck
 ) {
     log.warn(
@@ -438,7 +426,7 @@ fun handleMedisinskeArsakskodeHarUgyldigVerdi(
         ediLoggId, msgId, msgHead
     )
 
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplikatsjekk, duplicateCheck)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
 }
 
 fun handleArbeidsplassenArsakskodeIsmissing(
@@ -450,7 +438,6 @@ fun handleArbeidsplassenArsakskodeIsmissing(
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
-    duplikatsjekk: Duplikatsjekk,
     duplicateCheck: DuplicateCheck
 ) {
     log.warn(
@@ -467,7 +454,7 @@ fun handleArbeidsplassenArsakskodeIsmissing(
         ediLoggId, msgId, msgHead
     )
 
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplikatsjekk, duplicateCheck)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
 }
 
 fun handleArbeidsplassenArsakskodeHarUgyldigVerdi(
@@ -479,7 +466,6 @@ fun handleArbeidsplassenArsakskodeHarUgyldigVerdi(
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
-    duplikatsjekk: Duplikatsjekk,
     duplicateCheck: DuplicateCheck
 ) {
     log.warn(
@@ -496,7 +482,7 @@ fun handleArbeidsplassenArsakskodeHarUgyldigVerdi(
         ediLoggId, msgId, msgHead
     )
 
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplikatsjekk, duplicateCheck)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
 }
 
 fun handleTestFnrInProd(
@@ -508,7 +494,6 @@ fun handleTestFnrInProd(
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
-    duplikatsjekk: Duplikatsjekk,
     duplicateCheck: DuplicateCheck
 ) {
     log.warn(
@@ -528,7 +513,7 @@ fun handleTestFnrInProd(
     log.info("Apprec receipt sent to kafka topic {}, {}", env.apprecTopic, fields(loggingMeta))
     INVALID_MESSAGE_NO_NOTICE.inc()
     TEST_FNR_IN_PROD.inc()
-    duplicationService.persistDuplicationCheck(duplikatsjekk, duplicateCheck)
+    duplicationService.persistDuplicationCheck(duplicateCheck)
 }
 
 fun handleAnnenFraversArsakkodeVIsmissing(
@@ -540,7 +525,6 @@ fun handleAnnenFraversArsakkodeVIsmissing(
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
-    duplikatsjekk: Duplikatsjekk,
     duplicateCheck: DuplicateCheck
 ) {
     log.warn(
@@ -557,7 +541,7 @@ fun handleAnnenFraversArsakkodeVIsmissing(
         ediLoggId, msgId, msgHead
     )
 
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplikatsjekk, duplicateCheck)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
 }
 
 fun handleVirksomhetssykmeldingOgHprMangler(
@@ -569,7 +553,6 @@ fun handleVirksomhetssykmeldingOgHprMangler(
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
-    duplikatsjekk: Duplikatsjekk,
     duplicateCheck: DuplicateCheck
 ) {
     log.warn(
@@ -586,7 +569,7 @@ fun handleVirksomhetssykmeldingOgHprMangler(
         ediLoggId, msgId, msgHead
     )
 
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplikatsjekk, duplicateCheck)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
 }
 
 fun handleVirksomhetssykmeldingOgFnrManglerIHPR(
@@ -598,7 +581,6 @@ fun handleVirksomhetssykmeldingOgFnrManglerIHPR(
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
-    duplikatsjekk: Duplikatsjekk,
     duplicateCheck: DuplicateCheck
 ) {
     log.warn(
@@ -616,8 +598,7 @@ fun handleVirksomhetssykmeldingOgFnrManglerIHPR(
     )
 
     sendApprec(
-        apprec, env, kafkaproducerApprec, loggingMeta, duplicationService,
-        duplikatsjekk, duplicateCheck
+        apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck
     )
 }
 
@@ -630,7 +611,6 @@ fun handleVedleggContainsVirus(
     env: Environment,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
-    duplikatsjekk: Duplikatsjekk,
     duplicateCheck: DuplicateCheck
 ) {
     log.warn(
@@ -649,7 +629,7 @@ fun handleVedleggContainsVirus(
 
     SYKMELDING_AVVIST_VIRUS_VEDLEGG_COUNTER.inc()
 
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplikatsjekk, duplicateCheck)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
 }
 
 private fun sendApprec(
@@ -658,13 +638,12 @@ private fun sendApprec(
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     loggingMeta: LoggingMeta,
     duplicationService: DuplicationService,
-    duplikatsjekk: Duplikatsjekk,
     duplicateCheck: DuplicateCheck
 ) {
     sendReceipt(apprec, env.apprecTopic, kafkaproducerApprec, loggingMeta)
     log.info("Apprec receipt sent to kafka topic {}, {}", env.apprecTopic, fields(loggingMeta))
     INVALID_MESSAGE_NO_NOTICE.inc()
-    duplicationService.persistDuplicationCheck(duplikatsjekk, duplicateCheck)
+    duplicationService.persistDuplicationCheck(duplicateCheck)
 }
 
 fun fellesformatToAppprec(

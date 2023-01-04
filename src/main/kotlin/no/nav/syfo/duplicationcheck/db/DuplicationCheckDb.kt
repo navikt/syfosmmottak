@@ -4,38 +4,8 @@ import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.db.toList
 import no.nav.syfo.duplicationcheck.model.Duplicate
 import no.nav.syfo.duplicationcheck.model.DuplicateCheck
-import no.nav.syfo.duplicationcheck.model.Duplikatsjekk
 import java.sql.ResultSet
 import java.sql.Timestamp
-
-fun DatabaseInterface.persistSha256(duplikatsjekk: Duplikatsjekk) {
-    connection.use { connection ->
-        connection.prepareStatement(
-            """
-            insert into duplikatsjekk(
-                sha256_health_information,
-                mottak_id,
-                msg_id,
-                mottatt_date,
-                epj_system,
-                epj_version,
-                org_number 
-                )
-            values (?, ?, ?, ?, ?, ?, ?) on conflict (sha256_health_information) do nothing;
-            """
-        ).use { preparedStatement ->
-            preparedStatement.setString(1, duplikatsjekk.sha256HealthInformation)
-            preparedStatement.setString(2, duplikatsjekk.mottakId)
-            preparedStatement.setString(3, duplikatsjekk.msgId)
-            preparedStatement.setTimestamp(4, Timestamp.valueOf(duplikatsjekk.mottattDate))
-            preparedStatement.setString(5, duplikatsjekk.epjSystem)
-            preparedStatement.setString(6, duplikatsjekk.epjVersion)
-            preparedStatement.setString(7, duplikatsjekk.orgNumber)
-            preparedStatement.executeUpdate()
-        }
-        connection.commit()
-    }
-}
 
 fun DatabaseInterface.persistDuplicateCheck(duplicateCheck: DuplicateCheck) {
     connection.use { connection ->
@@ -126,47 +96,6 @@ fun DatabaseInterface.persistDuplicateMessage(duplicate: Duplicate) {
         connection.commit()
     }
 }
-
-fun DatabaseInterface.extractDuplikatsjekkBySha256HealthInformation(sha256HealthInformation: String): Duplikatsjekk? {
-    connection.use { connection ->
-        connection.prepareStatement(
-            """
-                 select * 
-                 from duplikatsjekk 
-                 where sha256_health_information=?;
-                """
-        ).use { preparedStatement ->
-            preparedStatement.setString(1, sha256HealthInformation)
-            return preparedStatement.executeQuery().toList { toDuplikatsjekk() }.firstOrNull()
-        }
-    }
-}
-
-fun DatabaseInterface.extractDuplikatsjekkByMottakId(mottakId: String): List<Duplikatsjekk> {
-    connection.use { connection ->
-        connection.prepareStatement(
-            """
-                 select * 
-                 from duplikatsjekk 
-                 where mottak_id=?;
-                """
-        ).use { preparedStatement ->
-            preparedStatement.setString(1, mottakId)
-            return preparedStatement.executeQuery().toList { toDuplikatsjekk() }
-        }
-    }
-}
-
-fun ResultSet.toDuplikatsjekk(): Duplikatsjekk =
-    Duplikatsjekk(
-        sha256HealthInformation = getString("sha256_health_information"),
-        mottakId = getString("mottak_id"),
-        msgId = getString("msg_id"),
-        mottattDate = getTimestamp("mottatt_date").toLocalDateTime(),
-        epjSystem = getString("epj_system"),
-        epjVersion = getString("epj_version"),
-        orgNumber = getString("org_number")
-    )
 
 fun ResultSet.toDuplicateCheck(): DuplicateCheck =
     DuplicateCheck(
