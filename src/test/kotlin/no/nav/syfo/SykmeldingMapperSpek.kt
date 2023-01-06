@@ -263,6 +263,18 @@ class SykmeldingMapperSpek : FunSpec({
             mappetDiagnosekode.kode shouldBeEqualTo "Z09"
         }
 
+        test("Diagnosekode skal ha stor forbokstav") {
+            val originalDiagnosekode = CV().apply {
+                dn = "gallestein"
+                s = "2.16.578.1.12.4.1.1.7110"
+                v = "k801"
+            }
+
+            val mappetDiagnosekode = originalDiagnosekode.toDiagnose()
+
+            mappetDiagnosekode.kode shouldBeEqualTo "K801"
+        }
+
         test("Setter bistandUmiddelbart til true hvis beskrivBistandNAV er angitt og regelsettversjon 3") {
             val originalMeldingTilNAV = HelseOpplysningerArbeidsuforhet.MeldingTilNav().apply {
                 isBistandNAVUmiddelbart = null
