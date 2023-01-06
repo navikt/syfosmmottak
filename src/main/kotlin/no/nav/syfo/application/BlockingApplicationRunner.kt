@@ -130,9 +130,10 @@ class BlockingApplicationRunner(
 
                     val receiverBlock = fellesformat.get<XMLMottakenhetBlokk>()
                     val msgHead = fellesformat.get<XMLMsgHead>()
+                    val legekontorOrgNr = extractOrganisationNumberFromSender(fellesformat)?.id?.trim()
                     loggingMeta = LoggingMeta(
                         mottakId = receiverBlock.ediLoggId,
-                        orgNr = extractOrganisationNumberFromSender(fellesformat)?.id,
+                        orgNr = legekontorOrgNr,
                         msgId = msgHead.msgInfo.msgId
                     )
                     log.info("Received message, {}", StructuredArguments.fields(loggingMeta))
@@ -144,7 +145,6 @@ class BlockingApplicationRunner(
 
                     val legekontorHerId = extractOrganisationHerNumberFromSender(fellesformat)?.id
                     val legekontorReshId = extractOrganisationRashNumberFromSender(fellesformat)?.id
-                    val legekontorOrgNr = extractOrganisationNumberFromSender(fellesformat)?.id
                     val legekontorOrgName = msgHead.msgInfo.sender.organisation.organisationName
 
                     val originaltPasientFnr = healthInformation.pasient.fodselsnummer.id
@@ -159,7 +159,7 @@ class BlockingApplicationRunner(
 
                     val duplicateCheck = DuplicateCheck(
                         sykmeldingId, sha256String, ediLoggId, msgId, mottatDato,
-                        avsenderSystem.navn, avsenderSystem.versjon, legekontorOrgName
+                        avsenderSystem.navn, avsenderSystem.versjon, legekontorOrgNr
                     )
 
                     log.info(
