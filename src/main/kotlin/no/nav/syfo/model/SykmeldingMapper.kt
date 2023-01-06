@@ -78,9 +78,9 @@ fun HelseOpplysningerArbeidsuforhet.MedisinskVurdering.toMedisinskVurdering() = 
 
 fun CV.toDiagnose() =
     if (v.contains(".")) {
-        Diagnose(s, v.replace(".", ""), dn)
+        Diagnose(s, v.replace(".", "").uppercase(), dn)
     } else {
-        Diagnose(s, v, dn)
+        Diagnose(s, v.uppercase(), dn)
     }
 
 fun ArsakType.toAnnenFraversArsak() = AnnenFraversArsak(
