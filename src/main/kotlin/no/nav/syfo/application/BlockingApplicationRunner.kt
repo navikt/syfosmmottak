@@ -130,7 +130,7 @@ class BlockingApplicationRunner(
 
                     val receiverBlock = fellesformat.get<XMLMottakenhetBlokk>()
                     val msgHead = fellesformat.get<XMLMsgHead>()
-                    val legekontorOrgNr = extractOrganisationNumberFromSender(fellesformat)?.id?.trim()
+                    val legekontorOrgNr = extractOrganisationNumberFromSender(fellesformat)?.id?.replace(" ", "")?.trim()
                     loggingMeta = LoggingMeta(
                         mottakId = receiverBlock.ediLoggId,
                         orgNr = legekontorOrgNr,
