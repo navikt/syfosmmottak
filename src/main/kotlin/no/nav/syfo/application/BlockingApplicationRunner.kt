@@ -204,7 +204,8 @@ class BlockingApplicationRunner(
                         samhandlerInfo,
                         legekontorOrgNr,
                         legekontorHerId,
-                        loggingMeta
+                        loggingMeta,
+                        receiverBlock.partnerReferanse
                     )
 
                     val samhandlerPraksisTssId = findBestSamhandlerPraksis(
