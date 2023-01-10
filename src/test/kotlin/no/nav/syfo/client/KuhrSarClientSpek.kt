@@ -113,7 +113,8 @@ class KuhrSarClientSpek : FunSpec({
                 samhandlerWithOrg,
                 "123344",
                 "23456",
-                LoggingMeta("", "", "")
+                LoggingMeta("", "", ""),
+                "42"
             )
                 ?: fail("Unable to find samhandler praksis")
             match.percentageMatch shouldBeEqualTo 100.0

@@ -117,7 +117,8 @@ fun findBestSamhandlerPraksisEmottak(
     samhandlere: List<Samhandler>,
     orgNumber: String?,
     herId: String?,
-    loggingMeta: LoggingMeta
+    loggingMeta: LoggingMeta,
+    partnerreferanse: String?
 ): SamhandlerPraksisMatch? {
 
     val aktiveSamhandlere = samhandlere.flatMap { it.samh_praksis }
@@ -149,6 +150,13 @@ fun findBestSamhandlerPraksisEmottak(
             )
             return SamhandlerPraksisMatch(samhandlerByOrgNumber, 100.0)
         }
+    }
+
+    if (partnerreferanse.isNullOrEmpty()) {
+        log.info(
+            "PartnerReferanse is empty or blank {}",
+            fields(loggingMeta)
+        )
     }
 
     return null

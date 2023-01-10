@@ -147,6 +147,8 @@ class BlockingApplicationRunner(
                     val legekontorReshId = extractOrganisationRashNumberFromSender(fellesformat)?.id
                     val legekontorOrgName = msgHead.msgInfo.sender.organisation.organisationName
 
+                    val partnerReferanse = receiverBlock.partnerReferanse
+
                     val originaltPasientFnr = healthInformation.pasient.fodselsnummer.id
                     val erVirksomhetSykmelding = receiverBlock.ebService == "SykmeldingVirksomhet"
 
@@ -204,7 +206,8 @@ class BlockingApplicationRunner(
                         samhandlerInfo,
                         legekontorOrgNr,
                         legekontorHerId,
-                        loggingMeta
+                        loggingMeta,
+                        partnerReferanse
                     )
 
                     val samhandlerPraksisTssId = findBestSamhandlerPraksis(
@@ -356,7 +359,7 @@ class BlockingApplicationRunner(
                             fellesformat = fellesformatText,
                             tssid = samhandlerPraksisTssId ?: "",
                             merknader = null,
-                            partnerreferanse = receiverBlock.partnerReferanse,
+                            partnerreferanse = partnerReferanse,
                             vedlegg = vedleggListe,
                             utenlandskSykmelding = null
                         )
