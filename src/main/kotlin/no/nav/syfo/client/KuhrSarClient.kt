@@ -154,7 +154,7 @@ fun findBestSamhandlerPraksisEmottak(
 
     if (partnerreferanse.isNullOrEmpty()) {
         log.info(
-            "PartnerReferanse is empty or blank, subscription_emottak is not created, {}",
+            "PartnerReferanse is empty or blank {}",
             fields(loggingMeta)
         )
     }
