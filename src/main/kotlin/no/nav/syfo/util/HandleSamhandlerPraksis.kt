@@ -1,7 +1,6 @@
 package no.nav.syfo.util
 
 import net.logstash.logback.argument.StructuredArguments
-import no.nav.helse.eiFellesformat.XMLMottakenhetBlokk
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.syfo.client.EmottakSubscriptionClient
 import no.nav.syfo.client.SamhandlerPraksisMatch
@@ -11,48 +10,49 @@ import no.nav.syfo.metrics.IKKE_OPPDATERT_PARTNERREG
 
 suspend fun handleEmottakSubscription(
     samhandlerPraksisMatch: SamhandlerPraksisMatch?,
-    receiverBlock: XMLMottakenhetBlokk,
     emottakSubscriptionClient: EmottakSubscriptionClient,
     msgHead: XMLMsgHead,
     msgId: String,
+    partnerreferanse: String?,
     loggingMeta: LoggingMeta
 ) {
 
     if (samhandlerPraksisMatch?.percentageMatch != null && samhandlerPraksisMatch.percentageMatch == 999.0) {
         log.info(
-            "SamhandlerPraksis is found but is FALE or FALO, subscription_emottak is not created, {}",
+            "SamhandlerPraksis is found but is FALE or FALO, subscription_emottak is not created," +
+                "partnerreferanse: $partnerreferanse, {}",
             StructuredArguments.fields(loggingMeta)
         )
         IKKE_OPPDATERT_PARTNERREG.inc()
     } else {
         when (samhandlerPraksisMatch?.samhandlerPraksis) {
             null -> {
-                log.info("SamhandlerPraksis is Not found, {}", StructuredArguments.fields(loggingMeta))
+                log.info("SamhandlerPraksis is Not found, partnerreferanse: $partnerreferanse {}", StructuredArguments.fields(loggingMeta))
                 IKKE_OPPDATERT_PARTNERREG.inc()
             }
 
             else -> if (!samhandlerpraksisIsLegevakt(samhandlerPraksisMatch.samhandlerPraksis) &&
-                !receiverBlock.partnerReferanse.isNullOrEmpty() &&
-                receiverBlock.partnerReferanse.isNotBlank()
+                !partnerreferanse.isNullOrEmpty() &&
+                partnerreferanse.isNotBlank()
             ) {
                 emottakSubscriptionClient.startSubscription(
                     samhandlerPraksisMatch.samhandlerPraksis,
                     msgHead,
-                    receiverBlock,
+                    partnerreferanse,
                     msgId,
                     loggingMeta
                 )
             } else {
-                if (!receiverBlock.partnerReferanse.isNullOrEmpty() &&
-                    receiverBlock.partnerReferanse.isNotBlank()
+                if (!partnerreferanse.isNullOrEmpty() &&
+                    partnerreferanse.isNotBlank()
                 ) {
                     log.info(
-                        "PartnerReferanse is empty or blank, subscription_emottak is not created, {}",
+                        "PartnerReferanse is empty or blank, subscription_emottak is not created,partnerreferanse: $partnerreferanse {}",
                         StructuredArguments.fields(loggingMeta)
                     )
                 } else {
                     log.info(
-                        "SamhandlerPraksis is Legevakt, subscription_emottak is not created, {}",
+                        "SamhandlerPraksis is Legevakt, subscription_emottak is not created,partnerreferanse: $partnerreferanse {}",
                         StructuredArguments.fields(loggingMeta)
                     )
                 }

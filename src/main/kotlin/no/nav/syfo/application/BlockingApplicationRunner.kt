@@ -220,10 +220,10 @@ class BlockingApplicationRunner(
 
                     handleEmottakSubscription(
                         samhandlerPraksisMatchEmottak,
-                        receiverBlock,
                         emottakSubscriptionClient,
                         msgHead,
                         msgId,
+                        partnerReferanse,
                         loggingMeta
                     )
 

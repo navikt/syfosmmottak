@@ -7,7 +7,6 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import net.logstash.logback.argument.StructuredArguments
-import no.nav.helse.eiFellesformat.XMLMottakenhetBlokk
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.helse.msgHead.XMLSender
 import no.nav.syfo.log
@@ -25,7 +24,7 @@ class EmottakSubscriptionClient(
     suspend fun startSubscription(
         samhandlerPraksis: SamhandlerPraksis,
         msgHead: XMLMsgHead,
-        receiverBlock: XMLMottakenhetBlokk,
+        partnerreferanse: String,
         msgId: String,
         loggingMeta: LoggingMeta
     ) {
@@ -39,7 +38,7 @@ class EmottakSubscriptionClient(
                 StartSubscriptionRequest(
                     tssIdent = samhandlerPraksis.tss_ident,
                     sender = convertSenderToBase64(msgHead.msgInfo.sender),
-                    partnerreferanse = receiverBlock.partnerReferanse.toInt()
+                    partnerreferanse = partnerreferanse.toInt()
                 )
             )
         }
