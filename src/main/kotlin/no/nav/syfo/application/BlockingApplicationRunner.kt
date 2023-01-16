@@ -72,6 +72,7 @@ import java.util.UUID
 import javax.jms.MessageConsumer
 import javax.jms.MessageProducer
 import javax.jms.TextMessage
+import no.nav.syfo.metrics.SYKMELDING_MISSNG_ORG_NUMBER_COUNTER
 
 private val sikkerlogg = LoggerFactory.getLogger("securelog")
 
@@ -168,6 +169,14 @@ class BlockingApplicationRunner(
                         "Extracted data, ready to make sync calls to get more data, {}",
                         StructuredArguments.fields(loggingMeta)
                     )
+
+                    if (legekontorOrgNr == null) {
+                        SYKMELDING_MISSNG_ORG_NUMBER_COUNTER.inc()
+                        log.info("Missing org number, from epj ${avsenderSystem.navn} {}",
+                            StructuredArguments.fields(loggingMeta))
+                    }
+
+
                     val signaturFnr = if (erVirksomhetSykmelding) {
                         log.info("Mottatt virksomhetssykmelding, {}", StructuredArguments.fields(loggingMeta))
                         VIRKSOMHETSYKMELDING.inc()
