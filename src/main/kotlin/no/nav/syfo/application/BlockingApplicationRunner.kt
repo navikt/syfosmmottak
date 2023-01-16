@@ -27,6 +27,7 @@ import no.nav.syfo.handlestatus.handleVirksomhetssykmeldingOgHprMangler
 import no.nav.syfo.log
 import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
 import no.nav.syfo.metrics.REQUEST_TIME
+import no.nav.syfo.metrics.SYKMELDING_MISSNG_ORG_NUMBER_COUNTER
 import no.nav.syfo.metrics.SYKMELDING_VEDLEGG_COUNTER
 import no.nav.syfo.metrics.VIRKSOMHETSYKMELDING
 import no.nav.syfo.model.ManuellOppgave
@@ -72,7 +73,6 @@ import java.util.UUID
 import javax.jms.MessageConsumer
 import javax.jms.MessageProducer
 import javax.jms.TextMessage
-import no.nav.syfo.metrics.SYKMELDING_MISSNG_ORG_NUMBER_COUNTER
 
 private val sikkerlogg = LoggerFactory.getLogger("securelog")
 
@@ -172,10 +172,11 @@ class BlockingApplicationRunner(
 
                     if (legekontorOrgNr == null) {
                         SYKMELDING_MISSNG_ORG_NUMBER_COUNTER.inc()
-                        log.info("Missing org number, from epj ${avsenderSystem.navn} {}",
-                            StructuredArguments.fields(loggingMeta))
+                        log.info(
+                            "Missing org number, from epj ${avsenderSystem.navn} {}",
+                            StructuredArguments.fields(loggingMeta)
+                        )
                     }
-
 
                     val signaturFnr = if (erVirksomhetSykmelding) {
                         log.info("Mottatt virksomhetssykmelding, {}", StructuredArguments.fields(loggingMeta))
