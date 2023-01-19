@@ -57,7 +57,7 @@ spec:
       rules:
         - application: syfosmregler
         - application: clamav
-          namespace: clamav
+          namespace: nais-system
   vault:
     enabled: false
   webproxy: false
