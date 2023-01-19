@@ -31,7 +31,7 @@ data class Environment(
     val pdlScope: String = getEnvVar("PDL_SCOPE"),
     val helsenettproxyScope: String = getEnvVar("HELSENETT_SCOPE"),
     val sykmeldingVedleggBucketName: String = getEnvVar("SYKMELDING_VEDLEGG_BUCKET_NAME"),
-    val clamAvEndpointUrl: String = getEnvVar("CLAMAV_ENDPOINT_URL", "http://clamav.clamav.svc.cluster.local"),
+    val clamAvEndpointUrl: String = getEnvVar("CLAMAV_ENDPOINT_URL", "http://clamav.nais-system.svc.cluster.local"),
     val databaseUsername: String = getEnvVar("DB_USERNAME"),
     val databasePassword: String = getEnvVar("DB_PASSWORD"),
     val dbHost: String = getEnvVar("DB_HOST"),
