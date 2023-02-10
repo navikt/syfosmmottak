@@ -130,7 +130,10 @@ fun findBestSamhandlerPraksisEmottak(
         }
         if (samhandlerByHerId != null) {
             log.info(
-                "Fant samhandler basert på herid. herid: $herId,partnerreferanse: $partnerreferanse, {}, {}",
+                "Fant samhandler basert på herid. herid: $herId, " +
+                    "partnerreferanse: $partnerreferanse, " +
+                    "tssid: ${samhandlerByHerId.tss_ident} " +
+                    "{}, {}, {}",
                 keyValue("praksis Informasjon", samhandlere.formaterPraksis()),
                 fields(loggingMeta)
             )
@@ -144,7 +147,10 @@ fun findBestSamhandlerPraksisEmottak(
         }
         if (samhandlerByOrgNumber != null) {
             log.info(
-                "Fant samhandler basert på orgNumber. orgNumber: $orgNumber,partnerreferanse: $partnerreferanse, {}, {}",
+                "Fant samhandler basert på orgNumber. orgNumber: $orgNumber, partnerreferanse: " +
+                    "$partnerreferanse, " +
+                    "tssid: ${samhandlerByOrgNumber.tss_ident} " +
+                    "{}, {}, {}",
                 keyValue("praksis Informasjon", samhandlere.formaterPraksis()),
                 fields(loggingMeta)
             )
