@@ -1,6 +1,5 @@
 package no.nav.syfo.handlestatus
 
-import io.kotest.core.spec.style.FunSpec
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
@@ -21,12 +20,14 @@ import no.nav.syfo.util.get
 import no.nav.syfo.utils.getFileAsString
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.RecordMetadata
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.io.StringReader
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
-import kotlin.test.assertFailsWith
 
-class HandleStatusManualProcessingKtTest : FunSpec({
+internal class HandleStatusManualProcessingKtTest {
     val kafkaApprecProducer = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
     val receivedSykmelding = mockk<ReceivedSykmelding>(relaxed = true)
     val kafkaProducerReceviedSykmelding = mockk<KafkaProducer<String, ReceivedSykmelding>>(relaxed = true)
@@ -53,74 +54,157 @@ class HandleStatusManualProcessingKtTest : FunSpec({
         every { kafkaApprecProducer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
         every { kafkaManualTaskProducer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
         every { manuellOppgaveProducer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
-        every { validationResultKafkaProducer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
-        every { kafkaProducerReceviedSykmelding.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
+        every { validationResultKafkaProducer.send(any()) } returns CompletableFuture<RecordMetadata>().apply {
+            complete(
+                mockk()
+            )
+        }
+        every { kafkaProducerReceviedSykmelding.send(any()) } returns CompletableFuture<RecordMetadata>().apply {
+            complete(
+                mockk()
+            )
+        }
     }
 
-    beforeTest { clearAllMocks() }
+    @BeforeEach
+    internal fun `Set up`() {
+        clearAllMocks()
+    }
 
-    context("Send manual processing") {
-        test("Should send to manuel") {
-            setUpMocks()
+    @Test
+    internal fun `Should send to manuel`() {
+        setUpMocks()
 
-            handleManualProcessing(receivedSykmelding, loggingMeta, fellesformat, msgHead, kafkaApprecProducer, validationResult, kafkaManualTaskProducer, kafkaProducerReceviedSykmelding, validationResultKafkaProducer, manuellOppgaveProducer)
+        handleManualProcessing(
+            receivedSykmelding,
+            loggingMeta,
+            fellesformat,
+            msgHead,
+            kafkaApprecProducer,
+            validationResult,
+            kafkaManualTaskProducer,
+            kafkaProducerReceviedSykmelding,
+            validationResultKafkaProducer,
+            manuellOppgaveProducer
+        )
 
-            verify(exactly = 0) { kafkaApprecProducer.send(any()) }
-            verify(exactly = 0) { kafkaManualTaskProducer.send(any()) }
-            verify(exactly = 1) { manuellOppgaveProducer.send(any()) }
-            verify(exactly = 0) { validationResultKafkaProducer.send(any()) }
-            verify(exactly = 0) { kafkaProducerReceviedSykmelding.send(any()) }
-        }
-        test("Should throw exception when kafkaproducer for manueloppgave") {
-            setUpMocks()
-            every { manuellOppgaveProducer.send(any()) } returns getFailingFuture()
-            assertFailsWith<ExecutionException> {
-                runBlocking {
-                    handleManualProcessing(receivedSykmelding, loggingMeta, fellesformat, msgHead, kafkaApprecProducer, validationResult, kafkaManualTaskProducer, kafkaProducerReceviedSykmelding, validationResultKafkaProducer, manuellOppgaveProducer)
-                }
-            }
-        }
+        verify(exactly = 0) { kafkaApprecProducer.send(any()) }
+        verify(exactly = 0) { kafkaManualTaskProducer.send(any()) }
+        verify(exactly = 1) { manuellOppgaveProducer.send(any()) }
+        verify(exactly = 0) { validationResultKafkaProducer.send(any()) }
+        verify(exactly = 0) { kafkaProducerReceviedSykmelding.send(any()) }
+    }
 
-        test("Should throw exeption when sending ReceivedSykmelding fails") {
-            setUpMocks()
-            every { kafkaProducerReceviedSykmelding.send(any()) } returns getFailingFuture()
-            assertFailsWith<ExecutionException> {
-                runBlocking {
-                    handleManualProcessing(receivedSykmelding, loggingMeta, fellesformat, msgHead, kafkaApprecProducer, validationResultIkkeManuell, kafkaManualTaskProducer, kafkaProducerReceviedSykmelding, validationResultKafkaProducer, manuellOppgaveProducer)
-                }
-            }
-        }
-
-        test("Should throw exeption when sending validationResults fails") {
-            setUpMocks()
-            every { validationResultKafkaProducer.send(any()) } returns getFailingFuture()
-            assertFailsWith<ExecutionException> {
-                runBlocking {
-                    handleManualProcessing(receivedSykmelding, loggingMeta, fellesformat, msgHead, kafkaApprecProducer, validationResultIkkeManuell, kafkaManualTaskProducer, kafkaProducerReceviedSykmelding, validationResultKafkaProducer, manuellOppgaveProducer)
-                }
-            }
-        }
-        test("Should throw exeption when sending apprec fails") {
-            setUpMocks()
-            every { kafkaApprecProducer.send(any()) } returns getFailingFuture()
-            assertFailsWith<ExecutionException> {
-                runBlocking {
-                    handleManualProcessing(receivedSykmelding, loggingMeta, fellesformat, msgHead, kafkaApprecProducer, validationResultIkkeManuell, kafkaManualTaskProducer, kafkaProducerReceviedSykmelding, validationResultKafkaProducer, manuellOppgaveProducer)
-                }
-            }
-        }
-
-        test("should throw exception when kafkaManualTaskProducer fails") {
-            setUpMocks()
-            every { kafkaManualTaskProducer.send(any()) } returns getFailingFuture()
-            assertFailsWith<ExecutionException> {
-                runBlocking {
-                    handleManualProcessing(receivedSykmelding, loggingMeta, fellesformat, msgHead, kafkaApprecProducer, validationResultIkkeManuell, kafkaManualTaskProducer, kafkaProducerReceviedSykmelding, validationResultKafkaProducer, manuellOppgaveProducer)
-                }
+    @Test
+    internal fun `Should throw exception when kafkaproducer for manueloppgave`() {
+        setUpMocks()
+        every { manuellOppgaveProducer.send(any()) } returns getFailingFuture()
+        assertThrows<ExecutionException> {
+            runBlocking {
+                handleManualProcessing(
+                    receivedSykmelding,
+                    loggingMeta,
+                    fellesformat,
+                    msgHead,
+                    kafkaApprecProducer,
+                    validationResult,
+                    kafkaManualTaskProducer,
+                    kafkaProducerReceviedSykmelding,
+                    validationResultKafkaProducer,
+                    manuellOppgaveProducer
+                )
             }
         }
     }
-})
+
+    @Test
+    internal fun `Should throw exeption when sending ReceivedSykmelding fails`() {
+        setUpMocks()
+        every { kafkaProducerReceviedSykmelding.send(any()) } returns getFailingFuture()
+        assertThrows<ExecutionException> {
+            runBlocking {
+                handleManualProcessing(
+                    receivedSykmelding,
+                    loggingMeta,
+                    fellesformat,
+                    msgHead,
+                    kafkaApprecProducer,
+                    validationResultIkkeManuell,
+                    kafkaManualTaskProducer,
+                    kafkaProducerReceviedSykmelding,
+                    validationResultKafkaProducer,
+                    manuellOppgaveProducer
+                )
+            }
+        }
+    }
+
+    @Test
+    internal fun `Should throw exeption when sending validationResults fails`() {
+        setUpMocks()
+        every { validationResultKafkaProducer.send(any()) } returns getFailingFuture()
+        assertThrows<ExecutionException> {
+            runBlocking {
+                handleManualProcessing(
+                    receivedSykmelding,
+                    loggingMeta,
+                    fellesformat,
+                    msgHead,
+                    kafkaApprecProducer,
+                    validationResultIkkeManuell,
+                    kafkaManualTaskProducer,
+                    kafkaProducerReceviedSykmelding,
+                    validationResultKafkaProducer,
+                    manuellOppgaveProducer
+                )
+            }
+        }
+    }
+
+    @Test
+    internal fun `Should throw exeption when sending apprec fails`() {
+        setUpMocks()
+        every { kafkaApprecProducer.send(any()) } returns getFailingFuture()
+        assertThrows<ExecutionException> {
+            runBlocking {
+                handleManualProcessing(
+                    receivedSykmelding,
+                    loggingMeta,
+                    fellesformat,
+                    msgHead,
+                    kafkaApprecProducer,
+                    validationResultIkkeManuell,
+                    kafkaManualTaskProducer,
+                    kafkaProducerReceviedSykmelding,
+                    validationResultKafkaProducer,
+                    manuellOppgaveProducer
+                )
+            }
+        }
+    }
+
+    @Test
+    internal fun `Should throw exception when kafkaManualTaskProducer fails`() {
+        setUpMocks()
+        every { kafkaManualTaskProducer.send(any()) } returns getFailingFuture()
+        assertThrows<ExecutionException> {
+            runBlocking {
+                handleManualProcessing(
+                    receivedSykmelding,
+                    loggingMeta,
+                    fellesformat,
+                    msgHead,
+                    kafkaApprecProducer,
+                    validationResultIkkeManuell,
+                    kafkaManualTaskProducer,
+                    kafkaProducerReceviedSykmelding,
+                    validationResultKafkaProducer,
+                    manuellOppgaveProducer
+                )
+            }
+        }
+    }
+}
 
 fun getFailingFuture(): CompletableFuture<RecordMetadata> {
     val future = CompletableFuture<RecordMetadata>()
@@ -131,7 +215,18 @@ fun getFailingFuture(): CompletableFuture<RecordMetadata> {
     return future
 }
 
-private fun handleManualProcessing(receivedSykmelding: ReceivedSykmelding, loggingMeta: LoggingMeta, fellesformat: XMLEIFellesformat, msgHead: XMLMsgHead, kafkaApprecProducer: KafkaProducer<String, Apprec>, validationResutl: ValidationResult, kafkaManualTaskProducer: KafkaProducer<String, OpprettOppgaveKafkaMessage>, kafkaProducerReceviedSykmelding: KafkaProducer<String, ReceivedSykmelding>, validationResultKafkaProducer: KafkaProducer<String, ValidationResult>, manuellOppgaveProducer: KafkaProducer<String, ManuellOppgave>) {
+private fun handleManualProcessing(
+    receivedSykmelding: ReceivedSykmelding,
+    loggingMeta: LoggingMeta,
+    fellesformat: XMLEIFellesformat,
+    msgHead: XMLMsgHead,
+    kafkaApprecProducer: KafkaProducer<String, Apprec>,
+    validationResutl: ValidationResult,
+    kafkaManualTaskProducer: KafkaProducer<String, OpprettOppgaveKafkaMessage>,
+    kafkaProducerReceviedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
+    validationResultKafkaProducer: KafkaProducer<String, ValidationResult>,
+    manuellOppgaveProducer: KafkaProducer<String, ManuellOppgave>
+) {
     handleStatusMANUALPROCESSING(
         receivedSykmelding,
         loggingMeta,

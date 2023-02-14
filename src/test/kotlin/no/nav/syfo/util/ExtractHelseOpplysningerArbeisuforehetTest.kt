@@ -1,42 +1,46 @@
 package no.nav.syfo.util
 
-import io.kotest.core.spec.style.FunSpec
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
-import org.amshove.kluent.shouldBeEqualTo
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 import java.io.StringReader
 
-internal class ExtractHelseOpplysningerArbeisuforehetTest : FunSpec({
-    context("Testing extracting data from HelseOpplysningerArbeidsuforhet") {
-        test("Extract tlf from behandler") {
+internal class ExtractHelseOpplysningerArbeisuforehetTest {
 
-            val stringInput =
-                no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
-            val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
-            val kontaktInfo = extractHelseOpplysningerArbeidsuforhet(fellesformat).behandler.kontaktInfo
+    @Test
+    internal fun `Testing extracting data from HelseOpplysningerArbeidsuforhet extract tlf from behandler`() {
 
-            val tlfFraBehnandler = extractTlfFromKontaktInfo(kontaktInfo)
+        val stringInput =
+            no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
+        val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
+        val kontaktInfo = extractHelseOpplysningerArbeidsuforhet(fellesformat).behandler.kontaktInfo
 
-            tlfFraBehnandler shouldBeEqualTo "12345678"
-        }
-        test("Extract tlf from pasient") {
+        val tlfFraBehnandler = extractTlfFromKontaktInfo(kontaktInfo)
 
-            val stringInput =
-                no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
-            val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
-            val kontaktInfo = extractHelseOpplysningerArbeidsuforhet(fellesformat).pasient.kontaktInfo
-
-            val tlfFraPasient = extractTlfFromKontaktInfo(kontaktInfo)
-
-            tlfFraPasient shouldBeEqualTo "mob:12345678"
-        }
-        test("Extract hpr") {
-
-            val stringInput =
-                no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
-            val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
-            val hpr = padHpr(extractHpr(fellesformat)?.id?.trim())
-
-            hpr shouldBeEqualTo "123456789"
-        }
+        Assertions.assertEquals("12345678", tlfFraBehnandler)
     }
-})
+
+    @Test
+    internal fun `Testing extracting data from HelseOpplysningerArbeidsuforhet extract tlf from pasient`() {
+
+        val stringInput =
+            no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
+        val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
+        val kontaktInfo = extractHelseOpplysningerArbeidsuforhet(fellesformat).pasient.kontaktInfo
+
+        val tlfFraPasient = extractTlfFromKontaktInfo(kontaktInfo)
+
+        Assertions.assertEquals("mob:12345678", tlfFraPasient)
+    }
+
+    @Test
+    internal fun `Testing extracting data from HelseOpplysningerArbeidsuforhet extract hpr`() {
+
+        val stringInput =
+            no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
+        val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
+        val hpr = padHpr(extractHpr(fellesformat)?.id?.trim())
+
+        Assertions.assertEquals("123456789", hpr)
+    }
+}

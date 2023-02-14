@@ -1,11 +1,11 @@
 package no.nav.syfo.application
 
-import io.kotest.core.spec.style.FunSpec
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.runBlocking
 import no.nav.syfo.Environment
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.apprec.ApprecStatus
@@ -26,13 +26,15 @@ import no.nav.syfo.service.DuplicationService
 import no.nav.syfo.service.VirusScanService
 import no.nav.syfo.utils.getFileAsString
 import no.nav.syfo.vedlegg.google.BucketUploadService
-import org.amshove.kluent.shouldBeEqualTo
 import org.apache.kafka.clients.producer.KafkaProducer
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import javax.jms.MessageConsumer
 import javax.jms.MessageProducer
 import javax.jms.TextMessage
 
-class BlockingApplicationRunnerTest : FunSpec({
+internal class BlockingApplicationRunnerTest {
     val inputconsumer = mockk<MessageConsumer>(relaxed = true)
     val backoutProducer = mockk<MessageProducer>(relaxed = true)
     val env = mockk<Environment>(relaxed = true)
@@ -69,40 +71,79 @@ class BlockingApplicationRunnerTest : FunSpec({
         duplicationService
     )
 
-    beforeTest {
+    @BeforeEach
+    internal fun `Set up`() {
         clearMocks(kafkaproducerApprec, kafkaproducerreceivedSykmelding)
+        coEvery { pdlPersonService.getIdenter(any(), any()) } returns mapOf(
+            "10987654321" to PdlPerson(
+                listOf(
+                    PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
+                    PdlIdent("aktorId", false, "AKTORID")
+                )
+            ),
+            "12345678912" to PdlPerson(
+                listOf(
+                    PdlIdent("12345678912", false, "FOLKEREGISTERIDENT"),
+                    PdlIdent("aktorId2", false, "AKTORID")
+                )
+            )
+        )
+        coEvery { kuhrSarClient.getSamhandler(any(), any()) } returns emptyList()
+        coEvery { norskHelsenettClient.getByFnr(any(), any()) } returns Behandler(
+            emptyList(),
+            "",
+            "HPR",
+            null,
+            null,
+            null
+        )
+        coEvery { norskHelsenettClient.getByHpr(any(), any()) } returns Behandler(
+            emptyList(),
+            "",
+            "HPR",
+            null,
+            null,
+            null
+        )
+        coEvery { syfoSykemeldingRuleClient.executeRuleValidation(any(), any()) } returns ValidationResult(
+            Status.OK,
+            emptyList()
+        )
+        coEvery { duplicationService.getDuplicationCheck(any(), any()) } returns null
     }
 
-    coEvery { pdlPersonService.getIdenter(any(), any()) } returns mapOf(
-        "10987654321" to PdlPerson(listOf(PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"), PdlIdent("aktorId", false, "AKTORID"))),
-        "12345678912" to PdlPerson(listOf(PdlIdent("12345678912", false, "FOLKEREGISTERIDENT"), PdlIdent("aktorId2", false, "AKTORID")))
-    )
-    coEvery { kuhrSarClient.getSamhandler(any(), any()) } returns emptyList()
-    coEvery { norskHelsenettClient.getByFnr(any(), any()) } returns Behandler(emptyList(), "", "HPR", null, null, null)
-    coEvery { norskHelsenettClient.getByHpr(any(), any()) } returns Behandler(emptyList(), "", "HPR", null, null, null)
-    coEvery { syfoSykemeldingRuleClient.executeRuleValidation(any(), any()) } returns ValidationResult(Status.OK, emptyList())
-    coEvery { duplicationService.getDuplicationCheck(any(), any()) } returns null
+    @Test
+    internal fun `Vanlig sykmelding skal gi ok apprec`() {
+        every { applicationState.ready } returns true andThen false
+        val stringInput = getFileAsString("src/test/resources/fellesformat.xml")
+        val textMessage = mockk<TextMessage>(relaxed = true)
+        every { textMessage.text } returns stringInput
+        every { inputconsumer.receive(1000) } returns textMessage
 
-    context("Mottak av sykmelding") {
-        test("Vanlig sykmelding skal gi ok apprec") {
-            every { applicationState.ready } returns true andThen false
-            val stringInput = getFileAsString("src/test/resources/fellesformat.xml")
-            val textMessage = mockk<TextMessage>(relaxed = true)
-            every { textMessage.text } returns stringInput
-            every { inputconsumer.receive(1000) } returns textMessage
-
+        runBlocking {
             blockingApplicationRunner.run(inputconsumer, backoutProducer)
 
             coVerify { kafkaproducerApprec.send(match { it.value().apprecStatus == ApprecStatus.OK }) }
         }
-        test("Virksomhetsykmelding skal gi ok apprec") {
-            every { applicationState.ready } returns true andThen false
-            val stringInput = getFileAsString("src/test/resources/sykmelding_virksomhet.xml")
-            val textMessage = mockk<TextMessage>(relaxed = true)
-            every { textMessage.text } returns stringInput
-            every { inputconsumer.receive(1000) } returns textMessage
-            coEvery { norskHelsenettClient.getByHpr(any(), any()) } returns Behandler(emptyList(), "12345678912", "HPR", null, null, null)
+    }
 
+    @Test
+    internal fun `Virksomhetsykmelding skal gi ok apprec`() {
+        every { applicationState.ready } returns true andThen false
+        val stringInput = getFileAsString("src/test/resources/sykmelding_virksomhet.xml")
+        val textMessage = mockk<TextMessage>(relaxed = true)
+        every { textMessage.text } returns stringInput
+        every { inputconsumer.receive(1000) } returns textMessage
+        coEvery { norskHelsenettClient.getByHpr(any(), any()) } returns Behandler(
+            emptyList(),
+            "12345678912",
+            "HPR",
+            null,
+            null,
+            null
+        )
+
+        runBlocking {
             blockingApplicationRunner.run(inputconsumer, backoutProducer)
 
             coVerify {
@@ -123,29 +164,38 @@ class BlockingApplicationRunnerTest : FunSpec({
                 )
             }
         }
-        test("Sykmelding med regelsettversjon 3 skal gi ok apprec") {
-            every { applicationState.ready } returns true andThen false
-            val stringInput = getFileAsString("src/test/resources/sykemelding2013Regelsettversjon3.xml")
-            val textMessage = mockk<TextMessage>(relaxed = true)
-            every { textMessage.text } returns stringInput
-            every { inputconsumer.receive(1000) } returns textMessage
+    }
 
+    @Test
+    internal fun `Sykmelding med regelsettversjon 3 skal gi ok apprec`() {
+        every { applicationState.ready } returns true andThen false
+        val stringInput = getFileAsString("src/test/resources/sykemelding2013Regelsettversjon3.xml")
+        val textMessage = mockk<TextMessage>(relaxed = true)
+        every { textMessage.text } returns stringInput
+        every { inputconsumer.receive(1000) } returns textMessage
+        runBlocking {
             blockingApplicationRunner.run(inputconsumer, backoutProducer)
 
             coVerify { kafkaproducerApprec.send(match { it.value().apprecStatus == ApprecStatus.OK }) }
         }
+    }
 
-        test("Sykmelding med melding er ikke byte message eller text message skal gi RuntimeException") {
-            every { applicationState.ready } returns true andThen false
-            val textMessage = mockk<TextMessage>(relaxed = true)
-            every { textMessage.text } returns null
-            every { inputconsumer.receive(1000) } returns textMessage
+    @Test
+    internal fun `Sykmelding med melding er ikke byte message eller text message skal gi RuntimeException`() {
+        every { applicationState.ready } returns true andThen false
+        val textMessage = mockk<TextMessage>(relaxed = true)
+        every { textMessage.text } returns null
+        every { inputconsumer.receive(1000) } returns textMessage
 
+        runBlocking {
             try {
                 blockingApplicationRunner.run(inputconsumer, backoutProducer)
             } catch (exception: Exception) {
-                exception.message shouldBeEqualTo "Incoming message needs to be a byte message or text message"
+                Assertions.assertEquals(
+                    "Incoming message needs to be a byte message or text message",
+                    exception.message
+                )
             }
         }
     }
-})
+}

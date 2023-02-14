@@ -1,28 +1,30 @@
 package no.nav.syfo
 
-import io.kotest.core.spec.style.FunSpec
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.syfo.util.extractHelseOpplysningerArbeidsuforhet
 import no.nav.syfo.util.fellesformatUnmarshaller
 import no.nav.syfo.utils.getFileAsString
-import org.amshove.kluent.shouldBeEqualTo
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 import java.io.StringReader
 
-class ExtractSykmeldingTest : FunSpec({
-    context("Testing extract sykmeld2013") {
-        test("Regelsettversjon 2") {
-            val stringInput = getFileAsString("src/test/resources/sykemelding2013Regelsettversjon2.xml")
-            val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
-            val sykmelding2013 = extractHelseOpplysningerArbeidsuforhet(fellesformat)
+internal class ExtractSykmeldingTest {
 
-            sykmelding2013.regelSettVersjon shouldBeEqualTo "2"
-        }
-        test("Regelsettversjon 3") {
-            val stringInput = getFileAsString("src/test/resources/sykemelding2013Regelsettversjon3.xml")
-            val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
-            val sykmelding2013 = extractHelseOpplysningerArbeidsuforhet(fellesformat)
+    @Test
+    internal fun `Testing extract sykmeld2013 regelsettversjon 2`() {
+        val stringInput = getFileAsString("src/test/resources/sykemelding2013Regelsettversjon2.xml")
+        val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
+        val sykmelding2013 = extractHelseOpplysningerArbeidsuforhet(fellesformat)
 
-            sykmelding2013.regelSettVersjon shouldBeEqualTo "3"
-        }
+        Assertions.assertEquals("2", sykmelding2013.regelSettVersjon)
     }
-})
+
+    @Test
+    internal fun `Testing extract sykmeld2013 regelsettversjon 3`() {
+        val stringInput = getFileAsString("src/test/resources/sykemelding2013Regelsettversjon3.xml")
+        val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
+        val sykmelding2013 = extractHelseOpplysningerArbeidsuforhet(fellesformat)
+
+        Assertions.assertEquals("3", sykmelding2013.regelSettVersjon)
+    }
+}

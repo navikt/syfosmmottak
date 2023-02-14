@@ -14,7 +14,6 @@ val jaxbApiVersion = "2.4.0-b180830.0359"
 val kafkaVersion = "3.3.1"
 val kithHodemeldingVersion = "1.e6fcef8"
 val kithApprecVersion = "1.e6fcef8"
-val kluentVersion = "1.72"
 val ktorVersion = "2.2.3"
 val logbackVersion = "1.4.4"
 val logstashEncoderVersion = "7.2"
@@ -30,7 +29,7 @@ val javaTimeAdapterVersion = "1.1.3"
 val mockkVersion = "1.13.2"
 val kotlinVersion = "1.8.10"
 val googleCloudStorageVersion = "2.13.0"
-val kotestVersion = "5.5.4"
+val junitJupiterVersion = "5.9.2"
 val flywayVersion = "9.3.0"
 val hikariVersion = "5.0.1"
 val postgresVersion = "42.5.1"
@@ -111,14 +110,13 @@ dependencies {
     implementation("com.zaxxer:HikariCP:$hikariVersion")
     implementation("org.flywaydb:flyway-core:$flywayVersion")
 
-    testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
-    testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
         exclude(group = "org.eclipse.jetty")
     }
-
-    testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
     testImplementation("io.zonky.test:embedded-postgres:$embeddedPostgresVersion")
 }
 

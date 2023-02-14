@@ -1,6 +1,5 @@
 package no.nav.syfo.util
 
-import io.kotest.core.spec.style.FunSpec
 import io.mockk.coEvery
 import io.mockk.mockk
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
@@ -19,226 +18,324 @@ import no.nav.syfo.duplicationcheck.model.DuplicateCheck
 import no.nav.syfo.pdl.client.model.PdlIdent
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.service.DuplicationService
-import org.amshove.kluent.shouldBeEqualTo
 import org.apache.kafka.clients.producer.KafkaProducer
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 import java.io.StringReader
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-class CheckSM2013ContentTest : FunSpec({
-    context("Check SM2013 content constinue loop or not") {
-        test("Check if patient not found in PDL should return true") {
-            val stringInput =
-                no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
-            val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
+internal class CheckSM2013ContentTest {
 
-            val pasient = null
-            val behandler = mockk<PdlPerson>(relaxed = true)
-            val healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat)
-            val originaltPasientFnr = "10987654321"
-            val loggingMeta = mockk<LoggingMeta>(relaxed = true)
-            val ediLoggId = "12312"
-            val msgId = "1231-232"
-            val msgHead = fellesformat.get<XMLMsgHead>()
-            val env = mockk<Environment>(relaxed = true)
-            val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
-            val duplicationService = mockk<DuplicationService>(relaxed = true)
+    @Test
+    internal fun `Check if patient not found in PDL should return true`() {
+        val stringInput =
+            no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
+        val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
 
-            val duplicationCheck = DuplicateCheck(
-                "1231-232--123gds-2fad",
-                "", ediLoggId, msgId, LocalDateTime.now(),
-                "epj", "1", null
+        val pasient = null
+        val behandler = mockk<PdlPerson>(relaxed = true)
+        val healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat)
+        val originaltPasientFnr = "10987654321"
+        val loggingMeta = mockk<LoggingMeta>(relaxed = true)
+        val ediLoggId = "12312"
+        val msgId = "1231-232"
+        val msgHead = fellesformat.get<XMLMsgHead>()
+        val env = mockk<Environment>(relaxed = true)
+        val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
+        val duplicationService = mockk<DuplicationService>(relaxed = true)
+
+        val duplicationCheck = DuplicateCheck(
+            "1231-232--123gds-2fad",
+            "", ediLoggId, msgId, LocalDateTime.now(),
+            "epj", "1", null
+        )
+
+        val checkSM2013Content = checkSM2013Content(
+            pasient,
+            behandler,
+            healthInformation,
+            originaltPasientFnr,
+            loggingMeta,
+            fellesformat,
+            ediLoggId,
+            msgId,
+            msgHead,
+            env,
+            kafkaproducerApprec,
+            duplicationService,
+            duplicationCheck
+        )
+
+        Assertions.assertEquals(true, checkSM2013Content)
+    }
+
+    @Test
+    internal fun `Check if behandler not found in PDL should return true`() {
+        val stringInput =
+            no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
+        val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
+
+        val pasient = PdlPerson(
+            listOf(
+                PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
+                PdlIdent("aktorId", false, "AKTORID")
             )
+        )
+        val behandler = null
+        val healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat)
+        val originaltPasientFnr = "10987654321"
+        val loggingMeta = mockk<LoggingMeta>(relaxed = true)
+        val ediLoggId = "12312"
+        val msgId = "1231-232"
+        val msgHead = fellesformat.get<XMLMsgHead>()
+        val env = mockk<Environment>(relaxed = true)
+        val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
+        val duplicationService = mockk<DuplicationService>(relaxed = true)
+        val duplicationCheck = DuplicateCheck(
+            "1231-232--123gds-2fad",
+            "", ediLoggId, msgId, LocalDateTime.now(),
+            "epj", "1", null
+        )
 
-            val checkSM2013Content = checkSM2013Content(
-                pasient,
-                behandler,
-                healthInformation,
-                originaltPasientFnr,
-                loggingMeta,
-                fellesformat,
-                ediLoggId,
-                msgId,
-                msgHead,
-                env,
-                kafkaproducerApprec,
-                duplicationService,
-                duplicationCheck
+        val checkSM2013Content = checkSM2013Content(
+            pasient,
+            behandler,
+            healthInformation,
+            originaltPasientFnr,
+            loggingMeta,
+            fellesformat,
+            ediLoggId,
+            msgId,
+            msgHead,
+            env,
+            kafkaproducerApprec,
+            duplicationService,
+            duplicationCheck
+        )
+
+        Assertions.assertEquals(true, checkSM2013Content)
+    }
+
+    @Test
+    internal fun `Check if aktivitet not found should return true`() {
+        val stringInput =
+            no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
+        val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
+
+        val pasient = PdlPerson(
+            listOf(
+                PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
+                PdlIdent("aktorId", false, "AKTORID")
             )
+        )
+        val behandler = null
+        val healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat)
+        val originaltPasientFnr = "10987654321"
+        val loggingMeta = mockk<LoggingMeta>(relaxed = true)
+        val ediLoggId = "12312"
+        val msgId = "1231-232"
+        val msgHead = fellesformat.get<XMLMsgHead>()
+        val env = mockk<Environment>(relaxed = true)
+        val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
+        val duplicationService = mockk<DuplicationService>(relaxed = true)
 
-            checkSM2013Content shouldBeEqualTo true
-        }
+        val duplicationCheck = DuplicateCheck(
+            "1231-232--123gds-2fad",
+            "", ediLoggId, msgId, LocalDateTime.now(),
+            "epj", "1", null
+        )
 
-        test("Check if behandler not found in PDL should return true") {
-            val stringInput =
-                no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
-            val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
+        val checkSM2013Content = checkSM2013Content(
+            pasient,
+            behandler,
+            healthInformation,
+            originaltPasientFnr,
+            loggingMeta,
+            fellesformat,
+            ediLoggId,
+            msgId,
+            msgHead,
+            env,
+            kafkaproducerApprec,
+            duplicationService,
+            duplicationCheck
+        )
 
-            val pasient = PdlPerson(
-                listOf(
-                    PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                    PdlIdent("aktorId", false, "AKTORID")
-                )
+        Assertions.assertEquals(true, checkSM2013Content)
+    }
+
+    @Test
+    internal fun `Check if aktivitet found should return false`() {
+        val stringInput =
+            no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
+
+        val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
+
+        val pasientPDL = PdlPerson(
+            listOf(
+                PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
+                PdlIdent("aktorId", false, "AKTORID")
             )
-            val behandler = null
-            val healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat)
-            val originaltPasientFnr = "10987654321"
-            val loggingMeta = mockk<LoggingMeta>(relaxed = true)
-            val ediLoggId = "12312"
-            val msgId = "1231-232"
-            val msgHead = fellesformat.get<XMLMsgHead>()
-            val env = mockk<Environment>(relaxed = true)
-            val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
-            val duplicationService = mockk<DuplicationService>(relaxed = true)
-            val duplicationCheck = DuplicateCheck(
-                "1231-232--123gds-2fad",
-                "", ediLoggId, msgId, LocalDateTime.now(),
-                "epj", "1", null
+        )
+
+        val behandlerPdl = PdlPerson(
+            listOf(
+                PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
+                PdlIdent("aktorId", false, "AKTORID")
             )
-
-            val checkSM2013Content = checkSM2013Content(
-                pasient,
-                behandler,
-                healthInformation,
-                originaltPasientFnr,
-                loggingMeta,
-                fellesformat,
-                ediLoggId,
-                msgId,
-                msgHead,
-                env,
-                kafkaproducerApprec,
-                duplicationService,
-                duplicationCheck
-            )
-
-            checkSM2013Content shouldBeEqualTo true
-        }
-
-        test("Check if aktivitet not found should return true") {
-            val stringInput =
-                no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
-            val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
-
-            val pasient = PdlPerson(
-                listOf(
-                    PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                    PdlIdent("aktorId", false, "AKTORID")
-                )
-            )
-            val behandler = null
-            val healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat)
-            val originaltPasientFnr = "10987654321"
-            val loggingMeta = mockk<LoggingMeta>(relaxed = true)
-            val ediLoggId = "12312"
-            val msgId = "1231-232"
-            val msgHead = fellesformat.get<XMLMsgHead>()
-            val env = mockk<Environment>(relaxed = true)
-            val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
-            val duplicationService = mockk<DuplicationService>(relaxed = true)
-
-            val duplicationCheck = DuplicateCheck(
-                "1231-232--123gds-2fad",
-                "", ediLoggId, msgId, LocalDateTime.now(),
-                "epj", "1", null
-            )
-
-            val checkSM2013Content = checkSM2013Content(
-                pasient,
-                behandler,
-                healthInformation,
-                originaltPasientFnr,
-                loggingMeta,
-                fellesformat,
-                ediLoggId,
-                msgId,
-                msgHead,
-                env,
-                kafkaproducerApprec,
-                duplicationService,
-                duplicationCheck
-            )
-
-            checkSM2013Content shouldBeEqualTo true
-        }
-
-        test("Check if aktivitet found should return false") {
-            val stringInput =
-                no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
-
-            val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
-
-            val pasientPDL = PdlPerson(
-                listOf(
-                    PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                    PdlIdent("aktorId", false, "AKTORID")
-                )
-            )
-
-            val behandlerPdl = PdlPerson(
-                listOf(
-                    PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                    PdlIdent("aktorId", false, "AKTORID")
-                )
-            )
-            val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
-                arbeidsgiver = HelseOpplysningerArbeidsuforhet.Arbeidsgiver().apply {
-                    harArbeidsgiver = CS().apply {
-                        dn = "En arbeidsgiver"
-                        v = "1"
-                    }
-                    navnArbeidsgiver = "SAS as"
-                    yrkesbetegnelse = "Pilot"
-                    stillingsprosent = 100
+        )
+        val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
+            arbeidsgiver = HelseOpplysningerArbeidsuforhet.Arbeidsgiver().apply {
+                harArbeidsgiver = CS().apply {
+                    dn = "En arbeidsgiver"
+                    v = "1"
                 }
-                kontaktMedPasient = HelseOpplysningerArbeidsuforhet.KontaktMedPasient().apply {
-                    kontaktDato = LocalDate.now()
-                    behandletDato = LocalDateTime.now()
+                navnArbeidsgiver = "SAS as"
+                yrkesbetegnelse = "Pilot"
+                stillingsprosent = 100
+            }
+            kontaktMedPasient = HelseOpplysningerArbeidsuforhet.KontaktMedPasient().apply {
+                kontaktDato = LocalDate.now()
+                behandletDato = LocalDateTime.now()
+            }
+            behandler = HelseOpplysningerArbeidsuforhet.Behandler().apply {
+                navn = NavnType().apply {
+                    fornavn = "Per"
+                    etternavn = "Hansne"
                 }
-                behandler = HelseOpplysningerArbeidsuforhet.Behandler().apply {
-                    navn = NavnType().apply {
-                        fornavn = "Per"
-                        etternavn = "Hansne"
-                    }
-                    id.add(
-                        Ident().apply {
-                            id = "12343567"
-                            typeId = CV().apply {
-                                dn = "Fødselsnummer"
-                                s = "2.16.578.1.12.4.1.1.8116"
-                                v = "FNR"
-                            }
+                id.add(
+                    Ident().apply {
+                        id = "12343567"
+                        typeId = CV().apply {
+                            dn = "Fødselsnummer"
+                            s = "2.16.578.1.12.4.1.1.8116"
+                            v = "FNR"
                         }
-                    )
-                    adresse = Address().apply {
                     }
-                    kontaktInfo.add(
-                        TeleCom().apply {
-                        }
-                    )
+                )
+                adresse = Address().apply {
                 }
-                aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
-                    periode.add(
-                        HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
-                            periodeFOMDato = LocalDate.now()
-                            periodeTOMDato = LocalDate.now().plusDays(4)
-                            aktivitetIkkeMulig =
-                                HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig().apply {
-                                    medisinskeArsaker = ArsakType().apply {
-                                        arsakskode.add(
-                                            CS().apply {
-                                                v = "1"
-                                                dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                            }
-                                        )
-                                        beskriv = "Kan ikkje jobbe"
-                                    }
+                kontaktInfo.add(
+                    TeleCom().apply {
+                    }
+                )
+            }
+            aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
+                periode.add(
+                    HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
+                        periodeFOMDato = LocalDate.now()
+                        periodeTOMDato = LocalDate.now().plusDays(4)
+                        aktivitetIkkeMulig =
+                            HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig().apply {
+                                medisinskeArsaker = ArsakType().apply {
+                                    arsakskode.add(
+                                        CS().apply {
+                                            v = "1"
+                                            dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
+                                        }
+                                    )
+                                    beskriv = "Kan ikkje jobbe"
                                 }
-                        }
-                    )
+                            }
+                    }
+                )
+            }
+            pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
+                fodselsnummer = Ident().apply {
+                    id = "12343567"
+                    typeId = CV().apply {
+                        dn = "Fødselsnummer"
+                        s = "2.16.578.1.12.4.1.1.8116"
+                        v = "FNR"
+                    }
                 }
-                pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
-                    fodselsnummer = Ident().apply {
+            }
+            syketilfelleStartDato = LocalDate.now()
+            medisinskVurdering = HelseOpplysningerArbeidsuforhet.MedisinskVurdering().apply {
+                hovedDiagnose = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.HovedDiagnose().apply {
+                    diagnosekode = CV().apply {
+                        dn = "Problem med jus/politi"
+                        s = "2.16.578.1.12.4.1.1.7110"
+                        v = "Z09"
+                    }
+                }
+            }
+            avsenderSystem = HelseOpplysningerArbeidsuforhet.AvsenderSystem().apply {
+                systemNavn = "EPJ helse"
+                systemVersjon = "1.0.2"
+            }
+        }
+        val originaltPasientFnr = "10987654321"
+        val loggingMeta = mockk<LoggingMeta>(relaxed = true)
+        val ediLoggId = "12312"
+        val msgId = "1231-232"
+        val msgHead = fellesformat.get<XMLMsgHead>()
+        val env = mockk<Environment>(relaxed = true)
+        val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
+        val duplicationService = mockk<DuplicationService>(relaxed = true)
+
+        val duplicationCheck = DuplicateCheck(
+            "1231-232--123gds-2fad",
+            "", ediLoggId, msgId, LocalDateTime.now(),
+            "epj", "1", null
+        )
+
+        val checkSM2013Content = checkSM2013Content(
+            pasientPDL,
+            behandlerPdl,
+            healthInformation,
+            originaltPasientFnr,
+            loggingMeta,
+            fellesformat,
+            ediLoggId,
+            msgId,
+            msgHead,
+            env,
+            kafkaproducerApprec,
+            duplicationService,
+            duplicationCheck
+        )
+
+        Assertions.assertEquals(false, checkSM2013Content)
+    }
+
+    @Test
+    internal fun `Check if aktivitet not found should return true 1`() {
+        val stringInput =
+            no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
+
+        val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
+
+        val pasientPDL = PdlPerson(
+            listOf(
+                PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
+                PdlIdent("aktorId", false, "AKTORID")
+            )
+        )
+
+        val behandlerNull = null
+        val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
+            arbeidsgiver = HelseOpplysningerArbeidsuforhet.Arbeidsgiver().apply {
+                harArbeidsgiver = CS().apply {
+                    dn = "En arbeidsgiver"
+                    v = "1"
+                }
+                navnArbeidsgiver = "SAS as"
+                yrkesbetegnelse = "Pilot"
+                stillingsprosent = 100
+            }
+            kontaktMedPasient = HelseOpplysningerArbeidsuforhet.KontaktMedPasient().apply {
+                kontaktDato = LocalDate.now()
+                behandletDato = LocalDateTime.now()
+            }
+            behandler = HelseOpplysningerArbeidsuforhet.Behandler().apply {
+                navn = NavnType().apply {
+                    fornavn = "Per"
+                    etternavn = "Hansne"
+                }
+                id.add(
+                    Ident().apply {
                         id = "12343567"
                         typeId = CV().apply {
                             dn = "Fødselsnummer"
@@ -246,109 +343,109 @@ class CheckSM2013ContentTest : FunSpec({
                             v = "FNR"
                         }
                     }
+                )
+                adresse = Address().apply {
                 }
-                syketilfelleStartDato = LocalDate.now()
-                medisinskVurdering = HelseOpplysningerArbeidsuforhet.MedisinskVurdering().apply {
-                    hovedDiagnose = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.HovedDiagnose().apply {
-                        diagnosekode = CV().apply {
-                            dn = "Problem med jus/politi"
-                            s = "2.16.578.1.12.4.1.1.7110"
-                            v = "Z09"
-                        }
+                kontaktInfo.add(
+                    TeleCom().apply {
                     }
-                }
-                avsenderSystem = HelseOpplysningerArbeidsuforhet.AvsenderSystem().apply {
-                    systemNavn = "EPJ helse"
-                    systemVersjon = "1.0.2"
+                )
+            }
+            aktivitet = null
+            pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
+                fodselsnummer = Ident().apply {
+                    id = "12343567"
+                    typeId = CV().apply {
+                        dn = "Fødselsnummer"
+                        s = "2.16.578.1.12.4.1.1.8116"
+                        v = "FNR"
+                    }
                 }
             }
-            val originaltPasientFnr = "10987654321"
-            val loggingMeta = mockk<LoggingMeta>(relaxed = true)
-            val ediLoggId = "12312"
-            val msgId = "1231-232"
-            val msgHead = fellesformat.get<XMLMsgHead>()
-            val env = mockk<Environment>(relaxed = true)
-            val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
-            val duplicationService = mockk<DuplicationService>(relaxed = true)
-
-            val duplicationCheck = DuplicateCheck(
-                "1231-232--123gds-2fad",
-                "", ediLoggId, msgId, LocalDateTime.now(),
-                "epj", "1", null
-            )
-
-            val checkSM2013Content = checkSM2013Content(
-                pasientPDL,
-                behandlerPdl,
-                healthInformation,
-                originaltPasientFnr,
-                loggingMeta,
-                fellesformat,
-                ediLoggId,
-                msgId,
-                msgHead,
-                env,
-                kafkaproducerApprec,
-                duplicationService,
-                duplicationCheck
-            )
-
-            checkSM2013Content shouldBeEqualTo false
+            syketilfelleStartDato = LocalDate.now()
+            medisinskVurdering = HelseOpplysningerArbeidsuforhet.MedisinskVurdering().apply {
+                hovedDiagnose = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.HovedDiagnose().apply {
+                    diagnosekode = CV().apply {
+                        dn = "Problem med jus/politi"
+                        s = "2.16.578.1.12.4.1.1.7110"
+                        v = "Z09"
+                    }
+                }
+            }
+            avsenderSystem = HelseOpplysningerArbeidsuforhet.AvsenderSystem().apply {
+                systemNavn = "EPJ helse"
+                systemVersjon = "1.0.2"
+            }
         }
+        val originaltPasientFnr = "10987654321"
+        val loggingMeta = mockk<LoggingMeta>(relaxed = true)
+        val ediLoggId = "12312"
+        val msgId = "1231-232"
+        val msgHead = fellesformat.get<XMLMsgHead>()
+        val env = mockk<Environment>(relaxed = true)
+        val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
+        val duplicationService = mockk<DuplicationService>(relaxed = true)
+        val duplicationCheck = DuplicateCheck(
+            "1231-232--123gds-2fad",
+            "", ediLoggId, msgId, LocalDateTime.now(),
+            "epj", "1", null
+        )
 
-        test("Check if aktivitet not found should return true") {
-            val stringInput =
-                no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
+        val checkSM2013Content = checkSM2013Content(
+            pasientPDL,
+            behandlerNull,
+            healthInformation,
+            originaltPasientFnr,
+            loggingMeta,
+            fellesformat,
+            ediLoggId,
+            msgId,
+            msgHead,
+            env,
+            kafkaproducerApprec,
+            duplicationService,
+            duplicationCheck
+        )
 
-            val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
+        Assertions.assertEquals(true, checkSM2013Content)
+    }
 
-            val pasientPDL = PdlPerson(
-                listOf(
-                    PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                    PdlIdent("aktorId", false, "AKTORID")
-                )
+    @Test
+    internal fun `Check if periodetype not set should return true`() {
+        val stringInput =
+            no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
+
+        val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
+
+        val pasientPDL = PdlPerson(
+            listOf(
+                PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
+                PdlIdent("aktorId", false, "AKTORID")
             )
+        )
 
-            val behandlerNull = null
-            val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
-                arbeidsgiver = HelseOpplysningerArbeidsuforhet.Arbeidsgiver().apply {
-                    harArbeidsgiver = CS().apply {
-                        dn = "En arbeidsgiver"
-                        v = "1"
-                    }
-                    navnArbeidsgiver = "SAS as"
-                    yrkesbetegnelse = "Pilot"
-                    stillingsprosent = 100
+        val behandlerNull = null
+        val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
+            arbeidsgiver = HelseOpplysningerArbeidsuforhet.Arbeidsgiver().apply {
+                harArbeidsgiver = CS().apply {
+                    dn = "En arbeidsgiver"
+                    v = "1"
                 }
-                kontaktMedPasient = HelseOpplysningerArbeidsuforhet.KontaktMedPasient().apply {
-                    kontaktDato = LocalDate.now()
-                    behandletDato = LocalDateTime.now()
+                navnArbeidsgiver = "SAS as"
+                yrkesbetegnelse = "Pilot"
+                stillingsprosent = 100
+            }
+            kontaktMedPasient = HelseOpplysningerArbeidsuforhet.KontaktMedPasient().apply {
+                kontaktDato = LocalDate.now()
+                behandletDato = LocalDateTime.now()
+            }
+            behandler = HelseOpplysningerArbeidsuforhet.Behandler().apply {
+                navn = NavnType().apply {
+                    fornavn = "Per"
+                    etternavn = "Hansne"
                 }
-                behandler = HelseOpplysningerArbeidsuforhet.Behandler().apply {
-                    navn = NavnType().apply {
-                        fornavn = "Per"
-                        etternavn = "Hansne"
-                    }
-                    id.add(
-                        Ident().apply {
-                            id = "12343567"
-                            typeId = CV().apply {
-                                dn = "Fødselsnummer"
-                                s = "2.16.578.1.12.4.1.1.8116"
-                                v = "FNR"
-                            }
-                        }
-                    )
-                    adresse = Address().apply {
-                    }
-                    kontaktInfo.add(
-                        TeleCom().apply {
-                        }
-                    )
-                }
-                aktivitet = null
-                pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
-                    fodselsnummer = Ident().apply {
+                id.add(
+                    Ident().apply {
                         id = "12343567"
                         typeId = CV().apply {
                             dn = "Fødselsnummer"
@@ -356,115 +453,116 @@ class CheckSM2013ContentTest : FunSpec({
                             v = "FNR"
                         }
                     }
+                )
+                adresse = Address().apply {
                 }
-                syketilfelleStartDato = LocalDate.now()
-                medisinskVurdering = HelseOpplysningerArbeidsuforhet.MedisinskVurdering().apply {
-                    hovedDiagnose = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.HovedDiagnose().apply {
-                        diagnosekode = CV().apply {
-                            dn = "Problem med jus/politi"
-                            s = "2.16.578.1.12.4.1.1.7110"
-                            v = "Z09"
-                        }
+                kontaktInfo.add(
+                    TeleCom().apply {
                     }
-                }
-                avsenderSystem = HelseOpplysningerArbeidsuforhet.AvsenderSystem().apply {
-                    systemNavn = "EPJ helse"
-                    systemVersjon = "1.0.2"
+                )
+            }
+            aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
+                periode.add(
+                    HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
+                        periodeFOMDato = LocalDate.now()
+                        periodeTOMDato = LocalDate.now().plusDays(4)
+                    }
+                )
+            }
+            pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
+                fodselsnummer = Ident().apply {
+                    id = "12343567"
+                    typeId = CV().apply {
+                        dn = "Fødselsnummer"
+                        s = "2.16.578.1.12.4.1.1.8116"
+                        v = "FNR"
+                    }
                 }
             }
-            val originaltPasientFnr = "10987654321"
-            val loggingMeta = mockk<LoggingMeta>(relaxed = true)
-            val ediLoggId = "12312"
-            val msgId = "1231-232"
-            val msgHead = fellesformat.get<XMLMsgHead>()
-            val env = mockk<Environment>(relaxed = true)
-            val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
-            val duplicationService = mockk<DuplicationService>(relaxed = true)
-            val duplicationCheck = DuplicateCheck(
-                "1231-232--123gds-2fad",
-                "", ediLoggId, msgId, LocalDateTime.now(),
-                "epj", "1", null
-            )
-
-            val checkSM2013Content = checkSM2013Content(
-                pasientPDL,
-                behandlerNull,
-                healthInformation,
-                originaltPasientFnr,
-                loggingMeta,
-                fellesformat,
-                ediLoggId,
-                msgId,
-                msgHead,
-                env,
-                kafkaproducerApprec,
-                duplicationService,
-                duplicationCheck
-            )
-
-            checkSM2013Content shouldBeEqualTo true
+            syketilfelleStartDato = LocalDate.now()
+            medisinskVurdering = HelseOpplysningerArbeidsuforhet.MedisinskVurdering().apply {
+                hovedDiagnose = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.HovedDiagnose().apply {
+                    diagnosekode = CV().apply {
+                        dn = "Problem med jus/politi"
+                        s = "2.16.578.1.12.4.1.1.7110"
+                        v = "Z09"
+                    }
+                }
+            }
+            avsenderSystem = HelseOpplysningerArbeidsuforhet.AvsenderSystem().apply {
+                systemNavn = "EPJ helse"
+                systemVersjon = "1.0.2"
+            }
         }
+        val originaltPasientFnr = "10987654321"
+        val loggingMeta = mockk<LoggingMeta>(relaxed = true)
+        val ediLoggId = "12312"
+        val msgId = "1231-232"
+        val msgHead = fellesformat.get<XMLMsgHead>()
+        val env = mockk<Environment>(relaxed = true)
+        val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
+        val duplicationService = mockk<DuplicationService>(relaxed = true)
+        val duplicationCheck = DuplicateCheck(
+            "1231-232--123gds-2fad",
+            "", ediLoggId, msgId, LocalDateTime.now(),
+            "epj", "1", null
+        )
 
-        test("Check if periodetype not set should return true") {
-            val stringInput =
-                no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
+        val checkSM2013Content = checkSM2013Content(
+            pasientPDL,
+            behandlerNull,
+            healthInformation,
+            originaltPasientFnr,
+            loggingMeta,
+            fellesformat,
+            ediLoggId,
+            msgId,
+            msgHead,
+            env,
+            kafkaproducerApprec,
+            duplicationService,
+            duplicationCheck
+        )
 
-            val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
+        Assertions.assertEquals(true, checkSM2013Content)
+    }
 
-            val pasientPDL = PdlPerson(
-                listOf(
-                    PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                    PdlIdent("aktorId", false, "AKTORID")
-                )
+    @Test
+    internal fun `Check if biDiagnoser diagnosekode v is empty should return true`() {
+        val stringInput =
+            no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
+
+        val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
+
+        val pasientPDL = PdlPerson(
+            listOf(
+                PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
+                PdlIdent("aktorId", false, "AKTORID")
             )
+        )
 
-            val behandlerNull = null
-            val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
-                arbeidsgiver = HelseOpplysningerArbeidsuforhet.Arbeidsgiver().apply {
-                    harArbeidsgiver = CS().apply {
-                        dn = "En arbeidsgiver"
-                        v = "1"
-                    }
-                    navnArbeidsgiver = "SAS as"
-                    yrkesbetegnelse = "Pilot"
-                    stillingsprosent = 100
+        val behandlerNull = null
+        val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
+            arbeidsgiver = HelseOpplysningerArbeidsuforhet.Arbeidsgiver().apply {
+                harArbeidsgiver = CS().apply {
+                    dn = "En arbeidsgiver"
+                    v = "1"
                 }
-                kontaktMedPasient = HelseOpplysningerArbeidsuforhet.KontaktMedPasient().apply {
-                    kontaktDato = LocalDate.now()
-                    behandletDato = LocalDateTime.now()
+                navnArbeidsgiver = "SAS as"
+                yrkesbetegnelse = "Pilot"
+                stillingsprosent = 100
+            }
+            kontaktMedPasient = HelseOpplysningerArbeidsuforhet.KontaktMedPasient().apply {
+                kontaktDato = LocalDate.now()
+                behandletDato = LocalDateTime.now()
+            }
+            behandler = HelseOpplysningerArbeidsuforhet.Behandler().apply {
+                navn = NavnType().apply {
+                    fornavn = "Per"
+                    etternavn = "Hansne"
                 }
-                behandler = HelseOpplysningerArbeidsuforhet.Behandler().apply {
-                    navn = NavnType().apply {
-                        fornavn = "Per"
-                        etternavn = "Hansne"
-                    }
-                    id.add(
-                        Ident().apply {
-                            id = "12343567"
-                            typeId = CV().apply {
-                                dn = "Fødselsnummer"
-                                s = "2.16.578.1.12.4.1.1.8116"
-                                v = "FNR"
-                            }
-                        }
-                    )
-                    adresse = Address().apply {
-                    }
-                    kontaktInfo.add(
-                        TeleCom().apply {
-                        }
-                    )
-                }
-                aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
-                    periode.add(
-                        HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
-                            periodeFOMDato = LocalDate.now()
-                            periodeTOMDato = LocalDate.now().plusDays(4)
-                        }
-                    )
-                }
-                pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
-                    fodselsnummer = Ident().apply {
+                id.add(
+                    Ident().apply {
                         id = "12343567"
                         typeId = CV().apply {
                             dn = "Fødselsnummer"
@@ -472,1624 +570,1543 @@ class CheckSM2013ContentTest : FunSpec({
                             v = "FNR"
                         }
                     }
-                }
-                syketilfelleStartDato = LocalDate.now()
-                medisinskVurdering = HelseOpplysningerArbeidsuforhet.MedisinskVurdering().apply {
-                    hovedDiagnose = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.HovedDiagnose().apply {
-                        diagnosekode = CV().apply {
-                            dn = "Problem med jus/politi"
-                            s = "2.16.578.1.12.4.1.1.7110"
-                            v = "Z09"
-                        }
-                    }
-                }
-                avsenderSystem = HelseOpplysningerArbeidsuforhet.AvsenderSystem().apply {
-                    systemNavn = "EPJ helse"
-                    systemVersjon = "1.0.2"
-                }
-            }
-            val originaltPasientFnr = "10987654321"
-            val loggingMeta = mockk<LoggingMeta>(relaxed = true)
-            val ediLoggId = "12312"
-            val msgId = "1231-232"
-            val msgHead = fellesformat.get<XMLMsgHead>()
-            val env = mockk<Environment>(relaxed = true)
-            val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
-            val duplicationService = mockk<DuplicationService>(relaxed = true)
-            val duplicationCheck = DuplicateCheck(
-                "1231-232--123gds-2fad",
-                "", ediLoggId, msgId, LocalDateTime.now(),
-                "epj", "1", null
-            )
-
-            val checkSM2013Content = checkSM2013Content(
-                pasientPDL,
-                behandlerNull,
-                healthInformation,
-                originaltPasientFnr,
-                loggingMeta,
-                fellesformat,
-                ediLoggId,
-                msgId,
-                msgHead,
-                env,
-                kafkaproducerApprec,
-                duplicationService,
-                duplicationCheck
-            )
-
-            checkSM2013Content shouldBeEqualTo true
-        }
-
-        test("Check if biDiagnoser diagnosekode v is empty should return true") {
-            val stringInput =
-                no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
-
-            val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
-
-            val pasientPDL = PdlPerson(
-                listOf(
-                    PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                    PdlIdent("aktorId", false, "AKTORID")
                 )
-            )
-
-            val behandlerNull = null
-            val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
-                arbeidsgiver = HelseOpplysningerArbeidsuforhet.Arbeidsgiver().apply {
-                    harArbeidsgiver = CS().apply {
-                        dn = "En arbeidsgiver"
-                        v = "1"
-                    }
-                    navnArbeidsgiver = "SAS as"
-                    yrkesbetegnelse = "Pilot"
-                    stillingsprosent = 100
+                adresse = Address().apply {
                 }
-                kontaktMedPasient = HelseOpplysningerArbeidsuforhet.KontaktMedPasient().apply {
-                    kontaktDato = LocalDate.now()
-                    behandletDato = LocalDateTime.now()
-                }
-                behandler = HelseOpplysningerArbeidsuforhet.Behandler().apply {
-                    navn = NavnType().apply {
-                        fornavn = "Per"
-                        etternavn = "Hansne"
+                kontaktInfo.add(
+                    TeleCom().apply {
                     }
-                    id.add(
-                        Ident().apply {
-                            id = "12343567"
-                            typeId = CV().apply {
-                                dn = "Fødselsnummer"
-                                s = "2.16.578.1.12.4.1.1.8116"
-                                v = "FNR"
-                            }
-                        }
-                    )
-                    adresse = Address().apply {
-                    }
-                    kontaktInfo.add(
-                        TeleCom().apply {
-                        }
-                    )
-                }
-                aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
-                    periode.add(
-                        HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
-                            periodeFOMDato = LocalDate.now()
-                            periodeTOMDato = LocalDate.now().plusDays(4)
-                            aktivitetIkkeMulig =
-                                HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig().apply {
-                                    medisinskeArsaker = ArsakType().apply {
-                                        arsakskode.add(
-                                            CS().apply {
-                                                v = "1"
-                                                dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                            }
-                                        )
-                                        beskriv = "Kan ikkje jobbe"
-                                    }
+                )
+            }
+            aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
+                periode.add(
+                    HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
+                        periodeFOMDato = LocalDate.now()
+                        periodeTOMDato = LocalDate.now().plusDays(4)
+                        aktivitetIkkeMulig =
+                            HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig().apply {
+                                medisinskeArsaker = ArsakType().apply {
+                                    arsakskode.add(
+                                        CS().apply {
+                                            v = "1"
+                                            dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
+                                        }
+                                    )
+                                    beskriv = "Kan ikkje jobbe"
                                 }
-                        }
-                    )
-                }
-                pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
-                    fodselsnummer = Ident().apply {
-                        id = "12343567"
-                        typeId = CV().apply {
-                            dn = "Fødselsnummer"
-                            s = "2.16.578.1.12.4.1.1.8116"
-                            v = "FNR"
-                        }
-                    }
-                }
-                syketilfelleStartDato = LocalDate.now()
-                medisinskVurdering = HelseOpplysningerArbeidsuforhet.MedisinskVurdering().apply {
-                    hovedDiagnose = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.HovedDiagnose().apply {
-                        diagnosekode = CV().apply {
-                            dn = "Problem med jus/politi"
-                            s = "2.16.578.1.12.4.1.1.7110"
-                            v = "Z09"
-                        }
-                    }
-                    biDiagnoser = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.BiDiagnoser().apply {
-                        diagnosekode.add(
-                            CV().apply {
-                                dn = "Problem med jus/politi"
-                                s = "2.16.578.1.12.4.1.1.7110"
-                                v = null
                             }
-                        )
                     }
-                }
-                avsenderSystem = HelseOpplysningerArbeidsuforhet.AvsenderSystem().apply {
-                    systemNavn = "EPJ helse"
-                    systemVersjon = "1.0.2"
+                )
+            }
+            pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
+                fodselsnummer = Ident().apply {
+                    id = "12343567"
+                    typeId = CV().apply {
+                        dn = "Fødselsnummer"
+                        s = "2.16.578.1.12.4.1.1.8116"
+                        v = "FNR"
+                    }
                 }
             }
-            val originaltPasientFnr = "10987654321"
-            val loggingMeta = mockk<LoggingMeta>(relaxed = true)
-            val ediLoggId = "12312"
-            val msgId = "1231-232"
-            val msgHead = fellesformat.get<XMLMsgHead>()
-            val env = mockk<Environment>(relaxed = true)
-            val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
-            val duplicationService = mockk<DuplicationService>(relaxed = true)
-            val duplicationCheck = DuplicateCheck(
-                "1231-232--123gds-2fad",
-                "", ediLoggId, msgId, LocalDateTime.now(),
-                "epj", "1", null
-            )
-
-            val checkSM2013Content = checkSM2013Content(
-                pasientPDL,
-                behandlerNull,
-                healthInformation,
-                originaltPasientFnr,
-                loggingMeta,
-                fellesformat,
-                ediLoggId,
-                msgId,
-                msgHead,
-                env,
-                kafkaproducerApprec,
-                duplicationService,
-                duplicationCheck
-            )
-
-            checkSM2013Content shouldBeEqualTo true
-        }
-
-        test("Check if biDiagnoser diagnosekode s is empty should return true") {
-            val stringInput =
-                no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
-
-            val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
-
-            val pasientPDL = PdlPerson(
-                listOf(
-                    PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                    PdlIdent("aktorId", false, "AKTORID")
-                )
-            )
-
-            val behandlerNull = null
-            val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
-                arbeidsgiver = HelseOpplysningerArbeidsuforhet.Arbeidsgiver().apply {
-                    harArbeidsgiver = CS().apply {
-                        dn = "En arbeidsgiver"
-                        v = "1"
-                    }
-                    navnArbeidsgiver = "SAS as"
-                    yrkesbetegnelse = "Pilot"
-                    stillingsprosent = 100
-                }
-                kontaktMedPasient = HelseOpplysningerArbeidsuforhet.KontaktMedPasient().apply {
-                    kontaktDato = LocalDate.now()
-                    behandletDato = LocalDateTime.now()
-                }
-                behandler = HelseOpplysningerArbeidsuforhet.Behandler().apply {
-                    navn = NavnType().apply {
-                        fornavn = "Per"
-                        etternavn = "Hansne"
-                    }
-                    id.add(
-                        Ident().apply {
-                            id = "12343567"
-                            typeId = CV().apply {
-                                dn = "Fødselsnummer"
-                                s = "2.16.578.1.12.4.1.1.8116"
-                                v = "FNR"
-                            }
-                        }
-                    )
-                    adresse = Address().apply {
-                    }
-                    kontaktInfo.add(
-                        TeleCom().apply {
-                        }
-                    )
-                }
-                aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
-                    periode.add(
-                        HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
-                            periodeFOMDato = LocalDate.now()
-                            periodeTOMDato = LocalDate.now().plusDays(4)
-                            aktivitetIkkeMulig =
-                                HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig().apply {
-                                    medisinskeArsaker = ArsakType().apply {
-                                        arsakskode.add(
-                                            CS().apply {
-                                                v = "1"
-                                                dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                            }
-                                        )
-                                        beskriv = "Kan ikkje jobbe"
-                                    }
-                                }
-                        }
-                    )
-                }
-                pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
-                    fodselsnummer = Ident().apply {
-                        id = "12343567"
-                        typeId = CV().apply {
-                            dn = "Fødselsnummer"
-                            s = null
-                            v = "FNR"
-                        }
+            syketilfelleStartDato = LocalDate.now()
+            medisinskVurdering = HelseOpplysningerArbeidsuforhet.MedisinskVurdering().apply {
+                hovedDiagnose = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.HovedDiagnose().apply {
+                    diagnosekode = CV().apply {
+                        dn = "Problem med jus/politi"
+                        s = "2.16.578.1.12.4.1.1.7110"
+                        v = "Z09"
                     }
                 }
-                syketilfelleStartDato = LocalDate.now()
-                medisinskVurdering = HelseOpplysningerArbeidsuforhet.MedisinskVurdering().apply {
-                    hovedDiagnose = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.HovedDiagnose().apply {
-                        diagnosekode = CV().apply {
-                            dn = "Problem med jus/politi"
-                            s = "2.16.578.1.12.4.1.1.7110"
-                            v = "Z09"
-                        }
-                    }
-                    biDiagnoser = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.BiDiagnoser().apply {
-                        diagnosekode.add(
-                            CV().apply {
-                                dn = "Problem med jus/politi"
-                                s = "2.16.578.1.12.4.1.1.7110"
-                                v = "Z09"
-                            }
-                        )
-                    }
-                }
-                avsenderSystem = HelseOpplysningerArbeidsuforhet.AvsenderSystem().apply {
-                    systemNavn = "EPJ helse"
-                    systemVersjon = "1.0.2"
-                }
-            }
-            val originaltPasientFnr = "10987654321"
-            val loggingMeta = mockk<LoggingMeta>(relaxed = true)
-            val ediLoggId = "12312"
-            val msgId = "1231-232"
-            val msgHead = fellesformat.get<XMLMsgHead>()
-            val env = mockk<Environment>(relaxed = true)
-            val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
-            val duplicationService = mockk<DuplicationService>(relaxed = true)
-            val duplicationCheck = DuplicateCheck(
-                "1231-232--123gds-2fad",
-                "", ediLoggId, msgId, LocalDateTime.now(),
-                "epj", "1", null
-            )
-
-            val checkSM2013Content = checkSM2013Content(
-                pasientPDL,
-                behandlerNull,
-                healthInformation,
-                originaltPasientFnr,
-                loggingMeta,
-                fellesformat,
-                ediLoggId,
-                msgId,
-                msgHead,
-                env,
-                kafkaproducerApprec,
-                duplicationService,
-                duplicationCheck
-            )
-
-            checkSM2013Content shouldBeEqualTo true
-        }
-
-        test("Check if behandlers fnr,dnr and hpr is missing should return true") {
-            val stringInput =
-                no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
-
-            val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
-
-            val pasientPDL = PdlPerson(
-                listOf(
-                    PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                    PdlIdent("aktorId", false, "AKTORID")
-                )
-            )
-
-            val behandlerPdl = PdlPerson(
-                listOf(
-                    PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                    PdlIdent("aktorId", false, "AKTORID")
-                )
-            )
-
-            val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
-                arbeidsgiver = HelseOpplysningerArbeidsuforhet.Arbeidsgiver().apply {
-                    harArbeidsgiver = CS().apply {
-                        dn = "En arbeidsgiver"
-                        v = "1"
-                    }
-                    navnArbeidsgiver = "SAS as"
-                    yrkesbetegnelse = "Pilot"
-                    stillingsprosent = 100
-                }
-                kontaktMedPasient = HelseOpplysningerArbeidsuforhet.KontaktMedPasient().apply {
-                    kontaktDato = LocalDate.now()
-                    behandletDato = LocalDateTime.now()
-                }
-                behandler = HelseOpplysningerArbeidsuforhet.Behandler().apply {
-                    navn = NavnType().apply {
-                        fornavn = "Per"
-                        etternavn = "Hansne"
-                    }
-                    id.add(
-                        Ident().apply {
-                            id = "12343567"
-                            typeId = CV().apply {
-                                dn = "something"
-                                s = "2.16.578.1.12.4.1.1.8116"
-                                v = "FRRR"
-                            }
-                        }
-                    )
-                    adresse = Address().apply {
-                    }
-                    kontaktInfo.add(
-                        TeleCom().apply {
-                        }
-                    )
-                }
-                aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
-                    periode.add(
-                        HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
-                            periodeFOMDato = LocalDate.now()
-                            periodeTOMDato = LocalDate.now().plusDays(4)
-                            aktivitetIkkeMulig =
-                                HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig().apply {
-                                    medisinskeArsaker = ArsakType().apply {
-                                        arsakskode.add(
-                                            CS().apply {
-                                                v = "1"
-                                                dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                            }
-                                        )
-                                        beskriv = "Kan ikkje jobbe"
-                                    }
-                                }
-                        }
-                    )
-                }
-                pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
-                    fodselsnummer = Ident().apply {
-                        id = "12343567"
-                        typeId = CV().apply {
-                            dn = "Fødselsnummer"
-                            s = "2.16.578.1.12.4.1.1.8116"
-                            v = "FNR"
-                        }
-                    }
-                }
-                syketilfelleStartDato = LocalDate.now()
-                medisinskVurdering = HelseOpplysningerArbeidsuforhet.MedisinskVurdering().apply {
-                    hovedDiagnose = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.HovedDiagnose().apply {
-                        diagnosekode = CV().apply {
-                            dn = "Problem med jus/politi"
-                            s = "2.16.578.1.12.4.1.1.7110"
-                            v = "Z09"
-                        }
-                    }
-                    biDiagnoser = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.BiDiagnoser().apply {
-                        diagnosekode.add(
-                            CV().apply {
-                                dn = "Problem med jus/politi"
-                                s = "2.16.578.1.12.4.1.1.7110"
-                                v = "Z09"
-                            }
-                        )
-                    }
-                }
-                avsenderSystem = HelseOpplysningerArbeidsuforhet.AvsenderSystem().apply {
-                    systemNavn = "EPJ helse"
-                    systemVersjon = "1.0.2"
-                }
-            }
-            val originaltPasientFnr = "10987654321"
-            val loggingMeta = mockk<LoggingMeta>(relaxed = true)
-            val ediLoggId = "12312"
-            val msgId = "1231-232"
-            val msgHead = fellesformat.get<XMLMsgHead>()
-            val env = mockk<Environment>(relaxed = true)
-            val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
-            val duplicationService = mockk<DuplicationService>(relaxed = true)
-            val duplicationCheck = DuplicateCheck(
-                "1231-232--123gds-2fad",
-                "", ediLoggId, msgId, LocalDateTime.now(),
-                "epj", "1", null
-            )
-
-            val checkSM2013Content = checkSM2013Content(
-                pasientPDL,
-                behandlerPdl,
-                healthInformation,
-                originaltPasientFnr,
-                loggingMeta,
-                fellesformat,
-                ediLoggId,
-                msgId,
-                msgHead,
-                env,
-                kafkaproducerApprec,
-                duplicationService,
-                duplicationCheck
-            )
-
-            checkSM2013Content shouldBeEqualTo true
-        }
-
-        test("Check if hovedDiagnose diagnosekode v is missing should return true") {
-            val stringInput =
-                no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
-
-            val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
-
-            val pasientPDL = PdlPerson(
-                listOf(
-                    PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                    PdlIdent("aktorId", false, "AKTORID")
-                )
-            )
-
-            val behandlerPdl = PdlPerson(
-                listOf(
-                    PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                    PdlIdent("aktorId", false, "AKTORID")
-                )
-            )
-
-            val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
-                arbeidsgiver = HelseOpplysningerArbeidsuforhet.Arbeidsgiver().apply {
-                    harArbeidsgiver = CS().apply {
-                        dn = "En arbeidsgiver"
-                        v = "1"
-                    }
-                    navnArbeidsgiver = "SAS as"
-                    yrkesbetegnelse = "Pilot"
-                    stillingsprosent = 100
-                }
-                kontaktMedPasient = HelseOpplysningerArbeidsuforhet.KontaktMedPasient().apply {
-                    kontaktDato = LocalDate.now()
-                    behandletDato = LocalDateTime.now()
-                }
-                behandler = HelseOpplysningerArbeidsuforhet.Behandler().apply {
-                    navn = NavnType().apply {
-                        fornavn = "Per"
-                        etternavn = "Hansne"
-                    }
-                    id.add(
-                        Ident().apply {
-                            id = "12343567"
-                            typeId = CV().apply {
-                                dn = "Fødselsnummer"
-                                s = "2.16.578.1.12.4.1.1.8116"
-                                v = "FNR"
-                            }
-                        }
-                    )
-                    adresse = Address().apply {
-                    }
-                    kontaktInfo.add(
-                        TeleCom().apply {
-                        }
-                    )
-                }
-                aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
-                    periode.add(
-                        HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
-                            periodeFOMDato = LocalDate.now()
-                            periodeTOMDato = LocalDate.now().plusDays(4)
-                            aktivitetIkkeMulig =
-                                HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig().apply {
-                                    medisinskeArsaker = ArsakType().apply {
-                                        arsakskode.add(
-                                            CS().apply {
-                                                v = "1"
-                                                dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                            }
-                                        )
-                                        beskriv = "Kan ikkje jobbe"
-                                    }
-                                }
-                        }
-                    )
-                }
-                pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
-                    fodselsnummer = Ident().apply {
-                        id = "12343567"
-                        typeId = CV().apply {
-                            dn = "Fødselsnummer"
-                            s = "2.16.578.1.12.4.1.1.8116"
-                            v = "FNR"
-                        }
-                    }
-                }
-                syketilfelleStartDato = LocalDate.now()
-                medisinskVurdering = HelseOpplysningerArbeidsuforhet.MedisinskVurdering().apply {
-                    hovedDiagnose = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.HovedDiagnose().apply {
-                        diagnosekode = CV().apply {
+                biDiagnoser = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.BiDiagnoser().apply {
+                    diagnosekode.add(
+                        CV().apply {
                             dn = "Problem med jus/politi"
                             s = "2.16.578.1.12.4.1.1.7110"
                             v = null
                         }
-                    }
-                    biDiagnoser = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.BiDiagnoser().apply {
-                        diagnosekode.add(
-                            CV().apply {
-                                dn = "Problem med jus/politi"
-                                s = "2.16.578.1.12.4.1.1.7110"
-                                v = "Z09"
-                            }
-                        )
-                    }
-                }
-                avsenderSystem = HelseOpplysningerArbeidsuforhet.AvsenderSystem().apply {
-                    systemNavn = "EPJ helse"
-                    systemVersjon = "1.0.2"
+                    )
                 }
             }
-            val originaltPasientFnr = "10987654321"
-            val loggingMeta = mockk<LoggingMeta>(relaxed = true)
-            val ediLoggId = "12312"
-            val msgId = "1231-232"
-            val msgHead = fellesformat.get<XMLMsgHead>()
-            val env = mockk<Environment>(relaxed = true)
-            val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
-            val duplicationService = mockk<DuplicationService>(relaxed = true)
-            val duplicationCheck = DuplicateCheck(
-                "1231-232--123gds-2fad",
-                "", ediLoggId, msgId, LocalDateTime.now(),
-                "epj", "1", null
-            )
-
-            val checkSM2013Content = checkSM2013Content(
-                pasientPDL,
-                behandlerPdl,
-                healthInformation,
-                originaltPasientFnr,
-                loggingMeta,
-                fellesformat,
-                ediLoggId,
-                msgId,
-                msgHead,
-                env,
-                kafkaproducerApprec,
-                duplicationService,
-                duplicationCheck
-            )
-
-            checkSM2013Content shouldBeEqualTo true
-        }
-
-        test("Check if hovedDiagnose diagnosekode dn is missing should return true") {
-            val stringInput =
-                no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
-
-            val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
-
-            val pasientPDL = PdlPerson(
-                listOf(
-                    PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                    PdlIdent("aktorId", false, "AKTORID")
-                )
-            )
-
-            val behandlerPdl = PdlPerson(
-                listOf(
-                    PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                    PdlIdent("aktorId", false, "AKTORID")
-                )
-            )
-
-            val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
-                arbeidsgiver = HelseOpplysningerArbeidsuforhet.Arbeidsgiver().apply {
-                    harArbeidsgiver = CS().apply {
-                        dn = "En arbeidsgiver"
-                        v = "1"
-                    }
-                    navnArbeidsgiver = "SAS as"
-                    yrkesbetegnelse = "Pilot"
-                    stillingsprosent = 100
-                }
-                kontaktMedPasient = HelseOpplysningerArbeidsuforhet.KontaktMedPasient().apply {
-                    kontaktDato = LocalDate.now()
-                    behandletDato = LocalDateTime.now()
-                }
-                behandler = HelseOpplysningerArbeidsuforhet.Behandler().apply {
-                    navn = NavnType().apply {
-                        fornavn = "Per"
-                        etternavn = "Hansne"
-                    }
-                    id.add(
-                        Ident().apply {
-                            id = "12343567"
-                            typeId = CV().apply {
-                                dn = "Fødselsnummer"
-                                s = "2.16.578.1.12.4.1.1.8116"
-                                v = "FNR"
-                            }
-                        }
-                    )
-                    adresse = Address().apply {
-                    }
-                    kontaktInfo.add(
-                        TeleCom().apply {
-                        }
-                    )
-                }
-                aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
-                    periode.add(
-                        HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
-                            periodeFOMDato = LocalDate.now()
-                            periodeTOMDato = LocalDate.now().plusDays(4)
-                            aktivitetIkkeMulig =
-                                HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig().apply {
-                                    medisinskeArsaker = ArsakType().apply {
-                                        arsakskode.add(
-                                            CS().apply {
-                                                v = "1"
-                                                dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                            }
-                                        )
-                                        beskriv = "Kan ikkje jobbe"
-                                    }
-                                }
-                        }
-                    )
-                }
-                pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
-                    fodselsnummer = Ident().apply {
-                        id = "12343567"
-                        typeId = CV().apply {
-                            dn = "Fødselsnummer"
-                            s = "2.16.578.1.12.4.1.1.8116"
-                            v = "FNR"
-                        }
-                    }
-                }
-                syketilfelleStartDato = LocalDate.now()
-                medisinskVurdering = HelseOpplysningerArbeidsuforhet.MedisinskVurdering().apply {
-                    hovedDiagnose = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.HovedDiagnose().apply {
-                        diagnosekode = CV().apply {
-                            dn = null
-                            s = "2.16.578.1.12.4.1.1.7110"
-                            v = "Z09"
-                        }
-                    }
-                    biDiagnoser = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.BiDiagnoser().apply {
-                        diagnosekode.add(
-                            CV().apply {
-                                dn = "Problem med jus/politi"
-                                s = "2.16.578.1.12.4.1.1.7110"
-                                v = "Z09"
-                            }
-                        )
-                    }
-                }
-                avsenderSystem = HelseOpplysningerArbeidsuforhet.AvsenderSystem().apply {
-                    systemNavn = "EPJ helse"
-                    systemVersjon = "1.0.2"
-                }
+            avsenderSystem = HelseOpplysningerArbeidsuforhet.AvsenderSystem().apply {
+                systemNavn = "EPJ helse"
+                systemVersjon = "1.0.2"
             }
-            val originaltPasientFnr = "10987654321"
-            val loggingMeta = mockk<LoggingMeta>(relaxed = true)
-            val ediLoggId = "12312"
-            val msgId = "1231-232"
-            val msgHead = fellesformat.get<XMLMsgHead>()
-            val env = mockk<Environment>(relaxed = true)
-            val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
-            val duplicationService = mockk<DuplicationService>(relaxed = true)
-            val duplicationCheck = DuplicateCheck(
-                "1231-232--123gds-2fad",
-                "", ediLoggId, msgId, LocalDateTime.now(),
-                "epj", "1", null
-            )
-
-            val checkSM2013Content = checkSM2013Content(
-                pasientPDL,
-                behandlerPdl,
-                healthInformation,
-                originaltPasientFnr,
-                loggingMeta,
-                fellesformat,
-                ediLoggId,
-                msgId,
-                msgHead,
-                env,
-                kafkaproducerApprec,
-                duplicationService,
-                duplicationCheck
-            )
-
-            checkSM2013Content shouldBeEqualTo true
         }
+        val originaltPasientFnr = "10987654321"
+        val loggingMeta = mockk<LoggingMeta>(relaxed = true)
+        val ediLoggId = "12312"
+        val msgId = "1231-232"
+        val msgHead = fellesformat.get<XMLMsgHead>()
+        val env = mockk<Environment>(relaxed = true)
+        val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
+        val duplicationService = mockk<DuplicationService>(relaxed = true)
+        val duplicationCheck = DuplicateCheck(
+            "1231-232--123gds-2fad",
+            "", ediLoggId, msgId, LocalDateTime.now(),
+            "epj", "1", null
+        )
 
-        test("Check if aktivitetIkkeMuligMedisinskeArsakskode vis missing should return true") {
-            val stringInput =
-                no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
+        val checkSM2013Content = checkSM2013Content(
+            pasientPDL,
+            behandlerNull,
+            healthInformation,
+            originaltPasientFnr,
+            loggingMeta,
+            fellesformat,
+            ediLoggId,
+            msgId,
+            msgHead,
+            env,
+            kafkaproducerApprec,
+            duplicationService,
+            duplicationCheck
+        )
 
-            val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
-
-            val pasientPDL = PdlPerson(
-                listOf(
-                    PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                    PdlIdent("aktorId", false, "AKTORID")
-                )
-            )
-
-            val behandlerPdl = PdlPerson(
-                listOf(
-                    PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                    PdlIdent("aktorId", false, "AKTORID")
-                )
-            )
-
-            val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
-                arbeidsgiver = HelseOpplysningerArbeidsuforhet.Arbeidsgiver().apply {
-                    harArbeidsgiver = CS().apply {
-                        dn = "En arbeidsgiver"
-                        v = "1"
-                    }
-                    navnArbeidsgiver = "SAS as"
-                    yrkesbetegnelse = "Pilot"
-                    stillingsprosent = 100
-                }
-                kontaktMedPasient = HelseOpplysningerArbeidsuforhet.KontaktMedPasient().apply {
-                    kontaktDato = LocalDate.now()
-                    behandletDato = LocalDateTime.now()
-                }
-                behandler = HelseOpplysningerArbeidsuforhet.Behandler().apply {
-                    navn = NavnType().apply {
-                        fornavn = "Per"
-                        etternavn = "Hansne"
-                    }
-                    id.add(
-                        Ident().apply {
-                            id = "12343567"
-                            typeId = CV().apply {
-                                dn = "Fødselsnummer"
-                                s = "2.16.578.1.12.4.1.1.8116"
-                                v = "FNR"
-                            }
-                        }
-                    )
-                    adresse = Address().apply {
-                    }
-                    kontaktInfo.add(
-                        TeleCom().apply {
-                        }
-                    )
-                }
-                aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
-                    periode.add(
-                        HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
-                            periodeFOMDato = LocalDate.now()
-                            periodeTOMDato = LocalDate.now().plusDays(4)
-                            aktivitetIkkeMulig =
-                                HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig().apply {
-                                    medisinskeArsaker = ArsakType().apply {
-                                        arsakskode.add(
-                                            CS().apply {
-                                                dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                            }
-                                        )
-                                        beskriv = "Kan ikkje jobbe"
-                                    }
-                                }
-                        }
-                    )
-                }
-                pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
-                    fodselsnummer = Ident().apply {
-                        id = "12343567"
-                        typeId = CV().apply {
-                            dn = "Fødselsnummer"
-                            s = "2.16.578.1.12.4.1.1.8116"
-                            v = "FNR"
-                        }
-                    }
-                }
-                syketilfelleStartDato = LocalDate.now()
-                medisinskVurdering = HelseOpplysningerArbeidsuforhet.MedisinskVurdering().apply {
-                    hovedDiagnose = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.HovedDiagnose().apply {
-                        diagnosekode = CV().apply {
-                            dn = "Problem med jus/politi"
-                            s = "2.16.578.1.12.4.1.1.7110"
-                            v = "Z09"
-                        }
-                    }
-                    biDiagnoser = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.BiDiagnoser().apply {
-                        diagnosekode.add(
-                            CV().apply {
-                                dn = "Problem med jus/politi"
-                                s = "2.16.578.1.12.4.1.1.7110"
-                                v = "Z09"
-                            }
-                        )
-                    }
-                }
-                avsenderSystem = HelseOpplysningerArbeidsuforhet.AvsenderSystem().apply {
-                    systemNavn = "EPJ helse"
-                    systemVersjon = "1.0.2"
-                }
-            }
-            val originaltPasientFnr = "10987654321"
-            val loggingMeta = mockk<LoggingMeta>(relaxed = true)
-            val ediLoggId = "12312"
-            val msgId = "1231-232"
-            val msgHead = fellesformat.get<XMLMsgHead>()
-            val env = mockk<Environment>(relaxed = true)
-            val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
-            val duplicationService = mockk<DuplicationService>(relaxed = true)
-            val duplicationCheck = DuplicateCheck(
-                "1231-232--123gds-2fad",
-                "", ediLoggId, msgId, LocalDateTime.now(),
-                "epj", "1", null
-            )
-
-            val checkSM2013Content = checkSM2013Content(
-                pasientPDL,
-                behandlerPdl,
-                healthInformation,
-                originaltPasientFnr,
-                loggingMeta,
-                fellesformat,
-                ediLoggId,
-                msgId,
-                msgHead,
-                env,
-                kafkaproducerApprec,
-                duplicationService,
-                duplicationCheck
-            )
-
-            checkSM2013Content shouldBeEqualTo true
-        }
-
-        test("Check if medisinske arsakskode invalid value should return true") {
-            val stringInput =
-                no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
-
-            val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
-
-            val pasientPDL = PdlPerson(
-                listOf(
-                    PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                    PdlIdent("aktorId", false, "AKTORID")
-                )
-            )
-
-            val behandlerPdl = PdlPerson(
-                listOf(
-                    PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                    PdlIdent("aktorId", false, "AKTORID")
-                )
-            )
-
-            val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
-                arbeidsgiver = HelseOpplysningerArbeidsuforhet.Arbeidsgiver().apply {
-                    harArbeidsgiver = CS().apply {
-                        dn = "En arbeidsgiver"
-                        v = "1"
-                    }
-                    navnArbeidsgiver = "SAS as"
-                    yrkesbetegnelse = "Pilot"
-                    stillingsprosent = 100
-                }
-                kontaktMedPasient = HelseOpplysningerArbeidsuforhet.KontaktMedPasient().apply {
-                    kontaktDato = LocalDate.now()
-                    behandletDato = LocalDateTime.now()
-                }
-                behandler = HelseOpplysningerArbeidsuforhet.Behandler().apply {
-                    navn = NavnType().apply {
-                        fornavn = "Per"
-                        etternavn = "Hansne"
-                    }
-                    id.add(
-                        Ident().apply {
-                            id = "12343567"
-                            typeId = CV().apply {
-                                dn = "Fødselsnummer"
-                                s = "2.16.578.1.12.4.1.1.8116"
-                                v = "FNR"
-                            }
-                        }
-                    )
-                    adresse = Address().apply {
-                    }
-                    kontaktInfo.add(
-                        TeleCom().apply {
-                        }
-                    )
-                }
-                aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
-                    periode.add(
-                        HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
-                            periodeFOMDato = LocalDate.now()
-                            periodeTOMDato = LocalDate.now().plusDays(4)
-                            aktivitetIkkeMulig =
-                                HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig().apply {
-                                    medisinskeArsaker = ArsakType().apply {
-                                        arsakskode.add(
-                                            CS().apply {
-                                                v = "4"
-                                                dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                            }
-                                        )
-                                        beskriv = "Kan ikkje jobbe"
-                                    }
-                                }
-                        }
-                    )
-                }
-                pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
-                    fodselsnummer = Ident().apply {
-                        id = "12343567"
-                        typeId = CV().apply {
-                            dn = "Fødselsnummer"
-                            s = "2.16.578.1.12.4.1.1.8116"
-                            v = "FNR"
-                        }
-                    }
-                }
-                syketilfelleStartDato = LocalDate.now()
-                medisinskVurdering = HelseOpplysningerArbeidsuforhet.MedisinskVurdering().apply {
-                    hovedDiagnose = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.HovedDiagnose().apply {
-                        diagnosekode = CV().apply {
-                            dn = "Problem med jus/politi"
-                            s = "2.16.578.1.12.4.1.1.7110"
-                            v = "Z09"
-                        }
-                    }
-                    biDiagnoser = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.BiDiagnoser().apply {
-                        diagnosekode.add(
-                            CV().apply {
-                                dn = "Problem med jus/politi"
-                                s = "2.16.578.1.12.4.1.1.7110"
-                                v = "Z09"
-                            }
-                        )
-                    }
-                }
-                avsenderSystem = HelseOpplysningerArbeidsuforhet.AvsenderSystem().apply {
-                    systemNavn = "EPJ helse"
-                    systemVersjon = "1.0.2"
-                }
-            }
-            val originaltPasientFnr = "10987654321"
-            val loggingMeta = mockk<LoggingMeta>(relaxed = true)
-            val ediLoggId = "12312"
-            val msgId = "1231-232"
-            val msgHead = fellesformat.get<XMLMsgHead>()
-            val env = mockk<Environment>(relaxed = true)
-            val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
-            val duplicationService = mockk<DuplicationService>(relaxed = true)
-            val duplicationCheck = DuplicateCheck(
-                "1231-232--123gds-2fad",
-                "", ediLoggId, msgId, LocalDateTime.now(),
-                "epj", "1", null
-            )
-
-            val checkSM2013Content = checkSM2013Content(
-                pasientPDL,
-                behandlerPdl,
-                healthInformation,
-                originaltPasientFnr,
-                loggingMeta,
-                fellesformat,
-                ediLoggId,
-                msgId,
-                msgHead,
-                env,
-                kafkaproducerApprec,
-                duplicationService,
-                duplicationCheck
-            )
-
-            checkSM2013Content shouldBeEqualTo true
-        }
-
-        test("Check if aktivitet ikke mulig arbeidsplassen arsakskode missing should return true") {
-            val stringInput =
-                no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
-
-            val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
-
-            val pasientPDL = PdlPerson(
-                listOf(
-                    PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                    PdlIdent("aktorId", false, "AKTORID")
-                )
-            )
-
-            val behandlerPdl = PdlPerson(
-                listOf(
-                    PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                    PdlIdent("aktorId", false, "AKTORID")
-                )
-            )
-
-            val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
-                arbeidsgiver = HelseOpplysningerArbeidsuforhet.Arbeidsgiver().apply {
-                    harArbeidsgiver = CS().apply {
-                        dn = "En arbeidsgiver"
-                        v = "1"
-                    }
-                    navnArbeidsgiver = "SAS as"
-                    yrkesbetegnelse = "Pilot"
-                    stillingsprosent = 100
-                }
-                kontaktMedPasient = HelseOpplysningerArbeidsuforhet.KontaktMedPasient().apply {
-                    kontaktDato = LocalDate.now()
-                    behandletDato = LocalDateTime.now()
-                }
-                behandler = HelseOpplysningerArbeidsuforhet.Behandler().apply {
-                    navn = NavnType().apply {
-                        fornavn = "Per"
-                        etternavn = "Hansne"
-                    }
-                    id.add(
-                        Ident().apply {
-                            id = "12343567"
-                            typeId = CV().apply {
-                                dn = "Fødselsnummer"
-                                s = "2.16.578.1.12.4.1.1.8116"
-                                v = "FNR"
-                            }
-                        }
-                    )
-                    adresse = Address().apply {
-                    }
-                    kontaktInfo.add(
-                        TeleCom().apply {
-                        }
-                    )
-                }
-                aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
-                    periode.add(
-                        HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
-                            periodeFOMDato = LocalDate.now()
-                            periodeTOMDato = LocalDate.now().plusDays(4)
-                            aktivitetIkkeMulig =
-                                HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig().apply {
-                                    arbeidsplassen = ArsakType().apply {
-                                        arsakskode.add(
-                                            CS().apply {
-                                                v = null
-                                                dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                            }
-                                        )
-                                        beskriv = "Kan ikkje jobbe"
-                                    }
-                                }
-                        }
-                    )
-                }
-                pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
-                    fodselsnummer = Ident().apply {
-                        id = "12343567"
-                        typeId = CV().apply {
-                            dn = "Fødselsnummer"
-                            s = "2.16.578.1.12.4.1.1.8116"
-                            v = "FNR"
-                        }
-                    }
-                }
-                syketilfelleStartDato = LocalDate.now()
-                medisinskVurdering = HelseOpplysningerArbeidsuforhet.MedisinskVurdering().apply {
-                    hovedDiagnose = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.HovedDiagnose().apply {
-                        diagnosekode = CV().apply {
-                            dn = "Problem med jus/politi"
-                            s = "2.16.578.1.12.4.1.1.7110"
-                            v = "Z09"
-                        }
-                    }
-                    biDiagnoser = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.BiDiagnoser().apply {
-                        diagnosekode.add(
-                            CV().apply {
-                                dn = "Problem med jus/politi"
-                                s = "2.16.578.1.12.4.1.1.7110"
-                                v = "Z09"
-                            }
-                        )
-                    }
-                }
-                avsenderSystem = HelseOpplysningerArbeidsuforhet.AvsenderSystem().apply {
-                    systemNavn = "EPJ helse"
-                    systemVersjon = "1.0.2"
-                }
-            }
-            val originaltPasientFnr = "10987654321"
-            val loggingMeta = mockk<LoggingMeta>(relaxed = true)
-            val ediLoggId = "12312"
-            val msgId = "1231-232"
-            val msgHead = fellesformat.get<XMLMsgHead>()
-            val env = mockk<Environment>(relaxed = true)
-            val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
-            val duplicationService = mockk<DuplicationService>(relaxed = true)
-            val duplicationCheck = DuplicateCheck(
-                "1231-232--123gds-2fad",
-                "", ediLoggId, msgId, LocalDateTime.now(),
-                "epj", "1", null
-            )
-
-            val checkSM2013Content = checkSM2013Content(
-                pasientPDL,
-                behandlerPdl,
-                healthInformation,
-                originaltPasientFnr,
-                loggingMeta,
-                fellesformat,
-                ediLoggId,
-                msgId,
-                msgHead,
-                env,
-                kafkaproducerApprec,
-                duplicationService,
-                duplicationCheck
-            )
-
-            checkSM2013Content shouldBeEqualTo true
-        }
-        test("Check if aktivitet ikke mulig arbeidsplassen arsakskode has invalid value should return true") {
-            val stringInput =
-                no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
-
-            val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
-
-            val pasientPDL = PdlPerson(
-                listOf(
-                    PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                    PdlIdent("aktorId", false, "AKTORID")
-                )
-            )
-
-            val behandlerPdl = PdlPerson(
-                listOf(
-                    PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                    PdlIdent("aktorId", false, "AKTORID")
-                )
-            )
-
-            val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
-                arbeidsgiver = HelseOpplysningerArbeidsuforhet.Arbeidsgiver().apply {
-                    harArbeidsgiver = CS().apply {
-                        dn = "En arbeidsgiver"
-                        v = "1"
-                    }
-                    navnArbeidsgiver = "SAS as"
-                    yrkesbetegnelse = "Pilot"
-                    stillingsprosent = 100
-                }
-                kontaktMedPasient = HelseOpplysningerArbeidsuforhet.KontaktMedPasient().apply {
-                    kontaktDato = LocalDate.now()
-                    behandletDato = LocalDateTime.now()
-                }
-                behandler = HelseOpplysningerArbeidsuforhet.Behandler().apply {
-                    navn = NavnType().apply {
-                        fornavn = "Per"
-                        etternavn = "Hansne"
-                    }
-                    id.add(
-                        Ident().apply {
-                            id = "12343567"
-                            typeId = CV().apply {
-                                dn = "Fødselsnummer"
-                                s = "2.16.578.1.12.4.1.1.8116"
-                                v = "FNR"
-                            }
-                        }
-                    )
-                    adresse = Address().apply {
-                    }
-                    kontaktInfo.add(
-                        TeleCom().apply {
-                        }
-                    )
-                }
-                aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
-                    periode.add(
-                        HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
-                            periodeFOMDato = LocalDate.now()
-                            periodeTOMDato = LocalDate.now().plusDays(4)
-                            aktivitetIkkeMulig =
-                                HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig().apply {
-                                    arbeidsplassen = ArsakType().apply {
-                                        arsakskode.add(
-                                            CS().apply {
-                                                v = "99"
-                                                dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                            }
-                                        )
-                                        beskriv = "Kan ikkje jobbe"
-                                    }
-                                }
-                        }
-                    )
-                }
-                pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
-                    fodselsnummer = Ident().apply {
-                        id = "12343567"
-                        typeId = CV().apply {
-                            dn = "Fødselsnummer"
-                            s = "2.16.578.1.12.4.1.1.8116"
-                            v = "FNR"
-                        }
-                    }
-                }
-                syketilfelleStartDato = LocalDate.now()
-                medisinskVurdering = HelseOpplysningerArbeidsuforhet.MedisinskVurdering().apply {
-                    hovedDiagnose = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.HovedDiagnose().apply {
-                        diagnosekode = CV().apply {
-                            dn = "Problem med jus/politi"
-                            s = "2.16.578.1.12.4.1.1.7110"
-                            v = "Z09"
-                        }
-                    }
-                    biDiagnoser = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.BiDiagnoser().apply {
-                        diagnosekode.add(
-                            CV().apply {
-                                dn = "Problem med jus/politi"
-                                s = "2.16.578.1.12.4.1.1.7110"
-                                v = "Z09"
-                            }
-                        )
-                    }
-                }
-                avsenderSystem = HelseOpplysningerArbeidsuforhet.AvsenderSystem().apply {
-                    systemNavn = "EPJ helse"
-                    systemVersjon = "1.0.2"
-                }
-            }
-            val originaltPasientFnr = "10987654321"
-            val loggingMeta = mockk<LoggingMeta>(relaxed = true)
-            val ediLoggId = "12312"
-            val msgId = "1231-232"
-            val msgHead = fellesformat.get<XMLMsgHead>()
-            val env = mockk<Environment>(relaxed = true)
-            val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
-            val duplicationService = mockk<DuplicationService>(relaxed = true)
-            val duplicationCheck = DuplicateCheck(
-                "1231-232--123gds-2fad",
-                "", ediLoggId, msgId, LocalDateTime.now(),
-                "epj", "1", null
-            )
-
-            val checkSM2013Content = checkSM2013Content(
-                pasientPDL,
-                behandlerPdl,
-                healthInformation,
-                originaltPasientFnr,
-                loggingMeta,
-                fellesformat,
-                ediLoggId,
-                msgId,
-                msgHead,
-                env,
-                kafkaproducerApprec,
-                duplicationService,
-                duplicationCheck
-            )
-
-            checkSM2013Content shouldBeEqualTo true
-        }
-
-        test("Check if patient has test Fnr should return true") {
-            val stringInput =
-                no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
-
-            val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
-
-            val pasientPDL = PdlPerson(
-                listOf(
-                    PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                    PdlIdent("aktorId", false, "AKTORID")
-                )
-            )
-
-            val behandlerPdl = PdlPerson(
-                listOf(
-                    PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                    PdlIdent("aktorId", false, "AKTORID")
-                )
-            )
-
-            val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
-                arbeidsgiver = HelseOpplysningerArbeidsuforhet.Arbeidsgiver().apply {
-                    harArbeidsgiver = CS().apply {
-                        dn = "En arbeidsgiver"
-                        v = "1"
-                    }
-                    navnArbeidsgiver = "SAS as"
-                    yrkesbetegnelse = "Pilot"
-                    stillingsprosent = 100
-                }
-                kontaktMedPasient = HelseOpplysningerArbeidsuforhet.KontaktMedPasient().apply {
-                    kontaktDato = LocalDate.now()
-                    behandletDato = LocalDateTime.now()
-                }
-                behandler = HelseOpplysningerArbeidsuforhet.Behandler().apply {
-                    navn = NavnType().apply {
-                        fornavn = "Per"
-                        etternavn = "Hansne"
-                    }
-                    id.add(
-                        Ident().apply {
-                            id = "12343567"
-                            typeId = CV().apply {
-                                dn = "Fødselsnummer"
-                                s = "2.16.578.1.12.4.1.1.8116"
-                                v = "FNR"
-                            }
-                        }
-                    )
-                    adresse = Address().apply {
-                    }
-                    kontaktInfo.add(
-                        TeleCom().apply {
-                        }
-                    )
-                }
-                aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
-                    periode.add(
-                        HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
-                            periodeFOMDato = LocalDate.now()
-                            periodeTOMDato = LocalDate.now().plusDays(4)
-                            aktivitetIkkeMulig =
-                                HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig().apply {
-                                    arbeidsplassen = ArsakType().apply {
-                                        arsakskode.add(
-                                            CS().apply {
-                                                v = "1"
-                                                dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                            }
-                                        )
-                                        beskriv = "Kan ikkje jobbe"
-                                    }
-                                }
-                        }
-                    )
-                }
-                pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
-                    fodselsnummer = Ident().apply {
-                        id = "12343567"
-                        typeId = CV().apply {
-                            dn = "Fødselsnummer"
-                            s = "2.16.578.1.12.4.1.1.8116"
-                            v = "FNR"
-                        }
-                    }
-                }
-                syketilfelleStartDato = LocalDate.now()
-                medisinskVurdering = HelseOpplysningerArbeidsuforhet.MedisinskVurdering().apply {
-                    hovedDiagnose = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.HovedDiagnose().apply {
-                        diagnosekode = CV().apply {
-                            dn = "Problem med jus/politi"
-                            s = "2.16.578.1.12.4.1.1.7110"
-                            v = "Z09"
-                        }
-                    }
-                    biDiagnoser = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.BiDiagnoser().apply {
-                        diagnosekode.add(
-                            CV().apply {
-                                dn = "Problem med jus/politi"
-                                s = "2.16.578.1.12.4.1.1.7110"
-                                v = "Z09"
-                            }
-                        )
-                    }
-                }
-                avsenderSystem = HelseOpplysningerArbeidsuforhet.AvsenderSystem().apply {
-                    systemNavn = "EPJ helse"
-                    systemVersjon = "1.0.2"
-                }
-            }
-            val originaltPasientFnr = "14077700162"
-            val loggingMeta = mockk<LoggingMeta>(relaxed = true)
-            val ediLoggId = "12312"
-            val msgId = "1231-232"
-            val msgHead = fellesformat.get<XMLMsgHead>()
-            val env = mockk<Environment>(relaxed = true)
-            val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
-            val duplicationService = mockk<DuplicationService>(relaxed = true)
-            val duplicationCheck = DuplicateCheck(
-                "1231-232--123gds-2fad",
-                "", ediLoggId, msgId, LocalDateTime.now(),
-                "epj", "1", null
-            )
-
-            coEvery { env.cluster } returns "prod-gcp"
-
-            val checkSM2013Content = checkSM2013Content(
-                pasientPDL,
-                behandlerPdl,
-                healthInformation,
-                originaltPasientFnr,
-                loggingMeta,
-                fellesformat,
-                ediLoggId,
-                msgId,
-                msgHead,
-                env,
-                kafkaproducerApprec,
-                duplicationService,
-                duplicationCheck
-            )
-
-            checkSM2013Content shouldBeEqualTo true
-        }
-
-        test("Check if annenFraversArsakkode V missing should return true") {
-            val stringInput =
-                no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
-
-            val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
-
-            val pasientPDL = PdlPerson(
-                listOf(
-                    PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                    PdlIdent("aktorId", false, "AKTORID")
-                )
-            )
-
-            val behandlerPdl = PdlPerson(
-                listOf(
-                    PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                    PdlIdent("aktorId", false, "AKTORID")
-                )
-            )
-
-            val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
-                arbeidsgiver = HelseOpplysningerArbeidsuforhet.Arbeidsgiver().apply {
-                    harArbeidsgiver = CS().apply {
-                        dn = "En arbeidsgiver"
-                        v = "1"
-                    }
-                    navnArbeidsgiver = "SAS as"
-                    yrkesbetegnelse = "Pilot"
-                    stillingsprosent = 100
-                }
-                kontaktMedPasient = HelseOpplysningerArbeidsuforhet.KontaktMedPasient().apply {
-                    kontaktDato = LocalDate.now()
-                    behandletDato = LocalDateTime.now()
-                }
-                behandler = HelseOpplysningerArbeidsuforhet.Behandler().apply {
-                    navn = NavnType().apply {
-                        fornavn = "Per"
-                        etternavn = "Hansne"
-                    }
-                    id.add(
-                        Ident().apply {
-                            id = "12343567"
-                            typeId = CV().apply {
-                                dn = "Fødselsnummer"
-                                s = "2.16.578.1.12.4.1.1.8116"
-                                v = "FNR"
-                            }
-                        }
-                    )
-                    adresse = Address().apply {
-                    }
-                    kontaktInfo.add(
-                        TeleCom().apply {
-                        }
-                    )
-                }
-                aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
-                    periode.add(
-                        HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
-                            periodeFOMDato = LocalDate.now()
-                            periodeTOMDato = LocalDate.now().plusDays(4)
-                            aktivitetIkkeMulig =
-                                HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig().apply {
-                                    arbeidsplassen = ArsakType().apply {
-                                        arsakskode.add(
-                                            CS().apply {
-                                                v = "1"
-                                                dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                            }
-                                        )
-                                        beskriv = "Kan ikkje jobbe"
-                                    }
-                                }
-                        }
-                    )
-                }
-                pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
-                    fodselsnummer = Ident().apply {
-                        id = "12343567"
-                        typeId = CV().apply {
-                            dn = "Fødselsnummer"
-                            s = "2.16.578.1.12.4.1.1.8116"
-                            v = "FNR"
-                        }
-                    }
-                }
-                syketilfelleStartDato = LocalDate.now()
-                medisinskVurdering = HelseOpplysningerArbeidsuforhet.MedisinskVurdering().apply {
-                    hovedDiagnose = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.HovedDiagnose().apply {
-                        diagnosekode = CV().apply {
-                            dn = "Problem med jus/politi"
-                            s = "2.16.578.1.12.4.1.1.7110"
-                            v = "Z09"
-                        }
-                    }
-                    annenFraversArsak = ArsakType().apply {
-                        arsakskode.add(
-                            CS().apply {
-                                dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                            }
-                        )
-                        beskriv = "Kan ikkje jobbe"
-                    }
-                    biDiagnoser = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.BiDiagnoser().apply {
-                        diagnosekode.add(
-                            CV().apply {
-                                dn = "Problem med jus/politi"
-                                s = "2.16.578.1.12.4.1.1.7110"
-                                v = "Z09"
-                            }
-                        )
-                    }
-                }
-                avsenderSystem = HelseOpplysningerArbeidsuforhet.AvsenderSystem().apply {
-                    systemNavn = "EPJ helse"
-                    systemVersjon = "1.0.2"
-                }
-            }
-            val originaltPasientFnr = "14077700165"
-            val loggingMeta = mockk<LoggingMeta>(relaxed = true)
-            val ediLoggId = "12312"
-            val msgId = "1231-232"
-            val msgHead = fellesformat.get<XMLMsgHead>()
-            val env = mockk<Environment>(relaxed = true)
-            val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
-            val duplicationService = mockk<DuplicationService>(relaxed = true)
-            val duplicationCheck = DuplicateCheck(
-                "1231-232--123gds-2fad",
-                "", ediLoggId, msgId, LocalDateTime.now(),
-                "epj", "1", null
-            )
-
-            coEvery { env.cluster } returns "localhost"
-
-            val checkSM2013Content = checkSM2013Content(
-                pasientPDL,
-                behandlerPdl,
-                healthInformation,
-                originaltPasientFnr,
-                loggingMeta,
-                fellesformat,
-                ediLoggId,
-                msgId,
-                msgHead,
-                env,
-                kafkaproducerApprec,
-                duplicationService,
-                duplicationCheck
-            )
-
-            checkSM2013Content shouldBeEqualTo true
-        }
+        Assertions.assertEquals(true, checkSM2013Content)
     }
-})
+
+    @Test
+    internal fun `Check if biDiagnoser diagnosekode s is empty should return true`() {
+        val stringInput =
+            no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
+
+        val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
+
+        val pasientPDL = PdlPerson(
+            listOf(
+                PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
+                PdlIdent("aktorId", false, "AKTORID")
+            )
+        )
+
+        val behandlerNull = null
+        val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
+            arbeidsgiver = HelseOpplysningerArbeidsuforhet.Arbeidsgiver().apply {
+                harArbeidsgiver = CS().apply {
+                    dn = "En arbeidsgiver"
+                    v = "1"
+                }
+                navnArbeidsgiver = "SAS as"
+                yrkesbetegnelse = "Pilot"
+                stillingsprosent = 100
+            }
+            kontaktMedPasient = HelseOpplysningerArbeidsuforhet.KontaktMedPasient().apply {
+                kontaktDato = LocalDate.now()
+                behandletDato = LocalDateTime.now()
+            }
+            behandler = HelseOpplysningerArbeidsuforhet.Behandler().apply {
+                navn = NavnType().apply {
+                    fornavn = "Per"
+                    etternavn = "Hansne"
+                }
+                id.add(
+                    Ident().apply {
+                        id = "12343567"
+                        typeId = CV().apply {
+                            dn = "Fødselsnummer"
+                            s = "2.16.578.1.12.4.1.1.8116"
+                            v = "FNR"
+                        }
+                    }
+                )
+                adresse = Address().apply {
+                }
+                kontaktInfo.add(
+                    TeleCom().apply {
+                    }
+                )
+            }
+            aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
+                periode.add(
+                    HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
+                        periodeFOMDato = LocalDate.now()
+                        periodeTOMDato = LocalDate.now().plusDays(4)
+                        aktivitetIkkeMulig =
+                            HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig().apply {
+                                medisinskeArsaker = ArsakType().apply {
+                                    arsakskode.add(
+                                        CS().apply {
+                                            v = "1"
+                                            dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
+                                        }
+                                    )
+                                    beskriv = "Kan ikkje jobbe"
+                                }
+                            }
+                    }
+                )
+            }
+            pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
+                fodselsnummer = Ident().apply {
+                    id = "12343567"
+                    typeId = CV().apply {
+                        dn = "Fødselsnummer"
+                        s = null
+                        v = "FNR"
+                    }
+                }
+            }
+            syketilfelleStartDato = LocalDate.now()
+            medisinskVurdering = HelseOpplysningerArbeidsuforhet.MedisinskVurdering().apply {
+                hovedDiagnose = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.HovedDiagnose().apply {
+                    diagnosekode = CV().apply {
+                        dn = "Problem med jus/politi"
+                        s = "2.16.578.1.12.4.1.1.7110"
+                        v = "Z09"
+                    }
+                }
+                biDiagnoser = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.BiDiagnoser().apply {
+                    diagnosekode.add(
+                        CV().apply {
+                            dn = "Problem med jus/politi"
+                            s = "2.16.578.1.12.4.1.1.7110"
+                            v = "Z09"
+                        }
+                    )
+                }
+            }
+            avsenderSystem = HelseOpplysningerArbeidsuforhet.AvsenderSystem().apply {
+                systemNavn = "EPJ helse"
+                systemVersjon = "1.0.2"
+            }
+        }
+        val originaltPasientFnr = "10987654321"
+        val loggingMeta = mockk<LoggingMeta>(relaxed = true)
+        val ediLoggId = "12312"
+        val msgId = "1231-232"
+        val msgHead = fellesformat.get<XMLMsgHead>()
+        val env = mockk<Environment>(relaxed = true)
+        val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
+        val duplicationService = mockk<DuplicationService>(relaxed = true)
+        val duplicationCheck = DuplicateCheck(
+            "1231-232--123gds-2fad",
+            "", ediLoggId, msgId, LocalDateTime.now(),
+            "epj", "1", null
+        )
+
+        val checkSM2013Content = checkSM2013Content(
+            pasientPDL,
+            behandlerNull,
+            healthInformation,
+            originaltPasientFnr,
+            loggingMeta,
+            fellesformat,
+            ediLoggId,
+            msgId,
+            msgHead,
+            env,
+            kafkaproducerApprec,
+            duplicationService,
+            duplicationCheck
+        )
+
+        Assertions.assertEquals(true, checkSM2013Content)
+    }
+
+    @Test
+    internal fun `Check if behandlers fnr,dnr and hpr is missing should return true`() {
+        val stringInput =
+            no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
+
+        val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
+
+        val pasientPDL = PdlPerson(
+            listOf(
+                PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
+                PdlIdent("aktorId", false, "AKTORID")
+            )
+        )
+
+        val behandlerPdl = PdlPerson(
+            listOf(
+                PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
+                PdlIdent("aktorId", false, "AKTORID")
+            )
+        )
+
+        val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
+            arbeidsgiver = HelseOpplysningerArbeidsuforhet.Arbeidsgiver().apply {
+                harArbeidsgiver = CS().apply {
+                    dn = "En arbeidsgiver"
+                    v = "1"
+                }
+                navnArbeidsgiver = "SAS as"
+                yrkesbetegnelse = "Pilot"
+                stillingsprosent = 100
+            }
+            kontaktMedPasient = HelseOpplysningerArbeidsuforhet.KontaktMedPasient().apply {
+                kontaktDato = LocalDate.now()
+                behandletDato = LocalDateTime.now()
+            }
+            behandler = HelseOpplysningerArbeidsuforhet.Behandler().apply {
+                navn = NavnType().apply {
+                    fornavn = "Per"
+                    etternavn = "Hansne"
+                }
+                id.add(
+                    Ident().apply {
+                        id = "12343567"
+                        typeId = CV().apply {
+                            dn = "something"
+                            s = "2.16.578.1.12.4.1.1.8116"
+                            v = "FRRR"
+                        }
+                    }
+                )
+                adresse = Address().apply {
+                }
+                kontaktInfo.add(
+                    TeleCom().apply {
+                    }
+                )
+            }
+            aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
+                periode.add(
+                    HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
+                        periodeFOMDato = LocalDate.now()
+                        periodeTOMDato = LocalDate.now().plusDays(4)
+                        aktivitetIkkeMulig =
+                            HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig().apply {
+                                medisinskeArsaker = ArsakType().apply {
+                                    arsakskode.add(
+                                        CS().apply {
+                                            v = "1"
+                                            dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
+                                        }
+                                    )
+                                    beskriv = "Kan ikkje jobbe"
+                                }
+                            }
+                    }
+                )
+            }
+            pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
+                fodselsnummer = Ident().apply {
+                    id = "12343567"
+                    typeId = CV().apply {
+                        dn = "Fødselsnummer"
+                        s = "2.16.578.1.12.4.1.1.8116"
+                        v = "FNR"
+                    }
+                }
+            }
+            syketilfelleStartDato = LocalDate.now()
+            medisinskVurdering = HelseOpplysningerArbeidsuforhet.MedisinskVurdering().apply {
+                hovedDiagnose = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.HovedDiagnose().apply {
+                    diagnosekode = CV().apply {
+                        dn = "Problem med jus/politi"
+                        s = "2.16.578.1.12.4.1.1.7110"
+                        v = "Z09"
+                    }
+                }
+                biDiagnoser = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.BiDiagnoser().apply {
+                    diagnosekode.add(
+                        CV().apply {
+                            dn = "Problem med jus/politi"
+                            s = "2.16.578.1.12.4.1.1.7110"
+                            v = "Z09"
+                        }
+                    )
+                }
+            }
+            avsenderSystem = HelseOpplysningerArbeidsuforhet.AvsenderSystem().apply {
+                systemNavn = "EPJ helse"
+                systemVersjon = "1.0.2"
+            }
+        }
+        val originaltPasientFnr = "10987654321"
+        val loggingMeta = mockk<LoggingMeta>(relaxed = true)
+        val ediLoggId = "12312"
+        val msgId = "1231-232"
+        val msgHead = fellesformat.get<XMLMsgHead>()
+        val env = mockk<Environment>(relaxed = true)
+        val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
+        val duplicationService = mockk<DuplicationService>(relaxed = true)
+        val duplicationCheck = DuplicateCheck(
+            "1231-232--123gds-2fad",
+            "", ediLoggId, msgId, LocalDateTime.now(),
+            "epj", "1", null
+        )
+
+        val checkSM2013Content = checkSM2013Content(
+            pasientPDL,
+            behandlerPdl,
+            healthInformation,
+            originaltPasientFnr,
+            loggingMeta,
+            fellesformat,
+            ediLoggId,
+            msgId,
+            msgHead,
+            env,
+            kafkaproducerApprec,
+            duplicationService,
+            duplicationCheck
+        )
+
+        Assertions.assertEquals(true, checkSM2013Content)
+    }
+
+    @Test
+    internal fun `Check if hovedDiagnose diagnosekode v is missing should return true`() {
+        val stringInput =
+            no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
+
+        val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
+
+        val pasientPDL = PdlPerson(
+            listOf(
+                PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
+                PdlIdent("aktorId", false, "AKTORID")
+            )
+        )
+
+        val behandlerPdl = PdlPerson(
+            listOf(
+                PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
+                PdlIdent("aktorId", false, "AKTORID")
+            )
+        )
+
+        val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
+            arbeidsgiver = HelseOpplysningerArbeidsuforhet.Arbeidsgiver().apply {
+                harArbeidsgiver = CS().apply {
+                    dn = "En arbeidsgiver"
+                    v = "1"
+                }
+                navnArbeidsgiver = "SAS as"
+                yrkesbetegnelse = "Pilot"
+                stillingsprosent = 100
+            }
+            kontaktMedPasient = HelseOpplysningerArbeidsuforhet.KontaktMedPasient().apply {
+                kontaktDato = LocalDate.now()
+                behandletDato = LocalDateTime.now()
+            }
+            behandler = HelseOpplysningerArbeidsuforhet.Behandler().apply {
+                navn = NavnType().apply {
+                    fornavn = "Per"
+                    etternavn = "Hansne"
+                }
+                id.add(
+                    Ident().apply {
+                        id = "12343567"
+                        typeId = CV().apply {
+                            dn = "Fødselsnummer"
+                            s = "2.16.578.1.12.4.1.1.8116"
+                            v = "FNR"
+                        }
+                    }
+                )
+                adresse = Address().apply {
+                }
+                kontaktInfo.add(
+                    TeleCom().apply {
+                    }
+                )
+            }
+            aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
+                periode.add(
+                    HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
+                        periodeFOMDato = LocalDate.now()
+                        periodeTOMDato = LocalDate.now().plusDays(4)
+                        aktivitetIkkeMulig =
+                            HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig().apply {
+                                medisinskeArsaker = ArsakType().apply {
+                                    arsakskode.add(
+                                        CS().apply {
+                                            v = "1"
+                                            dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
+                                        }
+                                    )
+                                    beskriv = "Kan ikkje jobbe"
+                                }
+                            }
+                    }
+                )
+            }
+            pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
+                fodselsnummer = Ident().apply {
+                    id = "12343567"
+                    typeId = CV().apply {
+                        dn = "Fødselsnummer"
+                        s = "2.16.578.1.12.4.1.1.8116"
+                        v = "FNR"
+                    }
+                }
+            }
+            syketilfelleStartDato = LocalDate.now()
+            medisinskVurdering = HelseOpplysningerArbeidsuforhet.MedisinskVurdering().apply {
+                hovedDiagnose = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.HovedDiagnose().apply {
+                    diagnosekode = CV().apply {
+                        dn = "Problem med jus/politi"
+                        s = "2.16.578.1.12.4.1.1.7110"
+                        v = null
+                    }
+                }
+                biDiagnoser = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.BiDiagnoser().apply {
+                    diagnosekode.add(
+                        CV().apply {
+                            dn = "Problem med jus/politi"
+                            s = "2.16.578.1.12.4.1.1.7110"
+                            v = "Z09"
+                        }
+                    )
+                }
+            }
+            avsenderSystem = HelseOpplysningerArbeidsuforhet.AvsenderSystem().apply {
+                systemNavn = "EPJ helse"
+                systemVersjon = "1.0.2"
+            }
+        }
+        val originaltPasientFnr = "10987654321"
+        val loggingMeta = mockk<LoggingMeta>(relaxed = true)
+        val ediLoggId = "12312"
+        val msgId = "1231-232"
+        val msgHead = fellesformat.get<XMLMsgHead>()
+        val env = mockk<Environment>(relaxed = true)
+        val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
+        val duplicationService = mockk<DuplicationService>(relaxed = true)
+        val duplicationCheck = DuplicateCheck(
+            "1231-232--123gds-2fad",
+            "", ediLoggId, msgId, LocalDateTime.now(),
+            "epj", "1", null
+        )
+
+        val checkSM2013Content = checkSM2013Content(
+            pasientPDL,
+            behandlerPdl,
+            healthInformation,
+            originaltPasientFnr,
+            loggingMeta,
+            fellesformat,
+            ediLoggId,
+            msgId,
+            msgHead,
+            env,
+            kafkaproducerApprec,
+            duplicationService,
+            duplicationCheck
+        )
+
+        Assertions.assertEquals(true, checkSM2013Content)
+    }
+
+    @Test
+    internal fun `Check if hovedDiagnose diagnosekode dn is missing should return true`() {
+        val stringInput =
+            no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
+
+        val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
+
+        val pasientPDL = PdlPerson(
+            listOf(
+                PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
+                PdlIdent("aktorId", false, "AKTORID")
+            )
+        )
+
+        val behandlerPdl = PdlPerson(
+            listOf(
+                PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
+                PdlIdent("aktorId", false, "AKTORID")
+            )
+        )
+
+        val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
+            arbeidsgiver = HelseOpplysningerArbeidsuforhet.Arbeidsgiver().apply {
+                harArbeidsgiver = CS().apply {
+                    dn = "En arbeidsgiver"
+                    v = "1"
+                }
+                navnArbeidsgiver = "SAS as"
+                yrkesbetegnelse = "Pilot"
+                stillingsprosent = 100
+            }
+            kontaktMedPasient = HelseOpplysningerArbeidsuforhet.KontaktMedPasient().apply {
+                kontaktDato = LocalDate.now()
+                behandletDato = LocalDateTime.now()
+            }
+            behandler = HelseOpplysningerArbeidsuforhet.Behandler().apply {
+                navn = NavnType().apply {
+                    fornavn = "Per"
+                    etternavn = "Hansne"
+                }
+                id.add(
+                    Ident().apply {
+                        id = "12343567"
+                        typeId = CV().apply {
+                            dn = "Fødselsnummer"
+                            s = "2.16.578.1.12.4.1.1.8116"
+                            v = "FNR"
+                        }
+                    }
+                )
+                adresse = Address().apply {
+                }
+                kontaktInfo.add(
+                    TeleCom().apply {
+                    }
+                )
+            }
+            aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
+                periode.add(
+                    HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
+                        periodeFOMDato = LocalDate.now()
+                        periodeTOMDato = LocalDate.now().plusDays(4)
+                        aktivitetIkkeMulig =
+                            HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig().apply {
+                                medisinskeArsaker = ArsakType().apply {
+                                    arsakskode.add(
+                                        CS().apply {
+                                            v = "1"
+                                            dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
+                                        }
+                                    )
+                                    beskriv = "Kan ikkje jobbe"
+                                }
+                            }
+                    }
+                )
+            }
+            pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
+                fodselsnummer = Ident().apply {
+                    id = "12343567"
+                    typeId = CV().apply {
+                        dn = "Fødselsnummer"
+                        s = "2.16.578.1.12.4.1.1.8116"
+                        v = "FNR"
+                    }
+                }
+            }
+            syketilfelleStartDato = LocalDate.now()
+            medisinskVurdering = HelseOpplysningerArbeidsuforhet.MedisinskVurdering().apply {
+                hovedDiagnose = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.HovedDiagnose().apply {
+                    diagnosekode = CV().apply {
+                        dn = null
+                        s = "2.16.578.1.12.4.1.1.7110"
+                        v = "Z09"
+                    }
+                }
+                biDiagnoser = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.BiDiagnoser().apply {
+                    diagnosekode.add(
+                        CV().apply {
+                            dn = "Problem med jus/politi"
+                            s = "2.16.578.1.12.4.1.1.7110"
+                            v = "Z09"
+                        }
+                    )
+                }
+            }
+            avsenderSystem = HelseOpplysningerArbeidsuforhet.AvsenderSystem().apply {
+                systemNavn = "EPJ helse"
+                systemVersjon = "1.0.2"
+            }
+        }
+        val originaltPasientFnr = "10987654321"
+        val loggingMeta = mockk<LoggingMeta>(relaxed = true)
+        val ediLoggId = "12312"
+        val msgId = "1231-232"
+        val msgHead = fellesformat.get<XMLMsgHead>()
+        val env = mockk<Environment>(relaxed = true)
+        val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
+        val duplicationService = mockk<DuplicationService>(relaxed = true)
+        val duplicationCheck = DuplicateCheck(
+            "1231-232--123gds-2fad",
+            "", ediLoggId, msgId, LocalDateTime.now(),
+            "epj", "1", null
+        )
+
+        val checkSM2013Content = checkSM2013Content(
+            pasientPDL,
+            behandlerPdl,
+            healthInformation,
+            originaltPasientFnr,
+            loggingMeta,
+            fellesformat,
+            ediLoggId,
+            msgId,
+            msgHead,
+            env,
+            kafkaproducerApprec,
+            duplicationService,
+            duplicationCheck
+        )
+
+        Assertions.assertEquals(true, checkSM2013Content)
+    }
+
+    @Test
+    internal fun `Check if aktivitetIkkeMuligMedisinskeArsakskode vis missing should return true`() {
+        val stringInput =
+            no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
+
+        val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
+
+        val pasientPDL = PdlPerson(
+            listOf(
+                PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
+                PdlIdent("aktorId", false, "AKTORID")
+            )
+        )
+
+        val behandlerPdl = PdlPerson(
+            listOf(
+                PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
+                PdlIdent("aktorId", false, "AKTORID")
+            )
+        )
+
+        val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
+            arbeidsgiver = HelseOpplysningerArbeidsuforhet.Arbeidsgiver().apply {
+                harArbeidsgiver = CS().apply {
+                    dn = "En arbeidsgiver"
+                    v = "1"
+                }
+                navnArbeidsgiver = "SAS as"
+                yrkesbetegnelse = "Pilot"
+                stillingsprosent = 100
+            }
+            kontaktMedPasient = HelseOpplysningerArbeidsuforhet.KontaktMedPasient().apply {
+                kontaktDato = LocalDate.now()
+                behandletDato = LocalDateTime.now()
+            }
+            behandler = HelseOpplysningerArbeidsuforhet.Behandler().apply {
+                navn = NavnType().apply {
+                    fornavn = "Per"
+                    etternavn = "Hansne"
+                }
+                id.add(
+                    Ident().apply {
+                        id = "12343567"
+                        typeId = CV().apply {
+                            dn = "Fødselsnummer"
+                            s = "2.16.578.1.12.4.1.1.8116"
+                            v = "FNR"
+                        }
+                    }
+                )
+                adresse = Address().apply {
+                }
+                kontaktInfo.add(
+                    TeleCom().apply {
+                    }
+                )
+            }
+            aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
+                periode.add(
+                    HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
+                        periodeFOMDato = LocalDate.now()
+                        periodeTOMDato = LocalDate.now().plusDays(4)
+                        aktivitetIkkeMulig =
+                            HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig().apply {
+                                medisinskeArsaker = ArsakType().apply {
+                                    arsakskode.add(
+                                        CS().apply {
+                                            dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
+                                        }
+                                    )
+                                    beskriv = "Kan ikkje jobbe"
+                                }
+                            }
+                    }
+                )
+            }
+            pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
+                fodselsnummer = Ident().apply {
+                    id = "12343567"
+                    typeId = CV().apply {
+                        dn = "Fødselsnummer"
+                        s = "2.16.578.1.12.4.1.1.8116"
+                        v = "FNR"
+                    }
+                }
+            }
+            syketilfelleStartDato = LocalDate.now()
+            medisinskVurdering = HelseOpplysningerArbeidsuforhet.MedisinskVurdering().apply {
+                hovedDiagnose = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.HovedDiagnose().apply {
+                    diagnosekode = CV().apply {
+                        dn = "Problem med jus/politi"
+                        s = "2.16.578.1.12.4.1.1.7110"
+                        v = "Z09"
+                    }
+                }
+                biDiagnoser = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.BiDiagnoser().apply {
+                    diagnosekode.add(
+                        CV().apply {
+                            dn = "Problem med jus/politi"
+                            s = "2.16.578.1.12.4.1.1.7110"
+                            v = "Z09"
+                        }
+                    )
+                }
+            }
+            avsenderSystem = HelseOpplysningerArbeidsuforhet.AvsenderSystem().apply {
+                systemNavn = "EPJ helse"
+                systemVersjon = "1.0.2"
+            }
+        }
+        val originaltPasientFnr = "10987654321"
+        val loggingMeta = mockk<LoggingMeta>(relaxed = true)
+        val ediLoggId = "12312"
+        val msgId = "1231-232"
+        val msgHead = fellesformat.get<XMLMsgHead>()
+        val env = mockk<Environment>(relaxed = true)
+        val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
+        val duplicationService = mockk<DuplicationService>(relaxed = true)
+        val duplicationCheck = DuplicateCheck(
+            "1231-232--123gds-2fad",
+            "", ediLoggId, msgId, LocalDateTime.now(),
+            "epj", "1", null
+        )
+
+        val checkSM2013Content = checkSM2013Content(
+            pasientPDL,
+            behandlerPdl,
+            healthInformation,
+            originaltPasientFnr,
+            loggingMeta,
+            fellesformat,
+            ediLoggId,
+            msgId,
+            msgHead,
+            env,
+            kafkaproducerApprec,
+            duplicationService,
+            duplicationCheck
+        )
+
+        Assertions.assertEquals(true, checkSM2013Content)
+    }
+
+    @Test
+    internal fun `Check if medisinske arsakskode invalid value should return true`() {
+        val stringInput =
+            no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
+
+        val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
+
+        val pasientPDL = PdlPerson(
+            listOf(
+                PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
+                PdlIdent("aktorId", false, "AKTORID")
+            )
+        )
+
+        val behandlerPdl = PdlPerson(
+            listOf(
+                PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
+                PdlIdent("aktorId", false, "AKTORID")
+            )
+        )
+
+        val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
+            arbeidsgiver = HelseOpplysningerArbeidsuforhet.Arbeidsgiver().apply {
+                harArbeidsgiver = CS().apply {
+                    dn = "En arbeidsgiver"
+                    v = "1"
+                }
+                navnArbeidsgiver = "SAS as"
+                yrkesbetegnelse = "Pilot"
+                stillingsprosent = 100
+            }
+            kontaktMedPasient = HelseOpplysningerArbeidsuforhet.KontaktMedPasient().apply {
+                kontaktDato = LocalDate.now()
+                behandletDato = LocalDateTime.now()
+            }
+            behandler = HelseOpplysningerArbeidsuforhet.Behandler().apply {
+                navn = NavnType().apply {
+                    fornavn = "Per"
+                    etternavn = "Hansne"
+                }
+                id.add(
+                    Ident().apply {
+                        id = "12343567"
+                        typeId = CV().apply {
+                            dn = "Fødselsnummer"
+                            s = "2.16.578.1.12.4.1.1.8116"
+                            v = "FNR"
+                        }
+                    }
+                )
+                adresse = Address().apply {
+                }
+                kontaktInfo.add(
+                    TeleCom().apply {
+                    }
+                )
+            }
+            aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
+                periode.add(
+                    HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
+                        periodeFOMDato = LocalDate.now()
+                        periodeTOMDato = LocalDate.now().plusDays(4)
+                        aktivitetIkkeMulig =
+                            HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig().apply {
+                                medisinskeArsaker = ArsakType().apply {
+                                    arsakskode.add(
+                                        CS().apply {
+                                            v = "4"
+                                            dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
+                                        }
+                                    )
+                                    beskriv = "Kan ikkje jobbe"
+                                }
+                            }
+                    }
+                )
+            }
+            pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
+                fodselsnummer = Ident().apply {
+                    id = "12343567"
+                    typeId = CV().apply {
+                        dn = "Fødselsnummer"
+                        s = "2.16.578.1.12.4.1.1.8116"
+                        v = "FNR"
+                    }
+                }
+            }
+            syketilfelleStartDato = LocalDate.now()
+            medisinskVurdering = HelseOpplysningerArbeidsuforhet.MedisinskVurdering().apply {
+                hovedDiagnose = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.HovedDiagnose().apply {
+                    diagnosekode = CV().apply {
+                        dn = "Problem med jus/politi"
+                        s = "2.16.578.1.12.4.1.1.7110"
+                        v = "Z09"
+                    }
+                }
+                biDiagnoser = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.BiDiagnoser().apply {
+                    diagnosekode.add(
+                        CV().apply {
+                            dn = "Problem med jus/politi"
+                            s = "2.16.578.1.12.4.1.1.7110"
+                            v = "Z09"
+                        }
+                    )
+                }
+            }
+            avsenderSystem = HelseOpplysningerArbeidsuforhet.AvsenderSystem().apply {
+                systemNavn = "EPJ helse"
+                systemVersjon = "1.0.2"
+            }
+        }
+        val originaltPasientFnr = "10987654321"
+        val loggingMeta = mockk<LoggingMeta>(relaxed = true)
+        val ediLoggId = "12312"
+        val msgId = "1231-232"
+        val msgHead = fellesformat.get<XMLMsgHead>()
+        val env = mockk<Environment>(relaxed = true)
+        val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
+        val duplicationService = mockk<DuplicationService>(relaxed = true)
+        val duplicationCheck = DuplicateCheck(
+            "1231-232--123gds-2fad",
+            "", ediLoggId, msgId, LocalDateTime.now(),
+            "epj", "1", null
+        )
+
+        val checkSM2013Content = checkSM2013Content(
+            pasientPDL,
+            behandlerPdl,
+            healthInformation,
+            originaltPasientFnr,
+            loggingMeta,
+            fellesformat,
+            ediLoggId,
+            msgId,
+            msgHead,
+            env,
+            kafkaproducerApprec,
+            duplicationService,
+            duplicationCheck
+        )
+
+        Assertions.assertEquals(true, checkSM2013Content)
+    }
+
+    @Test
+    internal fun `Check if aktivitet ikke mulig arbeidsplassen arsakskode missing should return true`() {
+        val stringInput =
+            no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
+
+        val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
+
+        val pasientPDL = PdlPerson(
+            listOf(
+                PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
+                PdlIdent("aktorId", false, "AKTORID")
+            )
+        )
+
+        val behandlerPdl = PdlPerson(
+            listOf(
+                PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
+                PdlIdent("aktorId", false, "AKTORID")
+            )
+        )
+
+        val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
+            arbeidsgiver = HelseOpplysningerArbeidsuforhet.Arbeidsgiver().apply {
+                harArbeidsgiver = CS().apply {
+                    dn = "En arbeidsgiver"
+                    v = "1"
+                }
+                navnArbeidsgiver = "SAS as"
+                yrkesbetegnelse = "Pilot"
+                stillingsprosent = 100
+            }
+            kontaktMedPasient = HelseOpplysningerArbeidsuforhet.KontaktMedPasient().apply {
+                kontaktDato = LocalDate.now()
+                behandletDato = LocalDateTime.now()
+            }
+            behandler = HelseOpplysningerArbeidsuforhet.Behandler().apply {
+                navn = NavnType().apply {
+                    fornavn = "Per"
+                    etternavn = "Hansne"
+                }
+                id.add(
+                    Ident().apply {
+                        id = "12343567"
+                        typeId = CV().apply {
+                            dn = "Fødselsnummer"
+                            s = "2.16.578.1.12.4.1.1.8116"
+                            v = "FNR"
+                        }
+                    }
+                )
+                adresse = Address().apply {
+                }
+                kontaktInfo.add(
+                    TeleCom().apply {
+                    }
+                )
+            }
+            aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
+                periode.add(
+                    HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
+                        periodeFOMDato = LocalDate.now()
+                        periodeTOMDato = LocalDate.now().plusDays(4)
+                        aktivitetIkkeMulig =
+                            HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig().apply {
+                                arbeidsplassen = ArsakType().apply {
+                                    arsakskode.add(
+                                        CS().apply {
+                                            v = null
+                                            dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
+                                        }
+                                    )
+                                    beskriv = "Kan ikkje jobbe"
+                                }
+                            }
+                    }
+                )
+            }
+            pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
+                fodselsnummer = Ident().apply {
+                    id = "12343567"
+                    typeId = CV().apply {
+                        dn = "Fødselsnummer"
+                        s = "2.16.578.1.12.4.1.1.8116"
+                        v = "FNR"
+                    }
+                }
+            }
+            syketilfelleStartDato = LocalDate.now()
+            medisinskVurdering = HelseOpplysningerArbeidsuforhet.MedisinskVurdering().apply {
+                hovedDiagnose = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.HovedDiagnose().apply {
+                    diagnosekode = CV().apply {
+                        dn = "Problem med jus/politi"
+                        s = "2.16.578.1.12.4.1.1.7110"
+                        v = "Z09"
+                    }
+                }
+                biDiagnoser = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.BiDiagnoser().apply {
+                    diagnosekode.add(
+                        CV().apply {
+                            dn = "Problem med jus/politi"
+                            s = "2.16.578.1.12.4.1.1.7110"
+                            v = "Z09"
+                        }
+                    )
+                }
+            }
+            avsenderSystem = HelseOpplysningerArbeidsuforhet.AvsenderSystem().apply {
+                systemNavn = "EPJ helse"
+                systemVersjon = "1.0.2"
+            }
+        }
+        val originaltPasientFnr = "10987654321"
+        val loggingMeta = mockk<LoggingMeta>(relaxed = true)
+        val ediLoggId = "12312"
+        val msgId = "1231-232"
+        val msgHead = fellesformat.get<XMLMsgHead>()
+        val env = mockk<Environment>(relaxed = true)
+        val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
+        val duplicationService = mockk<DuplicationService>(relaxed = true)
+        val duplicationCheck = DuplicateCheck(
+            "1231-232--123gds-2fad",
+            "", ediLoggId, msgId, LocalDateTime.now(),
+            "epj", "1", null
+        )
+
+        val checkSM2013Content = checkSM2013Content(
+            pasientPDL,
+            behandlerPdl,
+            healthInformation,
+            originaltPasientFnr,
+            loggingMeta,
+            fellesformat,
+            ediLoggId,
+            msgId,
+            msgHead,
+            env,
+            kafkaproducerApprec,
+            duplicationService,
+            duplicationCheck
+        )
+
+        Assertions.assertEquals(true, checkSM2013Content)
+    }
+
+    @Test
+    internal fun `Check if aktivitet ikke mulig arbeidsplassen arsakskode has invalid value should return true`() {
+        val stringInput =
+            no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
+
+        val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
+
+        val pasientPDL = PdlPerson(
+            listOf(
+                PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
+                PdlIdent("aktorId", false, "AKTORID")
+            )
+        )
+
+        val behandlerPdl = PdlPerson(
+            listOf(
+                PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
+                PdlIdent("aktorId", false, "AKTORID")
+            )
+        )
+
+        val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
+            arbeidsgiver = HelseOpplysningerArbeidsuforhet.Arbeidsgiver().apply {
+                harArbeidsgiver = CS().apply {
+                    dn = "En arbeidsgiver"
+                    v = "1"
+                }
+                navnArbeidsgiver = "SAS as"
+                yrkesbetegnelse = "Pilot"
+                stillingsprosent = 100
+            }
+            kontaktMedPasient = HelseOpplysningerArbeidsuforhet.KontaktMedPasient().apply {
+                kontaktDato = LocalDate.now()
+                behandletDato = LocalDateTime.now()
+            }
+            behandler = HelseOpplysningerArbeidsuforhet.Behandler().apply {
+                navn = NavnType().apply {
+                    fornavn = "Per"
+                    etternavn = "Hansne"
+                }
+                id.add(
+                    Ident().apply {
+                        id = "12343567"
+                        typeId = CV().apply {
+                            dn = "Fødselsnummer"
+                            s = "2.16.578.1.12.4.1.1.8116"
+                            v = "FNR"
+                        }
+                    }
+                )
+                adresse = Address().apply {
+                }
+                kontaktInfo.add(
+                    TeleCom().apply {
+                    }
+                )
+            }
+            aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
+                periode.add(
+                    HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
+                        periodeFOMDato = LocalDate.now()
+                        periodeTOMDato = LocalDate.now().plusDays(4)
+                        aktivitetIkkeMulig =
+                            HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig().apply {
+                                arbeidsplassen = ArsakType().apply {
+                                    arsakskode.add(
+                                        CS().apply {
+                                            v = "99"
+                                            dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
+                                        }
+                                    )
+                                    beskriv = "Kan ikkje jobbe"
+                                }
+                            }
+                    }
+                )
+            }
+            pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
+                fodselsnummer = Ident().apply {
+                    id = "12343567"
+                    typeId = CV().apply {
+                        dn = "Fødselsnummer"
+                        s = "2.16.578.1.12.4.1.1.8116"
+                        v = "FNR"
+                    }
+                }
+            }
+            syketilfelleStartDato = LocalDate.now()
+            medisinskVurdering = HelseOpplysningerArbeidsuforhet.MedisinskVurdering().apply {
+                hovedDiagnose = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.HovedDiagnose().apply {
+                    diagnosekode = CV().apply {
+                        dn = "Problem med jus/politi"
+                        s = "2.16.578.1.12.4.1.1.7110"
+                        v = "Z09"
+                    }
+                }
+                biDiagnoser = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.BiDiagnoser().apply {
+                    diagnosekode.add(
+                        CV().apply {
+                            dn = "Problem med jus/politi"
+                            s = "2.16.578.1.12.4.1.1.7110"
+                            v = "Z09"
+                        }
+                    )
+                }
+            }
+            avsenderSystem = HelseOpplysningerArbeidsuforhet.AvsenderSystem().apply {
+                systemNavn = "EPJ helse"
+                systemVersjon = "1.0.2"
+            }
+        }
+        val originaltPasientFnr = "10987654321"
+        val loggingMeta = mockk<LoggingMeta>(relaxed = true)
+        val ediLoggId = "12312"
+        val msgId = "1231-232"
+        val msgHead = fellesformat.get<XMLMsgHead>()
+        val env = mockk<Environment>(relaxed = true)
+        val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
+        val duplicationService = mockk<DuplicationService>(relaxed = true)
+        val duplicationCheck = DuplicateCheck(
+            "1231-232--123gds-2fad",
+            "", ediLoggId, msgId, LocalDateTime.now(),
+            "epj", "1", null
+        )
+
+        val checkSM2013Content = checkSM2013Content(
+            pasientPDL,
+            behandlerPdl,
+            healthInformation,
+            originaltPasientFnr,
+            loggingMeta,
+            fellesformat,
+            ediLoggId,
+            msgId,
+            msgHead,
+            env,
+            kafkaproducerApprec,
+            duplicationService,
+            duplicationCheck
+        )
+
+        Assertions.assertEquals(true, checkSM2013Content)
+    }
+
+    @Test
+    internal fun `Check if patient has test Fnr should return true`() {
+        val stringInput =
+            no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
+
+        val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
+
+        val pasientPDL = PdlPerson(
+            listOf(
+                PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
+                PdlIdent("aktorId", false, "AKTORID")
+            )
+        )
+
+        val behandlerPdl = PdlPerson(
+            listOf(
+                PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
+                PdlIdent("aktorId", false, "AKTORID")
+            )
+        )
+
+        val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
+            arbeidsgiver = HelseOpplysningerArbeidsuforhet.Arbeidsgiver().apply {
+                harArbeidsgiver = CS().apply {
+                    dn = "En arbeidsgiver"
+                    v = "1"
+                }
+                navnArbeidsgiver = "SAS as"
+                yrkesbetegnelse = "Pilot"
+                stillingsprosent = 100
+            }
+            kontaktMedPasient = HelseOpplysningerArbeidsuforhet.KontaktMedPasient().apply {
+                kontaktDato = LocalDate.now()
+                behandletDato = LocalDateTime.now()
+            }
+            behandler = HelseOpplysningerArbeidsuforhet.Behandler().apply {
+                navn = NavnType().apply {
+                    fornavn = "Per"
+                    etternavn = "Hansne"
+                }
+                id.add(
+                    Ident().apply {
+                        id = "12343567"
+                        typeId = CV().apply {
+                            dn = "Fødselsnummer"
+                            s = "2.16.578.1.12.4.1.1.8116"
+                            v = "FNR"
+                        }
+                    }
+                )
+                adresse = Address().apply {
+                }
+                kontaktInfo.add(
+                    TeleCom().apply {
+                    }
+                )
+            }
+            aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
+                periode.add(
+                    HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
+                        periodeFOMDato = LocalDate.now()
+                        periodeTOMDato = LocalDate.now().plusDays(4)
+                        aktivitetIkkeMulig =
+                            HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig().apply {
+                                arbeidsplassen = ArsakType().apply {
+                                    arsakskode.add(
+                                        CS().apply {
+                                            v = "1"
+                                            dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
+                                        }
+                                    )
+                                    beskriv = "Kan ikkje jobbe"
+                                }
+                            }
+                    }
+                )
+            }
+            pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
+                fodselsnummer = Ident().apply {
+                    id = "12343567"
+                    typeId = CV().apply {
+                        dn = "Fødselsnummer"
+                        s = "2.16.578.1.12.4.1.1.8116"
+                        v = "FNR"
+                    }
+                }
+            }
+            syketilfelleStartDato = LocalDate.now()
+            medisinskVurdering = HelseOpplysningerArbeidsuforhet.MedisinskVurdering().apply {
+                hovedDiagnose = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.HovedDiagnose().apply {
+                    diagnosekode = CV().apply {
+                        dn = "Problem med jus/politi"
+                        s = "2.16.578.1.12.4.1.1.7110"
+                        v = "Z09"
+                    }
+                }
+                biDiagnoser = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.BiDiagnoser().apply {
+                    diagnosekode.add(
+                        CV().apply {
+                            dn = "Problem med jus/politi"
+                            s = "2.16.578.1.12.4.1.1.7110"
+                            v = "Z09"
+                        }
+                    )
+                }
+            }
+            avsenderSystem = HelseOpplysningerArbeidsuforhet.AvsenderSystem().apply {
+                systemNavn = "EPJ helse"
+                systemVersjon = "1.0.2"
+            }
+        }
+        val originaltPasientFnr = "14077700162"
+        val loggingMeta = mockk<LoggingMeta>(relaxed = true)
+        val ediLoggId = "12312"
+        val msgId = "1231-232"
+        val msgHead = fellesformat.get<XMLMsgHead>()
+        val env = mockk<Environment>(relaxed = true)
+        val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
+        val duplicationService = mockk<DuplicationService>(relaxed = true)
+        val duplicationCheck = DuplicateCheck(
+            "1231-232--123gds-2fad",
+            "", ediLoggId, msgId, LocalDateTime.now(),
+            "epj", "1", null
+        )
+
+        coEvery { env.cluster } returns "prod-gcp"
+
+        val checkSM2013Content = checkSM2013Content(
+            pasientPDL,
+            behandlerPdl,
+            healthInformation,
+            originaltPasientFnr,
+            loggingMeta,
+            fellesformat,
+            ediLoggId,
+            msgId,
+            msgHead,
+            env,
+            kafkaproducerApprec,
+            duplicationService,
+            duplicationCheck
+        )
+
+        Assertions.assertEquals(true, checkSM2013Content)
+    }
+
+    @Test
+    internal fun `Check if annenFraversArsakkode V missing should return true`() {
+        val stringInput =
+            no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
+
+        val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
+
+        val pasientPDL = PdlPerson(
+            listOf(
+                PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
+                PdlIdent("aktorId", false, "AKTORID")
+            )
+        )
+
+        val behandlerPdl = PdlPerson(
+            listOf(
+                PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
+                PdlIdent("aktorId", false, "AKTORID")
+            )
+        )
+
+        val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
+            arbeidsgiver = HelseOpplysningerArbeidsuforhet.Arbeidsgiver().apply {
+                harArbeidsgiver = CS().apply {
+                    dn = "En arbeidsgiver"
+                    v = "1"
+                }
+                navnArbeidsgiver = "SAS as"
+                yrkesbetegnelse = "Pilot"
+                stillingsprosent = 100
+            }
+            kontaktMedPasient = HelseOpplysningerArbeidsuforhet.KontaktMedPasient().apply {
+                kontaktDato = LocalDate.now()
+                behandletDato = LocalDateTime.now()
+            }
+            behandler = HelseOpplysningerArbeidsuforhet.Behandler().apply {
+                navn = NavnType().apply {
+                    fornavn = "Per"
+                    etternavn = "Hansne"
+                }
+                id.add(
+                    Ident().apply {
+                        id = "12343567"
+                        typeId = CV().apply {
+                            dn = "Fødselsnummer"
+                            s = "2.16.578.1.12.4.1.1.8116"
+                            v = "FNR"
+                        }
+                    }
+                )
+                adresse = Address().apply {
+                }
+                kontaktInfo.add(
+                    TeleCom().apply {
+                    }
+                )
+            }
+            aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
+                periode.add(
+                    HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
+                        periodeFOMDato = LocalDate.now()
+                        periodeTOMDato = LocalDate.now().plusDays(4)
+                        aktivitetIkkeMulig =
+                            HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig().apply {
+                                arbeidsplassen = ArsakType().apply {
+                                    arsakskode.add(
+                                        CS().apply {
+                                            v = "1"
+                                            dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
+                                        }
+                                    )
+                                    beskriv = "Kan ikkje jobbe"
+                                }
+                            }
+                    }
+                )
+            }
+            pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
+                fodselsnummer = Ident().apply {
+                    id = "12343567"
+                    typeId = CV().apply {
+                        dn = "Fødselsnummer"
+                        s = "2.16.578.1.12.4.1.1.8116"
+                        v = "FNR"
+                    }
+                }
+            }
+            syketilfelleStartDato = LocalDate.now()
+            medisinskVurdering = HelseOpplysningerArbeidsuforhet.MedisinskVurdering().apply {
+                hovedDiagnose = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.HovedDiagnose().apply {
+                    diagnosekode = CV().apply {
+                        dn = "Problem med jus/politi"
+                        s = "2.16.578.1.12.4.1.1.7110"
+                        v = "Z09"
+                    }
+                }
+                annenFraversArsak = ArsakType().apply {
+                    arsakskode.add(
+                        CS().apply {
+                            dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
+                        }
+                    )
+                    beskriv = "Kan ikkje jobbe"
+                }
+                biDiagnoser = HelseOpplysningerArbeidsuforhet.MedisinskVurdering.BiDiagnoser().apply {
+                    diagnosekode.add(
+                        CV().apply {
+                            dn = "Problem med jus/politi"
+                            s = "2.16.578.1.12.4.1.1.7110"
+                            v = "Z09"
+                        }
+                    )
+                }
+            }
+            avsenderSystem = HelseOpplysningerArbeidsuforhet.AvsenderSystem().apply {
+                systemNavn = "EPJ helse"
+                systemVersjon = "1.0.2"
+            }
+        }
+        val originaltPasientFnr = "14077700165"
+        val loggingMeta = mockk<LoggingMeta>(relaxed = true)
+        val ediLoggId = "12312"
+        val msgId = "1231-232"
+        val msgHead = fellesformat.get<XMLMsgHead>()
+        val env = mockk<Environment>(relaxed = true)
+        val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
+        val duplicationService = mockk<DuplicationService>(relaxed = true)
+        val duplicationCheck = DuplicateCheck(
+            "1231-232--123gds-2fad",
+            "", ediLoggId, msgId, LocalDateTime.now(),
+            "epj", "1", null
+        )
+
+        coEvery { env.cluster } returns "localhost"
+
+        val checkSM2013Content = checkSM2013Content(
+            pasientPDL,
+            behandlerPdl,
+            healthInformation,
+            originaltPasientFnr,
+            loggingMeta,
+            fellesformat,
+            ediLoggId,
+            msgId,
+            msgHead,
+            env,
+            kafkaproducerApprec,
+            duplicationService,
+            duplicationCheck
+        )
+
+        Assertions.assertEquals(true, checkSM2013Content)
+    }
+}
