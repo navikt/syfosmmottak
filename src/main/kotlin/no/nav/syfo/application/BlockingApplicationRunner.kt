@@ -255,6 +255,15 @@ class BlockingApplicationRunner(
                         val pasient = identer[originaltPasientFnr]
                         val behandler = identer[signaturFnr]
 
+                        if(healthInformation.aktivitet == null){
+                            sikkerlogg.info("healthInformation.aktivitet == null")
+                            sikkerlogg.info("fellesformat: $fellesformatText")
+                        }
+                        if(healthInformation.aktivitet.periode.isNullOrEmpty()){
+                            sikkerlogg.info("healthInformation.aktivitet.periode.isNullOrEmpty()")
+                            sikkerlogg.info("fellesformat: $fellesformatText")
+                        }
+
                         if (checkSM2013Content(
                                 pasient, behandler, healthInformation, originaltPasientFnr, loggingMeta, fellesformat,
                                 ediLoggId, msgId, msgHead, env, kafkaproducerApprec,
