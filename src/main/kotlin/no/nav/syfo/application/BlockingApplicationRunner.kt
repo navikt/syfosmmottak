@@ -259,7 +259,7 @@ class BlockingApplicationRunner(
                             sikkerlogg.info("healthInformation.aktivitet == null")
                             sikkerlogg.info("fellesformat: $fellesformatText")
                         }
-                        if(healthInformation.aktivitet.periode.isNullOrEmpty()){
+                        if(healthInformation.aktivitet != null && healthInformation.aktivitet.periode.isNullOrEmpty()){
                             sikkerlogg.info("healthInformation.aktivitet.periode.isNullOrEmpty()")
                             sikkerlogg.info("fellesformat: $fellesformatText")
                         }
