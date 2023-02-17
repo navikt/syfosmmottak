@@ -170,6 +170,11 @@ class BlockingApplicationRunner(
                         StructuredArguments.fields(loggingMeta)
                     )
 
+                    sikkerlogg.info(
+                        "fellesformat: $fellesformatText",
+                        StructuredArguments.fields(loggingMeta)
+                    )
+
                     if (legekontorOrgNr == null) {
                         SYKMELDING_MISSNG_ORG_NUMBER_COUNTER.inc()
                         log.info(
@@ -254,15 +259,6 @@ class BlockingApplicationRunner(
                     } else {
                         val pasient = identer[originaltPasientFnr]
                         val behandler = identer[signaturFnr]
-
-                        if(healthInformation.aktivitet == null){
-                            sikkerlogg.info("healthInformation.aktivitet == null")
-                            sikkerlogg.info("fellesformat: $fellesformatText")
-                        }
-                        if(healthInformation.aktivitet != null && healthInformation.aktivitet.periode.isNullOrEmpty()){
-                            sikkerlogg.info("healthInformation.aktivitet.periode.isNullOrEmpty()")
-                            sikkerlogg.info("fellesformat: $fellesformatText")
-                        }
 
                         if (checkSM2013Content(
                                 pasient, behandler, healthInformation, originaltPasientFnr, loggingMeta, fellesformat,
