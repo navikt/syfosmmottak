@@ -79,9 +79,10 @@ fun DatabaseInterface.persistDuplicateMessage(duplicate: Duplicate) {
                 duplicate_sykmelding_id,
                 mottatt_date,
                 epj_system,
-                epj_version
+                epj_version,
+                org_number
                 )
-            values (?, ?, ?, ?, ?, ?, ?);
+            values (?, ?, ?, ?, ?, ?, ?, ?);
             """
         ).use { preparedStatement ->
             preparedStatement.setString(1, duplicate.sykmeldingId)
@@ -91,6 +92,7 @@ fun DatabaseInterface.persistDuplicateMessage(duplicate: Duplicate) {
             preparedStatement.setTimestamp(5, Timestamp.valueOf(duplicate.mottattDate))
             preparedStatement.setString(6, duplicate.epjSystem)
             preparedStatement.setString(7, duplicate.epjVersion)
+            preparedStatement.setString(8, duplicate.orgNumber)
             preparedStatement.executeUpdate()
         }
         connection.commit()

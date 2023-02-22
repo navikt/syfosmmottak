@@ -128,7 +128,7 @@ internal class DuplicationServiceTest {
 
         val duplication = Duplicate(
             sykmeldingID, mottakId, msgId,
-            isDuplicat.sykmeldingId, mottatDato, epjSystem, epjVersion
+            isDuplicat.sykmeldingId, mottatDato, epjSystem, epjVersion, orgNumber
         )
 
         duplicationService.persistDuplication(duplication)

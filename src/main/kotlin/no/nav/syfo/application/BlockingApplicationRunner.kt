@@ -248,7 +248,7 @@ class BlockingApplicationRunner(
                         val duplicate = Duplicate(
                             sykmeldingId, ediLoggId, msgId,
                             duplicationCheckSha256String.sykmeldingId, mottatDato,
-                            avsenderSystem.navn, avsenderSystem.versjon
+                            avsenderSystem.navn, avsenderSystem.versjon, legekontorOrgNr
                         )
 
                         handleDuplicateSM2013Content(
