@@ -25,7 +25,6 @@ fun handleStatusOK(
     receivedSykmelding: ReceivedSykmelding,
     kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>
 ) {
-
     sendReceivedSykmelding(okSykmeldingTopic, receivedSykmelding, kafkaproducerreceivedSykmelding)
 
     val apprec = fellesformat.toApprec(

@@ -256,6 +256,7 @@ internal class ApprecMapperTest {
             apprecOK.ediloggid
         )
     }
+
     @Test
     internal fun `OK AppRec has the same msgId as the source`() {
         Assertions.assertEquals(
@@ -263,6 +264,7 @@ internal class ApprecMapperTest {
             apprecOK.msgId
         )
     }
+
     @Test
     internal fun `OK AppRec has the same genDate as the source`() {
         Assertions.assertEquals(
@@ -270,10 +272,12 @@ internal class ApprecMapperTest {
             apprecOK.genDate
         )
     }
+
     @Test
     internal fun `OK AppRec has the same msgTypeVerdi as the source`() {
         Assertions.assertEquals(fellesformat.get<XMLMsgHead>().msgInfo.type.v, apprecOK.msgTypeVerdi)
     }
+
     @Test
     internal fun `OK AppRec has the same msgTypeBeskrivelse as the source`() {
         Assertions.assertEquals(
@@ -281,18 +285,22 @@ internal class ApprecMapperTest {
             apprecOK.msgTypeBeskrivelse
         )
     }
+
     @Test
     internal fun `OK AppRec has the same apprecStatusDN as the source`() {
         Assertions.assertEquals(ApprecStatus.OK.dn, apprecOK.apprecStatus.dn)
     }
+
     @Test
     internal fun `OK AppRec has the same apprecStatusv as the source`() {
         Assertions.assertEquals(ApprecStatus.OK.v, apprecOK.apprecStatus.v)
     }
+
     @Test
     internal fun `OK AppRec has the same tekstTilSykmelder as the source`() {
         Assertions.assertEquals(null, apprecOK.tekstTilSykmelder)
     }
+
     @Test
     internal fun `OK AppRec has the same id on the sender organisation`() {
         Assertions.assertEquals(
@@ -300,6 +308,7 @@ internal class ApprecMapperTest {
             apprecOK.mottakerOrganisasjon.hovedIdent.id
         )
     }
+
     @Test
     internal fun `OK AppRec has the same id typeid dn on the sender organisation`() {
         Assertions.assertEquals(
@@ -307,6 +316,7 @@ internal class ApprecMapperTest {
             apprecOK.mottakerOrganisasjon.hovedIdent.typeId.beskrivelse
         )
     }
+
     @Test
     internal fun `OK AppRec has the same id typeid v on the sender organisation`() {
         Assertions.assertEquals(
@@ -314,6 +324,7 @@ internal class ApprecMapperTest {
             apprecOK.mottakerOrganisasjon.hovedIdent.typeId.verdi
         )
     }
+
     @Test
     internal fun `OK AppRec has the same organisationName on the sender organisation`() {
         Assertions.assertEquals(
@@ -321,6 +332,7 @@ internal class ApprecMapperTest {
             apprecOK.mottakerOrganisasjon.navn
         )
     }
+
     @Test
     internal fun `OK AppRec has the same id on additionalIds on the sender organisation`() {
         Assertions.assertEquals(
@@ -328,6 +340,7 @@ internal class ApprecMapperTest {
             apprecOK.mottakerOrganisasjon.tilleggsIdenter?.last()?.id
         )
     }
+
     @Test
     internal fun `OK AppRec has the same id on additionalIds typeid dn on the sender organisation`() {
         Assertions.assertEquals(
@@ -335,6 +348,7 @@ internal class ApprecMapperTest {
             apprecOK.mottakerOrganisasjon.tilleggsIdenter?.last()?.typeId?.beskrivelse
         )
     }
+
     @Test
     internal fun `OK AppRec has the same id on additionalIds typeId v on the sender organisation`() {
         Assertions.assertEquals(
@@ -342,10 +356,12 @@ internal class ApprecMapperTest {
             apprecOK.mottakerOrganisasjon.tilleggsIdenter?.last()?.typeId?.verdi
         )
     }
+
     @Test
     internal fun `OK AppRec has the same healthcareProfessional name on the sender organisation`() {
         Assertions.assertEquals("Frost Frida Perma", apprecOK.mottakerOrganisasjon.helsepersonell?.navn)
     }
+
     @Test
     internal fun `OK AppRec has the same healthcareProfessional ident on the sender organisation`() {
         Assertions.assertEquals(
@@ -353,6 +369,7 @@ internal class ApprecMapperTest {
             apprecOK.mottakerOrganisasjon.helsepersonell?.hovedIdent?.id
         )
     }
+
     @Test
     internal fun `OK AppRec has the same id typeid dn on the receiver organisation`() {
         Assertions.assertEquals(
@@ -360,6 +377,7 @@ internal class ApprecMapperTest {
             apprecOK.senderOrganisasjon.hovedIdent.typeId.beskrivelse
         )
     }
+
     @Test
     internal fun `OK AppRec has the same id typeid v on the receiver organisation`() {
         Assertions.assertEquals(
@@ -367,6 +385,7 @@ internal class ApprecMapperTest {
             apprecOK.senderOrganisasjon.hovedIdent.typeId.verdi
         )
     }
+
     @Test
     internal fun `OK AppRec has the same organisationName on the receiver organisation`() {
         Assertions.assertEquals(
@@ -374,6 +393,7 @@ internal class ApprecMapperTest {
             apprec.senderOrganisasjon.navn
         )
     }
+
     @Test
     internal fun `OK AppRec has the same id on additionalIds on the receiver organisation`() {
         Assertions.assertEquals(
@@ -381,6 +401,7 @@ internal class ApprecMapperTest {
             apprecOK.senderOrganisasjon.tilleggsIdenter?.last()?.id
         )
     }
+
     @Test
     internal fun `OK AppRec has the same id on additionalIds typeid dn on the receiver organisation`() {
         Assertions.assertEquals(
@@ -388,6 +409,7 @@ internal class ApprecMapperTest {
             apprecOK.senderOrganisasjon.tilleggsIdenter?.last()?.typeId?.beskrivelse
         )
     }
+
     @Test
     internal fun `OK AppRec has the same id on additionalIds typeId v on the receiver organisation`() {
         Assertions.assertEquals(
@@ -395,10 +417,12 @@ internal class ApprecMapperTest {
             apprecOK.senderOrganisasjon.tilleggsIdenter?.last()?.typeId?.verdi
         )
     }
+
     @Test
     internal fun `OK AppRec has the same healthcareProfessional name on the receiver organisation`() {
         Assertions.assertEquals(null, apprecOK.senderOrganisasjon.helsepersonell?.navn)
     }
+
     @Test
     internal fun `OK AppRec has the same healthcareProfessional ident on the receiver organisation`() {
         Assertions.assertEquals(null, apprecOK.senderOrganisasjon.helsepersonell?.hovedIdent?.id)
@@ -413,34 +437,42 @@ internal class ApprecMapperTest {
     internal fun `Avisst AppRec with validationResult has the same ediLoggId as the source`() {
         Assertions.assertEquals(fellesformat.get<XMLMottakenhetBlokk>().ediLoggId, apprec.ediloggid)
     }
+
     @Test
     internal fun `Avisst AppRec with validationResult has the same msgId as the source`() {
         Assertions.assertEquals(fellesformat.get<XMLMsgHead>().msgInfo.msgId, apprec.msgId)
     }
+
     @Test
     internal fun `Avisst AppRec with validationResult has the same genDate as the source`() {
         Assertions.assertEquals(getLocalDateTime(fellesformat.get<XMLMsgHead>().msgInfo.genDate), apprec.genDate)
     }
+
     @Test
     internal fun `Avisst AppRec with validationResult has the same msgTypeVerdi as the source`() {
         Assertions.assertEquals(fellesformat.get<XMLMsgHead>().msgInfo.type.v, apprec.msgTypeVerdi)
     }
+
     @Test
     internal fun `Avisst AppRec with validationResult has the same msgTypeBeskrivelse as the source`() {
         Assertions.assertEquals(fellesformat.get<XMLMsgHead>().msgInfo.type.dn, apprec.msgTypeBeskrivelse)
     }
+
     @Test
     internal fun `Avisst AppRec with validationResult has the same apprecStatusDN as the source`() {
         Assertions.assertEquals(ApprecStatus.OK.dn, apprec.apprecStatus.dn)
     }
+
     @Test
     internal fun `Avisst AppRec with validationResult has the same apprecStatusv as the source`() {
         Assertions.assertEquals(ApprecStatus.OK.v, apprec.apprecStatus.v)
     }
+
     @Test
     internal fun `Avisst AppRec with validationResult has the same tekstTilSykmelder as the source`() {
         Assertions.assertEquals(null, apprec.tekstTilSykmelder)
     }
+
     @Test
     internal fun `Avisst AppRec with validationResult has the same id on the sender organisation`() {
         Assertions.assertEquals(
@@ -448,6 +480,7 @@ internal class ApprecMapperTest {
             apprec.mottakerOrganisasjon.hovedIdent.id
         )
     }
+
     @Test
     internal fun `Avisst AppRec with validationResult has the same id typeid dn on the sender organisation`() {
         Assertions.assertEquals(
@@ -455,6 +488,7 @@ internal class ApprecMapperTest {
             apprec.mottakerOrganisasjon.hovedIdent.typeId.beskrivelse
         )
     }
+
     @Test
     internal fun `Avisst AppRec with validationResult has the same id typeid v on the sender organisation`() {
         Assertions.assertEquals(
@@ -462,6 +496,7 @@ internal class ApprecMapperTest {
             apprec.mottakerOrganisasjon.hovedIdent.typeId.verdi
         )
     }
+
     @Test
     internal fun `Avisst AppRec with validationResult has the same organisationName on the sender organisation`() {
         Assertions.assertEquals(
@@ -469,6 +504,7 @@ internal class ApprecMapperTest {
             apprec.mottakerOrganisasjon.navn
         )
     }
+
     @Test
     internal fun `Avisst AppRec with validationResult has the same id on additionalIds on the sender organisation`() {
         Assertions.assertEquals(
@@ -476,6 +512,7 @@ internal class ApprecMapperTest {
             apprec.mottakerOrganisasjon.tilleggsIdenter?.last()?.id
         )
     }
+
     @Test
     internal fun `Avisst AppRec with validationResult has the same id on additionalIds typeid dn on the sender organisation`() {
         Assertions.assertEquals(
@@ -483,6 +520,7 @@ internal class ApprecMapperTest {
             apprec.mottakerOrganisasjon.tilleggsIdenter?.last()?.typeId?.beskrivelse
         )
     }
+
     @Test
     internal fun `Avisst AppRec with validationResult has the same id on additionalIds typeId v on the sender organisation`() {
         Assertions.assertEquals(
@@ -490,6 +528,7 @@ internal class ApprecMapperTest {
             apprec.mottakerOrganisasjon.tilleggsIdenter?.last()?.typeId?.verdi
         )
     }
+
     @Test
     internal fun `Avisst AppRec with validationResult has the same healthcareProfessional name on the sender organisation`() {
         Assertions.assertEquals(
@@ -497,6 +536,7 @@ internal class ApprecMapperTest {
             apprec.mottakerOrganisasjon.helsepersonell?.navn
         )
     }
+
     @Test
     internal fun `Avisst AppRec with validationResult has the same healthcareProfessional ident on the sender organisation`() {
         Assertions.assertEquals(
@@ -504,6 +544,7 @@ internal class ApprecMapperTest {
             apprec.mottakerOrganisasjon.helsepersonell?.hovedIdent?.id
         )
     }
+
     @Test
     internal fun `Avisst AppRec with validationResult has the same id typeid dn on the receiver organisation`() {
         Assertions.assertEquals(
@@ -511,6 +552,7 @@ internal class ApprecMapperTest {
             apprec.senderOrganisasjon.hovedIdent.typeId.beskrivelse
         )
     }
+
     @Test
     internal fun `Avisst AppRec with validationResult has the same id typeid v on the receiver organisation`() {
         Assertions.assertEquals(
@@ -518,6 +560,7 @@ internal class ApprecMapperTest {
             apprec.senderOrganisasjon.hovedIdent.typeId.verdi
         )
     }
+
     @Test
     internal fun `Avisst AppRec with validationResult has the same organisationName on the receiver organisation`() {
         Assertions.assertEquals(
@@ -525,6 +568,7 @@ internal class ApprecMapperTest {
             apprec.senderOrganisasjon.navn
         )
     }
+
     @Test
     internal fun `Avisst AppRec with validationResult has the same id on additionalIds on the receiver organisation`() {
         Assertions.assertEquals(
@@ -532,6 +576,7 @@ internal class ApprecMapperTest {
             apprec.senderOrganisasjon.tilleggsIdenter?.last()?.id
         )
     }
+
     @Test
     internal fun `Avisst AppRec with validationResult has the same id on additionalIds typeid dn on the receiver organisation`() {
         Assertions.assertEquals(
@@ -539,6 +584,7 @@ internal class ApprecMapperTest {
             apprec.senderOrganisasjon.tilleggsIdenter?.last()?.typeId?.beskrivelse
         )
     }
+
     @Test
     internal fun `Avisst AppRec with validationResult has the same id on additionalIds typeId v on the receiver organisation`() {
         Assertions.assertEquals(
@@ -546,10 +592,12 @@ internal class ApprecMapperTest {
             apprec.senderOrganisasjon.tilleggsIdenter?.last()?.typeId?.verdi
         )
     }
+
     @Test
     internal fun `Avisst AppRec with validationResult has the same healthcareProfessional name on the receiver organisation`() {
         Assertions.assertEquals(null, apprec.senderOrganisasjon.helsepersonell?.navn)
     }
+
     @Test
     internal fun `Avisst AppRec with validationResult has the same healthcareProfessional ident on the receiver organisation`() {
         Assertions.assertEquals(null, apprec.senderOrganisasjon.helsepersonell?.hovedIdent?.id)

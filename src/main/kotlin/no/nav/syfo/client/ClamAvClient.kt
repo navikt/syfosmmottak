@@ -20,7 +20,8 @@ class ClamAvClient(
                 formData = formData {
                     vedleggList.forEachIndexed { index, vedlegg ->
                         append(
-                            "file$index", Base64.getMimeDecoder().decode(vedlegg.content.content),
+                            "file$index",
+                            Base64.getMimeDecoder().decode(vedlegg.content.content),
                             Headers.build {
                                 append(HttpHeaders.ContentType, vedlegg.content.contentType)
                                 append(HttpHeaders.ContentDisposition, "filename=${vedlegg.description}")
@@ -35,7 +36,7 @@ class ClamAvClient(
 
 data class ScanResult(
     val Filename: String,
-    val Result: Status,
+    val Result: Status
 )
 
 enum class Status {

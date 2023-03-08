@@ -42,6 +42,7 @@ internal class HandleStatusInvalidKtTest {
     internal fun `Set up`() {
         clearAllMocks()
     }
+
     @Test
     internal fun `Send invalid OK`() {
         setUpMocks()
@@ -59,8 +60,13 @@ internal class HandleStatusInvalidKtTest {
 
         assertThrows<ExecutionException> {
             handleStatusInvalid(
-                validationResult, kafkaProducerReceviedSykmelding, validationResultKafkaProducer,
-                receivedSykmelding, fellesformat, kafkaApprecProducer, msgHead
+                validationResult,
+                kafkaProducerReceviedSykmelding,
+                validationResultKafkaProducer,
+                receivedSykmelding,
+                fellesformat,
+                kafkaApprecProducer,
+                msgHead
             )
         }
     }
@@ -71,30 +77,47 @@ internal class HandleStatusInvalidKtTest {
         every { validationResultKafkaProducer.send(any()) } returns getFailingFuture()
         assertThrows<ExecutionException> {
             handleStatusInvalid(
-                validationResult, kafkaProducerReceviedSykmelding,
-                validationResultKafkaProducer, receivedSykmelding, fellesformat, kafkaApprecProducer, msgHead
+                validationResult,
+                kafkaProducerReceviedSykmelding,
+                validationResultKafkaProducer,
+                receivedSykmelding,
+                fellesformat,
+                kafkaApprecProducer,
+                msgHead
             )
         }
     }
+
     @Test
     internal fun `Should fail when ReceivedSykmeldingKafkaProducer fails 1`() {
         setUpMocks()
         every { kafkaProducerReceviedSykmelding.send(any()) } returns getFailingFuture()
         assertThrows<ExecutionException> {
             handleStatusInvalid(
-                validationResult, kafkaProducerReceviedSykmelding,
-                validationResultKafkaProducer, receivedSykmelding, fellesformat, kafkaApprecProducer, msgHead
+                validationResult,
+                kafkaProducerReceviedSykmelding,
+                validationResultKafkaProducer,
+                receivedSykmelding,
+                fellesformat,
+                kafkaApprecProducer,
+                msgHead
             )
         }
     }
+
     @Test
     internal fun `Should fail when ReceivedSykmeldingKafkaProducer fails 2`() {
         setUpMocks()
         every { kafkaProducerReceviedSykmelding.send(any()) } returns getFailingFuture()
         assertThrows<ExecutionException> {
             handleStatusInvalid(
-                validationResult, kafkaProducerReceviedSykmelding, validationResultKafkaProducer,
-                receivedSykmelding, fellesformat, kafkaApprecProducer, msgHead
+                validationResult,
+                kafkaProducerReceviedSykmelding,
+                validationResultKafkaProducer,
+                receivedSykmelding,
+                fellesformat,
+                kafkaApprecProducer,
+                msgHead
             )
         }
     }

@@ -14,7 +14,6 @@ import java.io.StringReader
 import java.time.LocalDateTime
 
 fun main() {
-
     val objectMapper: ObjectMapper = ObjectMapper()
         .registerModule(JavaTimeModule())
         .registerKotlinModule()

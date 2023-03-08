@@ -183,7 +183,6 @@ fun sendValidationResult(
     receivedSykmelding: ReceivedSykmelding,
     loggingMeta: LoggingMeta
 ) {
-
     try {
         kafkaproducervalidationResult.send(
             ProducerRecord(behandlingsUtfallTopic, receivedSykmelding.sykmelding.id, validationResult)

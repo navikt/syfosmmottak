@@ -34,6 +34,7 @@ internal class KuhrSarClientTest {
             ?: fail("Unable to find samhandler praksis")
         Assertions.assertEquals(true, 50.0 > match.percentageMatch)
     }
+
     @Test
     internal fun `Foretrekker samhandler praksisen med en matchende her id selv om navnet er likt`() {
         val match = findBestSamhandlerPraksis(
@@ -105,6 +106,7 @@ internal class KuhrSarClientTest {
 
         Assertions.assertEquals("Testlegesenteret - org nr", match?.samhandlerPraksis?.navn)
     }
+
     @Test
     internal fun `Finner en samhandler praksis naar orgNummer matcher`() {
         val samhandlerWithOrg: List<Samhandler> = objectMapper.readValue(

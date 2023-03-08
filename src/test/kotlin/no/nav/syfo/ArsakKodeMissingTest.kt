@@ -22,7 +22,6 @@ internal class ArsakKodeMissingTest {
 
     @Test
     internal fun `Validate arsakskodeIsmissing is false`() {
-
         val healthInformation =
             fellesformatUnmarshaller.unmarshal(StringReader(getFileAsString("src/test/resources/generated_sm.xml"))) as HelseOpplysningerArbeidsuforhet
 
@@ -39,7 +38,6 @@ internal class ArsakKodeMissingTest {
 
     @Test
     internal fun `Validate medisinskearsakskodeIsmissing is true`() {
-
         val aktivitetIkkeMulig = HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig()
 
         Assertions.assertEquals(false, aktivitetIkkeMuligMedisinskeArsakskodeMangler(aktivitetIkkeMulig))
@@ -47,7 +45,6 @@ internal class ArsakKodeMissingTest {
 
     @Test
     internal fun `Validate arbeidsplassenarsakskodeIsmissing is true`() {
-
         val aktivitetIkkeMulig = HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig()
 
         Assertions.assertEquals(false, aktivitetIkkeMuligArbeidsplassenArsakskodeMangler(aktivitetIkkeMulig))
@@ -55,7 +52,6 @@ internal class ArsakKodeMissingTest {
 
     @Test
     internal fun `medisinskeArsakskodeHarUgyldigVerdi er false hvis V=1`() {
-
         val healthInformation =
             fellesformatUnmarshaller.unmarshal(StringReader(getFileAsString("src/test/resources/generated_sm_8.xml"))) as HelseOpplysningerArbeidsuforhet
 
@@ -64,7 +60,6 @@ internal class ArsakKodeMissingTest {
 
     @Test
     internal fun `medisinskeArsakskodeHarUgyldigVerdi er true hvis V=A`() {
-
         val healthInformation =
             fellesformatUnmarshaller.unmarshal(StringReader(getFileAsString("src/test/resources/generated_sm_10.xml"))) as HelseOpplysningerArbeidsuforhet
 

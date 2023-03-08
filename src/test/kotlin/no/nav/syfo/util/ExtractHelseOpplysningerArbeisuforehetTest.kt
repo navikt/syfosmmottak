@@ -9,7 +9,6 @@ internal class ExtractHelseOpplysningerArbeisuforehetTest {
 
     @Test
     internal fun `Testing extracting data from HelseOpplysningerArbeidsuforhet extract tlf from behandler`() {
-
         val stringInput =
             no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
         val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
@@ -22,7 +21,6 @@ internal class ExtractHelseOpplysningerArbeisuforehetTest {
 
     @Test
     internal fun `Testing extracting data from HelseOpplysningerArbeidsuforhet extract tlf from pasient`() {
-
         val stringInput =
             no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
         val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
@@ -35,7 +33,6 @@ internal class ExtractHelseOpplysningerArbeisuforehetTest {
 
     @Test
     internal fun `Testing extracting data from HelseOpplysningerArbeidsuforhet extract hpr`() {
-
         val stringInput =
             no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
         val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat

@@ -98,9 +98,7 @@ class BlockingApplicationRunner(
         inputconsumer: MessageConsumer,
         backoutProducer: MessageProducer
     ) {
-
         wrapExceptions {
-
             loop@ while (applicationState.ready) {
                 val message = inputconsumer.receive(1000)
                 var loggingMeta: LoggingMeta? = null
@@ -160,9 +158,18 @@ class BlockingApplicationRunner(
 
                     val sykmeldingId = UUID.randomUUID().toString()
 
+                    val rulesetVersion = healthInformation.regelSettVersjon
+
                     val duplicateCheck = DuplicateCheck(
-                        sykmeldingId, sha256String, ediLoggId, msgId, mottatDato,
-                        avsenderSystem.navn, avsenderSystem.versjon, legekontorOrgNr
+                        sykmeldingId,
+                        sha256String,
+                        ediLoggId,
+                        msgId,
+                        mottatDato,
+                        avsenderSystem.navn,
+                        avsenderSystem.versjon,
+                        legekontorOrgNr,
+                        rulesetVersion
                     )
 
                     log.info(
@@ -246,9 +253,14 @@ class BlockingApplicationRunner(
 
                     if (duplicationCheckSha256String != null) {
                         val duplicate = Duplicate(
-                            sykmeldingId, ediLoggId, msgId,
-                            duplicationCheckSha256String.sykmeldingId, mottatDato,
-                            avsenderSystem.navn, avsenderSystem.versjon, legekontorOrgNr
+                            sykmeldingId,
+                            ediLoggId,
+                            msgId,
+                            duplicationCheckSha256String.sykmeldingId,
+                            mottatDato,
+                            avsenderSystem.navn,
+                            avsenderSystem.versjon,
+                            legekontorOrgNr
                         )
 
                         handleDuplicateSM2013Content(
@@ -318,7 +330,8 @@ class BlockingApplicationRunner(
                             sikkerlogg.info(
                                 "Sykmeldingen inneholder eldre ident for pasient, benytter nyeste fra PDL" +
                                     "originaltPasientFnr: {}, pasientFnr: {}, {}",
-                                originaltPasientFnr, pasient.fnr,
+                                originaltPasientFnr,
+                                pasient.fnr,
                                 StructuredArguments.fields(loggingMeta)
                             )
                         }
@@ -370,7 +383,7 @@ class BlockingApplicationRunner(
                             legekontorHerId = legekontorHerId,
                             legekontorReshId = legekontorReshId,
                             mottattDato = mottatDato,
-                            rulesetVersion = healthInformation.regelSettVersjon,
+                            rulesetVersion = rulesetVersion,
                             fellesformat = fellesformatText,
                             tssid = samhandlerPraksisTssId ?: "",
                             merknader = null,

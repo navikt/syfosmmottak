@@ -82,6 +82,7 @@ internal class VirusScanServiceTest {
             assertEquals(vedleggContainsVirus, true)
         }
     }
+
     @Test
     fun `Should return false when file size is lower than 300 megabytes`() {
         val base64EncodedContent = base64Encode(getFileContent("src/test/resources/doctor.jpeg"))

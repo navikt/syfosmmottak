@@ -16,7 +16,6 @@ suspend fun handleEmottakSubscription(
     partnerreferanse: String?,
     loggingMeta: LoggingMeta
 ) {
-
     if (samhandlerPraksisMatch?.percentageMatch != null && samhandlerPraksisMatch.percentageMatch == 999.0) {
         log.info(
             "SamhandlerPraksis is found but is FALE or FALO, subscription_emottak is not created," +
