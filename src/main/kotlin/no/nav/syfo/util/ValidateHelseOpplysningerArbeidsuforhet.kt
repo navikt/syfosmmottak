@@ -24,31 +24,39 @@ fun arbeidsplassenArsakskodeHarUgyldigVerdi(healthInformation: HelseOpplysninger
     healthInformation.aktivitet.periode.any { periode -> aktivitetIkkeMuligArbeidsplassenArsakskodeHarUgyldigVerdi(periode.aktivitetIkkeMulig) }
 
 fun aktivitetIkkeMuligMedisinskeArsakskodeMangler(aktivitetIkkeMulig: HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig?): Boolean {
-    return if (aktivitetIkkeMulig == null)
+    return if (aktivitetIkkeMulig == null) {
         false
-    else if (aktivitetIkkeMulig.medisinskeArsaker != null && aktivitetIkkeMulig.medisinskeArsaker.arsakskode == null)
+    } else if (aktivitetIkkeMulig.medisinskeArsaker != null && aktivitetIkkeMulig.medisinskeArsaker.arsakskode == null) {
         true
-    else aktivitetIkkeMulig.medisinskeArsaker != null && aktivitetIkkeMulig.medisinskeArsaker.arsakskode.any { it.v.isNullOrEmpty() }
+    } else {
+        aktivitetIkkeMulig.medisinskeArsaker != null && aktivitetIkkeMulig.medisinskeArsaker.arsakskode.any { it.v.isNullOrEmpty() }
+    }
 }
 
 fun aktivitetIkkeMuligMedisinskeArsakskodeHarUgyldigVerdi(aktivitetIkkeMulig: HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig?): Boolean {
-    return if (aktivitetIkkeMulig == null)
+    return if (aktivitetIkkeMulig == null) {
         false
-    else aktivitetIkkeMulig.medisinskeArsaker != null && aktivitetIkkeMulig.medisinskeArsaker.arsakskode.any { code -> MedisinskArsakType.values().firstOrNull { code.v.trim() == it.codeValue } == null }
+    } else {
+        aktivitetIkkeMulig.medisinskeArsaker != null && aktivitetIkkeMulig.medisinskeArsaker.arsakskode.any { code -> MedisinskArsakType.values().firstOrNull { code.v.trim() == it.codeValue } == null }
+    }
 }
 
 fun aktivitetIkkeMuligArbeidsplassenArsakskodeMangler(aktivitetIkkeMulig: HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig?): Boolean {
-    return if (aktivitetIkkeMulig == null)
+    return if (aktivitetIkkeMulig == null) {
         false
-    else if (aktivitetIkkeMulig.arbeidsplassen != null && aktivitetIkkeMulig.arbeidsplassen.arsakskode == null)
+    } else if (aktivitetIkkeMulig.arbeidsplassen != null && aktivitetIkkeMulig.arbeidsplassen.arsakskode == null) {
         true
-    else aktivitetIkkeMulig.arbeidsplassen != null && aktivitetIkkeMulig.arbeidsplassen.arsakskode.any { it.v.isNullOrEmpty() }
+    } else {
+        aktivitetIkkeMulig.arbeidsplassen != null && aktivitetIkkeMulig.arbeidsplassen.arsakskode.any { it.v.isNullOrEmpty() }
+    }
 }
 
 fun aktivitetIkkeMuligArbeidsplassenArsakskodeHarUgyldigVerdi(aktivitetIkkeMulig: HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig?): Boolean {
-    return if (aktivitetIkkeMulig == null)
+    return if (aktivitetIkkeMulig == null) {
         false
-    else aktivitetIkkeMulig.arbeidsplassen != null && aktivitetIkkeMulig.arbeidsplassen.arsakskode.any { code -> ArbeidsrelatertArsakType.values().firstOrNull { code.v.trim() == it.codeValue } == null }
+    } else {
+        aktivitetIkkeMulig.arbeidsplassen != null && aktivitetIkkeMulig.arbeidsplassen.arsakskode.any { code -> ArbeidsrelatertArsakType.values().firstOrNull { code.v.trim() == it.codeValue } == null }
+    }
 }
 
 fun annenFraversArsakkodeVMangler(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean {

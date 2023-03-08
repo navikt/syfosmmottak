@@ -120,6 +120,7 @@ fun HelseOpplysningerArbeidsuforhet.Prognose.toPrognose() = Prognose(
         )
     }
 )
+
 // TODO: Remove mapNotNull whenever the EPJ systems stops sending garbage data
 fun HelseOpplysningerArbeidsuforhet.UtdypendeOpplysninger.toMap() =
     spmGruppe.map { spmGruppe ->

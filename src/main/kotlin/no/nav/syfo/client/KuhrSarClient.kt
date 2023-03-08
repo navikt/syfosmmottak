@@ -120,7 +120,6 @@ fun findBestSamhandlerPraksisEmottak(
     loggingMeta: LoggingMeta,
     partnerreferanse: String?
 ): SamhandlerPraksisMatch? {
-
     val aktiveSamhandlere = samhandlere.flatMap { it.samh_praksis }
         .filter { praksis -> praksis.samh_praksis_status_kode == "aktiv" }
 

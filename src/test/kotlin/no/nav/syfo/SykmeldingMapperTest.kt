@@ -123,7 +123,6 @@ internal class SykmeldingMapperTest {
 
     @Test
     internal fun `Validate Restriksjonskode is mapped`() {
-
         val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
             arbeidsgiver = HelseOpplysningerArbeidsuforhet.Arbeidsgiver().apply {
                 harArbeidsgiver = CS().apply {

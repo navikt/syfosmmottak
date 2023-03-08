@@ -7,7 +7,6 @@ internal class NorskHelsenettClientTest {
 
     @Test
     internal fun `Finding helsepersonell kategori for LE`() {
-
         val godkjenninger = listOf(
             Godkjenning(
                 helsepersonellkategori = Kode(aktiv = true, oid = 9060, verdi = "LE"),

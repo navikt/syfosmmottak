@@ -19,9 +19,10 @@ fun DatabaseInterface.persistDuplicateCheck(duplicateCheck: DuplicateCheck) {
                 mottatt_date,
                 epj_system,
                 epj_version,
-                org_number 
+                org_number,
+                ruleset_version
                 )
-            values (?, ?, ?, ?, ?, ?, ?, ?);
+            values (?, ?, ?, ?, ?, ?, ?, ?, ?);
             """
         ).use { preparedStatement ->
             preparedStatement.setString(1, duplicateCheck.sykmeldingId)
@@ -32,6 +33,7 @@ fun DatabaseInterface.persistDuplicateCheck(duplicateCheck: DuplicateCheck) {
             preparedStatement.setString(6, duplicateCheck.epjSystem)
             preparedStatement.setString(7, duplicateCheck.epjVersion)
             preparedStatement.setString(8, duplicateCheck.orgNumber)
+            preparedStatement.setString(9, duplicateCheck.rulesetVersion)
             preparedStatement.executeUpdate()
         }
         connection.commit()
@@ -108,5 +110,6 @@ fun ResultSet.toDuplicateCheck(): DuplicateCheck =
         mottattDate = getTimestamp("mottatt_date").toLocalDateTime(),
         epjSystem = getString("epj_system"),
         epjVersion = getString("epj_version"),
-        orgNumber = getString("org_number")
+        orgNumber = getString("org_number"),
+        rulesetVersion = getString("ruleset_version")
     )

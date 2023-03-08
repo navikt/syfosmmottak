@@ -47,8 +47,14 @@ internal class CheckSM2013ContentTest {
 
         val duplicationCheck = DuplicateCheck(
             "1231-232--123gds-2fad",
-            "", ediLoggId, msgId, LocalDateTime.now(),
-            "epj", "1", null
+            "",
+            ediLoggId,
+            msgId,
+            LocalDateTime.now(),
+            "epj",
+            "1",
+            null,
+            null
         )
 
         val checkSM2013Content = checkSM2013Content(
@@ -94,8 +100,14 @@ internal class CheckSM2013ContentTest {
         val duplicationService = mockk<DuplicationService>(relaxed = true)
         val duplicationCheck = DuplicateCheck(
             "1231-232--123gds-2fad",
-            "", ediLoggId, msgId, LocalDateTime.now(),
-            "epj", "1", null
+            "",
+            ediLoggId,
+            msgId,
+            LocalDateTime.now(),
+            "epj",
+            "1",
+            null,
+            null
         )
 
         val checkSM2013Content = checkSM2013Content(
@@ -142,8 +154,14 @@ internal class CheckSM2013ContentTest {
 
         val duplicationCheck = DuplicateCheck(
             "1231-232--123gds-2fad",
-            "", ediLoggId, msgId, LocalDateTime.now(),
-            "epj", "1", null
+            "",
+            ediLoggId,
+            msgId,
+            LocalDateTime.now(),
+            "epj",
+            "1",
+            null,
+            null
         )
 
         val checkSM2013Content = checkSM2013Content(
@@ -277,8 +295,14 @@ internal class CheckSM2013ContentTest {
 
         val duplicationCheck = DuplicateCheck(
             "1231-232--123gds-2fad",
-            "", ediLoggId, msgId, LocalDateTime.now(),
-            "epj", "1", null
+            "",
+            ediLoggId,
+            msgId,
+            LocalDateTime.now(),
+            "epj",
+            "1",
+            null,
+            null
         )
 
         val checkSM2013Content = checkSM2013Content(
@@ -387,8 +411,14 @@ internal class CheckSM2013ContentTest {
         val duplicationService = mockk<DuplicationService>(relaxed = true)
         val duplicationCheck = DuplicateCheck(
             "1231-232--123gds-2fad",
-            "", ediLoggId, msgId, LocalDateTime.now(),
-            "epj", "1", null
+            "",
+            ediLoggId,
+            msgId,
+            LocalDateTime.now(),
+            "epj",
+            "1",
+            null,
+            null
         )
 
         val checkSM2013Content = checkSM2013Content(
@@ -504,8 +534,14 @@ internal class CheckSM2013ContentTest {
         val duplicationService = mockk<DuplicationService>(relaxed = true)
         val duplicationCheck = DuplicateCheck(
             "1231-232--123gds-2fad",
-            "", ediLoggId, msgId, LocalDateTime.now(),
-            "epj", "1", null
+            "",
+            ediLoggId,
+            msgId,
+            LocalDateTime.now(),
+            "epj",
+            "1",
+            null,
+            null
         )
 
         val checkSM2013Content = checkSM2013Content(
@@ -642,8 +678,14 @@ internal class CheckSM2013ContentTest {
         val duplicationService = mockk<DuplicationService>(relaxed = true)
         val duplicationCheck = DuplicateCheck(
             "1231-232--123gds-2fad",
-            "", ediLoggId, msgId, LocalDateTime.now(),
-            "epj", "1", null
+            "",
+            ediLoggId,
+            msgId,
+            LocalDateTime.now(),
+            "epj",
+            "1",
+            null,
+            null
         )
 
         val checkSM2013Content = checkSM2013Content(
@@ -780,8 +822,14 @@ internal class CheckSM2013ContentTest {
         val duplicationService = mockk<DuplicationService>(relaxed = true)
         val duplicationCheck = DuplicateCheck(
             "1231-232--123gds-2fad",
-            "", ediLoggId, msgId, LocalDateTime.now(),
-            "epj", "1", null
+            "",
+            ediLoggId,
+            msgId,
+            LocalDateTime.now(),
+            "epj",
+            "1",
+            null,
+            null
         )
 
         val checkSM2013Content = checkSM2013Content(
@@ -924,8 +972,14 @@ internal class CheckSM2013ContentTest {
         val duplicationService = mockk<DuplicationService>(relaxed = true)
         val duplicationCheck = DuplicateCheck(
             "1231-232--123gds-2fad",
-            "", ediLoggId, msgId, LocalDateTime.now(),
-            "epj", "1", null
+            "",
+            ediLoggId,
+            msgId,
+            LocalDateTime.now(),
+            "epj",
+            "1",
+            null,
+            null
         )
 
         val checkSM2013Content = checkSM2013Content(
@@ -1068,8 +1122,14 @@ internal class CheckSM2013ContentTest {
         val duplicationService = mockk<DuplicationService>(relaxed = true)
         val duplicationCheck = DuplicateCheck(
             "1231-232--123gds-2fad",
-            "", ediLoggId, msgId, LocalDateTime.now(),
-            "epj", "1", null
+            "",
+            ediLoggId,
+            msgId,
+            LocalDateTime.now(),
+            "epj",
+            "1",
+            null,
+            null
         )
 
         val checkSM2013Content = checkSM2013Content(
@@ -1212,8 +1272,14 @@ internal class CheckSM2013ContentTest {
         val duplicationService = mockk<DuplicationService>(relaxed = true)
         val duplicationCheck = DuplicateCheck(
             "1231-232--123gds-2fad",
-            "", ediLoggId, msgId, LocalDateTime.now(),
-            "epj", "1", null
+            "",
+            ediLoggId,
+            msgId,
+            LocalDateTime.now(),
+            "epj",
+            "1",
+            null,
+            null
         )
 
         val checkSM2013Content = checkSM2013Content(
@@ -1355,8 +1421,14 @@ internal class CheckSM2013ContentTest {
         val duplicationService = mockk<DuplicationService>(relaxed = true)
         val duplicationCheck = DuplicateCheck(
             "1231-232--123gds-2fad",
-            "", ediLoggId, msgId, LocalDateTime.now(),
-            "epj", "1", null
+            "",
+            ediLoggId,
+            msgId,
+            LocalDateTime.now(),
+            "epj",
+            "1",
+            null,
+            null
         )
 
         val checkSM2013Content = checkSM2013Content(
@@ -1499,8 +1571,14 @@ internal class CheckSM2013ContentTest {
         val duplicationService = mockk<DuplicationService>(relaxed = true)
         val duplicationCheck = DuplicateCheck(
             "1231-232--123gds-2fad",
-            "", ediLoggId, msgId, LocalDateTime.now(),
-            "epj", "1", null
+            "",
+            ediLoggId,
+            msgId,
+            LocalDateTime.now(),
+            "epj",
+            "1",
+            null,
+            null
         )
 
         val checkSM2013Content = checkSM2013Content(
@@ -1643,8 +1721,14 @@ internal class CheckSM2013ContentTest {
         val duplicationService = mockk<DuplicationService>(relaxed = true)
         val duplicationCheck = DuplicateCheck(
             "1231-232--123gds-2fad",
-            "", ediLoggId, msgId, LocalDateTime.now(),
-            "epj", "1", null
+            "",
+            ediLoggId,
+            msgId,
+            LocalDateTime.now(),
+            "epj",
+            "1",
+            null,
+            null
         )
 
         val checkSM2013Content = checkSM2013Content(
@@ -1787,8 +1871,14 @@ internal class CheckSM2013ContentTest {
         val duplicationService = mockk<DuplicationService>(relaxed = true)
         val duplicationCheck = DuplicateCheck(
             "1231-232--123gds-2fad",
-            "", ediLoggId, msgId, LocalDateTime.now(),
-            "epj", "1", null
+            "",
+            ediLoggId,
+            msgId,
+            LocalDateTime.now(),
+            "epj",
+            "1",
+            null,
+            null
         )
 
         val checkSM2013Content = checkSM2013Content(
@@ -1931,8 +2021,14 @@ internal class CheckSM2013ContentTest {
         val duplicationService = mockk<DuplicationService>(relaxed = true)
         val duplicationCheck = DuplicateCheck(
             "1231-232--123gds-2fad",
-            "", ediLoggId, msgId, LocalDateTime.now(),
-            "epj", "1", null
+            "",
+            ediLoggId,
+            msgId,
+            LocalDateTime.now(),
+            "epj",
+            "1",
+            null,
+            null
         )
 
         coEvery { env.cluster } returns "prod-gcp"
@@ -2085,8 +2181,14 @@ internal class CheckSM2013ContentTest {
         val duplicationService = mockk<DuplicationService>(relaxed = true)
         val duplicationCheck = DuplicateCheck(
             "1231-232--123gds-2fad",
-            "", ediLoggId, msgId, LocalDateTime.now(),
-            "epj", "1", null
+            "",
+            ediLoggId,
+            msgId,
+            LocalDateTime.now(),
+            "epj",
+            "1",
+            null,
+            null
         )
 
         coEvery { env.cluster } returns "localhost"

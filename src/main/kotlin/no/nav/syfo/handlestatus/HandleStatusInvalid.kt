@@ -83,7 +83,9 @@ fun handleDuplicateSM2013Content(
             "identisk med en allerede mottatt sykmelding (duplikat)," +
             " og den kan derfor ikke sendes på nytt. Pasienten har ikke fått beskjed. " +
             "Kontakt din EPJ-leverandør hvis dette ikke stemmer",
-        ediLoggId, msgId, msgHead
+        ediLoggId,
+        msgId,
+        msgHead
     )
 
     sendReceipt(apprec, env.apprecTopic, kafkaproducerApprec, loggingMeta)
@@ -115,7 +117,9 @@ fun handlePatientNotFoundInPDL(
         "Sykmeldingen kan ikke rettes, det må skrives en ny." +
             "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
             "Pasienten er ikke registrert i folkeregisteret",
-        ediLoggId, msgId, msgHead
+        ediLoggId,
+        msgId,
+        msgHead
     )
 
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
@@ -143,7 +147,9 @@ fun handleDoctorNotFoundInPDL(
         "Sykmeldingen kan ikke rettes, det må skrives en ny." +
             "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
             "Behandler er ikke registrert i folkeregisteret",
-        ediLoggId, msgId, msgHead
+        ediLoggId,
+        msgId,
+        msgHead
     )
 
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
@@ -171,7 +177,9 @@ fun handleAktivitetOrPeriodeIsMissing(
         "Sykmeldingen kan ikke rettes, det må skrives en ny." +
             "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
             "Ingen perioder er oppgitt i sykmeldingen.",
-        ediLoggId, msgId, msgHead
+        ediLoggId,
+        msgId,
+        msgHead
     )
 
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
@@ -199,7 +207,9 @@ fun handlePeriodetypeMangler(
         "Sykmeldingen kan ikke rettes, det må skrives en ny." +
             "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
             "Sykmeldingen inneholder en eller flere perioder uten type (100%, gradert, reisetilskudd, avventende eller behandlingsdager).",
-        ediLoggId, msgId, msgHead
+        ediLoggId,
+        msgId,
+        msgHead
     )
 
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
@@ -227,7 +237,9 @@ fun handleBiDiagnoserDiagnosekodeIsMissing(
         "Sykmeldingen kan ikke rettes, det må skrives en ny." +
             "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
             "Diagnosekode på bidiagnose mangler",
-        ediLoggId, msgId, msgHead
+        ediLoggId,
+        msgId,
+        msgHead
     )
 
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
@@ -255,7 +267,9 @@ fun handleBiDiagnoserDiagnosekodeVerkIsMissing(
         "Sykmeldingen kan ikke rettes, det må skrives en ny." +
             "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
             "Diagnosekodeverk på bidiagnose mangler. Kontakt din EPJ-leverandør",
-        ediLoggId, msgId, msgHead
+        ediLoggId,
+        msgId,
+        msgHead
     )
 
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
@@ -283,7 +297,9 @@ fun handleBiDiagnoserDiagnosekodeBeskrivelseMissing(
         "Sykmeldingen kan ikke rettes, det må skrives en ny." +
             "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
             "Diagnosekode beskrivelse på bidiagnose mangler. Kontakt din EPJ-leverandør",
-        ediLoggId, msgId, msgHead
+        ediLoggId,
+        msgId,
+        msgHead
     )
 
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
@@ -311,7 +327,9 @@ fun handleFnrAndDnrAndHprIsmissingFromBehandler(
         "Sykmeldingen kan ikke rettes, det må skrives en ny." +
             "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
             "Fødselsnummer/d-nummer/Hpr-nummer på behandler mangler",
-        ediLoggId, msgId, msgHead
+        ediLoggId,
+        msgId,
+        msgHead
     )
 
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
@@ -339,7 +357,9 @@ fun handleHovedDiagnoseDiagnosekodeMissing(
         "Sykmeldingen kan ikke rettes, det må skrives en ny." +
             "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
             "Diagnosekode for hoveddiagnose mangler i sykmeldingen. Kontakt din EPJ-leverandør",
-        ediLoggId, msgId, msgHead
+        ediLoggId,
+        msgId,
+        msgHead
     )
 
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
@@ -367,7 +387,9 @@ fun handleHovedDiagnoseDiagnoseBeskrivelseMissing(
         "Sykmeldingen kan ikke rettes, det må skrives en ny." +
             "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
             "Diagnosekode beskrivelse for hoveddiagnose mangler i sykmeldingen. Kontakt din EPJ-leverandør",
-        ediLoggId, msgId, msgHead
+        ediLoggId,
+        msgId,
+        msgHead
     )
 
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
@@ -395,7 +417,9 @@ fun handleMedisinskeArsakskodeIsmissing(
         "Sykmeldingen kan ikke rettes, det må skrives en ny." +
             "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
             "MedisinskeArsaker Arsakskode V mangler i sykmeldingen. Kontakt din EPJ-leverandør",
-        ediLoggId, msgId, msgHead
+        ediLoggId,
+        msgId,
+        msgHead
     )
 
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
@@ -423,7 +447,9 @@ fun handleMedisinskeArsakskodeHarUgyldigVerdi(
         "Sykmeldingen kan ikke rettes, det må skrives en ny." +
             "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
             "MedisinskeArsaker Arsakskode V i sykmeldingen har ugyldig verdi. Gyldige verdier er 1,2,3,9. Kontakt din EPJ-leverandør",
-        ediLoggId, msgId, msgHead
+        ediLoggId,
+        msgId,
+        msgHead
     )
 
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
@@ -451,7 +477,9 @@ fun handleArbeidsplassenArsakskodeIsmissing(
         "Sykmeldingen kan ikke rettes, det må skrives en ny." +
             "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
             "ArbeidsplassenArsaker Arsakskode V mangler i sykmeldingen. Kontakt din EPJ-leverandør",
-        ediLoggId, msgId, msgHead
+        ediLoggId,
+        msgId,
+        msgHead
     )
 
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
@@ -479,7 +507,9 @@ fun handleArbeidsplassenArsakskodeHarUgyldigVerdi(
         "Sykmeldingen kan ikke rettes, det må skrives en ny." +
             "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
             "ArbeidsplassenArsaker Arsakskode V i sykmeldingen har ugyldig verdi. Gyldige verdier er 1 og 9. Kontakt din EPJ-leverandør",
-        ediLoggId, msgId, msgHead
+        ediLoggId,
+        msgId,
+        msgHead
     )
 
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
@@ -506,7 +536,9 @@ fun handleTestFnrInProd(
         fellesformat,
         "Testfødselsnummer er kommet inn i produksjon, " +
             "dette er eit alvorlig brudd som aldri burde oppstå. Kontakt din EPJ-leverandør snarest",
-        ediLoggId, msgId, msgHead
+        ediLoggId,
+        msgId,
+        msgHead
     )
 
     sendReceipt(apprec, env.apprecTopic, kafkaproducerApprec, loggingMeta)
@@ -538,7 +570,9 @@ fun handleAnnenFraversArsakkodeVIsmissing(
         "Sykmeldingen kan ikke rettes, det må skrives en ny." +
             "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
             "AnnenFravers Arsakskode V mangler i sykmeldingen. Kontakt din EPJ-leverandør",
-        ediLoggId, msgId, msgHead
+        ediLoggId,
+        msgId,
+        msgHead
     )
 
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
@@ -566,7 +600,9 @@ fun handleVirksomhetssykmeldingOgHprMangler(
         "Sykmeldingen kan ikke rettes, det må skrives en ny." +
             "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
             "HPR-nummer for juridisk behandler mangler",
-        ediLoggId, msgId, msgHead
+        ediLoggId,
+        msgId,
+        msgHead
     )
 
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
@@ -594,11 +630,18 @@ fun handleVirksomhetssykmeldingOgFnrManglerIHPR(
         "Sykmeldingen kan ikke rettes, det må skrives en ny." +
             "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
             "Fødselsnummer for juridisk behandler mangler i HPR",
-        ediLoggId, msgId, msgHead
+        ediLoggId,
+        msgId,
+        msgHead
     )
 
     sendApprec(
-        apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck
+        apprec,
+        env,
+        kafkaproducerApprec,
+        loggingMeta,
+        duplicationService,
+        duplicateCheck
     )
 }
 
@@ -624,7 +667,9 @@ fun handleVedleggContainsVirus(
         "Sykmeldingen kan ikke rettes, det må skrives en ny." +
             "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
             "Eit eller flere vedlegg kan potensielt inneholde virus",
-        ediLoggId, msgId, msgHead
+        ediLoggId,
+        msgId,
+        msgHead
     )
 
     SYKMELDING_AVVIST_VIRUS_VEDLEGG_COUNTER.inc()

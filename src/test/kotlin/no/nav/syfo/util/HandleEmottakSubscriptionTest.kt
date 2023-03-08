@@ -32,8 +32,12 @@ internal class HandleEmottakSubscriptionTest {
 
         runBlocking {
             handleEmottakSubscription(
-                samhandlerPraksisMatch, emottakSubscriptionClient, msgHead,
-                msgId, partnerReferanse, loggingMeta
+                samhandlerPraksisMatch,
+                emottakSubscriptionClient,
+                msgHead,
+                msgId,
+                partnerReferanse,
+                loggingMeta
             )
 
             coVerify(exactly = 1) { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) }
@@ -53,8 +57,12 @@ internal class HandleEmottakSubscriptionTest {
 
         runBlocking {
             handleEmottakSubscription(
-                samhandlerPraksisMatch, emottakSubscriptionClient, msgHead,
-                msgId, partnerReferanse, loggingMeta
+                samhandlerPraksisMatch,
+                emottakSubscriptionClient,
+                msgHead,
+                msgId,
+                partnerReferanse,
+                loggingMeta
             )
 
             coVerify(exactly = 0) { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) }
@@ -79,8 +87,12 @@ internal class HandleEmottakSubscriptionTest {
         coEvery { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) } returns Unit
         runBlocking {
             handleEmottakSubscription(
-                samhandlerPraksisMatch, emottakSubscriptionClient, msgHead,
-                msgId, partnerReferanse, loggingMeta
+                samhandlerPraksisMatch,
+                emottakSubscriptionClient,
+                msgHead,
+                msgId,
+                partnerReferanse,
+                loggingMeta
             )
 
             coVerify(exactly = 0) { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) }
@@ -106,8 +118,12 @@ internal class HandleEmottakSubscriptionTest {
 
         runBlocking {
             handleEmottakSubscription(
-                samhandlerPraksisMatch, emottakSubscriptionClient, msgHead,
-                msgId, partnerReferanse, loggingMeta
+                samhandlerPraksisMatch,
+                emottakSubscriptionClient,
+                msgHead,
+                msgId,
+                partnerReferanse,
+                loggingMeta
             )
 
             coVerify(exactly = 0) { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) }
@@ -133,8 +149,12 @@ internal class HandleEmottakSubscriptionTest {
 
         runBlocking {
             handleEmottakSubscription(
-                samhandlerPraksisMatch, emottakSubscriptionClient, msgHead,
-                msgId, partnerReferanse, loggingMeta
+                samhandlerPraksisMatch,
+                emottakSubscriptionClient,
+                msgHead,
+                msgId,
+                partnerReferanse,
+                loggingMeta
             )
 
             coVerify(exactly = 0) { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) }

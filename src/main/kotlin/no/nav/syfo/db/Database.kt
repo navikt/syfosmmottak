@@ -61,7 +61,8 @@ class Database(private val env: Environment, private val retries: Long = 30, pri
     private fun runFlywayMigrations() = Flyway.configure().run {
         locations("db")
         dataSource(
-            "jdbc:postgresql://${env.dbHost}:${env.dbPort}/${env.dbName}", env.databaseUsername,
+            "jdbc:postgresql://${env.dbHost}:${env.dbPort}/${env.dbName}",
+            env.databaseUsername,
             env.databasePassword
         )
         load().migrate()

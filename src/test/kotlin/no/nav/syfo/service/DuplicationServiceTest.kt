@@ -29,8 +29,15 @@ internal class DuplicationServiceTest {
         val orgNumber = "992312355"
 
         val duplicationCheck = DuplicateCheck(
-            sykmeldingID, sha256HealthInformation, mottakId, "12-33", LocalDateTime.now(),
-            epjSystem, epjVersion, orgNumber
+            sykmeldingID,
+            sha256HealthInformation,
+            mottakId,
+            "12-33",
+            LocalDateTime.now(),
+            epjSystem,
+            epjVersion,
+            orgNumber,
+            null
         )
 
         duplicationService.persistDuplicationCheck(duplicationCheck)
@@ -55,8 +62,15 @@ internal class DuplicationServiceTest {
         val orgNumber = "992312355"
 
         val duplicationCheck = DuplicateCheck(
-            sykmeldingID, sha256HealthInformation, mottakId, "12-33", LocalDateTime.now(),
-            epjSystem, epjVersion, orgNumber
+            sykmeldingID,
+            sha256HealthInformation,
+            mottakId,
+            "12-33",
+            LocalDateTime.now(),
+            epjSystem,
+            epjVersion,
+            orgNumber,
+            null
         )
 
         duplicationService.persistDuplicationCheck(duplicationCheck)
@@ -75,8 +89,15 @@ internal class DuplicationServiceTest {
         val orgNumber = "992312355"
 
         val duplicationCheck = DuplicateCheck(
-            sykmeldingID, sha256HealthInformation, mottakId, "12-33", LocalDateTime.now(),
-            epjSystem, epjVersion, orgNumber
+            sykmeldingID,
+            sha256HealthInformation,
+            mottakId,
+            "12-33",
+            LocalDateTime.now(),
+            epjSystem,
+            epjVersion,
+            orgNumber,
+            null
         )
 
         duplicationService.persistDuplicationCheck(duplicationCheck)
@@ -92,8 +113,15 @@ internal class DuplicationServiceTest {
         val mottakId = "1231-213"
 
         val duplicationCheck = DuplicateCheck(
-            sykmeldingID, sha256HealthInformation, mottakId, "12-33", LocalDateTime.now(),
-            "epj", "1", null
+            sykmeldingID,
+            sha256HealthInformation,
+            mottakId,
+            "12-33",
+            LocalDateTime.now(),
+            "epj",
+            "1",
+            null,
+            null
         )
 
         duplicationService.persistDuplicationCheck(duplicationCheck)
@@ -107,6 +135,7 @@ internal class DuplicationServiceTest {
         assertEquals(duplicationCheck.epjVersion, isDuplicat?.epjVersion)
         assertEquals(duplicationCheck.orgNumber, isDuplicat?.orgNumber)
     }
+
     @Test
     fun `Should persiste duplication in database`() {
         val sykmeldingID = "asd13111-23132-2dddefssddf-12345f"
@@ -119,7 +148,15 @@ internal class DuplicationServiceTest {
         val mottatDato = LocalDateTime.now()
 
         val duplicationCheck = DuplicateCheck(
-            sykmeldingID, sha256HealthInformation, mottakId, msgId, mottatDato, epjSystem, epjVersion, orgNumber
+            sykmeldingID,
+            sha256HealthInformation,
+            mottakId,
+            msgId,
+            mottatDato,
+            epjSystem,
+            epjVersion,
+            orgNumber,
+            null
         )
 
         duplicationService.persistDuplicationCheck(duplicationCheck)
@@ -127,8 +164,14 @@ internal class DuplicationServiceTest {
         val isDuplicat = duplicationService.getDuplicationCheck("1231", mottakId)!!
 
         val duplication = Duplicate(
-            sykmeldingID, mottakId, msgId,
-            isDuplicat.sykmeldingId, mottatDato, epjSystem, epjVersion, orgNumber
+            sykmeldingID,
+            mottakId,
+            msgId,
+            isDuplicat.sykmeldingId,
+            mottatDato,
+            epjSystem,
+            epjVersion,
+            orgNumber
         )
 
         duplicationService.persistDuplication(duplication)

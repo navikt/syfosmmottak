@@ -36,7 +36,7 @@ data class Environment(
     val databasePassword: String = getEnvVar("DB_PASSWORD"),
     val dbHost: String = getEnvVar("DB_HOST"),
     val dbPort: String = getEnvVar("DB_PORT"),
-    val dbName: String = getEnvVar("DB_DATABASE"),
+    val dbName: String = getEnvVar("DB_DATABASE")
 ) : MqConfig
 
 data class VaultServiceUser(

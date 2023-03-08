@@ -55,7 +55,6 @@ internal class HandleStatusOKKtTest {
 
     @Test
     internal fun `test failing producer`() {
-
         val future = CompletableFuture<RecordMetadata>()
 
         future.completeAsync {
