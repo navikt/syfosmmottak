@@ -4,8 +4,6 @@ on:
     branches:
       - '*'
       - '!master'
-env:
-  IMAGE: ghcr.io/${{ github.repository }}/syfosmmottak:${{ github.sha }}
 
 jobs:
   snyk-test:
@@ -55,13 +53,16 @@ jobs:
           ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./gradlew shadowJar -x test
-      - name: Build and publish Docker image
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          docker build --tag ${IMAGE} .
-          docker login ghcr.io -u ${GITHUB_REPOSITORY} -p ${GITHUB_TOKEN}
-          docker push ${IMAGE}
+      - name: docker-build-push
+        uses: nais/docker-build-push@v0
+        id: docker-build-push
+        with:
+          team: teamsykmelding
+          identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
+          project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
+
+        outputs:
+          image: ${{ steps.docker-build-push.outputs.image }}
   deploy-dev:
     name: Deploy to dev
     runs-on: ubuntu-latest
@@ -75,3 +76,4 @@ jobs:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY_TEAMSYKMELDING }}
           CLUSTER: dev-gcp
           RESOURCE: naiserator-dev.yaml
+          VAR: image=${{ needs.test-build-and-push.outputs.image }}
