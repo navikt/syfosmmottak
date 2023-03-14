@@ -79,4 +79,4 @@ jobs:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY_TEAMSYKMELDING }}
           CLUSTER: dev-gcp
           RESOURCE: naiserator-dev.yaml
-          VAR: image=${{ needs.test-build-and-push.outputs.image }}
+          VAR: image=${{ needs.build.outputs.image }}
