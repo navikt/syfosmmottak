@@ -61,8 +61,8 @@ jobs:
           identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
           project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
 
-      outputs:
-        image: ${{ steps.docker-build-push.outputs.image }}
+    outputs:
+      image: ${{ steps.docker-build-push.outputs.image }}
   deploy-dev:
     name: Deploy to dev
     runs-on: ubuntu-latest
