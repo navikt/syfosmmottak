@@ -10,6 +10,7 @@ import no.nav.syfo.handlestatus.handleAktivitetOrPeriodeIsMissing
 import no.nav.syfo.handlestatus.handleAnnenFraversArsakkodeVIsmissing
 import no.nav.syfo.handlestatus.handleArbeidsplassenArsakskodeHarUgyldigVerdi
 import no.nav.syfo.handlestatus.handleArbeidsplassenArsakskodeIsmissing
+import no.nav.syfo.handlestatus.handleBehandletDatoMangler
 import no.nav.syfo.handlestatus.handleBiDiagnoserDiagnosekodeBeskrivelseMissing
 import no.nav.syfo.handlestatus.handleBiDiagnoserDiagnosekodeIsMissing
 import no.nav.syfo.handlestatus.handleBiDiagnoserDiagnosekodeVerkIsMissing
@@ -173,6 +174,13 @@ fun checkSM2013Content(
 
     if (annenFraversArsakkodeVMangler(healthInformation)) {
         handleAnnenFraversArsakkodeVIsmissing(
+            loggingMeta, fellesformat,
+            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicateCheck
+        )
+        return true
+    }
+    if (behandletDatoMangler(healthInformation)) {
+        handleBehandletDatoMangler(
             loggingMeta, fellesformat,
             ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicateCheck
         )

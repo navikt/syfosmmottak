@@ -74,3 +74,7 @@ fun periodetypeIkkeAngitt(aktivitet: HelseOpplysningerArbeidsuforhet.Aktivitet):
             it.behandlingsdager == null && it.isReisetilskudd != true
     }
 }
+
+fun behandletDatoMangler(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean {
+    return healthInformation.kontaktMedPasient.behandletDato == null
+}

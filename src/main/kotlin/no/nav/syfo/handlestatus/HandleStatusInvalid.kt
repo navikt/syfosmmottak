@@ -645,6 +645,43 @@ fun handleVirksomhetssykmeldingOgFnrManglerIHPR(
     )
 }
 
+fun handleBehandletDatoMangler(
+    loggingMeta: LoggingMeta,
+    fellesformat: XMLEIFellesformat,
+    ediLoggId: String,
+    msgId: String,
+    msgHead: XMLMsgHead,
+    env: Environment,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    duplicationService: DuplicationService,
+    duplicateCheck: DuplicateCheck
+) {
+    log.warn(
+        "Sykmeldingen er avvist fordi kontaktMedPasient behandletDato mangler {} {}",
+        fields(loggingMeta),
+        keyValue("avvistAv", env.applicationName)
+    )
+
+    val apprec = fellesformatToAppprec(
+        fellesformat,
+        "Sykmeldingen kan ikke rettes, det må skrives en ny." +
+            "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
+            "BehandletDato felt 12.1 mangler",
+        ediLoggId,
+        msgId,
+        msgHead
+    )
+
+    sendApprec(
+        apprec,
+        env,
+        kafkaproducerApprec,
+        loggingMeta,
+        duplicationService,
+        duplicateCheck
+    )
+}
+
 fun handleVedleggContainsVirus(
     loggingMeta: LoggingMeta,
     fellesformat: XMLEIFellesformat,
