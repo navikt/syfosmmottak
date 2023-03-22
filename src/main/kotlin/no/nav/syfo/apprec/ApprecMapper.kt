@@ -6,7 +6,6 @@ import no.nav.helse.msgHead.XMLIdent
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.helse.msgHead.XMLOrganisation
 import no.nav.syfo.model.ValidationResult
-import no.nav.syfo.util.get
 import no.nav.syfo.util.getLocalDateTime
 import no.nav.helse.msgHead.XMLCV as MsgHeadCV
 
@@ -41,23 +40,28 @@ fun XMLHealthcareProfessional.intoHCPerson(): Helsepersonell =
         navn = if (middleName == null) "$familyName $givenName" else "$familyName $givenName $middleName",
         hovedIdent = ident.first().intoInst(),
         typeId = ident.first().typeId.intoKodeverdier(),
-        tilleggsIdenter = ident.drop(1).map {
-            Ident(it.id, it.typeId.intoKodeverdier())
-        }
+        tilleggsIdenter = getTilleggsIdenter(ident)
     )
 
 fun XMLOrganisation.intoHCP(): Organisation = Organisation(
     hovedIdent = ident.first().intoInst(),
     navn = organisationName,
-    tilleggsIdenter = ident.drop(1).map {
-        Ident(it.id, it.typeId.intoKodeverdier())
-    },
-
+    tilleggsIdenter = getTilleggsIdenter(ident),
     helsepersonell = when (healthcareProfessional != null) {
         true -> healthcareProfessional.intoHCPerson()
         else -> null
     }
 )
+
+fun getTilleggsIdenter(ident: List<XMLIdent>): List<Ident> {
+    return ident.drop(1).mapNotNull {
+        if (it.typeId.v == null) {
+            null
+        } else {
+            Ident(it.id, it.typeId.intoKodeverdier())
+        }
+    }
+}
 
 fun XMLIdent.intoInst(): Ident {
     val ident = this
