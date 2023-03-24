@@ -23,7 +23,7 @@ fun handleStatusOK(
     loggingMeta: LoggingMeta,
     okSykmeldingTopic: String,
     receivedSykmelding: ReceivedSykmelding,
-    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>
+    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
 ) {
     sendReceivedSykmelding(okSykmeldingTopic, receivedSykmelding, kafkaproducerreceivedSykmelding)
 
@@ -37,7 +37,7 @@ fun handleStatusOK(
         msgHead.msgInfo.sender.organisation,
         msgHead.msgInfo.genDate,
         null,
-        fellesformat.get<XMLMottakenhetBlokk>().ebService
+        fellesformat.get<XMLMottakenhetBlokk>().ebService,
     )
     sendReceipt(apprec, apprecTopic, kafkaproducerApprec, loggingMeta)
 }

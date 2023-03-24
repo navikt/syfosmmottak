@@ -42,7 +42,7 @@ fun handleStatusMANUALPROCESSING(
     behandlingsUtfallTopic: String,
     kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
     syfoSmManuellTopic: String,
-    produserOppgaveTopic: String
+    produserOppgaveTopic: String,
 ) {
     val sendToSyfosmManuell = sendToSyfosmManuell(ruleHits = validationResult.ruleHits)
 
@@ -58,7 +58,7 @@ fun handleStatusMANUALPROCESSING(
             msgHead.msgInfo.sender.organisation,
             msgHead.msgInfo.genDate,
             null,
-            fellesformat.get<XMLMottakenhetBlokk>().ebService
+            fellesformat.get<XMLMottakenhetBlokk>().ebService,
         )
         sendManuellTask(receivedSykmelding, validationResult, apprec, syfoSmManuellTopic, kafkaproducerManuellOppgave)
     } else {
@@ -79,7 +79,7 @@ fun handleStatusMANUALPROCESSING(
             msgHead.msgInfo.sender.organisation,
             msgHead.msgInfo.genDate,
             null,
-            fellesformat.get<XMLMottakenhetBlokk>().ebService
+            fellesformat.get<XMLMottakenhetBlokk>().ebService,
         )
         sendReceipt(apprec, apprecTopic, kafkaproducerApprec, loggingMeta)
         log.info("Apprec receipt sent to kafka topic {}, {}", apprecTopic, StructuredArguments.fields(loggingMeta))
@@ -91,15 +91,15 @@ fun opprettOppgave(
     receivedSykmelding: ReceivedSykmelding,
     results: ValidationResult,
     produserOppgaveTopic: String,
-    loggingMeta: LoggingMeta
+    loggingMeta: LoggingMeta,
 ) {
     try {
         kafkaProducer.send(
             ProducerRecord(
                 produserOppgaveTopic,
                 receivedSykmelding.sykmelding.id,
-                opprettOpprettOppgaveKafkaMessage(receivedSykmelding, results, loggingMeta)
-            )
+                opprettOpprettOppgaveKafkaMessage(receivedSykmelding, results, loggingMeta),
+            ),
         ).get()
         log.info("Message sendt to topic: $produserOppgaveTopic {}", StructuredArguments.fields(loggingMeta))
     } catch (ex: Exception) {
@@ -131,7 +131,7 @@ fun opprettOpprettOppgaveKafkaMessage(receivedSykmelding: ReceivedSykmelding, va
         aktivDato = DateTimeFormatter.ISO_DATE.format(LocalDate.now()),
         fristFerdigstillelse = DateTimeFormatter.ISO_DATE.format(finnFristForFerdigstillingAvOppgave(LocalDate.now().plusDays(4))),
         prioritet = PrioritetType.NORM,
-        metadata = mapOf()
+        metadata = mapOf(),
     )
 
     return oppgave
@@ -142,13 +142,13 @@ fun sendManuellTask(
     validationResult: ValidationResult,
     apprec: Apprec,
     syfoSmManuellTopic: String,
-    kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>
+    kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
 ) {
     try {
         val manuellOppgave = ManuellOppgave(
             receivedSykmelding,
             validationResult,
-            apprec
+            apprec,
         )
         kafkaproducerManuellOppgave.send(ProducerRecord(syfoSmManuellTopic, receivedSykmelding.sykmelding.id, manuellOppgave)).get()
     } catch (ex: Exception) {

@@ -37,7 +37,7 @@ class Database(private val env: Environment, private val retries: Long = 30, pri
                         isAutoCommit = false
                         transactionIsolation = "TRANSACTION_REPEATABLE_READ"
                         validate()
-                    }
+                    },
                 )
                 connected = true
             } catch (ex: HikariPool.PoolInitializationException) {
@@ -63,7 +63,7 @@ class Database(private val env: Environment, private val retries: Long = 30, pri
         dataSource(
             "jdbc:postgresql://${env.dbHost}:${env.dbPort}/${env.dbName}",
             env.databaseUsername,
-            env.databasePassword
+            env.databasePassword,
         )
         load().migrate()
     }

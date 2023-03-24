@@ -19,7 +19,7 @@ fun XMLEIFellesformat.toApprec(
     mottakerOrganisation: XMLOrganisation,
     msgGenDate: String,
     validationResult: ValidationResult? = null,
-    ebService: String? = null
+    ebService: String? = null,
 ) = Apprec(
     ediloggid = ediloggid,
     msgId = msgId,
@@ -32,7 +32,7 @@ fun XMLEIFellesformat.toApprec(
     mottakerOrganisasjon = mottakerOrganisation.intoHCP(),
     msgGenDate = msgGenDate,
     validationResult = validationResult,
-    ebService = ebService
+    ebService = ebService,
 )
 
 fun XMLHealthcareProfessional.intoHCPerson(): Helsepersonell =
@@ -40,7 +40,7 @@ fun XMLHealthcareProfessional.intoHCPerson(): Helsepersonell =
         navn = if (middleName == null) "$familyName $givenName" else "$familyName $givenName $middleName",
         hovedIdent = ident.first().intoInst(),
         typeId = ident.first().typeId.intoKodeverdier(),
-        tilleggsIdenter = getTilleggsIdenter(ident)
+        tilleggsIdenter = getTilleggsIdenter(ident),
     )
 
 fun XMLOrganisation.intoHCP(): Organisation = Organisation(
@@ -50,7 +50,7 @@ fun XMLOrganisation.intoHCP(): Organisation = Organisation(
     helsepersonell = when (healthcareProfessional != null) {
         true -> healthcareProfessional.intoHCPerson()
         else -> null
-    }
+    },
 )
 
 fun getTilleggsIdenter(ident: List<XMLIdent>): List<Ident> {
