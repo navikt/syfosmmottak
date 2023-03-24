@@ -38,21 +38,21 @@ internal class PdlPersonServiceTest {
                         "fnrPasient",
                         listOf(
                             PdlIdent("aktorIdPasient", false, "AKTORID"),
-                            PdlIdent("fnrPasient", false, "FOLKEREGISTERIDENT")
+                            PdlIdent("fnrPasient", false, "FOLKEREGISTERIDENT"),
                         ),
-                        "ok"
+                        "ok",
                     ),
                     HentIdenterBolk(
                         "fnrLege",
                         listOf(
                             PdlIdent("aktorIdLege", false, "AKTORID"),
-                            PdlIdent("fnrLege", false, "FOLKEREGISTERIDENT")
+                            PdlIdent("fnrLege", false, "FOLKEREGISTERIDENT"),
                         ),
-                        "ok"
-                    )
-                )
+                        "ok",
+                    ),
+                ),
             ),
-            errors = null
+            errors = null,
         )
 
         runBlocking {
@@ -73,21 +73,21 @@ internal class PdlPersonServiceTest {
                         listOf(
                             PdlIdent("aktorIdPasient", false, "AKTORID"),
                             PdlIdent("gammeltFnrPasient", true, "FOLKEREGISTERIDENT"),
-                            PdlIdent("fnrPasient", false, "FOLKEREGISTERIDENT")
+                            PdlIdent("fnrPasient", false, "FOLKEREGISTERIDENT"),
                         ),
-                        "ok"
+                        "ok",
                     ),
                     HentIdenterBolk(
                         "fnrLege",
                         listOf(
                             PdlIdent("aktorIdLege", false, "AKTORID"),
-                            PdlIdent("fnrLege", false, "FOLKEREGISTERIDENT")
+                            PdlIdent("fnrLege", false, "FOLKEREGISTERIDENT"),
                         ),
-                        "ok"
-                    )
-                )
+                        "ok",
+                    ),
+                ),
             ),
-            errors = null
+            errors = null,
         )
 
         runBlocking {
@@ -108,13 +108,13 @@ internal class PdlPersonServiceTest {
                         "fnrLege",
                         listOf(
                             PdlIdent("aktorIdLege", false, "AKTORID"),
-                            PdlIdent("fnrLege", false, "FOLKEREGISTERIDENT")
+                            PdlIdent("fnrLege", false, "FOLKEREGISTERIDENT"),
                         ),
-                        "ok"
-                    )
-                )
+                        "ok",
+                    ),
+                ),
             ),
-            errors = null
+            errors = null,
         )
         runBlocking {
             val identer = pdlPersonService.getIdenter(listOf("fnrPasient", "fnrLege"), loggingMeta)
@@ -129,7 +129,7 @@ internal class PdlPersonServiceTest {
         coEvery {
             pdlClient.getIdenter(
                 any(),
-                any()
+                any(),
             )
         } returns GetPersonResponse(ResponseData(hentIdenterBolk = emptyList()), errors = null)
 

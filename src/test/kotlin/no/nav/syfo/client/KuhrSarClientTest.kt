@@ -19,7 +19,7 @@ internal class KuhrSarClientTest {
 
     val samhandler: List<Samhandler> = objectMapper.readValue(
         KuhrSarClientTest::class.java.getResourceAsStream("/kuhr_sahr_response.json")!!.readBytes()
-            .toString(Charsets.UTF_8)
+            .toString(Charsets.UTF_8),
     )
 
     @Test
@@ -29,7 +29,7 @@ internal class KuhrSarClientTest {
             "SomeInvalidOrgnumber",
             "SomeInvalidName",
             null,
-            LoggingMeta("", "", "")
+            LoggingMeta("", "", ""),
         )
             ?: fail("Unable to find samhandler praksis")
         Assertions.assertEquals(true, 50.0 > match.percentageMatch)
@@ -42,7 +42,7 @@ internal class KuhrSarClientTest {
             "SomeInvalidOrgnumber",
             "Testlegesenteret",
             "12345",
-            LoggingMeta("", "", "")
+            LoggingMeta("", "", ""),
         )
             ?: fail("Unable to find samhandler praksis")
         Assertions.assertEquals(100.0, match.percentageMatch)
@@ -56,7 +56,7 @@ internal class KuhrSarClientTest {
             "SomeInvalidOrgnumber",
             "Testlegesenteret",
             null,
-            LoggingMeta("", "", "")
+            LoggingMeta("", "", ""),
         )
             ?: fail("Unable to find samhandler praksis")
         Assertions.assertEquals(100.0, match.percentageMatch)
@@ -70,7 +70,7 @@ internal class KuhrSarClientTest {
             "SomeInvalidOrgnumber",
             "Testlegesenteret",
             "23456",
-            LoggingMeta("", "", "")
+            LoggingMeta("", "", ""),
         )
             ?: fail("Unable to find samhandler praksis")
         Assertions.assertEquals(100.0, match.percentageMatch)
@@ -81,7 +81,7 @@ internal class KuhrSarClientTest {
     internal fun `Finner en samhandler som har navn paa praksis naar noen mangler navn`() {
         val samhandlerMedNavn: List<Samhandler> = objectMapper.readValue(
             KuhrSarClientTest::class.java.getResourceAsStream("/kuhr_sahr_response_falo.json")!!.readBytes()
-                .toString(Charsets.UTF_8)
+                .toString(Charsets.UTF_8),
         )
         val match =
             findBestSamhandlerPraksis(
@@ -89,7 +89,7 @@ internal class KuhrSarClientTest {
                 "SomeInvalidOrgnumber",
                 "Testlegesenteret",
                 "23456",
-                LoggingMeta("", "", "")
+                LoggingMeta("", "", ""),
             )
                 ?: fail("Unable to find samhandler praksis")
         Assertions.assertEquals("1000456788", match.samhandlerPraksis.samh_praksis_id)
@@ -99,7 +99,7 @@ internal class KuhrSarClientTest {
     internal fun `Finner en samhandler naar det bare er inaktivte samhandlere`() {
         val samhandlerMedNavn: List<Samhandler> = objectMapper.readValue(
             KuhrSarClientTest::class.java.getResourceAsStream("/kuhr_sahr_response_inaktive.json")!!.readBytes()
-                .toString(Charsets.UTF_8)
+                .toString(Charsets.UTF_8),
         )
 
         val match = samhandlerMatchingPaaOrganisjonsNavn(samhandlerMedNavn, "Testlegesenteret")
@@ -111,7 +111,7 @@ internal class KuhrSarClientTest {
     internal fun `Finner en samhandler praksis naar orgNummer matcher`() {
         val samhandlerWithOrg: List<Samhandler> = objectMapper.readValue(
             KuhrSarClientTest::class.java.getResourceAsStream("/kuhr_sahr_response_org.json")!!.readBytes()
-                .toString(Charsets.UTF_8)
+                .toString(Charsets.UTF_8),
         )
 
         val match = findBestSamhandlerPraksisEmottak(
@@ -119,7 +119,7 @@ internal class KuhrSarClientTest {
             "123344",
             "23456",
             LoggingMeta("", "", ""),
-            "42"
+            "42",
         )
             ?: fail("Unable to find samhandler praksis")
         Assertions.assertEquals(100.0, match.percentageMatch)

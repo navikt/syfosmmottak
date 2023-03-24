@@ -51,13 +51,13 @@ internal class SykmeldingMapperTest {
                             s = "2.16.578.1.12.4.1.1.8116"
                             v = "FNR"
                         }
-                    }
+                    },
                 )
                 adresse = Address().apply {
                 }
                 kontaktInfo.add(
                     TeleCom().apply {
-                    }
+                    },
                 )
             }
             aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
@@ -72,12 +72,12 @@ internal class SykmeldingMapperTest {
                                         CS().apply {
                                             v = medisinskeArsakerArsakskodeV
                                             dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                        }
+                                        },
                                     )
                                     beskriv = "Kan ikkje jobbe"
                                 }
                             }
-                    }
+                    },
                 )
             }
             pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
@@ -113,11 +113,11 @@ internal class SykmeldingMapperTest {
             msgId = "12313-12313-123123as-asda",
             signaturDato = LocalDateTime.now(),
             behandlerFnr = "1213415151",
-            behandlerHprNr = "00415151"
+            behandlerHprNr = "00415151",
         )
         Assertions.assertEquals(
             medisinskeArsakerArsakskodeV.trim(),
-            sykmelding.perioder.first().aktivitetIkkeMulig?.medisinskArsak?.arsak?.first()?.codeValue
+            sykmelding.perioder.first().aktivitetIkkeMulig?.medisinskArsak?.arsak?.first()?.codeValue,
         )
     }
 
@@ -150,13 +150,13 @@ internal class SykmeldingMapperTest {
                             s = "2.16.578.1.12.4.1.1.8116"
                             v = "FNR"
                         }
-                    }
+                    },
                 )
                 adresse = Address().apply {
                 }
                 kontaktInfo.add(
                     TeleCom().apply {
-                    }
+                    },
                 )
             }
             aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
@@ -171,12 +171,12 @@ internal class SykmeldingMapperTest {
                                         CS().apply {
                                             v = "1"
                                             dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                        }
+                                        },
                                     )
                                     beskriv = "Kan ikkje jobbe"
                                 }
                             }
-                    }
+                    },
                 )
             }
             pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
@@ -215,13 +215,13 @@ internal class SykmeldingMapperTest {
                                 restriksjon = DynaSvarType.Restriksjon().apply {
                                     restriksjonskode.add(
                                         CS().apply {
-                                        }
+                                        },
                                     )
                                 }
                                 svarTekst = "-"
-                            }
+                            },
                         )
-                    }
+                    },
                 )
             }
         }
@@ -233,12 +233,12 @@ internal class SykmeldingMapperTest {
             msgId = "12313-12313-123123as-asda",
             signaturDato = LocalDateTime.now(),
             behandlerFnr = "1213415151",
-            behandlerHprNr = "00415151"
+            behandlerHprNr = "00415151",
         )
 
         Assertions.assertEquals(
             emptyList<no.nav.syfo.model.SvarRestriksjon>(),
-            sykmelding.utdypendeOpplysninger.getValue("6.1").getValue("6.1.3").restriksjoner
+            sykmelding.utdypendeOpplysninger.getValue("6.1").getValue("6.1.3").restriksjoner,
         )
     }
 

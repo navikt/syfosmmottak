@@ -19,7 +19,7 @@ class NorskHelsenettClient(
     private val endpointUrl: String,
     private val accessTokenClient: AccessTokenClientV2,
     private val resourceId: String,
-    private val httpClient: HttpClient
+    private val httpClient: HttpClient,
 ) {
 
     suspend fun getByHpr(hprNummer: String?, loggingMeta: LoggingMeta): Behandler? {
@@ -37,7 +37,7 @@ class NorskHelsenettClient(
             InternalServerError -> {
                 log.error(
                     "Syfohelsenettproxy kastet feilmelding for loggingMeta {} ved henting av behandler for hprNummer",
-                    fields(loggingMeta)
+                    fields(loggingMeta),
                 )
                 throw IOException("Syfohelsenettproxy kastet feilmelding og svarte status ${httpResponse.status} ved søk på hprNummer")
             }
@@ -75,7 +75,7 @@ class NorskHelsenettClient(
             InternalServerError -> {
                 log.error(
                     "Syfohelsenettproxy kastet feilmelding for loggingMeta {} ved henting av behandler for fnr",
-                    fields(loggingMeta)
+                    fields(loggingMeta),
                 )
                 throw IOException("Syfohelsenettproxy kastet feilmelding og svarte status ${httpResponse.status} ved søk på fnr")
             }
@@ -105,18 +105,18 @@ data class Behandler(
     val hprNummer: String?,
     val fornavn: String?,
     val mellomnavn: String?,
-    val etternavn: String?
+    val etternavn: String?,
 )
 
 data class Godkjenning(
     val helsepersonellkategori: Kode? = null,
-    val autorisasjon: Kode? = null
+    val autorisasjon: Kode? = null,
 )
 
 data class Kode(
     val aktiv: Boolean,
     val oid: Int,
-    val verdi: String?
+    val verdi: String?,
 )
 
 fun getHelsepersonellKategori(godkjenninger: List<Godkjenning>): String? = when {

@@ -42,9 +42,9 @@ internal class HandleStatusManualProcessingKtTest {
                 ruleName = "SYKMELDING_MED_BEHANDLINGSDAGER",
                 messageForUser = "Sykmelding inneholder behandlingsdager.",
                 messageForSender = "Sykmelding inneholder behandlingsdager.",
-                ruleStatus = Status.MANUAL_PROCESSING
-            )
-        )
+                ruleStatus = Status.MANUAL_PROCESSING,
+            ),
+        ),
     )
     val stringInput = getFileAsString("src/test/resources/sykemelding2013Regelsettversjon2.xml")
     val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
@@ -56,12 +56,12 @@ internal class HandleStatusManualProcessingKtTest {
         every { manuellOppgaveProducer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
         every { validationResultKafkaProducer.send(any()) } returns CompletableFuture<RecordMetadata>().apply {
             complete(
-                mockk()
+                mockk(),
             )
         }
         every { kafkaProducerReceviedSykmelding.send(any()) } returns CompletableFuture<RecordMetadata>().apply {
             complete(
-                mockk()
+                mockk(),
             )
         }
     }
@@ -85,7 +85,7 @@ internal class HandleStatusManualProcessingKtTest {
             kafkaManualTaskProducer,
             kafkaProducerReceviedSykmelding,
             validationResultKafkaProducer,
-            manuellOppgaveProducer
+            manuellOppgaveProducer,
         )
 
         verify(exactly = 0) { kafkaApprecProducer.send(any()) }
@@ -111,7 +111,7 @@ internal class HandleStatusManualProcessingKtTest {
                     kafkaManualTaskProducer,
                     kafkaProducerReceviedSykmelding,
                     validationResultKafkaProducer,
-                    manuellOppgaveProducer
+                    manuellOppgaveProducer,
                 )
             }
         }
@@ -133,7 +133,7 @@ internal class HandleStatusManualProcessingKtTest {
                     kafkaManualTaskProducer,
                     kafkaProducerReceviedSykmelding,
                     validationResultKafkaProducer,
-                    manuellOppgaveProducer
+                    manuellOppgaveProducer,
                 )
             }
         }
@@ -155,7 +155,7 @@ internal class HandleStatusManualProcessingKtTest {
                     kafkaManualTaskProducer,
                     kafkaProducerReceviedSykmelding,
                     validationResultKafkaProducer,
-                    manuellOppgaveProducer
+                    manuellOppgaveProducer,
                 )
             }
         }
@@ -177,7 +177,7 @@ internal class HandleStatusManualProcessingKtTest {
                     kafkaManualTaskProducer,
                     kafkaProducerReceviedSykmelding,
                     validationResultKafkaProducer,
-                    manuellOppgaveProducer
+                    manuellOppgaveProducer,
                 )
             }
         }
@@ -199,7 +199,7 @@ internal class HandleStatusManualProcessingKtTest {
                     kafkaManualTaskProducer,
                     kafkaProducerReceviedSykmelding,
                     validationResultKafkaProducer,
-                    manuellOppgaveProducer
+                    manuellOppgaveProducer,
                 )
             }
         }
@@ -225,7 +225,7 @@ private fun handleManualProcessing(
     kafkaManualTaskProducer: KafkaProducer<String, OpprettOppgaveKafkaMessage>,
     kafkaProducerReceviedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
     validationResultKafkaProducer: KafkaProducer<String, ValidationResult>,
-    manuellOppgaveProducer: KafkaProducer<String, ManuellOppgave>
+    manuellOppgaveProducer: KafkaProducer<String, ManuellOppgave>,
 ) {
     handleStatusMANUALPROCESSING(
         receivedSykmelding,
@@ -244,6 +244,6 @@ private fun handleManualProcessing(
         "",
         manuellOppgaveProducer,
         "",
-        ""
+        "",
     )
 }

@@ -18,7 +18,7 @@ class EmottakSubscriptionClient(
     private val endpointUrl: String,
     private val accessTokenClientV2: AccessTokenClientV2,
     private val resourceId: String,
-    private val httpClient: HttpClient
+    private val httpClient: HttpClient,
 ) {
     // This functionality is only necessary due to sending out dialogMelding and oppfølgingsplan to doctor
     suspend fun startSubscription(
@@ -26,7 +26,7 @@ class EmottakSubscriptionClient(
         msgHead: XMLMsgHead,
         partnerreferanse: String,
         msgId: String,
-        loggingMeta: LoggingMeta
+        loggingMeta: LoggingMeta,
     ) {
         log.info("Update subscription emottak for {}", StructuredArguments.fields(loggingMeta))
         val accessToken = accessTokenClientV2.getAccessTokenV2(resourceId)
@@ -38,8 +38,8 @@ class EmottakSubscriptionClient(
                 StartSubscriptionRequest(
                     tssIdent = samhandlerPraksis.tss_ident,
                     sender = convertSenderToBase64(msgHead.msgInfo.sender),
-                    partnerreferanse = partnerreferanse.toInt()
-                )
+                    partnerreferanse = partnerreferanse.toInt(),
+                ),
             )
         }
     }
@@ -54,7 +54,7 @@ class EmottakSubscriptionClient(
 data class StartSubscriptionRequest(
     val tssIdent: String,
     val sender: ByteArray,
-    val partnerreferanse: Int
+    val partnerreferanse: Int,
 )
 
 fun samhandlerpraksisIsLegevakt(samhandlerPraksis: SamhandlerPraksis): Boolean =

@@ -14,13 +14,13 @@ suspend fun handleEmottakSubscription(
     msgHead: XMLMsgHead,
     msgId: String,
     partnerreferanse: String?,
-    loggingMeta: LoggingMeta
+    loggingMeta: LoggingMeta,
 ) {
     if (samhandlerPraksisMatch?.percentageMatch != null && samhandlerPraksisMatch.percentageMatch == 999.0) {
         log.info(
             "SamhandlerPraksis is found but is FALE or FALO, subscription_emottak is not created," +
                 "partnerreferanse: $partnerreferanse, {}",
-            StructuredArguments.fields(loggingMeta)
+            StructuredArguments.fields(loggingMeta),
         )
         IKKE_OPPDATERT_PARTNERREG.inc()
     } else {
@@ -39,7 +39,7 @@ suspend fun handleEmottakSubscription(
                     msgHead,
                     partnerreferanse,
                     msgId,
-                    loggingMeta
+                    loggingMeta,
                 )
             } else {
                 if (!partnerreferanse.isNullOrEmpty() &&
@@ -47,12 +47,12 @@ suspend fun handleEmottakSubscription(
                 ) {
                     log.info(
                         "PartnerReferanse is empty or blank, subscription_emottak is not created,partnerreferanse: $partnerreferanse {}",
-                        StructuredArguments.fields(loggingMeta)
+                        StructuredArguments.fields(loggingMeta),
                     )
                 } else {
                     log.info(
                         "SamhandlerPraksis is Legevakt, subscription_emottak is not created,partnerreferanse: $partnerreferanse {}",
-                        StructuredArguments.fields(loggingMeta)
+                        StructuredArguments.fields(loggingMeta),
                     )
                 }
                 IKKE_OPPDATERT_PARTNERREG.inc()

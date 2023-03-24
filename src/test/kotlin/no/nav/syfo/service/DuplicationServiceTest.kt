@@ -37,7 +37,7 @@ internal class DuplicationServiceTest {
             epjSystem,
             epjVersion,
             orgNumber,
-            null
+            null,
         )
 
         duplicationService.persistDuplicationCheck(duplicationCheck)
@@ -70,7 +70,7 @@ internal class DuplicationServiceTest {
             epjSystem,
             epjVersion,
             orgNumber,
-            null
+            null,
         )
 
         duplicationService.persistDuplicationCheck(duplicationCheck)
@@ -97,7 +97,7 @@ internal class DuplicationServiceTest {
             epjSystem,
             epjVersion,
             orgNumber,
-            null
+            null,
         )
 
         duplicationService.persistDuplicationCheck(duplicationCheck)
@@ -121,7 +121,7 @@ internal class DuplicationServiceTest {
             "epj",
             "1",
             null,
-            null
+            null,
         )
 
         duplicationService.persistDuplicationCheck(duplicationCheck)
@@ -156,7 +156,7 @@ internal class DuplicationServiceTest {
             epjSystem,
             epjVersion,
             orgNumber,
-            null
+            null,
         )
 
         duplicationService.persistDuplicationCheck(duplicationCheck)
@@ -171,7 +171,7 @@ internal class DuplicationServiceTest {
             mottatDato,
             epjSystem,
             epjVersion,
-            orgNumber
+            orgNumber,
         )
 
         duplicationService.persistDuplication(duplication)

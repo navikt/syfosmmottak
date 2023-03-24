@@ -66,7 +66,7 @@ internal class HandleStatusInvalidKtTest {
                 receivedSykmelding,
                 fellesformat,
                 kafkaApprecProducer,
-                msgHead
+                msgHead,
             )
         }
     }
@@ -83,7 +83,7 @@ internal class HandleStatusInvalidKtTest {
                 receivedSykmelding,
                 fellesformat,
                 kafkaApprecProducer,
-                msgHead
+                msgHead,
             )
         }
     }
@@ -100,7 +100,7 @@ internal class HandleStatusInvalidKtTest {
                 receivedSykmelding,
                 fellesformat,
                 kafkaApprecProducer,
-                msgHead
+                msgHead,
             )
         }
     }
@@ -117,7 +117,7 @@ internal class HandleStatusInvalidKtTest {
                 receivedSykmelding,
                 fellesformat,
                 kafkaApprecProducer,
-                msgHead
+                msgHead,
             )
         }
     }
@@ -137,6 +137,6 @@ private fun handleStatusInvalid(validationResult: ValidationResult, kafkaProduce
         kafkaApprecProducer,
         "",
         "",
-        msgHead
+        msgHead,
     )
 }

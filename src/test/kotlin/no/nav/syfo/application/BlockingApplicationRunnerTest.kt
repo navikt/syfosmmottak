@@ -68,7 +68,7 @@ internal class BlockingApplicationRunnerTest {
         kafkaproducerApprec,
         kafkaproducerManuellOppgave,
         virusScanService,
-        duplicationService
+        duplicationService,
     )
 
     @BeforeEach
@@ -78,15 +78,15 @@ internal class BlockingApplicationRunnerTest {
             "10987654321" to PdlPerson(
                 listOf(
                     PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                    PdlIdent("aktorId", false, "AKTORID")
-                )
+                    PdlIdent("aktorId", false, "AKTORID"),
+                ),
             ),
             "12345678912" to PdlPerson(
                 listOf(
                     PdlIdent("12345678912", false, "FOLKEREGISTERIDENT"),
-                    PdlIdent("aktorId2", false, "AKTORID")
-                )
-            )
+                    PdlIdent("aktorId2", false, "AKTORID"),
+                ),
+            ),
         )
         coEvery { kuhrSarClient.getSamhandler(any(), any()) } returns emptyList()
         coEvery { norskHelsenettClient.getByFnr(any(), any()) } returns Behandler(
@@ -95,7 +95,7 @@ internal class BlockingApplicationRunnerTest {
             "HPR",
             null,
             null,
-            null
+            null,
         )
         coEvery { norskHelsenettClient.getByHpr(any(), any()) } returns Behandler(
             emptyList(),
@@ -103,11 +103,11 @@ internal class BlockingApplicationRunnerTest {
             "HPR",
             null,
             null,
-            null
+            null,
         )
         coEvery { syfoSykemeldingRuleClient.executeRuleValidation(any(), any()) } returns ValidationResult(
             Status.OK,
-            emptyList()
+            emptyList(),
         )
         coEvery { duplicationService.getDuplicationCheck(any(), any()) } returns null
     }
@@ -140,7 +140,7 @@ internal class BlockingApplicationRunnerTest {
             "HPR",
             null,
             null,
-            null
+            null,
         )
 
         runBlocking {
@@ -151,7 +151,7 @@ internal class BlockingApplicationRunnerTest {
                     match {
                         it.value().apprecStatus == ApprecStatus.OK &&
                             it.value().mottakerOrganisasjon.navn == "Helseforetak 1"
-                    }
+                    },
                 )
             }
             coVerify {
@@ -160,7 +160,7 @@ internal class BlockingApplicationRunnerTest {
                         it.value().personNrLege == "12345678912" &&
                             it.value().legeHprNr == "HPR" && it.value().sykmelding.behandler.fnr == "behandlerfnr" &&
                             it.value().legekontorOrgNr == "123456789"
-                    }
+                    },
                 )
             }
         }
@@ -193,7 +193,7 @@ internal class BlockingApplicationRunnerTest {
             } catch (exception: Exception) {
                 Assertions.assertEquals(
                     "Incoming message needs to be a byte message or text message",
-                    exception.message
+                    exception.message,
                 )
             }
         }

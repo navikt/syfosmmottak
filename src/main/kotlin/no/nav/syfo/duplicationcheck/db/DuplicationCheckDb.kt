@@ -23,7 +23,7 @@ fun DatabaseInterface.persistDuplicateCheck(duplicateCheck: DuplicateCheck) {
                 ruleset_version
                 )
             values (?, ?, ?, ?, ?, ?, ?, ?, ?);
-            """
+            """,
         ).use { preparedStatement ->
             preparedStatement.setString(1, duplicateCheck.sykmeldingId)
             preparedStatement.setString(2, duplicateCheck.sha256HealthInformation)
@@ -47,7 +47,7 @@ fun DatabaseInterface.extractDuplicateCheckBySha256HealthInformation(sha256Healt
                  select * 
                  from duplicatecheck 
                  where sha256_health_information=?;
-                """
+                """,
         ).use { preparedStatement ->
             preparedStatement.setString(1, sha256HealthInformation)
             return preparedStatement.executeQuery().toList { toDuplicateCheck() }.firstOrNull()
@@ -62,7 +62,7 @@ fun DatabaseInterface.extractDuplicateCheckByMottakId(mottakId: String): List<Du
                  select * 
                  from duplicatecheck 
                  where mottak_id=?;
-                """
+                """,
         ).use { preparedStatement ->
             preparedStatement.setString(1, mottakId)
             return preparedStatement.executeQuery().toList { toDuplicateCheck() }
@@ -85,7 +85,7 @@ fun DatabaseInterface.persistDuplicateMessage(duplicate: Duplicate) {
                 org_number
                 )
             values (?, ?, ?, ?, ?, ?, ?, ?);
-            """
+            """,
         ).use { preparedStatement ->
             preparedStatement.setString(1, duplicate.sykmeldingId)
             preparedStatement.setString(2, duplicate.mottakId)
@@ -111,5 +111,5 @@ fun ResultSet.toDuplicateCheck(): DuplicateCheck =
         epjSystem = getString("epj_system"),
         epjVersion = getString("epj_version"),
         orgNumber = getString("org_number"),
-        rulesetVersion = getString("ruleset_version")
+        rulesetVersion = getString("ruleset_version"),
     )

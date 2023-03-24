@@ -13,7 +13,7 @@ import java.util.UUID
 
 class BucketUploadService(
     private val bucketName: String,
-    private val storage: Storage
+    private val storage: Storage,
 ) {
     fun lastOppVedlegg(
         vedlegg: List<Vedlegg>,
@@ -22,7 +22,7 @@ class BucketUploadService(
         behandlerInfo: BehandlerInfo,
         pasientAktoerId: String,
         sykmeldingId: String,
-        loggingMeta: LoggingMeta
+        loggingMeta: LoggingMeta,
     ): List<String> {
         log.info("Laster opp ${vedlegg.size} vedlegg", StructuredArguments.fields(loggingMeta))
         return vedlegg.map {
@@ -31,7 +31,7 @@ class BucketUploadService(
                 msgId = msgId,
                 personNrPasient = personNrPasient,
                 behandlerInfo = behandlerInfo,
-                pasientAktoerId = pasientAktoerId
+                pasientAktoerId = pasientAktoerId,
             )
         }.map { create(sykmeldingId, it, loggingMeta) }
     }
@@ -48,14 +48,14 @@ class BucketUploadService(
         msgId: String,
         personNrPasient: String,
         behandlerInfo: BehandlerInfo,
-        pasientAktoerId: String
+        pasientAktoerId: String,
     ): VedleggMessage {
         return VedleggMessage(
             vedlegg = vedlegg,
             msgId = msgId,
             pasientFnr = personNrPasient,
             behandler = behandlerInfo,
-            pasientAktorId = pasientAktoerId
+            pasientAktorId = pasientAktoerId,
         )
     }
 }

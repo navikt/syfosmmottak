@@ -65,14 +65,14 @@ class HttpClients(environment: Environment) {
         environment.aadAccessTokenV2Url,
         environment.clientIdV2,
         environment.clientSecretV2,
-        httpClient
+        httpClient,
     )
 
     val syfoSykemeldingRuleClient = SyfoSykemeldingRuleClient(
         environment.syfosmreglerApiUrl,
         accessTokenClientV2,
         environment.syfosmreglerApiScope,
-        httpClient
+        httpClient,
     )
 
     val sarClient = SarClient(environment.smgcpProxyUrl, accessTokenClientV2, environment.smgcpProxyScope, httpClient)

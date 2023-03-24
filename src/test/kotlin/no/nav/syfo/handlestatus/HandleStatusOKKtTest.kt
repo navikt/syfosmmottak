@@ -47,7 +47,7 @@ internal class HandleStatusOKKtTest {
             "topic",
             kafkaApprecProducer,
             LoggingMeta("1", "", ""),
-            "topic", receivedSykmelding, kafkaProducerReceviedSykmelding
+            "topic", receivedSykmelding, kafkaProducerReceviedSykmelding,
         )
         verify(exactly = 1) { kafkaProducerReceviedSykmelding.send(any()) }
         verify(exactly = 1) { kafkaApprecProducer.send(any()) }
@@ -71,7 +71,7 @@ internal class HandleStatusOKKtTest {
                 "topic",
                 kafkaApprecProducer,
                 LoggingMeta("1", "", ""),
-                "topic", receivedSykmelding, kafkaProducerReceviedSykmelding
+                "topic", receivedSykmelding, kafkaProducerReceviedSykmelding,
             )
         }
         Assertions.assertInstanceOf(RuntimeException::class.java, exception.cause)
@@ -89,7 +89,7 @@ internal class HandleStatusOKKtTest {
 
         every { kafkaProducerReceviedSykmelding.send(any()) } returns CompletableFuture<RecordMetadata>().apply {
             complete(
-                mockk()
+                mockk(),
             )
         }
         every { kafkaApprecProducer.send(any()) } returns ff
@@ -102,7 +102,7 @@ internal class HandleStatusOKKtTest {
                 "topic",
                 kafkaApprecProducer,
                 LoggingMeta("1", "", ""),
-                "topic", receivedSykmelding, kafkaProducerReceviedSykmelding
+                "topic", receivedSykmelding, kafkaProducerReceviedSykmelding,
             )
         }
         Assertions.assertInstanceOf(RuntimeException::class.java, exception.cause)

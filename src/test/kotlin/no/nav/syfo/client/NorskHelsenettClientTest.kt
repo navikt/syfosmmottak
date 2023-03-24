@@ -10,8 +10,8 @@ internal class NorskHelsenettClientTest {
         val godkjenninger = listOf(
             Godkjenning(
                 helsepersonellkategori = Kode(aktiv = true, oid = 9060, verdi = "LE"),
-                autorisasjon = Kode(aktiv = true, oid = 7704, verdi = "1")
-            )
+                autorisasjon = Kode(aktiv = true, oid = 7704, verdi = "1"),
+            ),
         )
 
         val getHelsepersonellKategori = getHelsepersonellKategori(godkjenninger)

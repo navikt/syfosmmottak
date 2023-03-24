@@ -46,7 +46,7 @@ fun main() {
         merknader = null,
         partnerreferanse = "16524",
         vedlegg = null,
-        utenlandskSykmelding = null
+        utenlandskSykmelding = null,
     )
 
     println(objectMapper.writeValueAsString(receivedSykmelding))

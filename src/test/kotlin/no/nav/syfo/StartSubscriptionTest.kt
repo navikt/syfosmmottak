@@ -19,13 +19,13 @@ internal class StartSubscriptionTest {
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
     val samhandlerleva: List<Samhandler> = objectMapper.readValue(
-        KuhrSarClientTest::class.java.getResourceAsStream("/kuhr_sahr_leva.json")!!.readBytes().toString(Charsets.UTF_8)
+        KuhrSarClientTest::class.java.getResourceAsStream("/kuhr_sahr_leva.json")!!.readBytes().toString(Charsets.UTF_8),
     )
     val samhandlerleko: List<Samhandler> = objectMapper.readValue(
-        KuhrSarClientTest::class.java.getResourceAsStream("/kuhr_sahr_leko.json")!!.readBytes().toString(Charsets.UTF_8)
+        KuhrSarClientTest::class.java.getResourceAsStream("/kuhr_sahr_leko.json")!!.readBytes().toString(Charsets.UTF_8),
     )
     val samhandlerfale: List<Samhandler> = objectMapper.readValue(
-        KuhrSarClientTest::class.java.getResourceAsStream("/kuhr_sahr_fale.json")!!.readBytes().toString(Charsets.UTF_8)
+        KuhrSarClientTest::class.java.getResourceAsStream("/kuhr_sahr_fale.json")!!.readBytes().toString(Charsets.UTF_8),
     )
 
     @Test

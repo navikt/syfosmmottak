@@ -11,5 +11,5 @@ data class DuplicateCheck(
     val epjSystem: String,
     val epjVersion: String,
     val orgNumber: String?,
-    val rulesetVersion: String?
+    val rulesetVersion: String?,
 )

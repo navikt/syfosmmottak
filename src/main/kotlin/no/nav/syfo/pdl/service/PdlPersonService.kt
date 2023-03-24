@@ -10,7 +10,7 @@ import no.nav.syfo.util.LoggingMeta
 class PdlPersonService(
     private val pdlClient: PdlClient,
     private val accessTokenClientV2: AccessTokenClientV2,
-    private val pdlScope: String
+    private val pdlScope: String,
 ) {
 
     suspend fun getIdenter(identer: List<String>, loggingMeta: LoggingMeta): Map<String, PdlPerson?> {

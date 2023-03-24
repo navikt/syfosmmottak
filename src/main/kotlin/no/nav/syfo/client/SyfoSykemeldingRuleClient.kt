@@ -20,7 +20,7 @@ class SyfoSykemeldingRuleClient(
     private val endpointUrl: String,
     private val accessTokenClientV2: AccessTokenClientV2,
     private val resourceId: String,
-    private val client: HttpClient
+    private val client: HttpClient,
 ) {
     suspend fun executeRuleValidation(payload: ReceivedSykmelding, loggingMeta: LoggingMeta): ValidationResult {
         val accessToken = accessTokenClientV2.getAccessTokenV2(resourceId)

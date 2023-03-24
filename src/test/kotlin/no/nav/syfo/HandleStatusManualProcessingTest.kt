@@ -23,9 +23,9 @@ internal class HandleStatusManualProcessingTest {
                     ruleName = "TILBAKEDATERT_MER_ENN_8_DAGER_FORSTE_SYKMELDING_MED_BEGRUNNELSE",
                     messageForUser = "Første sykmelding er tilbakedatert og årsak for tilbakedatering er angitt.",
                     messageForSender = "Første sykmelding er tilbakedatert og felt 11.2 (begrunnelseIkkeKontakt) er utfylt",
-                    ruleStatus = Status.MANUAL_PROCESSING
-                )
-            )
+                    ruleStatus = Status.MANUAL_PROCESSING,
+                ),
+            ),
         )
 
         Assertions.assertEquals(true, sendToSyfosmManuell(validationResult.ruleHits))
@@ -40,9 +40,9 @@ internal class HandleStatusManualProcessingTest {
                     ruleName = "SYKMELDING_MED_BEHANDLINGSDAGER",
                     messageForUser = "Sykmelding inneholder behandlingsdager.",
                     messageForSender = "Sykmelding inneholder behandlingsdager.",
-                    ruleStatus = Status.MANUAL_PROCESSING
-                )
-            )
+                    ruleStatus = Status.MANUAL_PROCESSING,
+                ),
+            ),
         )
 
         Assertions.assertEquals(false, sendToSyfosmManuell(validationResult.ruleHits))
@@ -58,9 +58,9 @@ internal class HandleStatusManualProcessingTest {
                     "SYKMELDING_MED_BEHANDLINGSDAGER",
                     "Sykmelding inneholder behandlingsdager.",
                     "Sykmelding inneholder behandlingsdager.",
-                    Status.MANUAL_PROCESSING
-                )
-            )
+                    Status.MANUAL_PROCESSING,
+                ),
+            ),
         )
 
         val oppgave = opprettOpprettOppgaveKafkaMessage(receivedSykmelding, validationResults, loggingMeta)

@@ -67,7 +67,7 @@ fun main() {
     val applicationState = ApplicationState()
     val applicationEngine = createApplicationEngine(
         env,
-        applicationState
+        applicationState,
     )
 
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
@@ -91,7 +91,7 @@ fun main() {
         httpClients.syfoSykemeldingRuleClient, httpClients.sarClient, httpClients.pdlPersonService,
         serviceUser, kafkaClients.manualValidationKafkaProducer,
         kafkaClients.kafkaProducerApprec, kafkaClients.kafkaproducerManuellOppgave,
-        httpClients.norskHelsenettClient, bucketUploadService, virusScanService, duplicationService
+        httpClients.norskHelsenettClient, bucketUploadService, virusScanService, duplicationService,
     )
 
     applicationServer.start()
@@ -127,7 +127,7 @@ fun launchListeners(
     norskHelsenettClient: NorskHelsenettClient,
     bucketUploadService: BucketUploadService,
     virusScanService: VirusScanService,
-    duplicationService: DuplicationService
+    duplicationService: DuplicationService,
 ) {
     createListener(applicationState) {
         connectionFactory(env).createConnection(serviceUser.serviceuserUsername, serviceUser.serviceuserPassword).use { connection ->
@@ -152,10 +152,10 @@ fun launchListeners(
                 kafkaproducerApprec,
                 kafkaproducerManuellOppgave,
                 virusScanService,
-                duplicationService
+                duplicationService,
             ).run(
                 inputconsumer,
-                backoutProducer
+                backoutProducer,
             )
         }
     }
@@ -165,7 +165,7 @@ fun sendReceipt(
     apprec: Apprec,
     apprecTopic: String,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
-    loggingMeta: LoggingMeta
+    loggingMeta: LoggingMeta,
 ) {
     try {
         kafkaproducerApprec.send(ProducerRecord(apprecTopic, apprec)).get()
@@ -181,11 +181,11 @@ fun sendValidationResult(
     kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
     behandlingsUtfallTopic: String,
     receivedSykmelding: ReceivedSykmelding,
-    loggingMeta: LoggingMeta
+    loggingMeta: LoggingMeta,
 ) {
     try {
         kafkaproducervalidationResult.send(
-            ProducerRecord(behandlingsUtfallTopic, receivedSykmelding.sykmelding.id, validationResult)
+            ProducerRecord(behandlingsUtfallTopic, receivedSykmelding.sykmelding.id, validationResult),
         ).get()
         log.info("Validation results send to kafka {}, {}", behandlingsUtfallTopic, fields(loggingMeta))
     } catch (ex: Exception) {
@@ -197,11 +197,11 @@ fun sendValidationResult(
 fun sendReceivedSykmelding(
     receivedSykmeldingTopic: String,
     receivedSykmelding: ReceivedSykmelding,
-    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>
+    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
 ) {
     try {
         kafkaproducerreceivedSykmelding.send(
-            ProducerRecord(receivedSykmeldingTopic, receivedSykmelding.sykmelding.id, receivedSykmelding)
+            ProducerRecord(receivedSykmeldingTopic, receivedSykmelding.sykmelding.id, receivedSykmelding),
         ).get()
         log.info("Sykmelding sendt to kafka topic {} sykmelding id {}", receivedSykmeldingTopic, receivedSykmelding.sykmelding.id)
     } catch (ex: Exception) {

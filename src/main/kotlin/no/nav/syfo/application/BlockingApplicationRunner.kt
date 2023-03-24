@@ -91,12 +91,12 @@ class BlockingApplicationRunner(
     private val kafkaproducerApprec: KafkaProducer<String, Apprec>,
     private val kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
     private val virusScanService: VirusScanService,
-    private val duplicationService: DuplicationService
+    private val duplicationService: DuplicationService,
 ) {
 
     suspend fun run(
         inputconsumer: MessageConsumer,
-        backoutProducer: MessageProducer
+        backoutProducer: MessageProducer,
     ) {
         wrapExceptions {
             loop@ while (applicationState.ready) {
@@ -133,7 +133,7 @@ class BlockingApplicationRunner(
                     loggingMeta = LoggingMeta(
                         mottakId = receiverBlock.ediLoggId,
                         orgNr = legekontorOrgNr,
-                        msgId = msgHead.msgInfo.msgId
+                        msgId = msgHead.msgInfo.msgId,
                     )
                     log.info("Received message, {}", StructuredArguments.fields(loggingMeta))
 
@@ -169,24 +169,24 @@ class BlockingApplicationRunner(
                         avsenderSystem.navn,
                         avsenderSystem.versjon,
                         legekontorOrgNr,
-                        rulesetVersion
+                        rulesetVersion,
                     )
 
                     log.info(
                         "Extracted data, ready to make sync calls to get more data, {}",
-                        StructuredArguments.fields(loggingMeta)
+                        StructuredArguments.fields(loggingMeta),
                     )
 
                     sikkerlogg.info(
                         "fellesformat: $fellesformatText",
-                        StructuredArguments.fields(loggingMeta)
+                        StructuredArguments.fields(loggingMeta),
                     )
 
                     if (legekontorOrgNr == null) {
                         SYKMELDING_MISSNG_ORG_NUMBER_COUNTER.inc()
                         log.info(
                             "Missing org number, from epj ${avsenderSystem.navn} {}",
-                            StructuredArguments.fields(loggingMeta)
+                            StructuredArguments.fields(loggingMeta),
                         )
                     }
 
@@ -198,7 +198,7 @@ class BlockingApplicationRunner(
                             handleVirksomhetssykmeldingOgHprMangler(
                                 loggingMeta, fellesformat,
                                 ediLoggId, msgId, msgHead, env, kafkaproducerApprec,
-                                duplicationService, duplicateCheck
+                                duplicationService, duplicateCheck,
                             )
                             continue@loop
                         }
@@ -210,7 +210,7 @@ class BlockingApplicationRunner(
                             handleVirksomhetssykmeldingOgFnrManglerIHPR(
                                 loggingMeta, fellesformat,
                                 ediLoggId, msgId, msgHead, env, kafkaproducerApprec,
-                                duplicationService, duplicateCheck
+                                duplicationService, duplicateCheck,
                             )
                             continue@loop
                         } else {
@@ -229,7 +229,7 @@ class BlockingApplicationRunner(
                         legekontorOrgNr,
                         legekontorHerId,
                         loggingMeta,
-                        partnerReferanse
+                        partnerReferanse,
                     )
 
                     val samhandlerPraksisTssId = findBestSamhandlerPraksis(
@@ -237,7 +237,7 @@ class BlockingApplicationRunner(
                         legekontorOrgNr,
                         legekontorOrgName,
                         legekontorHerId,
-                        loggingMeta
+                        loggingMeta,
                     )?.samhandlerPraksis?.tss_ident
 
                     handleEmottakSubscription(
@@ -246,7 +246,7 @@ class BlockingApplicationRunner(
                         msgHead,
                         msgId,
                         partnerReferanse,
-                        loggingMeta
+                        loggingMeta,
                     )
 
                     val duplicationCheckSha256String = duplicationService.getDuplicationCheck(sha256String, ediLoggId)
@@ -260,12 +260,12 @@ class BlockingApplicationRunner(
                             mottatDato,
                             avsenderSystem.navn,
                             avsenderSystem.versjon,
-                            legekontorOrgNr
+                            legekontorOrgNr,
                         )
 
                         handleDuplicateSM2013Content(
                             duplicationCheckSha256String.mottakId, loggingMeta, fellesformat,
-                            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicate
+                            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicate,
                         )
                         continue@loop
                     } else {
@@ -275,7 +275,7 @@ class BlockingApplicationRunner(
                         if (checkSM2013Content(
                                 pasient, behandler, healthInformation, originaltPasientFnr, loggingMeta, fellesformat,
                                 ediLoggId, msgId, msgHead, env, kafkaproducerApprec,
-                                duplicationService, duplicateCheck
+                                duplicationService, duplicateCheck,
                             )
                         ) {
                             continue@loop
@@ -293,7 +293,7 @@ class BlockingApplicationRunner(
                                     padHpr(extractHprBehandler(healthInformation)?.trim()),
                                     padHpr(extractHpr(fellesformat)?.id?.trim()),
                                     padHpr(extractFnrDnrFraBehandler(healthInformation)?.trim()),
-                                    loggingMeta
+                                    loggingMeta,
                                 )
                             } else {
                                 null
@@ -303,14 +303,14 @@ class BlockingApplicationRunner(
                             ?: getBehandlerFnr(
                                 avsenderHpr = padHpr(extractHpr(fellesformat)?.id?.trim()),
                                 signerendeBehandler = signerendeBehandler,
-                                behandlenedeBehandler = behandlenedeBehandler
+                                behandlenedeBehandler = behandlenedeBehandler,
                             ) ?: signaturFnr
 
                         val behandlenedeBehandlerhprNummer = padHpr(extractHpr(fellesformat)?.id?.trim())
                             ?: getBehandlerHprNr(
                                 behandlerHpr = padHpr(extractHprBehandler(healthInformation)?.trim()),
                                 avsenderHpr = padHpr(extractHpr(fellesformat)?.id?.trim()),
-                                behandlenedeBehandler = behandlenedeBehandler
+                                behandlenedeBehandler = behandlenedeBehandler,
                             )
 
                         val sykmelding = healthInformation.toSykmelding(
@@ -320,19 +320,19 @@ class BlockingApplicationRunner(
                             msgId = msgId,
                             signaturDato = getLocalDateTime(msgHead.msgInfo.genDate),
                             behandlerFnr = behandlenedeBehandlerFnr,
-                            behandlerHprNr = behandlenedeBehandlerhprNummer
+                            behandlerHprNr = behandlenedeBehandlerhprNummer,
                         )
                         if (originaltPasientFnr != pasient.fnr) {
                             log.info(
                                 "Sykmeldingen inneholder eldre ident for pasient, benytter nyeste fra PDL {}",
-                                StructuredArguments.fields(loggingMeta)
+                                StructuredArguments.fields(loggingMeta),
                             )
                             sikkerlogg.info(
                                 "Sykmeldingen inneholder eldre ident for pasient, benytter nyeste fra PDL" +
                                     "originaltPasientFnr: {}, pasientFnr: {}, {}",
                                 originaltPasientFnr,
                                 pasient.fnr,
-                                StructuredArguments.fields(loggingMeta)
+                                StructuredArguments.fields(loggingMeta),
                             )
                         }
 
@@ -341,7 +341,7 @@ class BlockingApplicationRunner(
                                 handleVedleggContainsVirus(
                                     loggingMeta, fellesformat, ediLoggId,
                                     msgId, msgHead, env, kafkaproducerApprec,
-                                    duplicationService, duplicateCheck
+                                    duplicationService, duplicateCheck,
                                 )
                                 continue@loop
                             }
@@ -355,11 +355,11 @@ class BlockingApplicationRunner(
                                 behandlerInfo = BehandlerInfo(
                                     fornavn = sykmelding.behandler.fornavn,
                                     etternavn = sykmelding.behandler.etternavn,
-                                    fnr = signaturFnr
+                                    fnr = signaturFnr,
                                 ),
                                 pasientAktoerId = sykmelding.pasientAktoerId,
                                 sykmeldingId = sykmelding.id,
-                                loggingMeta = loggingMeta
+                                loggingMeta = loggingMeta,
                             )
                         } else {
                             emptyList()
@@ -375,7 +375,7 @@ class BlockingApplicationRunner(
                             legeHprNr = signerendeBehandler?.hprNummer,
                             legeHelsepersonellkategori = signerendeBehandler?.godkjenninger?.let {
                                 getHelsepersonellKategori(
-                                    it
+                                    it,
                                 )
                             },
                             legekontorOrgNr = legekontorOrgNr,
@@ -389,7 +389,7 @@ class BlockingApplicationRunner(
                             merknader = null,
                             partnerreferanse = partnerReferanse,
                             vedlegg = vedleggListe,
-                            utenlandskSykmelding = null
+                            utenlandskSykmelding = null,
                         )
 
                         if (behandlenedeBehandlerFnr != signaturFnr) {
@@ -401,7 +401,7 @@ class BlockingApplicationRunner(
                         log.info(
                             "Validating against rules, sykmeldingId {},  {}",
                             StructuredArguments.keyValue("sykmeldingId", sykmelding.id),
-                            StructuredArguments.fields(loggingMeta)
+                            StructuredArguments.fields(loggingMeta),
                         )
                         val validationResult =
                             syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding, loggingMeta)
@@ -417,7 +417,7 @@ class BlockingApplicationRunner(
                                 loggingMeta = loggingMeta,
                                 okSykmeldingTopic = env.okSykmeldingTopic,
                                 receivedSykmelding = receivedSykmelding,
-                                kafkaproducerreceivedSykmelding = kafkaproducerreceivedSykmelding
+                                kafkaproducerreceivedSykmelding = kafkaproducerreceivedSykmelding,
                             )
 
                             Status.MANUAL_PROCESSING -> handleStatusMANUALPROCESSING(
@@ -437,7 +437,7 @@ class BlockingApplicationRunner(
                                 behandlingsUtfallTopic = env.behandlingsUtfallTopic,
                                 kafkaproducerManuellOppgave = kafkaproducerManuellOppgave,
                                 syfoSmManuellTopic = env.syfoSmManuellTopic,
-                                produserOppgaveTopic = env.produserOppgaveTopic
+                                produserOppgaveTopic = env.produserOppgaveTopic,
                             )
 
                             Status.INVALID -> handleStatusINVALID(
@@ -453,7 +453,7 @@ class BlockingApplicationRunner(
                                 kafkaproducerApprec = kafkaproducerApprec,
                                 ediLoggId = ediLoggId,
                                 msgId = msgId,
-                                msgHead = msgHead
+                                msgHead = msgHead,
                             )
                         }
 
@@ -465,20 +465,20 @@ class BlockingApplicationRunner(
                             StructuredArguments.keyValue("status", validationResult.status),
                             StructuredArguments.keyValue(
                                 "ruleHits",
-                                validationResult.ruleHits.joinToString(", ", "(", ")") { it.ruleName }
+                                validationResult.ruleHits.joinToString(", ", "(", ")") { it.ruleName },
                             ),
                             StructuredArguments.keyValue("latency", currentRequestLatency),
-                            StructuredArguments.fields(loggingMeta)
+                            StructuredArguments.fields(loggingMeta),
                         )
                     }
                 } catch (e: Exception) {
                     log.error(
                         "Exception caught while handling message, sending to backout ${
-                        StructuredArguments.fields(
-                            loggingMeta
-                        )
+                            StructuredArguments.fields(
+                                loggingMeta,
+                            )
                         }",
-                        e
+                        e,
                     )
                     backoutProducer.send(message)
                 } finally {
@@ -492,7 +492,7 @@ class BlockingApplicationRunner(
         behandlerHpr: String?,
         organisationBehandlerHpr: String?,
         behandlerfnr: String?,
-        loggingMeta: LoggingMeta
+        loggingMeta: LoggingMeta,
     ): Behandler? {
         return if (behandlerHpr != null) {
             norskHelsenettClient.getByHpr(behandlerHpr, loggingMeta)
@@ -511,7 +511,7 @@ class BlockingApplicationRunner(
     private fun getBehandlerFnr(
         avsenderHpr: String?,
         signerendeBehandler: Behandler?,
-        behandlenedeBehandler: Behandler?
+        behandlenedeBehandler: Behandler?,
     ): String? {
         return when (avsenderHpr) {
             null -> {
@@ -531,7 +531,7 @@ class BlockingApplicationRunner(
     private fun getBehandlerHprNr(
         behandlerHpr: String?,
         avsenderHpr: String?,
-        behandlenedeBehandler: Behandler?
+        behandlenedeBehandler: Behandler?,
     ): String? {
         if (behandlerHpr != null) {
             return behandlerHpr

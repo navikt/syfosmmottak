@@ -37,7 +37,7 @@ internal class HandleEmottakSubscriptionTest {
                 msgHead,
                 msgId,
                 partnerReferanse,
-                loggingMeta
+                loggingMeta,
             )
 
             coVerify(exactly = 1) { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) }
@@ -62,7 +62,7 @@ internal class HandleEmottakSubscriptionTest {
                 msgHead,
                 msgId,
                 partnerReferanse,
-                loggingMeta
+                loggingMeta,
             )
 
             coVerify(exactly = 0) { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) }
@@ -92,7 +92,7 @@ internal class HandleEmottakSubscriptionTest {
                 msgHead,
                 msgId,
                 partnerReferanse,
-                loggingMeta
+                loggingMeta,
             )
 
             coVerify(exactly = 0) { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) }
@@ -123,7 +123,7 @@ internal class HandleEmottakSubscriptionTest {
                 msgHead,
                 msgId,
                 partnerReferanse,
-                loggingMeta
+                loggingMeta,
             )
 
             coVerify(exactly = 0) { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) }
@@ -154,7 +154,7 @@ internal class HandleEmottakSubscriptionTest {
                 msgHead,
                 msgId,
                 partnerReferanse,
-                loggingMeta
+                loggingMeta,
             )
 
             coVerify(exactly = 0) { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) }

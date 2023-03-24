@@ -11,7 +11,7 @@ import java.util.Base64
 
 class ClamAvClient(
     private val httpClient: HttpClient,
-    private val endpointUrl: String
+    private val endpointUrl: String,
 ) {
     suspend fun virusScanVedlegg(vedleggList: List<Vedlegg>): List<ScanResult> {
         val httpResponse =
@@ -25,10 +25,10 @@ class ClamAvClient(
                             Headers.build {
                                 append(HttpHeaders.ContentType, vedlegg.content.contentType)
                                 append(HttpHeaders.ContentDisposition, "filename=${vedlegg.description}")
-                            }
+                            },
                         )
                     }
-                }
+                },
             )
         return httpResponse.body<List<ScanResult>>()
     }
@@ -36,7 +36,7 @@ class ClamAvClient(
 
 data class ScanResult(
     val Filename: String,
-    val Result: Status
+    val Result: Status,
 )
 
 enum class Status {

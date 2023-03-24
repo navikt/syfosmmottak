@@ -10,5 +10,5 @@ data class Duplicate(
     val mottattDate: LocalDateTime,
     val epjSystem: String,
     val epjVersion: String,
-    val orgNumber: String?
+    val orgNumber: String?,
 )

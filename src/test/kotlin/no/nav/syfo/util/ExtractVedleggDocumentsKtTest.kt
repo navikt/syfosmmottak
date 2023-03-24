@@ -30,9 +30,9 @@ internal class ExtractVedleggDocumentsKtTest {
             Vedlegg(
                 Content("Base64Container", "base64"),
                 "application/pdf",
-                "vedlegg.pdf"
+                "vedlegg.pdf",
             ),
-            vedlegg.first()
+            vedlegg.first(),
         )
     }
 
@@ -48,14 +48,14 @@ internal class ExtractVedleggDocumentsKtTest {
             Vedlegg(
                 Content("Base64Container", "base64"),
                 "application/pdf",
-                "vedlegg.pdf"
+                "vedlegg.pdf",
             ),
-            vedlegg.first()
+            vedlegg.first(),
         )
 
         Assertions.assertEquals(
             Vedlegg(Content("Base64Container", "base64"), "application/pdf", "vedlegg2.pdf"),
-            vedlegg[1]
+            vedlegg[1],
         )
     }
 }

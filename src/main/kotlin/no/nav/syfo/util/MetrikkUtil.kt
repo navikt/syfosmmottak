@@ -19,6 +19,6 @@ fun logUlikBehandler(loggingMeta: LoggingMeta) {
     ULIK_SENDER_OG_BEHANDLER.inc()
     log.info(
         "Behandlers fnr og avsenders fnr stemmer ikkje {}",
-        StructuredArguments.fields(loggingMeta)
+        StructuredArguments.fields(loggingMeta),
     )
 }

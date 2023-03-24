@@ -54,7 +54,7 @@ internal class CheckSM2013ContentTest {
             "epj",
             "1",
             null,
-            null
+            null,
         )
 
         val checkSM2013Content = checkSM2013Content(
@@ -70,7 +70,7 @@ internal class CheckSM2013ContentTest {
             env,
             kafkaproducerApprec,
             duplicationService,
-            duplicationCheck
+            duplicationCheck,
         )
 
         Assertions.assertEquals(true, checkSM2013Content)
@@ -85,8 +85,8 @@ internal class CheckSM2013ContentTest {
         val pasient = PdlPerson(
             listOf(
                 PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                PdlIdent("aktorId", false, "AKTORID")
-            )
+                PdlIdent("aktorId", false, "AKTORID"),
+            ),
         )
         val behandler = null
         val healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat)
@@ -107,7 +107,7 @@ internal class CheckSM2013ContentTest {
             "epj",
             "1",
             null,
-            null
+            null,
         )
 
         val checkSM2013Content = checkSM2013Content(
@@ -123,7 +123,7 @@ internal class CheckSM2013ContentTest {
             env,
             kafkaproducerApprec,
             duplicationService,
-            duplicationCheck
+            duplicationCheck,
         )
 
         Assertions.assertEquals(true, checkSM2013Content)
@@ -138,8 +138,8 @@ internal class CheckSM2013ContentTest {
         val pasient = PdlPerson(
             listOf(
                 PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                PdlIdent("aktorId", false, "AKTORID")
-            )
+                PdlIdent("aktorId", false, "AKTORID"),
+            ),
         )
         val behandler = null
         val healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat)
@@ -161,7 +161,7 @@ internal class CheckSM2013ContentTest {
             "epj",
             "1",
             null,
-            null
+            null,
         )
 
         val checkSM2013Content = checkSM2013Content(
@@ -177,7 +177,7 @@ internal class CheckSM2013ContentTest {
             env,
             kafkaproducerApprec,
             duplicationService,
-            duplicationCheck
+            duplicationCheck,
         )
 
         Assertions.assertEquals(true, checkSM2013Content)
@@ -193,15 +193,15 @@ internal class CheckSM2013ContentTest {
         val pasientPDL = PdlPerson(
             listOf(
                 PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                PdlIdent("aktorId", false, "AKTORID")
-            )
+                PdlIdent("aktorId", false, "AKTORID"),
+            ),
         )
 
         val behandlerPdl = PdlPerson(
             listOf(
                 PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                PdlIdent("aktorId", false, "AKTORID")
-            )
+                PdlIdent("aktorId", false, "AKTORID"),
+            ),
         )
         val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
             arbeidsgiver = HelseOpplysningerArbeidsuforhet.Arbeidsgiver().apply {
@@ -230,13 +230,13 @@ internal class CheckSM2013ContentTest {
                             s = "2.16.578.1.12.4.1.1.8116"
                             v = "FNR"
                         }
-                    }
+                    },
                 )
                 adresse = Address().apply {
                 }
                 kontaktInfo.add(
                     TeleCom().apply {
-                    }
+                    },
                 )
             }
             aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
@@ -251,12 +251,12 @@ internal class CheckSM2013ContentTest {
                                         CS().apply {
                                             v = "1"
                                             dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                        }
+                                        },
                                     )
                                     beskriv = "Kan ikkje jobbe"
                                 }
                             }
-                    }
+                    },
                 )
             }
             pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
@@ -302,7 +302,7 @@ internal class CheckSM2013ContentTest {
             "epj",
             "1",
             null,
-            null
+            null,
         )
 
         val checkSM2013Content = checkSM2013Content(
@@ -318,7 +318,7 @@ internal class CheckSM2013ContentTest {
             env,
             kafkaproducerApprec,
             duplicationService,
-            duplicationCheck
+            duplicationCheck,
         )
 
         Assertions.assertEquals(false, checkSM2013Content)
@@ -334,8 +334,8 @@ internal class CheckSM2013ContentTest {
         val pasientPDL = PdlPerson(
             listOf(
                 PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                PdlIdent("aktorId", false, "AKTORID")
-            )
+                PdlIdent("aktorId", false, "AKTORID"),
+            ),
         )
 
         val behandlerNull = null
@@ -366,13 +366,13 @@ internal class CheckSM2013ContentTest {
                             s = "2.16.578.1.12.4.1.1.8116"
                             v = "FNR"
                         }
-                    }
+                    },
                 )
                 adresse = Address().apply {
                 }
                 kontaktInfo.add(
                     TeleCom().apply {
-                    }
+                    },
                 )
             }
             aktivitet = null
@@ -418,7 +418,7 @@ internal class CheckSM2013ContentTest {
             "epj",
             "1",
             null,
-            null
+            null,
         )
 
         val checkSM2013Content = checkSM2013Content(
@@ -434,7 +434,7 @@ internal class CheckSM2013ContentTest {
             env,
             kafkaproducerApprec,
             duplicationService,
-            duplicationCheck
+            duplicationCheck,
         )
 
         Assertions.assertEquals(true, checkSM2013Content)
@@ -450,8 +450,8 @@ internal class CheckSM2013ContentTest {
         val pasientPDL = PdlPerson(
             listOf(
                 PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                PdlIdent("aktorId", false, "AKTORID")
-            )
+                PdlIdent("aktorId", false, "AKTORID"),
+            ),
         )
 
         val behandlerNull = null
@@ -482,13 +482,13 @@ internal class CheckSM2013ContentTest {
                             s = "2.16.578.1.12.4.1.1.8116"
                             v = "FNR"
                         }
-                    }
+                    },
                 )
                 adresse = Address().apply {
                 }
                 kontaktInfo.add(
                     TeleCom().apply {
-                    }
+                    },
                 )
             }
             aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
@@ -496,7 +496,7 @@ internal class CheckSM2013ContentTest {
                     HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
                         periodeFOMDato = LocalDate.now()
                         periodeTOMDato = LocalDate.now().plusDays(4)
-                    }
+                    },
                 )
             }
             pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
@@ -541,7 +541,7 @@ internal class CheckSM2013ContentTest {
             "epj",
             "1",
             null,
-            null
+            null,
         )
 
         val checkSM2013Content = checkSM2013Content(
@@ -557,7 +557,7 @@ internal class CheckSM2013ContentTest {
             env,
             kafkaproducerApprec,
             duplicationService,
-            duplicationCheck
+            duplicationCheck,
         )
 
         Assertions.assertEquals(true, checkSM2013Content)
@@ -573,8 +573,8 @@ internal class CheckSM2013ContentTest {
         val pasientPDL = PdlPerson(
             listOf(
                 PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                PdlIdent("aktorId", false, "AKTORID")
-            )
+                PdlIdent("aktorId", false, "AKTORID"),
+            ),
         )
 
         val behandlerNull = null
@@ -605,13 +605,13 @@ internal class CheckSM2013ContentTest {
                             s = "2.16.578.1.12.4.1.1.8116"
                             v = "FNR"
                         }
-                    }
+                    },
                 )
                 adresse = Address().apply {
                 }
                 kontaktInfo.add(
                     TeleCom().apply {
-                    }
+                    },
                 )
             }
             aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
@@ -626,12 +626,12 @@ internal class CheckSM2013ContentTest {
                                         CS().apply {
                                             v = "1"
                                             dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                        }
+                                        },
                                     )
                                     beskriv = "Kan ikkje jobbe"
                                 }
                             }
-                    }
+                    },
                 )
             }
             pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
@@ -659,7 +659,7 @@ internal class CheckSM2013ContentTest {
                             dn = "Problem med jus/politi"
                             s = "2.16.578.1.12.4.1.1.7110"
                             v = null
-                        }
+                        },
                     )
                 }
             }
@@ -685,7 +685,7 @@ internal class CheckSM2013ContentTest {
             "epj",
             "1",
             null,
-            null
+            null,
         )
 
         val checkSM2013Content = checkSM2013Content(
@@ -701,7 +701,7 @@ internal class CheckSM2013ContentTest {
             env,
             kafkaproducerApprec,
             duplicationService,
-            duplicationCheck
+            duplicationCheck,
         )
 
         Assertions.assertEquals(true, checkSM2013Content)
@@ -717,8 +717,8 @@ internal class CheckSM2013ContentTest {
         val pasientPDL = PdlPerson(
             listOf(
                 PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                PdlIdent("aktorId", false, "AKTORID")
-            )
+                PdlIdent("aktorId", false, "AKTORID"),
+            ),
         )
 
         val behandlerNull = null
@@ -749,13 +749,13 @@ internal class CheckSM2013ContentTest {
                             s = "2.16.578.1.12.4.1.1.8116"
                             v = "FNR"
                         }
-                    }
+                    },
                 )
                 adresse = Address().apply {
                 }
                 kontaktInfo.add(
                     TeleCom().apply {
-                    }
+                    },
                 )
             }
             aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
@@ -770,12 +770,12 @@ internal class CheckSM2013ContentTest {
                                         CS().apply {
                                             v = "1"
                                             dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                        }
+                                        },
                                     )
                                     beskriv = "Kan ikkje jobbe"
                                 }
                             }
-                    }
+                    },
                 )
             }
             pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
@@ -803,7 +803,7 @@ internal class CheckSM2013ContentTest {
                             dn = "Problem med jus/politi"
                             s = "2.16.578.1.12.4.1.1.7110"
                             v = "Z09"
-                        }
+                        },
                     )
                 }
             }
@@ -829,7 +829,7 @@ internal class CheckSM2013ContentTest {
             "epj",
             "1",
             null,
-            null
+            null,
         )
 
         val checkSM2013Content = checkSM2013Content(
@@ -845,7 +845,7 @@ internal class CheckSM2013ContentTest {
             env,
             kafkaproducerApprec,
             duplicationService,
-            duplicationCheck
+            duplicationCheck,
         )
 
         Assertions.assertEquals(true, checkSM2013Content)
@@ -861,15 +861,15 @@ internal class CheckSM2013ContentTest {
         val pasientPDL = PdlPerson(
             listOf(
                 PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                PdlIdent("aktorId", false, "AKTORID")
-            )
+                PdlIdent("aktorId", false, "AKTORID"),
+            ),
         )
 
         val behandlerPdl = PdlPerson(
             listOf(
                 PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                PdlIdent("aktorId", false, "AKTORID")
-            )
+                PdlIdent("aktorId", false, "AKTORID"),
+            ),
         )
 
         val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
@@ -899,13 +899,13 @@ internal class CheckSM2013ContentTest {
                             s = "2.16.578.1.12.4.1.1.8116"
                             v = "FRRR"
                         }
-                    }
+                    },
                 )
                 adresse = Address().apply {
                 }
                 kontaktInfo.add(
                     TeleCom().apply {
-                    }
+                    },
                 )
             }
             aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
@@ -920,12 +920,12 @@ internal class CheckSM2013ContentTest {
                                         CS().apply {
                                             v = "1"
                                             dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                        }
+                                        },
                                     )
                                     beskriv = "Kan ikkje jobbe"
                                 }
                             }
-                    }
+                    },
                 )
             }
             pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
@@ -953,7 +953,7 @@ internal class CheckSM2013ContentTest {
                             dn = "Problem med jus/politi"
                             s = "2.16.578.1.12.4.1.1.7110"
                             v = "Z09"
-                        }
+                        },
                     )
                 }
             }
@@ -979,7 +979,7 @@ internal class CheckSM2013ContentTest {
             "epj",
             "1",
             null,
-            null
+            null,
         )
 
         val checkSM2013Content = checkSM2013Content(
@@ -995,7 +995,7 @@ internal class CheckSM2013ContentTest {
             env,
             kafkaproducerApprec,
             duplicationService,
-            duplicationCheck
+            duplicationCheck,
         )
 
         Assertions.assertEquals(true, checkSM2013Content)
@@ -1011,15 +1011,15 @@ internal class CheckSM2013ContentTest {
         val pasientPDL = PdlPerson(
             listOf(
                 PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                PdlIdent("aktorId", false, "AKTORID")
-            )
+                PdlIdent("aktorId", false, "AKTORID"),
+            ),
         )
 
         val behandlerPdl = PdlPerson(
             listOf(
                 PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                PdlIdent("aktorId", false, "AKTORID")
-            )
+                PdlIdent("aktorId", false, "AKTORID"),
+            ),
         )
 
         val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
@@ -1049,13 +1049,13 @@ internal class CheckSM2013ContentTest {
                             s = "2.16.578.1.12.4.1.1.8116"
                             v = "FNR"
                         }
-                    }
+                    },
                 )
                 adresse = Address().apply {
                 }
                 kontaktInfo.add(
                     TeleCom().apply {
-                    }
+                    },
                 )
             }
             aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
@@ -1070,12 +1070,12 @@ internal class CheckSM2013ContentTest {
                                         CS().apply {
                                             v = "1"
                                             dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                        }
+                                        },
                                     )
                                     beskriv = "Kan ikkje jobbe"
                                 }
                             }
-                    }
+                    },
                 )
             }
             pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
@@ -1103,7 +1103,7 @@ internal class CheckSM2013ContentTest {
                             dn = "Problem med jus/politi"
                             s = "2.16.578.1.12.4.1.1.7110"
                             v = "Z09"
-                        }
+                        },
                     )
                 }
             }
@@ -1129,7 +1129,7 @@ internal class CheckSM2013ContentTest {
             "epj",
             "1",
             null,
-            null
+            null,
         )
 
         val checkSM2013Content = checkSM2013Content(
@@ -1145,7 +1145,7 @@ internal class CheckSM2013ContentTest {
             env,
             kafkaproducerApprec,
             duplicationService,
-            duplicationCheck
+            duplicationCheck,
         )
 
         Assertions.assertEquals(true, checkSM2013Content)
@@ -1161,15 +1161,15 @@ internal class CheckSM2013ContentTest {
         val pasientPDL = PdlPerson(
             listOf(
                 PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                PdlIdent("aktorId", false, "AKTORID")
-            )
+                PdlIdent("aktorId", false, "AKTORID"),
+            ),
         )
 
         val behandlerPdl = PdlPerson(
             listOf(
                 PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                PdlIdent("aktorId", false, "AKTORID")
-            )
+                PdlIdent("aktorId", false, "AKTORID"),
+            ),
         )
 
         val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
@@ -1199,13 +1199,13 @@ internal class CheckSM2013ContentTest {
                             s = "2.16.578.1.12.4.1.1.8116"
                             v = "FNR"
                         }
-                    }
+                    },
                 )
                 adresse = Address().apply {
                 }
                 kontaktInfo.add(
                     TeleCom().apply {
-                    }
+                    },
                 )
             }
             aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
@@ -1220,12 +1220,12 @@ internal class CheckSM2013ContentTest {
                                         CS().apply {
                                             v = "1"
                                             dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                        }
+                                        },
                                     )
                                     beskriv = "Kan ikkje jobbe"
                                 }
                             }
-                    }
+                    },
                 )
             }
             pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
@@ -1253,7 +1253,7 @@ internal class CheckSM2013ContentTest {
                             dn = "Problem med jus/politi"
                             s = "2.16.578.1.12.4.1.1.7110"
                             v = "Z09"
-                        }
+                        },
                     )
                 }
             }
@@ -1279,7 +1279,7 @@ internal class CheckSM2013ContentTest {
             "epj",
             "1",
             null,
-            null
+            null,
         )
 
         val checkSM2013Content = checkSM2013Content(
@@ -1295,7 +1295,7 @@ internal class CheckSM2013ContentTest {
             env,
             kafkaproducerApprec,
             duplicationService,
-            duplicationCheck
+            duplicationCheck,
         )
 
         Assertions.assertEquals(true, checkSM2013Content)
@@ -1311,15 +1311,15 @@ internal class CheckSM2013ContentTest {
         val pasientPDL = PdlPerson(
             listOf(
                 PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                PdlIdent("aktorId", false, "AKTORID")
-            )
+                PdlIdent("aktorId", false, "AKTORID"),
+            ),
         )
 
         val behandlerPdl = PdlPerson(
             listOf(
                 PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                PdlIdent("aktorId", false, "AKTORID")
-            )
+                PdlIdent("aktorId", false, "AKTORID"),
+            ),
         )
 
         val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
@@ -1349,13 +1349,13 @@ internal class CheckSM2013ContentTest {
                             s = "2.16.578.1.12.4.1.1.8116"
                             v = "FNR"
                         }
-                    }
+                    },
                 )
                 adresse = Address().apply {
                 }
                 kontaktInfo.add(
                     TeleCom().apply {
-                    }
+                    },
                 )
             }
             aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
@@ -1369,12 +1369,12 @@ internal class CheckSM2013ContentTest {
                                     arsakskode.add(
                                         CS().apply {
                                             dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                        }
+                                        },
                                     )
                                     beskriv = "Kan ikkje jobbe"
                                 }
                             }
-                    }
+                    },
                 )
             }
             pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
@@ -1402,7 +1402,7 @@ internal class CheckSM2013ContentTest {
                             dn = "Problem med jus/politi"
                             s = "2.16.578.1.12.4.1.1.7110"
                             v = "Z09"
-                        }
+                        },
                     )
                 }
             }
@@ -1428,7 +1428,7 @@ internal class CheckSM2013ContentTest {
             "epj",
             "1",
             null,
-            null
+            null,
         )
 
         val checkSM2013Content = checkSM2013Content(
@@ -1444,7 +1444,7 @@ internal class CheckSM2013ContentTest {
             env,
             kafkaproducerApprec,
             duplicationService,
-            duplicationCheck
+            duplicationCheck,
         )
 
         Assertions.assertEquals(true, checkSM2013Content)
@@ -1460,15 +1460,15 @@ internal class CheckSM2013ContentTest {
         val pasientPDL = PdlPerson(
             listOf(
                 PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                PdlIdent("aktorId", false, "AKTORID")
-            )
+                PdlIdent("aktorId", false, "AKTORID"),
+            ),
         )
 
         val behandlerPdl = PdlPerson(
             listOf(
                 PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                PdlIdent("aktorId", false, "AKTORID")
-            )
+                PdlIdent("aktorId", false, "AKTORID"),
+            ),
         )
 
         val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
@@ -1498,13 +1498,13 @@ internal class CheckSM2013ContentTest {
                             s = "2.16.578.1.12.4.1.1.8116"
                             v = "FNR"
                         }
-                    }
+                    },
                 )
                 adresse = Address().apply {
                 }
                 kontaktInfo.add(
                     TeleCom().apply {
-                    }
+                    },
                 )
             }
             aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
@@ -1519,12 +1519,12 @@ internal class CheckSM2013ContentTest {
                                         CS().apply {
                                             v = "4"
                                             dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                        }
+                                        },
                                     )
                                     beskriv = "Kan ikkje jobbe"
                                 }
                             }
-                    }
+                    },
                 )
             }
             pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
@@ -1552,7 +1552,7 @@ internal class CheckSM2013ContentTest {
                             dn = "Problem med jus/politi"
                             s = "2.16.578.1.12.4.1.1.7110"
                             v = "Z09"
-                        }
+                        },
                     )
                 }
             }
@@ -1578,7 +1578,7 @@ internal class CheckSM2013ContentTest {
             "epj",
             "1",
             null,
-            null
+            null,
         )
 
         val checkSM2013Content = checkSM2013Content(
@@ -1594,7 +1594,7 @@ internal class CheckSM2013ContentTest {
             env,
             kafkaproducerApprec,
             duplicationService,
-            duplicationCheck
+            duplicationCheck,
         )
 
         Assertions.assertEquals(true, checkSM2013Content)
@@ -1610,15 +1610,15 @@ internal class CheckSM2013ContentTest {
         val pasientPDL = PdlPerson(
             listOf(
                 PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                PdlIdent("aktorId", false, "AKTORID")
-            )
+                PdlIdent("aktorId", false, "AKTORID"),
+            ),
         )
 
         val behandlerPdl = PdlPerson(
             listOf(
                 PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                PdlIdent("aktorId", false, "AKTORID")
-            )
+                PdlIdent("aktorId", false, "AKTORID"),
+            ),
         )
 
         val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
@@ -1648,13 +1648,13 @@ internal class CheckSM2013ContentTest {
                             s = "2.16.578.1.12.4.1.1.8116"
                             v = "FNR"
                         }
-                    }
+                    },
                 )
                 adresse = Address().apply {
                 }
                 kontaktInfo.add(
                     TeleCom().apply {
-                    }
+                    },
                 )
             }
             aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
@@ -1669,12 +1669,12 @@ internal class CheckSM2013ContentTest {
                                         CS().apply {
                                             v = null
                                             dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                        }
+                                        },
                                     )
                                     beskriv = "Kan ikkje jobbe"
                                 }
                             }
-                    }
+                    },
                 )
             }
             pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
@@ -1702,7 +1702,7 @@ internal class CheckSM2013ContentTest {
                             dn = "Problem med jus/politi"
                             s = "2.16.578.1.12.4.1.1.7110"
                             v = "Z09"
-                        }
+                        },
                     )
                 }
             }
@@ -1728,7 +1728,7 @@ internal class CheckSM2013ContentTest {
             "epj",
             "1",
             null,
-            null
+            null,
         )
 
         val checkSM2013Content = checkSM2013Content(
@@ -1744,7 +1744,7 @@ internal class CheckSM2013ContentTest {
             env,
             kafkaproducerApprec,
             duplicationService,
-            duplicationCheck
+            duplicationCheck,
         )
 
         Assertions.assertEquals(true, checkSM2013Content)
@@ -1760,15 +1760,15 @@ internal class CheckSM2013ContentTest {
         val pasientPDL = PdlPerson(
             listOf(
                 PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                PdlIdent("aktorId", false, "AKTORID")
-            )
+                PdlIdent("aktorId", false, "AKTORID"),
+            ),
         )
 
         val behandlerPdl = PdlPerson(
             listOf(
                 PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                PdlIdent("aktorId", false, "AKTORID")
-            )
+                PdlIdent("aktorId", false, "AKTORID"),
+            ),
         )
 
         val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
@@ -1798,13 +1798,13 @@ internal class CheckSM2013ContentTest {
                             s = "2.16.578.1.12.4.1.1.8116"
                             v = "FNR"
                         }
-                    }
+                    },
                 )
                 adresse = Address().apply {
                 }
                 kontaktInfo.add(
                     TeleCom().apply {
-                    }
+                    },
                 )
             }
             aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
@@ -1819,12 +1819,12 @@ internal class CheckSM2013ContentTest {
                                         CS().apply {
                                             v = "99"
                                             dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                        }
+                                        },
                                     )
                                     beskriv = "Kan ikkje jobbe"
                                 }
                             }
-                    }
+                    },
                 )
             }
             pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
@@ -1852,7 +1852,7 @@ internal class CheckSM2013ContentTest {
                             dn = "Problem med jus/politi"
                             s = "2.16.578.1.12.4.1.1.7110"
                             v = "Z09"
-                        }
+                        },
                     )
                 }
             }
@@ -1878,7 +1878,7 @@ internal class CheckSM2013ContentTest {
             "epj",
             "1",
             null,
-            null
+            null,
         )
 
         val checkSM2013Content = checkSM2013Content(
@@ -1894,7 +1894,7 @@ internal class CheckSM2013ContentTest {
             env,
             kafkaproducerApprec,
             duplicationService,
-            duplicationCheck
+            duplicationCheck,
         )
 
         Assertions.assertEquals(true, checkSM2013Content)
@@ -1910,15 +1910,15 @@ internal class CheckSM2013ContentTest {
         val pasientPDL = PdlPerson(
             listOf(
                 PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                PdlIdent("aktorId", false, "AKTORID")
-            )
+                PdlIdent("aktorId", false, "AKTORID"),
+            ),
         )
 
         val behandlerPdl = PdlPerson(
             listOf(
                 PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                PdlIdent("aktorId", false, "AKTORID")
-            )
+                PdlIdent("aktorId", false, "AKTORID"),
+            ),
         )
 
         val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
@@ -1948,13 +1948,13 @@ internal class CheckSM2013ContentTest {
                             s = "2.16.578.1.12.4.1.1.8116"
                             v = "FNR"
                         }
-                    }
+                    },
                 )
                 adresse = Address().apply {
                 }
                 kontaktInfo.add(
                     TeleCom().apply {
-                    }
+                    },
                 )
             }
             aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
@@ -1969,12 +1969,12 @@ internal class CheckSM2013ContentTest {
                                         CS().apply {
                                             v = "1"
                                             dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                        }
+                                        },
                                     )
                                     beskriv = "Kan ikkje jobbe"
                                 }
                             }
-                    }
+                    },
                 )
             }
             pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
@@ -2002,7 +2002,7 @@ internal class CheckSM2013ContentTest {
                             dn = "Problem med jus/politi"
                             s = "2.16.578.1.12.4.1.1.7110"
                             v = "Z09"
-                        }
+                        },
                     )
                 }
             }
@@ -2028,7 +2028,7 @@ internal class CheckSM2013ContentTest {
             "epj",
             "1",
             null,
-            null
+            null,
         )
 
         coEvery { env.cluster } returns "prod-gcp"
@@ -2046,7 +2046,7 @@ internal class CheckSM2013ContentTest {
             env,
             kafkaproducerApprec,
             duplicationService,
-            duplicationCheck
+            duplicationCheck,
         )
 
         Assertions.assertEquals(true, checkSM2013Content)
@@ -2062,15 +2062,15 @@ internal class CheckSM2013ContentTest {
         val pasientPDL = PdlPerson(
             listOf(
                 PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                PdlIdent("aktorId", false, "AKTORID")
-            )
+                PdlIdent("aktorId", false, "AKTORID"),
+            ),
         )
 
         val behandlerPdl = PdlPerson(
             listOf(
                 PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                PdlIdent("aktorId", false, "AKTORID")
-            )
+                PdlIdent("aktorId", false, "AKTORID"),
+            ),
         )
 
         val healthInformation = HelseOpplysningerArbeidsuforhet().apply {
@@ -2100,13 +2100,13 @@ internal class CheckSM2013ContentTest {
                             s = "2.16.578.1.12.4.1.1.8116"
                             v = "FNR"
                         }
-                    }
+                    },
                 )
                 adresse = Address().apply {
                 }
                 kontaktInfo.add(
                     TeleCom().apply {
-                    }
+                    },
                 )
             }
             aktivitet = HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
@@ -2121,12 +2121,12 @@ internal class CheckSM2013ContentTest {
                                         CS().apply {
                                             v = "1"
                                             dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                        }
+                                        },
                                     )
                                     beskriv = "Kan ikkje jobbe"
                                 }
                             }
-                    }
+                    },
                 )
             }
             pasient = HelseOpplysningerArbeidsuforhet.Pasient().apply {
@@ -2152,7 +2152,7 @@ internal class CheckSM2013ContentTest {
                     arsakskode.add(
                         CS().apply {
                             dn = "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                        }
+                        },
                     )
                     beskriv = "Kan ikkje jobbe"
                 }
@@ -2162,7 +2162,7 @@ internal class CheckSM2013ContentTest {
                             dn = "Problem med jus/politi"
                             s = "2.16.578.1.12.4.1.1.7110"
                             v = "Z09"
-                        }
+                        },
                     )
                 }
             }
@@ -2188,7 +2188,7 @@ internal class CheckSM2013ContentTest {
             "epj",
             "1",
             null,
-            null
+            null,
         )
 
         coEvery { env.cluster } returns "localhost"
@@ -2206,7 +2206,7 @@ internal class CheckSM2013ContentTest {
             env,
             kafkaproducerApprec,
             duplicationService,
-            duplicationCheck
+            duplicationCheck,
         )
 
         Assertions.assertEquals(true, checkSM2013Content)
