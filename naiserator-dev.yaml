@@ -59,6 +59,12 @@ spec:
         - application: clamav
           namespace: nais-system
         - application: smtss
+      external:
+        - host: b27apvl222.preprod.local
+          ports:
+            - name: mq
+              port: 1413
+              protocol: TCP
   vault:
     enabled: false
   webproxy: false
