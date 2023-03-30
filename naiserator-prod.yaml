@@ -60,6 +60,9 @@ spec:
           namespace: nais-system
         - application: smtss
       external:
+        - host: https://smgcp-proxy.prod-fss-pub.nais.io
+        - host: https://syfohelsenettproxy.prod-fss-pub.nais.io
+        - host: https://pdl-api.prod-fss-pub.nais.io
         - host: mpls04.adeo.no
           ports:
             - name: mq
