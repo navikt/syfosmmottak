@@ -26,6 +26,7 @@ import no.nav.syfo.bootstrap.KafkaClients
 import no.nav.syfo.client.EmottakSubscriptionClient
 import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SarClient
+import no.nav.syfo.client.SmtssClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.db.Database
 import no.nav.syfo.model.ManuellOppgave
@@ -92,6 +93,7 @@ fun main() {
         serviceUser, kafkaClients.manualValidationKafkaProducer,
         kafkaClients.kafkaProducerApprec, kafkaClients.kafkaproducerManuellOppgave,
         httpClients.norskHelsenettClient, bucketUploadService, virusScanService, duplicationService,
+        httpClients.smtssClient,
     )
 
     applicationServer.start()
@@ -128,6 +130,7 @@ fun launchListeners(
     bucketUploadService: BucketUploadService,
     virusScanService: VirusScanService,
     duplicationService: DuplicationService,
+    smtssClient: SmtssClient,
 ) {
     createListener(applicationState) {
         connectionFactory(env).createConnection(serviceUser.serviceuserUsername, serviceUser.serviceuserPassword).use { connection ->
@@ -153,6 +156,7 @@ fun launchListeners(
                 kafkaproducerManuellOppgave,
                 virusScanService,
                 duplicationService,
+                smtssClient,
             ).run(
                 inputconsumer,
                 backoutProducer,

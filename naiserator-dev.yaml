@@ -58,6 +58,7 @@ spec:
         - application: syfosmregler
         - application: clamav
           namespace: nais-system
+        - application: smtss
   vault:
     enabled: false
   webproxy: false
@@ -102,3 +103,5 @@ spec:
       value: api://dev-gcp.teamsykmelding.syfosmregler/.default
     - name: MQ_KEYSTORE_PATH
       value: /var/run/keystore/syfosmmottak-keystore.jks
+    - name: SMTSS_API_SCOPE
+      value: api://dev-gcp.teamsykmelding.smtss/.default
