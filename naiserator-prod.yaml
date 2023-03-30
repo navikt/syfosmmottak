@@ -59,13 +59,12 @@ spec:
         - application: clamav
           namespace: nais-system
         - application: smtss
-      outbound:
-        external:
-          - host: mpls04.adeo.no
-            ports:
-              - name: mq
-                port: 1414
-                protocol: TCP
+      external:
+        - host: mpls04.adeo.no
+          ports:
+            - name: mq
+              port: 1414
+              protocol: TCP
   vault:
     enabled: false
   webproxy: false
