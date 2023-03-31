@@ -229,7 +229,7 @@ class BlockingApplicationRunner(
                     try {
                         smtssClient.findBestTssIdEmottak(signaturFnr, loggingMeta)
                     } catch (exception: Exception) {
-                        log.info("smtss failed due to ", exception)
+                        log.warn("smtss failed due to ", exception)
                     }
 
                     val samhandlerPraksisMatchEmottak = findBestSamhandlerPraksisEmottak(
