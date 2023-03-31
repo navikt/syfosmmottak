@@ -20,6 +20,7 @@ import no.nav.syfo.client.ClamAvClient
 import no.nav.syfo.client.EmottakSubscriptionClient
 import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SarClient
+import no.nav.syfo.client.SmtssClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.log
 import no.nav.syfo.pdl.PdlFactory
@@ -84,4 +85,6 @@ class HttpClients(environment: Environment) {
     val pdlPersonService = PdlFactory.getPdlService(environment, httpClient, accessTokenClientV2, environment.pdlScope)
 
     val clamAvClient = ClamAvClient(httpClient, environment.clamAvEndpointUrl)
+
+    val smtssClient = SmtssClient(environment.smtssApiUrl, accessTokenClientV2, environment.smtssApiScope, httpClient)
 }

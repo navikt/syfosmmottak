@@ -13,6 +13,7 @@ import no.nav.syfo.client.Behandler
 import no.nav.syfo.client.EmottakSubscriptionClient
 import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SarClient
+import no.nav.syfo.client.SmtssClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.OpprettOppgaveKafkaMessage
@@ -52,6 +53,7 @@ internal class BlockingApplicationRunnerTest {
     val kafkaproducerManuellOppgave = mockk<KafkaProducer<String, ManuellOppgave>>(relaxed = true)
     val virusScanService = mockk<VirusScanService>(relaxed = true)
     val duplicationService = mockk<DuplicationService>(relaxed = true)
+    val smtssClient = mockk<SmtssClient>()
 
     val blockingApplicationRunner = BlockingApplicationRunner(
         env,
@@ -69,6 +71,7 @@ internal class BlockingApplicationRunnerTest {
         kafkaproducerManuellOppgave,
         virusScanService,
         duplicationService,
+        smtssClient,
     )
 
     @BeforeEach

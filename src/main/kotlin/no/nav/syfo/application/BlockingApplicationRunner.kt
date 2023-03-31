@@ -11,6 +11,7 @@ import no.nav.syfo.client.Behandler
 import no.nav.syfo.client.EmottakSubscriptionClient
 import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SarClient
+import no.nav.syfo.client.SmtssClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.client.findBestSamhandlerPraksis
 import no.nav.syfo.client.findBestSamhandlerPraksisEmottak
@@ -92,6 +93,7 @@ class BlockingApplicationRunner(
     private val kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
     private val virusScanService: VirusScanService,
     private val duplicationService: DuplicationService,
+    private val smtssClient: SmtssClient,
 ) {
 
     suspend fun run(
@@ -223,6 +225,12 @@ class BlockingApplicationRunner(
                     val identer = pdlPersonService.getIdenter(listOf(signaturFnr, originaltPasientFnr), loggingMeta)
 
                     val samhandlerInfo = kuhrSarClient.getSamhandler(ident = signaturFnr, msgId = msgId)
+
+                    try {
+                        smtssClient.findBestTssIdEmottak(signaturFnr, loggingMeta)
+                    } catch (exception: Exception) {
+                        log.info("smtss failed due to ", exception)
+                    }
 
                     val samhandlerPraksisMatchEmottak = findBestSamhandlerPraksisEmottak(
                         samhandlerInfo,
