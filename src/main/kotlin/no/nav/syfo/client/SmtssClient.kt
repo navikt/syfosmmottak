@@ -2,6 +2,7 @@ package no.nav.syfo.client
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.request.accept
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.setBody
@@ -28,6 +29,7 @@ class SmtssClient(
         val accessToken = accessTokenClientV2.getAccessTokenV2(resourceId)
         val httpResponse = httpClient.get("$endpointUrl/api/v1/samhandler/emottak") {
             contentType(ContentType.Application.Json)
+            accept(ContentType.Application.Json)
             setBody(tssidentRequest)
             header("Authorization", "Bearer $accessToken")
         }
@@ -54,6 +56,7 @@ class SmtssClient(
         val accessToken = accessTokenClientV2.getAccessTokenV2(resourceId)
         val httpResponse = httpClient.get("$endpointUrl/api/v1/samhandler/infotrygd") {
             contentType(ContentType.Application.Json)
+            accept(ContentType.Application.Json)
             setBody(tssidentRequest)
             header("Authorization", "Bearer $accessToken")
         }
