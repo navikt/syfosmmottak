@@ -74,6 +74,7 @@ import java.util.UUID
 import javax.jms.MessageConsumer
 import javax.jms.MessageProducer
 import javax.jms.TextMessage
+import no.nav.syfo.objectMapper
 
 private val sikkerlogg = LoggerFactory.getLogger("securelog")
 
@@ -225,6 +226,7 @@ class BlockingApplicationRunner(
                     val identer = pdlPersonService.getIdenter(listOf(signaturFnr, originaltPasientFnr), loggingMeta)
 
                     val samhandlerInfo = kuhrSarClient.getSamhandler(ident = signaturFnr, msgId = msgId)
+                    sikkerlogg.info("samhandlerInfo: ${objectMapper.writeValueAsString(samhandlerInfo)} {}", StructuredArguments.fields(loggingMeta))
 
                     try {
                         smtssClient.findBestTssIdEmottak(signaturFnr, loggingMeta)
