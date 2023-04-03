@@ -38,6 +38,7 @@ import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.model.toAvsenderSystem
 import no.nav.syfo.model.toSykmelding
+import no.nav.syfo.objectMapper
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.service.DuplicationService
 import no.nav.syfo.service.VirusScanService
@@ -74,7 +75,6 @@ import java.util.UUID
 import javax.jms.MessageConsumer
 import javax.jms.MessageProducer
 import javax.jms.TextMessage
-import no.nav.syfo.objectMapper
 
 private val sikkerlogg = LoggerFactory.getLogger("securelog")
 
@@ -229,7 +229,7 @@ class BlockingApplicationRunner(
                     sikkerlogg.info("samhandlerInfo: ${objectMapper.writeValueAsString(samhandlerInfo)} {}", StructuredArguments.fields(loggingMeta))
 
                     try {
-                        smtssClient.findBestTssIdEmottak(signaturFnr, loggingMeta)
+                        smtssClient.findBestTssIdEmottak(signaturFnr, legekontorOrgName, loggingMeta)
                     } catch (exception: Exception) {
                         log.warn("smtss failed due to ", exception)
                     }

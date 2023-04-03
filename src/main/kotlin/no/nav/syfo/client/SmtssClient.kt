@@ -20,10 +20,11 @@ class SmtssClient(
 ) {
     suspend fun findBestTssIdEmottak(
         samhandlerFnr: String,
+        samhandlerOrgName: String,
         loggingMeta: LoggingMeta,
     ) {
         val accessToken = accessTokenClientV2.getAccessTokenV2(resourceId)
-        val httpResponse = httpClient.get("$endpointUrl/api/v1/samhandler/emottak/$samhandlerFnr") {
+        val httpResponse = httpClient.get("$endpointUrl/api/v1/samhandler/emottak/$samhandlerFnr/$samhandlerOrgName") {
             contentType(ContentType.Application.Json)
             header("Authorization", "Bearer $accessToken")
         }
