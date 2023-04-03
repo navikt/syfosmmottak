@@ -32,7 +32,7 @@ class SmtssClient(
             val tssid = httpResponse.body<TSSident>().tssid
             log.info("Found tssid: $tssid for {}", StructuredArguments.fields(loggingMeta))
         } else {
-            log.warn(
+            log.info(
                 "smtss responded with an error code {} for {}",
                 httpResponse.status,
                 StructuredArguments.fields(loggingMeta),
@@ -54,7 +54,7 @@ class SmtssClient(
             val tssid = httpResponse.body<TSSident>().tssid
             log.info("Found tssid: $tssid for {}", StructuredArguments.fields(loggingMeta))
         } else {
-            log.warn(
+            log.info(
                 "smtss responded with an error code {} for {}",
                 httpResponse.status,
                 StructuredArguments.fields(loggingMeta),
