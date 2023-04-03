@@ -229,7 +229,11 @@ class BlockingApplicationRunner(
                     sikkerlogg.info("samhandlerInfo: ${objectMapper.writeValueAsString(samhandlerInfo)} {}", StructuredArguments.fields(loggingMeta))
 
                     try {
-                        smtssClient.findBestTssIdEmottak(signaturFnr, legekontorOrgName, loggingMeta)
+                        if (!legekontorOrgName.isNullOrEmpty()) {
+                            smtssClient.findBestTssIdEmottak(signaturFnr, legekontorOrgName, loggingMeta)
+                        } else {
+                            log.info("legekontorOrgName is null or emppty")
+                        }
                     } catch (exception: Exception) {
                         log.warn("smtss failed due to ", exception)
                     }
