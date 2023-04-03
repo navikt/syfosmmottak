@@ -73,7 +73,7 @@ class SmtssClient(
 
 data class TSSidentRequest(
     val samhandlerFnr: String,
-    val samhandlerOrgName: String
+    val samhandlerOrgName: String,
 )
 data class TSSident(
     val tssid: String,
