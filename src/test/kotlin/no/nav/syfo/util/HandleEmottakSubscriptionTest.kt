@@ -8,6 +8,7 @@ import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.syfo.client.EmottakSubscriptionClient
 import no.nav.syfo.client.SamhandlerPraksis
 import no.nav.syfo.client.SamhandlerPraksisMatch
+import no.nav.syfo.client.SmtssClient
 import org.junit.jupiter.api.Test
 
 internal class HandleEmottakSubscriptionTest {
@@ -19,6 +20,9 @@ internal class HandleEmottakSubscriptionTest {
         val partnerReferanse = "12345"
 
         val emottakSubscriptionClient = mockk<EmottakSubscriptionClient>()
+        val smtssClient = mockk<SmtssClient>()
+        val legekontorName = "Test legesenter"
+        val signaturFnr = "13134544"
         val msgHead = mockk<XMLMsgHead>()
         val msgId = "21323"
         val loggingMeta = LoggingMeta("1", "", "")
@@ -29,6 +33,7 @@ internal class HandleEmottakSubscriptionTest {
         coEvery { samhandlerPraksisMatch.samhandlerPraksis } returns samhandlerPraksis
 
         coEvery { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) } returns Unit
+        coEvery { smtssClient.findBestTssIdEmottak(any(), any(), any()) } returns "3123"
 
         runBlocking {
             handleEmottakSubscription(
@@ -38,6 +43,9 @@ internal class HandleEmottakSubscriptionTest {
                 msgId,
                 partnerReferanse,
                 loggingMeta,
+                legekontorName,
+                smtssClient,
+                signaturFnr,
             )
 
             coVerify(exactly = 1) { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) }
@@ -53,7 +61,12 @@ internal class HandleEmottakSubscriptionTest {
         val msgId = "21323"
         val loggingMeta = LoggingMeta("1", "", "")
 
+        val smtssClient = mockk<SmtssClient>()
+        val legekontorName = "Test legesenter"
+        val signaturFnr = "13134544"
+
         coEvery { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) } returns Unit
+        coEvery { smtssClient.findBestTssIdEmottak(any(), any(), any()) } returns "3123"
 
         runBlocking {
             handleEmottakSubscription(
@@ -63,6 +76,9 @@ internal class HandleEmottakSubscriptionTest {
                 msgId,
                 partnerReferanse,
                 loggingMeta,
+                legekontorName,
+                smtssClient,
+                signaturFnr,
             )
 
             coVerify(exactly = 0) { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) }
@@ -79,12 +95,18 @@ internal class HandleEmottakSubscriptionTest {
         val msgId = "21323"
         val loggingMeta = LoggingMeta("1", "", "")
 
+        val smtssClient = mockk<SmtssClient>()
+        val legekontorName = "Test legesenter"
+        val signaturFnr = "13134544"
+
         coEvery { samhandlerPraksis.tss_ident } returns "8000013123"
         coEvery { samhandlerPraksisMatch.percentageMatch } returns 999.99
         coEvery { samhandlerPraksis.samh_praksis_type_kode } returns "LEVA"
         coEvery { samhandlerPraksisMatch.samhandlerPraksis } returns samhandlerPraksis
 
         coEvery { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) } returns Unit
+        coEvery { smtssClient.findBestTssIdEmottak(any(), any(), any()) } returns "3123"
+
         runBlocking {
             handleEmottakSubscription(
                 samhandlerPraksisMatch,
@@ -93,6 +115,9 @@ internal class HandleEmottakSubscriptionTest {
                 msgId,
                 partnerReferanse,
                 loggingMeta,
+                legekontorName,
+                smtssClient,
+                signaturFnr,
             )
 
             coVerify(exactly = 0) { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) }
@@ -108,6 +133,9 @@ internal class HandleEmottakSubscriptionTest {
         val msgHead = mockk<XMLMsgHead>()
         val msgId = "21323"
         val loggingMeta = LoggingMeta("1", "", "")
+        val smtssClient = mockk<SmtssClient>()
+        val legekontorName = "Test legesenter"
+        val signaturFnr = "13134544"
 
         coEvery { samhandlerPraksis.tss_ident } returns "8000013123"
         coEvery { samhandlerPraksisMatch.percentageMatch } returns 999.99
@@ -115,6 +143,7 @@ internal class HandleEmottakSubscriptionTest {
         coEvery { samhandlerPraksisMatch.samhandlerPraksis } returns samhandlerPraksis
 
         coEvery { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) } returns Unit
+        coEvery { smtssClient.findBestTssIdEmottak(any(), any(), any()) } returns "3123"
 
         runBlocking {
             handleEmottakSubscription(
@@ -124,6 +153,9 @@ internal class HandleEmottakSubscriptionTest {
                 msgId,
                 partnerReferanse,
                 loggingMeta,
+                legekontorName,
+                smtssClient,
+                signaturFnr,
             )
 
             coVerify(exactly = 0) { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) }
@@ -139,6 +171,9 @@ internal class HandleEmottakSubscriptionTest {
         val msgHead = mockk<XMLMsgHead>()
         val msgId = "21323"
         val loggingMeta = LoggingMeta("1", "", "")
+        val smtssClient = mockk<SmtssClient>()
+        val legekontorName = "Test legesenter"
+        val signaturFnr = "13134544"
 
         coEvery { samhandlerPraksis.tss_ident } returns "8000013123"
         coEvery { samhandlerPraksisMatch.percentageMatch } returns 999.99
@@ -146,6 +181,7 @@ internal class HandleEmottakSubscriptionTest {
         coEvery { samhandlerPraksisMatch.samhandlerPraksis } returns samhandlerPraksis
 
         coEvery { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) } returns Unit
+        coEvery { smtssClient.findBestTssIdEmottak(any(), any(), any()) } returns "3123"
 
         runBlocking {
             handleEmottakSubscription(
@@ -155,6 +191,9 @@ internal class HandleEmottakSubscriptionTest {
                 msgId,
                 partnerReferanse,
                 loggingMeta,
+                legekontorName,
+                smtssClient,
+                signaturFnr,
             )
 
             coVerify(exactly = 0) { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) }

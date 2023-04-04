@@ -228,16 +228,6 @@ class BlockingApplicationRunner(
                     val samhandlerInfo = kuhrSarClient.getSamhandler(ident = signaturFnr, msgId = msgId)
                     sikkerlogg.info("samhandlerInfo: ${objectMapper.writeValueAsString(samhandlerInfo)} {}", StructuredArguments.fields(loggingMeta))
 
-                    try {
-                        if (!legekontorOrgName.isNullOrEmpty()) {
-                            smtssClient.findBestTssIdEmottak(signaturFnr, legekontorOrgName, loggingMeta)
-                        } else {
-                            log.info("legekontorOrgName is null or empty")
-                        }
-                    } catch (exception: Exception) {
-                        log.warn("smtss call failed due to: ", exception)
-                    }
-
                     val samhandlerPraksisMatchEmottak = findBestSamhandlerPraksisEmottak(
                         samhandlerInfo,
                         legekontorOrgNr,
@@ -261,6 +251,9 @@ class BlockingApplicationRunner(
                         msgId,
                         partnerReferanse,
                         loggingMeta,
+                        legekontorOrgName,
+                        smtssClient,
+                        signaturFnr,
                     )
 
                     val duplicationCheckSha256String = duplicationService.getDuplicationCheck(sha256String, ediLoggId)

@@ -4,6 +4,7 @@ import net.logstash.logback.argument.StructuredArguments
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.syfo.client.EmottakSubscriptionClient
 import no.nav.syfo.client.SamhandlerPraksisMatch
+import no.nav.syfo.client.SmtssClient
 import no.nav.syfo.client.samhandlerpraksisIsLegevakt
 import no.nav.syfo.log
 import no.nav.syfo.metrics.IKKE_OPPDATERT_PARTNERREG
@@ -15,6 +16,9 @@ suspend fun handleEmottakSubscription(
     msgId: String,
     partnerreferanse: String?,
     loggingMeta: LoggingMeta,
+    legekontorOrgName: String,
+    smtssClient: SmtssClient,
+    signaturFnr: String,
 ) {
     if (samhandlerPraksisMatch?.percentageMatch != null && samhandlerPraksisMatch.percentageMatch == 999.0) {
         log.info(
@@ -34,6 +38,23 @@ suspend fun handleEmottakSubscription(
                 !partnerreferanse.isNullOrEmpty() &&
                 partnerreferanse.isNotBlank()
             ) {
+                try {
+                    if (legekontorOrgName.isNotEmpty()) {
+                        val tssId = smtssClient.findBestTssIdEmottak(signaturFnr, legekontorOrgName, loggingMeta)
+
+                        if (samhandlerPraksisMatch.samhandlerPraksis.tss_ident == tssId) {
+                            log.info("Found samme tssid {}", StructuredArguments.fields(loggingMeta))
+                        } else {
+                            log.info("Found diffrent tssids {}", StructuredArguments.fields(loggingMeta))
+                            log.info("Kuhr tssid ${samhandlerPraksisMatch.samhandlerPraksis.tss_ident}, smtss $tssId {}", StructuredArguments.fields(loggingMeta))
+                        }
+                    } else {
+                        log.info("legekontorOrgName is null or empty {}", StructuredArguments.fields(loggingMeta))
+                    }
+                } catch (exception: Exception) {
+                    log.warn("smtss call failed due to: ${exception.message} {}", StructuredArguments.fields(loggingMeta))
+                }
+
                 emottakSubscriptionClient.startSubscription(
                     samhandlerPraksisMatch.samhandlerPraksis,
                     msgHead,

@@ -12,7 +12,6 @@ import io.ktor.http.contentType
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.log
 import no.nav.syfo.util.LoggingMeta
-import java.io.IOException
 
 class SmtssClient(
     private val endpointUrl: String,
@@ -24,7 +23,7 @@ class SmtssClient(
         samhandlerFnr: String,
         samhandlerOrgName: String,
         loggingMeta: LoggingMeta,
-    ) {
+    ): String? {
         val accessToken = accessTokenClientV2.getAccessTokenV2(resourceId)
         val httpResponse = httpClient.get("$endpointUrl/api/v1/samhandler/emottak") {
             accept(ContentType.Application.Json)
@@ -35,13 +34,14 @@ class SmtssClient(
         if (httpResponse.status == HttpStatusCode.OK) {
             val tssid = httpResponse.body<TSSident>().tssid
             log.info("Found tssid for emottak: $tssid for {}", StructuredArguments.fields(loggingMeta))
+            return tssid
         } else {
             log.info(
                 "smtss responded with an error code {} for {}",
                 httpResponse.status,
                 StructuredArguments.fields(loggingMeta),
             )
-            throw IOException("smtss responded with an error code ${httpResponse.status}")
+            return null
         }
     }
 
@@ -49,7 +49,7 @@ class SmtssClient(
         samhandlerFnr: String,
         samhandlerOrgName: String,
         loggingMeta: LoggingMeta,
-    ) {
+    ): String? {
         val accessToken = accessTokenClientV2.getAccessTokenV2(resourceId)
         val httpResponse = httpClient.get("$endpointUrl/api/v1/samhandler/infotrygd") {
             contentType(ContentType.Application.Json)
@@ -61,13 +61,14 @@ class SmtssClient(
         if (httpResponse.status == HttpStatusCode.OK) {
             val tssid = httpResponse.body<TSSident>().tssid
             log.info("Found tssid for infotrygd: $tssid for {}", StructuredArguments.fields(loggingMeta))
+            return tssid
         } else {
             log.info(
                 "smtss responded with an error code {} for {}",
                 httpResponse.status,
                 StructuredArguments.fields(loggingMeta),
             )
-            throw IOException("smtss responded with an error code ${httpResponse.status}")
+            return null
         }
     }
 }
