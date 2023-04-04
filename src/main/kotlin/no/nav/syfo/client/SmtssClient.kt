@@ -5,7 +5,7 @@ import io.ktor.client.call.body
 import io.ktor.client.request.accept
 import io.ktor.client.request.get
 import io.ktor.client.request.header
-import io.ktor.client.request.setBody
+import io.ktor.client.request.parameter
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
@@ -25,12 +25,11 @@ class SmtssClient(
         samhandlerOrgName: String,
         loggingMeta: LoggingMeta,
     ) {
-        val tssidentRequest = TSSidentRequest(samhandlerFnr, samhandlerOrgName)
         val accessToken = accessTokenClientV2.getAccessTokenV2(resourceId)
         val httpResponse = httpClient.get("$endpointUrl/api/v1/samhandler/emottak") {
-            contentType(ContentType.Application.Json)
             accept(ContentType.Application.Json)
-            setBody(tssidentRequest)
+            parameter("samhandlerFnr", samhandlerFnr)
+            parameter("samhandlerOrgName", samhandlerOrgName)
             header("Authorization", "Bearer $accessToken")
         }
         if (httpResponse.status == HttpStatusCode.OK) {
@@ -51,13 +50,12 @@ class SmtssClient(
         samhandlerOrgName: String,
         loggingMeta: LoggingMeta,
     ) {
-        val tssidentRequest = TSSidentRequest(samhandlerFnr, samhandlerOrgName)
-
         val accessToken = accessTokenClientV2.getAccessTokenV2(resourceId)
         val httpResponse = httpClient.get("$endpointUrl/api/v1/samhandler/infotrygd") {
             contentType(ContentType.Application.Json)
             accept(ContentType.Application.Json)
-            setBody(tssidentRequest)
+            parameter("samhandlerFnr", samhandlerFnr)
+            parameter("samhandlerOrgName", samhandlerOrgName)
             header("Authorization", "Bearer $accessToken")
         }
         if (httpResponse.status == HttpStatusCode.OK) {
@@ -74,10 +72,6 @@ class SmtssClient(
     }
 }
 
-data class TSSidentRequest(
-    val samhandlerFnr: String,
-    val samhandlerOrgName: String,
-)
 data class TSSident(
     val tssid: String,
 )
