@@ -45,8 +45,8 @@ suspend fun handleEmottakSubscription(
                         if (samhandlerPraksisMatch.samhandlerPraksis.tss_ident == tssId) {
                             log.info("Found samme tssid {}", StructuredArguments.fields(loggingMeta))
                         } else {
-                            log.info("Found diffrent tssids {}", StructuredArguments.fields(loggingMeta))
-                            log.info("Kuhr tssid ${samhandlerPraksisMatch.samhandlerPraksis.tss_ident}, smtss $tssId {}", StructuredArguments.fields(loggingMeta))
+                            log.info("Found different tssids." +
+                                    " Kuhr tssid ${samhandlerPraksisMatch.samhandlerPraksis.tss_ident}, smtss $tssId {}", StructuredArguments.fields(loggingMeta))
                         }
                     } else {
                         log.info("legekontorOrgName is null or empty {}", StructuredArguments.fields(loggingMeta))
