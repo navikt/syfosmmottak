@@ -232,10 +232,10 @@ class BlockingApplicationRunner(
                         if (!legekontorOrgName.isNullOrEmpty()) {
                             smtssClient.findBestTssIdEmottak(signaturFnr, legekontorOrgName, loggingMeta)
                         } else {
-                            log.info("legekontorOrgName is null or emppty")
+                            log.info("legekontorOrgName is null or empty")
                         }
                     } catch (exception: Exception) {
-                        log.warn("smtss failed due to ", exception)
+                        log.warn("smtss call failed due to: ", exception)
                     }
 
                     val samhandlerPraksisMatchEmottak = findBestSamhandlerPraksisEmottak(
