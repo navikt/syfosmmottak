@@ -31,17 +31,15 @@ class SmtssClient(
             parameter("samhandlerOrgName", samhandlerOrgName)
             header("Authorization", "Bearer $accessToken")
         }
-        if (httpResponse.status == HttpStatusCode.OK) {
-            val tssid = httpResponse.body<TSSident>().tssid
-            log.info("Found tssid for emottak: $tssid for {}", StructuredArguments.fields(loggingMeta))
-            return tssid
+        return if (httpResponse.status == HttpStatusCode.OK) {
+            httpResponse.body<TSSident>().tssid
         } else {
             log.info(
                 "smtss responded with an error code {} for {}",
                 httpResponse.status,
                 StructuredArguments.fields(loggingMeta),
             )
-            return null
+            null
         }
     }
 
@@ -58,17 +56,16 @@ class SmtssClient(
             parameter("samhandlerOrgName", samhandlerOrgName)
             header("Authorization", "Bearer $accessToken")
         }
-        if (httpResponse.status == HttpStatusCode.OK) {
+        return if (httpResponse.status == HttpStatusCode.OK) {
             val tssid = httpResponse.body<TSSident>().tssid
-            log.info("Found tssid for infotrygd: $tssid for {}", StructuredArguments.fields(loggingMeta))
-            return tssid
+            tssid
         } else {
             log.info(
                 "smtss responded with an error code {} for {}",
                 httpResponse.status,
                 StructuredArguments.fields(loggingMeta),
             )
-            return null
+            null
         }
     }
 }
