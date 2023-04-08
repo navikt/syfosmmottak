@@ -32,7 +32,7 @@ val googleCloudStorageVersion = "2.13.0"
 val junitJupiterVersion = "5.9.2"
 val flywayVersion = "9.3.0"
 val hikariVersion = "5.0.1"
-val postgresVersion = "42.5.1"
+val postgresVersion = "42.6.0"
 val embeddedPostgresVersion = "2.0.3"
 val commonsCodecVersion = "1.13"
 
