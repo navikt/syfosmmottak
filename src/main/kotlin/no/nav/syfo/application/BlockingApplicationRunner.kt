@@ -244,6 +244,17 @@ class BlockingApplicationRunner(
                         loggingMeta,
                     )?.samhandlerPraksis?.tss_ident
 
+                    try {
+                        val tssId = smtssClient.findBestTssInfotrygdId(signaturFnr, legekontorOrgName, loggingMeta)
+                        if (samhandlerPraksisTssId == tssId) {
+                            log.info("Found same tssid for infotrygd {}", StructuredArguments.fields(loggingMeta))
+                        } else {
+                            log.info("Found diffrent tssid for infotrygd {}", StructuredArguments.fields(loggingMeta))
+                        }
+                    } catch (exception: Exception) {
+                        log.info("issue with smtss call infotrygd: ${exception.message} {}", StructuredArguments.fields(loggingMeta))
+                    }
+
                     handleEmottakSubscription(
                         samhandlerPraksisMatchEmottak,
                         emottakSubscriptionClient,
