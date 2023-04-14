@@ -29,7 +29,7 @@ This the high level flow of the application
       syfosmmottak <--> id3[(Database)]
       syfosmmottak --- Azure-AD
       syfosmmottak --- PDL
-      syfosmmottak --- Kuhr-SAR
+      syfosmmottak --- smtss
       syfosmmottak --- eMottak-subscription
       syfosmmottak --- syfohelsenettproxy
       syfosmmottak --- GCP-Bucket

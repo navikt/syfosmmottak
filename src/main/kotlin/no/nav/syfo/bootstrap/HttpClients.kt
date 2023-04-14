@@ -19,7 +19,6 @@ import no.nav.syfo.client.AccessTokenClientV2
 import no.nav.syfo.client.ClamAvClient
 import no.nav.syfo.client.EmottakSubscriptionClient
 import no.nav.syfo.client.NorskHelsenettClient
-import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.SmtssClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.log
@@ -75,8 +74,6 @@ class HttpClients(environment: Environment) {
         environment.syfosmreglerApiScope,
         httpClient,
     )
-
-    val sarClient = SarClient(environment.smgcpProxyUrl, accessTokenClientV2, environment.smgcpProxyScope, httpClient)
 
     val emottakSubscriptionClient = EmottakSubscriptionClient(environment.smgcpProxyUrl, accessTokenClientV2, environment.smgcpProxyScope, httpClient)
 
