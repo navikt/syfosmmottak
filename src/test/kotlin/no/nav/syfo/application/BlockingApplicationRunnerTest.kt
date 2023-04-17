@@ -12,7 +12,6 @@ import no.nav.syfo.apprec.ApprecStatus
 import no.nav.syfo.client.Behandler
 import no.nav.syfo.client.EmottakSubscriptionClient
 import no.nav.syfo.client.NorskHelsenettClient
-import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.SmtssClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.model.ManuellOppgave
@@ -43,7 +42,6 @@ internal class BlockingApplicationRunnerTest {
     val emottakSubscriptionClient = mockk<EmottakSubscriptionClient>()
     val syfoSykemeldingRuleClient = mockk<SyfoSykemeldingRuleClient>()
     val norskHelsenettClient = mockk<NorskHelsenettClient>()
-    val kuhrSarClient = mockk<SarClient>()
     val pdlPersonService = mockk<PdlPersonService>()
     val bucketUploadService = mockk<BucketUploadService>(relaxed = true)
     val kafkaproducerreceivedSykmelding = mockk<KafkaProducer<String, ReceivedSykmelding>>(relaxed = true)
@@ -61,7 +59,6 @@ internal class BlockingApplicationRunnerTest {
         emottakSubscriptionClient,
         syfoSykemeldingRuleClient,
         norskHelsenettClient,
-        kuhrSarClient,
         pdlPersonService,
         bucketUploadService,
         kafkaproducerreceivedSykmelding,
@@ -91,7 +88,6 @@ internal class BlockingApplicationRunnerTest {
                 ),
             ),
         )
-        coEvery { kuhrSarClient.getSamhandler(any(), any()) } returns emptyList()
         coEvery { norskHelsenettClient.getByFnr(any(), any()) } returns Behandler(
             emptyList(),
             "",
@@ -113,6 +109,8 @@ internal class BlockingApplicationRunnerTest {
             emptyList(),
         )
         coEvery { duplicationService.getDuplicationCheck(any(), any()) } returns null
+        coEvery { smtssClient.findBestTssIdEmottak(any(), any(), any()) } returns null
+        coEvery { smtssClient.findBestTssInfotrygdId(any(), any(), any()) } returns null
     }
 
     @Test

@@ -10,11 +10,8 @@ import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.client.Behandler
 import no.nav.syfo.client.EmottakSubscriptionClient
 import no.nav.syfo.client.NorskHelsenettClient
-import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.SmtssClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
-import no.nav.syfo.client.findBestSamhandlerPraksis
-import no.nav.syfo.client.findBestSamhandlerPraksisEmottak
 import no.nav.syfo.client.getHelsepersonellKategori
 import no.nav.syfo.duplicationcheck.model.Duplicate
 import no.nav.syfo.duplicationcheck.model.DuplicateCheck
@@ -38,7 +35,6 @@ import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.model.toAvsenderSystem
 import no.nav.syfo.model.toSykmelding
-import no.nav.syfo.objectMapper
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.service.DuplicationService
 import no.nav.syfo.service.VirusScanService
@@ -84,7 +80,6 @@ class BlockingApplicationRunner(
     private val emottakSubscriptionClient: EmottakSubscriptionClient,
     private val syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
     private val norskHelsenettClient: NorskHelsenettClient,
-    private val kuhrSarClient: SarClient,
     private val pdlPersonService: PdlPersonService,
     private val bucketUploadService: BucketUploadService,
     private val kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
@@ -132,7 +127,8 @@ class BlockingApplicationRunner(
 
                     val receiverBlock = fellesformat.get<XMLMottakenhetBlokk>()
                     val msgHead = fellesformat.get<XMLMsgHead>()
-                    val legekontorOrgNr = extractOrganisationNumberFromSender(fellesformat)?.id?.replace(" ", "")?.trim()
+                    val legekontorOrgNr =
+                        extractOrganisationNumberFromSender(fellesformat)?.id?.replace(" ", "")?.trim()
                     loggingMeta = LoggingMeta(
                         mottakId = receiverBlock.ediLoggId,
                         orgNr = legekontorOrgNr,
@@ -225,46 +221,20 @@ class BlockingApplicationRunner(
 
                     val identer = pdlPersonService.getIdenter(listOf(signaturFnr, originaltPasientFnr), loggingMeta)
 
-                    val samhandlerInfo = kuhrSarClient.getSamhandler(ident = signaturFnr, msgId = msgId)
-                    sikkerlogg.info("samhandlerInfo: ${objectMapper.writeValueAsString(samhandlerInfo)} {}", StructuredArguments.fields(loggingMeta))
-
-                    val samhandlerPraksisMatchEmottak = findBestSamhandlerPraksisEmottak(
-                        samhandlerInfo,
-                        legekontorOrgNr,
-                        legekontorHerId,
-                        loggingMeta,
-                        partnerReferanse,
-                    )
-
-                    val samhandlerPraksisTssId = findBestSamhandlerPraksis(
-                        samhandlerInfo,
-                        legekontorOrgNr,
-                        legekontorOrgName,
-                        legekontorHerId,
-                        loggingMeta,
-                    )?.samhandlerPraksis?.tss_ident
-
-                    try {
-                        val tssId = smtssClient.findBestTssInfotrygdId(signaturFnr, legekontorOrgName, loggingMeta)
-                        if (samhandlerPraksisTssId == tssId) {
-                            log.info("Found same tssid for infotrygd {}", StructuredArguments.fields(loggingMeta))
-                        } else {
-                            log.info("Found diffrent tssid for infotrygd {}", StructuredArguments.fields(loggingMeta))
-                        }
-                    } catch (exception: Exception) {
-                        log.info("issue with smtss call infotrygd: ${exception.message} {}", StructuredArguments.fields(loggingMeta))
+                    val tssIdEmottak = smtssClient.findBestTssIdEmottak(signaturFnr, legekontorOrgName, loggingMeta)
+                    val tssIdInfotrygd = if (!tssIdEmottak.isNullOrEmpty()) {
+                        tssIdEmottak
+                    } else {
+                        smtssClient.findBestTssInfotrygdId(signaturFnr, legekontorOrgName, loggingMeta)
                     }
 
                     handleEmottakSubscription(
-                        samhandlerPraksisMatchEmottak,
+                        tssIdEmottak,
                         emottakSubscriptionClient,
                         msgHead,
                         msgId,
                         partnerReferanse,
                         loggingMeta,
-                        legekontorOrgName,
-                        smtssClient,
-                        signaturFnr,
                     )
 
                     val duplicationCheckSha256String = duplicationService.getDuplicationCheck(sha256String, ediLoggId)
@@ -403,7 +373,7 @@ class BlockingApplicationRunner(
                             mottattDato = mottatDato,
                             rulesetVersion = rulesetVersion,
                             fellesformat = fellesformatText,
-                            tssid = samhandlerPraksisTssId ?: "",
+                            tssid = tssIdInfotrygd ?: "",
                             merknader = null,
                             partnerreferanse = partnerReferanse,
                             vedlegg = vedleggListe,

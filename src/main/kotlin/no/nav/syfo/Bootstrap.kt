@@ -25,7 +25,6 @@ import no.nav.syfo.bootstrap.HttpClients
 import no.nav.syfo.bootstrap.KafkaClients
 import no.nav.syfo.client.EmottakSubscriptionClient
 import no.nav.syfo.client.NorskHelsenettClient
-import no.nav.syfo.client.SarClient
 import no.nav.syfo.client.SmtssClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.db.Database
@@ -89,7 +88,7 @@ fun main() {
         env, applicationState,
         httpClients.emottakSubscriptionClient, kafkaClients.kafkaProducerReceivedSykmelding,
         kafkaClients.kafkaProducerValidationResult,
-        httpClients.syfoSykemeldingRuleClient, httpClients.sarClient, httpClients.pdlPersonService,
+        httpClients.syfoSykemeldingRuleClient, httpClients.pdlPersonService,
         serviceUser, kafkaClients.manualValidationKafkaProducer,
         kafkaClients.kafkaProducerApprec, kafkaClients.kafkaproducerManuellOppgave,
         httpClients.norskHelsenettClient, bucketUploadService, virusScanService, duplicationService,
@@ -120,7 +119,6 @@ fun launchListeners(
     kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
     kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
     syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
-    kuhrSarClient: SarClient,
     pdlPersonService: PdlPersonService,
     serviceUser: VaultServiceUser,
     kafkaManuelTaskProducer: KafkaProducer<String, OpprettOppgaveKafkaMessage>,
@@ -146,7 +144,6 @@ fun launchListeners(
                 emottakSubscriptionClient,
                 syfoSykemeldingRuleClient,
                 norskHelsenettClient,
-                kuhrSarClient,
                 pdlPersonService,
                 bucketUploadService,
                 kafkaproducerreceivedSykmelding,
