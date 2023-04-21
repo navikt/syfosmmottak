@@ -449,7 +449,7 @@ class BlockingApplicationRunner(
 
                         duplicationService.persistDuplicationCheck(duplicateCheck)
                         log.info(
-                            "Message got outcome {}, {}, processing took {}s, {}",
+                            "Message got outcome {}, {}, processing took {}s, {}, {}",
                             StructuredArguments.keyValue("status", validationResult.status),
                             StructuredArguments.keyValue(
                                 "ruleHits",
@@ -457,6 +457,7 @@ class BlockingApplicationRunner(
                             ),
                             StructuredArguments.keyValue("latency", currentRequestLatency),
                             StructuredArguments.fields(loggingMeta),
+                            StructuredArguments.keyValue("sykmeldingId", sykmeldingId),
                         )
                     }
                 } catch (e: Exception) {
