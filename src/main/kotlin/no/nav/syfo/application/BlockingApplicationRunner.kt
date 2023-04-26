@@ -228,6 +228,10 @@ class BlockingApplicationRunner(
                         smtssClient.findBestTssInfotrygdId(signaturFnr, legekontorOrgName, loggingMeta)
                     }
 
+                    log.info("tssIdEmottak is $tssIdEmottak {}", StructuredArguments.fields(loggingMeta))
+                    log.info("tssIdInfotrygd is $tssIdInfotrygd {}", StructuredArguments.fields(loggingMeta))
+
+
                     handleEmottakSubscription(
                         tssIdEmottak,
                         emottakSubscriptionClient,
