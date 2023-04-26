@@ -28,7 +28,7 @@ class EmottakSubscriptionClient(
         msgId: String,
         loggingMeta: LoggingMeta,
     ) {
-        log.info("Update subscription emottak for {}", StructuredArguments.fields(loggingMeta))
+        log.info("Update subscription emottak for tssid: $tssIdent {}", StructuredArguments.fields(loggingMeta))
         val accessToken = accessTokenClientV2.getAccessTokenV2(resourceId)
         httpClient.post("$endpointUrl/emottak/startsubscription") {
             contentType(ContentType.Application.Json)
