@@ -109,8 +109,8 @@ internal class BlockingApplicationRunnerTest {
             emptyList(),
         )
         coEvery { duplicationService.getDuplicationCheck(any(), any()) } returns null
-        coEvery { smtssClient.findBestTssIdEmottak(any(), any(), any()) } returns null
-        coEvery { smtssClient.findBestTssInfotrygdId(any(), any(), any()) } returns null
+        coEvery { smtssClient.findBestTssIdEmottak(any(), any(), any(), any()) } returns null
+        coEvery { smtssClient.findBestTssInfotrygdId(any(), any(), any(), any()) } returns null
     }
 
     @Test

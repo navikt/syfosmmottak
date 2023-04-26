@@ -221,16 +221,15 @@ class BlockingApplicationRunner(
 
                     val identer = pdlPersonService.getIdenter(listOf(signaturFnr, originaltPasientFnr), loggingMeta)
 
-                    val tssIdEmottak = smtssClient.findBestTssIdEmottak(signaturFnr, legekontorOrgName, loggingMeta)
+                    val tssIdEmottak = smtssClient.findBestTssIdEmottak(signaturFnr, legekontorOrgName, loggingMeta, sykmeldingId)
                     val tssIdInfotrygd = if (!tssIdEmottak.isNullOrEmpty()) {
                         tssIdEmottak
                     } else {
-                        smtssClient.findBestTssInfotrygdId(signaturFnr, legekontorOrgName, loggingMeta)
+                        smtssClient.findBestTssInfotrygdId(signaturFnr, legekontorOrgName, loggingMeta, sykmeldingId)
                     }
 
                     log.info("tssIdEmottak is $tssIdEmottak {}", StructuredArguments.fields(loggingMeta))
                     log.info("tssIdInfotrygd is $tssIdInfotrygd {}", StructuredArguments.fields(loggingMeta))
-
 
                     handleEmottakSubscription(
                         tssIdEmottak,

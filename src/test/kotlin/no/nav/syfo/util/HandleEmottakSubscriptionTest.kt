@@ -22,12 +22,13 @@ internal class HandleEmottakSubscriptionTest {
         val msgHead = mockk<XMLMsgHead>()
         val msgId = "21323"
         val loggingMeta = LoggingMeta("1", "", "")
+        val sykmeldingsId = "131-1--213-223-23"
 
         coEvery { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) } returns Unit
-        coEvery { smtssClient.findBestTssIdEmottak(any(), any(), any()) } returns "8000013123"
+        coEvery { smtssClient.findBestTssIdEmottak(any(), any(), any(), any()) } returns "8000013123"
 
         runBlocking {
-            val tssId = smtssClient.findBestTssIdEmottak(signaturFnr, legekontorName, loggingMeta)
+            val tssId = smtssClient.findBestTssIdEmottak(signaturFnr, legekontorName, loggingMeta, sykmeldingsId)
 
             handleEmottakSubscription(
                 tssId,
@@ -53,12 +54,13 @@ internal class HandleEmottakSubscriptionTest {
         val smtssClient = mockk<SmtssClient>()
         val legekontorName = "Test legesenter"
         val signaturFnr = "13134544"
+        val sykmeldingsId = "131-1--213-223-23"
 
         coEvery { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) } returns Unit
-        coEvery { smtssClient.findBestTssIdEmottak(any(), any(), any()) } returns null
+        coEvery { smtssClient.findBestTssIdEmottak(any(), any(), any(), any()) } returns null
 
         runBlocking {
-            val tssId = smtssClient.findBestTssIdEmottak(signaturFnr, legekontorName, loggingMeta)
+            val tssId = smtssClient.findBestTssIdEmottak(signaturFnr, legekontorName, loggingMeta, sykmeldingsId)
 
             handleEmottakSubscription(
                 tssId,
@@ -83,12 +85,13 @@ internal class HandleEmottakSubscriptionTest {
         val smtssClient = mockk<SmtssClient>()
         val legekontorName = "Test legesenter"
         val signaturFnr = "13134544"
+        val sykmeldingsId = "131-1--213-223-23"
 
         coEvery { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) } returns Unit
-        coEvery { smtssClient.findBestTssIdEmottak(any(), any(), any()) } returns "8000013123"
+        coEvery { smtssClient.findBestTssIdEmottak(any(), any(), any(), any()) } returns "8000013123"
 
         runBlocking {
-            val tssId = smtssClient.findBestTssIdEmottak(signaturFnr, legekontorName, loggingMeta)
+            val tssId = smtssClient.findBestTssIdEmottak(signaturFnr, legekontorName, loggingMeta, sykmeldingsId)
             handleEmottakSubscription(
                 tssId,
                 emottakSubscriptionClient,
