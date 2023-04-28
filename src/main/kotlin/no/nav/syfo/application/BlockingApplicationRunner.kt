@@ -65,12 +65,16 @@ import no.nav.syfo.vedlegg.google.BucketUploadService
 import no.nav.syfo.vedlegg.model.BehandlerInfo
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
+import org.xml.sax.InputSource
 import java.io.StringReader
 import java.time.ZoneOffset
 import java.util.UUID
 import javax.jms.MessageConsumer
 import javax.jms.MessageProducer
 import javax.jms.TextMessage
+import javax.xml.parsers.SAXParserFactory
+import javax.xml.transform.Source
+import javax.xml.transform.sax.SAXSource
 
 private val sikkerlogg = LoggerFactory.getLogger("securelog")
 
@@ -112,8 +116,7 @@ class BlockingApplicationRunner(
                     }
                     INCOMING_MESSAGE_COUNTER.inc()
                     val requestLatency = REQUEST_TIME.startTimer()
-                    val fellesformat =
-                        fellesformatUnmarshaller.unmarshal(StringReader(inputMessageText)) as XMLEIFellesformat
+                    val fellesformat = secureXMLEIFellesformatUnmarshell(inputMessageText)
 
                     val vedlegg = getVedlegg(fellesformat)
                     if (vedlegg.isNotEmpty()) {
@@ -532,5 +535,17 @@ class BlockingApplicationRunner(
         } else {
             return behandlenedeBehandler?.hprNummer
         }
+    }
+
+    private fun secureXMLEIFellesformatUnmarshell(inputMessageText: String): XMLEIFellesformat {
+        val spf = SAXParserFactory.newInstance()
+        spf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
+
+        val xmlSource: Source = SAXSource(
+            spf.newSAXParser().xmlReader,
+            InputSource(StringReader(inputMessageText)),
+        )
+
+        return fellesformatUnmarshaller.unmarshal(xmlSource) as XMLEIFellesformat
     }
 }
