@@ -33,7 +33,7 @@ val junitJupiterVersion = "5.9.3"
 val flywayVersion = "9.18.0"
 val hikariVersion = "5.0.1"
 val postgresVersion = "42.6.0"
-val embeddedPostgresVersion = "2.0.3"
+val embeddedPostgresVersion = "2.0.4"
 val commonsCodecVersion = "1.15"
 
 plugins {
