@@ -18,7 +18,7 @@ val ktorVersion = "2.3.0"
 val logbackVersion = "1.4.7"
 val logstashEncoderVersion = "7.3"
 val prometheusVersion = "0.16.0"
-val smCommonVersion = "1.0.1"
+val smCommonVersion = "1.0.6"
 val sykmeldingVersion = "1.0.3"
 val jaxwsApiVersion = "2.3.1"
 val commonsTextVersion = "1.10.0"
@@ -144,7 +144,6 @@ tasks {
 
     withType<Test> {
         useJUnitPlatform {}
-        maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
         testLogging {
             events("skipped", "failed")
             showStackTraces = true
