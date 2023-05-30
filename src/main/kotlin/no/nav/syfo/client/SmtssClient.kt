@@ -11,6 +11,7 @@ import io.ktor.http.contentType
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.log
 import no.nav.syfo.util.LoggingMeta
+import java.net.http.HttpResponse
 
 class SmtssClient(
     private val endpointUrl: String,
@@ -32,16 +33,7 @@ class SmtssClient(
             header("samhandlerFnr", samhandlerFnr)
             header("samhandlerOrgName", samhandlerOrgName)
         }
-        return if (httpResponse.status == HttpStatusCode.OK) {
-            httpResponse.body<TSSident>().tssid
-        } else {
-            log.info(
-                "smtss responded with an error code {} for {}",
-                httpResponse.status,
-                StructuredArguments.fields(loggingMeta),
-            )
-            null
-        }
+        return getResponse(httpResponse, loggingMeta)
     }
 
     suspend fun findBestTssInfotrygdId(
@@ -59,16 +51,26 @@ class SmtssClient(
             header("samhandlerFnr", samhandlerFnr)
             header("samhandlerOrgName", samhandlerOrgName)
         }
-        return if (httpResponse.status == HttpStatusCode.OK) {
-            val tssid = httpResponse.body<TSSident>().tssid
-            tssid
-        } else {
-            log.info(
-                "smtss responded with an error code {} for {}",
-                httpResponse.status,
-                StructuredArguments.fields(loggingMeta),
-            )
-            null
+        return getResponse(httpResponse, loggingMeta)
+    }
+
+    private suspend fun getResponse(httpResponse: io.ktor.client.statement.HttpResponse, loggingMeta: LoggingMeta): String? {
+        return when (httpResponse.status) {
+            HttpStatusCode.OK -> {
+                httpResponse.body<TSSident>().tssid
+            }
+            HttpStatusCode.NotFound -> {
+                log.info(
+                    "smtss responded with {} for {}",
+                    httpResponse.status,
+                    StructuredArguments.fields(loggingMeta),
+                )
+                null
+            }
+            else -> {
+                log.error("Error getting TSS-id ${httpResponse.status}")
+                throw RuntimeException("Error getting TSS-id")
+            }
         }
     }
 }
