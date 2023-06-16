@@ -63,7 +63,7 @@ fun main() {
     val env = Environment()
     val database = Database(env)
 
-    val serviceUser = VaultServiceUser()
+    val serviceUser = ApplicationServiceUser()
     MqTlsUtils.getMqTlsConfig().forEach { key, value ->
         System.setProperty(key as String, value as String)
     }
@@ -143,7 +143,7 @@ fun launchListeners(
     kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
     syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
     pdlPersonService: PdlPersonService,
-    serviceUser: VaultServiceUser,
+    serviceUser: ApplicationServiceUser,
     kafkaManuelTaskProducer: KafkaProducer<String, OpprettOppgaveKafkaMessage>,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,

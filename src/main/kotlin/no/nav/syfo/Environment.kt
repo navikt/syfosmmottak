@@ -42,7 +42,7 @@ data class Environment(
     val smtssApiScope: String = getEnvVar("SMTSS_API_SCOPE"),
 ) : MqConfig
 
-data class VaultServiceUser(
+data class ApplicationServiceUser(
     val serviceuserUsername: String = getEnvVar("SERVICEUSER_USERNAME"),
     val serviceuserPassword: String = getEnvVar("SERVICEUSER_PASSWORD"),
 )

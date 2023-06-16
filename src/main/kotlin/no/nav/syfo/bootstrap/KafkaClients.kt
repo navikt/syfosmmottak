@@ -12,7 +12,7 @@ import no.nav.syfo.util.JacksonKafkaSerializer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
 
-class KafkaClients constructor(env: Environment) {
+class KafkaClients(env: Environment) {
 
     private val producerPropertiesAiven =
         KafkaUtils.getAivenKafkaConfig()

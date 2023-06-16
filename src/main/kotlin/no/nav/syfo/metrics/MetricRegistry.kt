@@ -56,13 +56,6 @@ val SYKMELDING_VEDLEGG_COUNTER: Counter =
         .help("Antall sykmeldinger som inneholder vedlegg")
         .register()
 
-val MANGLER_TSSIDENT: Counter =
-    Counter.build()
-        .namespace(METRICS_NS)
-        .name("mangler_tssident")
-        .help("Antall sykmeldinger der vi ikke fant TSS-ident")
-        .register()
-
 val IKKE_OPPDATERT_PARTNERREG: Counter =
     Counter.build()
         .namespace(METRICS_NS)
