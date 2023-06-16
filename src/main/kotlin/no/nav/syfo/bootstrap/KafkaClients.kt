@@ -14,16 +14,21 @@ import org.apache.kafka.clients.producer.ProducerConfig
 
 class KafkaClients constructor(env: Environment) {
 
-    private val producerPropertiesAiven = KafkaUtils.getAivenKafkaConfig()
-        .toProducerConfig(env.applicationName, valueSerializer = JacksonKafkaSerializer::class)
+    private val producerPropertiesAiven =
+        KafkaUtils.getAivenKafkaConfig()
+            .toProducerConfig(env.applicationName, valueSerializer = JacksonKafkaSerializer::class)
+
     init {
         producerPropertiesAiven[ProducerConfig.RETRIES_CONFIG] = 100_000
         producerPropertiesAiven[ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG] = true
     }
 
-    val kafkaProducerReceivedSykmelding = KafkaProducer<String, ReceivedSykmelding>(producerPropertiesAiven)
-    val kafkaProducerValidationResult = KafkaProducer<String, ValidationResult>(producerPropertiesAiven)
+    val kafkaProducerReceivedSykmelding =
+        KafkaProducer<String, ReceivedSykmelding>(producerPropertiesAiven)
+    val kafkaProducerValidationResult =
+        KafkaProducer<String, ValidationResult>(producerPropertiesAiven)
     val kafkaProducerApprec = KafkaProducer<String, Apprec>(producerPropertiesAiven)
-    val manualValidationKafkaProducer = KafkaProducer<String, OpprettOppgaveKafkaMessage>(producerPropertiesAiven)
+    val manualValidationKafkaProducer =
+        KafkaProducer<String, OpprettOppgaveKafkaMessage>(producerPropertiesAiven)
     val kafkaproducerManuellOppgave = KafkaProducer<String, ManuellOppgave>(producerPropertiesAiven)
 }

@@ -5,6 +5,9 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import javax.jms.MessageConsumer
+import javax.jms.MessageProducer
+import javax.jms.TextMessage
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.Environment
 import no.nav.syfo.apprec.Apprec
@@ -30,9 +33,6 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import javax.jms.MessageConsumer
-import javax.jms.MessageProducer
-import javax.jms.TextMessage
 
 internal class BlockingApplicationRunnerTest {
     val inputconsumer = mockk<MessageConsumer>(relaxed = true)
@@ -44,70 +44,80 @@ internal class BlockingApplicationRunnerTest {
     val norskHelsenettClient = mockk<NorskHelsenettClient>()
     val pdlPersonService = mockk<PdlPersonService>()
     val bucketUploadService = mockk<BucketUploadService>(relaxed = true)
-    val kafkaproducerreceivedSykmelding = mockk<KafkaProducer<String, ReceivedSykmelding>>(relaxed = true)
-    val kafkaproducervalidationResult = mockk<KafkaProducer<String, ValidationResult>>(relaxed = true)
-    val kafkaManuelTaskProducer = mockk<KafkaProducer<String, OpprettOppgaveKafkaMessage>>(relaxed = true)
+    val kafkaproducerreceivedSykmelding =
+        mockk<KafkaProducer<String, ReceivedSykmelding>>(relaxed = true)
+    val kafkaproducervalidationResult =
+        mockk<KafkaProducer<String, ValidationResult>>(relaxed = true)
+    val kafkaManuelTaskProducer =
+        mockk<KafkaProducer<String, OpprettOppgaveKafkaMessage>>(relaxed = true)
     val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
     val kafkaproducerManuellOppgave = mockk<KafkaProducer<String, ManuellOppgave>>(relaxed = true)
     val virusScanService = mockk<VirusScanService>(relaxed = true)
     val duplicationService = mockk<DuplicationService>(relaxed = true)
     val smtssClient = mockk<SmtssClient>()
 
-    val blockingApplicationRunner = BlockingApplicationRunner(
-        env,
-        applicationState,
-        emottakSubscriptionClient,
-        syfoSykemeldingRuleClient,
-        norskHelsenettClient,
-        pdlPersonService,
-        bucketUploadService,
-        kafkaproducerreceivedSykmelding,
-        kafkaproducervalidationResult,
-        kafkaManuelTaskProducer,
-        kafkaproducerApprec,
-        kafkaproducerManuellOppgave,
-        virusScanService,
-        duplicationService,
-        smtssClient,
-    )
+    val blockingApplicationRunner =
+        BlockingApplicationRunner(
+            env,
+            applicationState,
+            emottakSubscriptionClient,
+            syfoSykemeldingRuleClient,
+            norskHelsenettClient,
+            pdlPersonService,
+            bucketUploadService,
+            kafkaproducerreceivedSykmelding,
+            kafkaproducervalidationResult,
+            kafkaManuelTaskProducer,
+            kafkaproducerApprec,
+            kafkaproducerManuellOppgave,
+            virusScanService,
+            duplicationService,
+            smtssClient,
+        )
 
     @BeforeEach
     internal fun `Set up`() {
         clearMocks(kafkaproducerApprec, kafkaproducerreceivedSykmelding)
-        coEvery { pdlPersonService.getIdenter(any(), any()) } returns mapOf(
-            "10987654321" to PdlPerson(
-                listOf(
-                    PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
-                    PdlIdent("aktorId", false, "AKTORID"),
-                ),
-            ),
-            "12345678912" to PdlPerson(
-                listOf(
-                    PdlIdent("12345678912", false, "FOLKEREGISTERIDENT"),
-                    PdlIdent("aktorId2", false, "AKTORID"),
-                ),
-            ),
-        )
-        coEvery { norskHelsenettClient.getByFnr(any(), any()) } returns Behandler(
-            emptyList(),
-            "",
-            "HPR",
-            null,
-            null,
-            null,
-        )
-        coEvery { norskHelsenettClient.getByHpr(any(), any()) } returns Behandler(
-            emptyList(),
-            "",
-            "HPR",
-            null,
-            null,
-            null,
-        )
-        coEvery { syfoSykemeldingRuleClient.executeRuleValidation(any(), any()) } returns ValidationResult(
-            Status.OK,
-            emptyList(),
-        )
+        coEvery { pdlPersonService.getIdenter(any(), any()) } returns
+            mapOf(
+                "10987654321" to
+                    PdlPerson(
+                        listOf(
+                            PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
+                            PdlIdent("aktorId", false, "AKTORID"),
+                        ),
+                    ),
+                "12345678912" to
+                    PdlPerson(
+                        listOf(
+                            PdlIdent("12345678912", false, "FOLKEREGISTERIDENT"),
+                            PdlIdent("aktorId2", false, "AKTORID"),
+                        ),
+                    ),
+            )
+        coEvery { norskHelsenettClient.getByFnr(any(), any()) } returns
+            Behandler(
+                emptyList(),
+                "",
+                "HPR",
+                null,
+                null,
+                null,
+            )
+        coEvery { norskHelsenettClient.getByHpr(any(), any()) } returns
+            Behandler(
+                emptyList(),
+                "",
+                "HPR",
+                null,
+                null,
+                null,
+            )
+        coEvery { syfoSykemeldingRuleClient.executeRuleValidation(any(), any()) } returns
+            ValidationResult(
+                Status.OK,
+                emptyList(),
+            )
         coEvery { duplicationService.getDuplicationCheck(any(), any()) } returns null
         coEvery { smtssClient.findBestTssIdEmottak(any(), any(), any(), any()) } returns null
         coEvery { smtssClient.findBestTssInfotrygdId(any(), any(), any(), any()) } returns null
@@ -124,7 +134,9 @@ internal class BlockingApplicationRunnerTest {
         runBlocking {
             blockingApplicationRunner.run(inputconsumer, backoutProducer)
 
-            coVerify { kafkaproducerApprec.send(match { it.value().apprecStatus == ApprecStatus.OK }) }
+            coVerify {
+                kafkaproducerApprec.send(match { it.value().apprecStatus == ApprecStatus.OK })
+            }
         }
     }
 
@@ -135,14 +147,15 @@ internal class BlockingApplicationRunnerTest {
         val textMessage = mockk<TextMessage>(relaxed = true)
         every { textMessage.text } returns stringInput
         every { inputconsumer.receive(1000) } returns textMessage
-        coEvery { norskHelsenettClient.getByHpr(any(), any()) } returns Behandler(
-            emptyList(),
-            "12345678912",
-            "HPR",
-            null,
-            null,
-            null,
-        )
+        coEvery { norskHelsenettClient.getByHpr(any(), any()) } returns
+            Behandler(
+                emptyList(),
+                "12345678912",
+                "HPR",
+                null,
+                null,
+                null,
+            )
 
         runBlocking {
             blockingApplicationRunner.run(inputconsumer, backoutProducer)
@@ -159,7 +172,8 @@ internal class BlockingApplicationRunnerTest {
                 kafkaproducerreceivedSykmelding.send(
                     match {
                         it.value().personNrLege == "12345678912" &&
-                            it.value().legeHprNr == "HPR" && it.value().sykmelding.behandler.fnr == "behandlerfnr" &&
+                            it.value().legeHprNr == "HPR" &&
+                            it.value().sykmelding.behandler.fnr == "behandlerfnr" &&
                             it.value().legekontorOrgNr == "123456789"
                     },
                 )
@@ -177,7 +191,9 @@ internal class BlockingApplicationRunnerTest {
         runBlocking {
             blockingApplicationRunner.run(inputconsumer, backoutProducer)
 
-            coVerify { kafkaproducerApprec.send(match { it.value().apprecStatus == ApprecStatus.OK }) }
+            coVerify {
+                kafkaproducerApprec.send(match { it.value().apprecStatus == ApprecStatus.OK })
+            }
         }
     }
 

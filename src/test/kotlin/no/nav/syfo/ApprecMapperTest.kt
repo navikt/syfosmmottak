@@ -1,5 +1,6 @@
 package no.nav.syfo
 
+import java.io.StringReader
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.eiFellesformat.XMLMottakenhetBlokk
 import no.nav.helse.msgHead.XMLMsgHead
@@ -14,77 +15,92 @@ import no.nav.syfo.util.getLocalDateTime
 import no.nav.syfo.utils.getFileAsString
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import java.io.StringReader
 
 internal class ApprecMapperTest {
     val stringInput = getFileAsString("src/test/resources/sykemelding2013Regelsettversjon2.xml")
-    val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
+    val fellesformat =
+        fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
     val receiverBlock = fellesformat.get<XMLMottakenhetBlokk>()
     val msgHead = fellesformat.get<XMLMsgHead>()
 
-    val tekstTilSykmelder = "Duplikat! - Denne sykmeldingen er mottatt tidligere. \" +\n" +
-        "                                        \"Skal ikke sendes på nytt"
-    val apprecAvvist = fellesformat.toApprec(
-        ediloggid = receiverBlock.ediLoggId,
-        msgId = msgHead.msgInfo.msgId,
-        xmlMsgHead = msgHead,
-        apprecStatus = ApprecStatus.AVVIST,
-        tekstTilSykmelder = tekstTilSykmelder,
-        senderOrganisation = msgHead.msgInfo.receiver.organisation,
-        mottakerOrganisation = msgHead.msgInfo.sender.organisation,
-        msgGenDate = msgHead.msgInfo.genDate,
-    )
+    val tekstTilSykmelder =
+        "Duplikat! - Denne sykmeldingen er mottatt tidligere. \" +\n" +
+            "                                        \"Skal ikke sendes på nytt"
+    val apprecAvvist =
+        fellesformat.toApprec(
+            ediloggid = receiverBlock.ediLoggId,
+            msgId = msgHead.msgInfo.msgId,
+            xmlMsgHead = msgHead,
+            apprecStatus = ApprecStatus.AVVIST,
+            tekstTilSykmelder = tekstTilSykmelder,
+            senderOrganisation = msgHead.msgInfo.receiver.organisation,
+            mottakerOrganisation = msgHead.msgInfo.sender.organisation,
+            msgGenDate = msgHead.msgInfo.genDate,
+        )
 
-    val apprecOK = fellesformat.toApprec(
-        ediloggid = receiverBlock.ediLoggId,
-        msgId = msgHead.msgInfo.msgId,
-        xmlMsgHead = msgHead,
-        apprecStatus = ApprecStatus.OK,
-        tekstTilSykmelder = null,
-        mottakerOrganisation = msgHead.msgInfo.sender.organisation,
-        senderOrganisation = msgHead.msgInfo.receiver.organisation,
-        msgGenDate = msgHead.msgInfo.genDate,
-    )
+    val apprecOK =
+        fellesformat.toApprec(
+            ediloggid = receiverBlock.ediLoggId,
+            msgId = msgHead.msgInfo.msgId,
+            xmlMsgHead = msgHead,
+            apprecStatus = ApprecStatus.OK,
+            tekstTilSykmelder = null,
+            mottakerOrganisation = msgHead.msgInfo.sender.organisation,
+            senderOrganisation = msgHead.msgInfo.receiver.organisation,
+            msgGenDate = msgHead.msgInfo.genDate,
+        )
 
-    val validationResult = ValidationResult(
-        status = Status.INVALID,
-        ruleHits = listOf(
-            RuleInfo(
-                ruleName = "BEHANDLER_KI_NOT_USING_VALID_DIAGNOSECODE_TYPE",
-                messageForUser = "Den som skrev sykmeldingen mangler autorisasjon.",
-                messageForSender = "Behandler er manuellterapeut/kiropraktor eller fysioterapeut med " +
-                    "autorisasjon har angitt annen diagnose enn kapitel L (muskel og skjelettsykdommer)",
-                ruleStatus = Status.INVALID,
-            ),
-            RuleInfo(
-                ruleName = "NUMBER_OF_TREATMENT_DAYS_SET",
-                messageForUser = "Hvis behandlingsdager er angitt sendes meldingen til manuell behandling.",
-                messageForSender = "Hvis behandlingsdager er angitt sendes meldingen til manuell behandling.",
-                ruleStatus = Status.INVALID,
-            ),
-        ),
-    )
+    val validationResult =
+        ValidationResult(
+            status = Status.INVALID,
+            ruleHits =
+                listOf(
+                    RuleInfo(
+                        ruleName = "BEHANDLER_KI_NOT_USING_VALID_DIAGNOSECODE_TYPE",
+                        messageForUser = "Den som skrev sykmeldingen mangler autorisasjon.",
+                        messageForSender =
+                            "Behandler er manuellterapeut/kiropraktor eller fysioterapeut med " +
+                                "autorisasjon har angitt annen diagnose enn kapitel L (muskel og skjelettsykdommer)",
+                        ruleStatus = Status.INVALID,
+                    ),
+                    RuleInfo(
+                        ruleName = "NUMBER_OF_TREATMENT_DAYS_SET",
+                        messageForUser =
+                            "Hvis behandlingsdager er angitt sendes meldingen til manuell behandling.",
+                        messageForSender =
+                            "Hvis behandlingsdager er angitt sendes meldingen til manuell behandling.",
+                        ruleStatus = Status.INVALID,
+                    ),
+                ),
+        )
 
-    val apprec = fellesformat.toApprec(
-        ediloggid = receiverBlock.ediLoggId,
-        msgId = msgHead.msgInfo.msgId,
-        xmlMsgHead = msgHead,
-        apprecStatus = ApprecStatus.OK,
-        tekstTilSykmelder = null,
-        mottakerOrganisation = msgHead.msgInfo.sender.organisation,
-        senderOrganisation = msgHead.msgInfo.receiver.organisation,
-        validationResult = validationResult,
-        msgGenDate = msgHead.msgInfo.genDate,
-    )
+    val apprec =
+        fellesformat.toApprec(
+            ediloggid = receiverBlock.ediLoggId,
+            msgId = msgHead.msgInfo.msgId,
+            xmlMsgHead = msgHead,
+            apprecStatus = ApprecStatus.OK,
+            tekstTilSykmelder = null,
+            mottakerOrganisation = msgHead.msgInfo.sender.organisation,
+            senderOrganisation = msgHead.msgInfo.receiver.organisation,
+            validationResult = validationResult,
+            msgGenDate = msgHead.msgInfo.genDate,
+        )
 
     @Test
     internal fun `Duplicate AppRec has same msgGenDate`() {
-        Assertions.assertEquals(fellesformat.get<XMLMsgHead>().msgInfo.genDate, apprecAvvist.msgGenDate)
+        Assertions.assertEquals(
+            fellesformat.get<XMLMsgHead>().msgInfo.genDate,
+            apprecAvvist.msgGenDate
+        )
     }
 
     @Test
     internal fun `Duplicate AppRec has the same ediLoggId as the source`() {
-        Assertions.assertEquals(fellesformat.get<XMLMottakenhetBlokk>().ediLoggId, apprecAvvist.ediloggid)
+        Assertions.assertEquals(
+            fellesformat.get<XMLMottakenhetBlokk>().ediLoggId,
+            apprecAvvist.ediloggid
+        )
     }
 
     @Test
@@ -94,17 +110,26 @@ internal class ApprecMapperTest {
 
     @Test
     internal fun `Duplicate AppRec has the same genDate as the source`() {
-        Assertions.assertEquals(getLocalDateTime(fellesformat.get<XMLMsgHead>().msgInfo.genDate), apprecAvvist.genDate)
+        Assertions.assertEquals(
+            getLocalDateTime(fellesformat.get<XMLMsgHead>().msgInfo.genDate),
+            apprecAvvist.genDate
+        )
     }
 
     @Test
     internal fun `Duplicate AppRec has the same msgTypeVerdi as the source`() {
-        Assertions.assertEquals(fellesformat.get<XMLMsgHead>().msgInfo.type.v, apprecAvvist.msgTypeVerdi)
+        Assertions.assertEquals(
+            fellesformat.get<XMLMsgHead>().msgInfo.type.v,
+            apprecAvvist.msgTypeVerdi
+        )
     }
 
     @Test
     internal fun `Duplicate AppRec has the same msgTypeBeskrivelse as the source`() {
-        Assertions.assertEquals(fellesformat.get<XMLMsgHead>().msgInfo.type.dn, apprecAvvist.msgTypeBeskrivelse)
+        Assertions.assertEquals(
+            fellesformat.get<XMLMsgHead>().msgInfo.type.dn,
+            apprecAvvist.msgTypeBeskrivelse
+        )
     }
 
     @Test
@@ -180,13 +205,24 @@ internal class ApprecMapperTest {
 
     @Test
     internal fun `Duplicate AppRec has the same healthcareProfessional name on the sender organisation`() {
-        Assertions.assertEquals("Frost Frida Perma", apprecAvvist.mottakerOrganisasjon.helsepersonell?.navn)
+        Assertions.assertEquals(
+            "Frost Frida Perma",
+            apprecAvvist.mottakerOrganisasjon.helsepersonell?.navn
+        )
     }
 
     @Test
     internal fun `Duplicate AppRec has the same healthcareProfessional ident on the sender organisation`() {
         Assertions.assertEquals(
-            fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.healthcareProfessional.ident?.first()?.id,
+            fellesformat
+                .get<XMLMsgHead>()
+                .msgInfo
+                .sender
+                .organisation
+                .healthcareProfessional
+                .ident
+                ?.first()
+                ?.id,
             apprecAvvist.mottakerOrganisasjon.helsepersonell?.hovedIdent?.id,
         )
     }
@@ -246,7 +282,10 @@ internal class ApprecMapperTest {
 
     @Test
     internal fun `Duplicate AppRec has the same healthcareProfessional ident on the receiver organisation`() {
-        Assertions.assertEquals(null, apprecAvvist.senderOrganisasjon.helsepersonell?.hovedIdent?.id)
+        Assertions.assertEquals(
+            null,
+            apprecAvvist.senderOrganisasjon.helsepersonell?.hovedIdent?.id
+        )
     }
 
     @Test
@@ -275,7 +314,10 @@ internal class ApprecMapperTest {
 
     @Test
     internal fun `OK AppRec has the same msgTypeVerdi as the source`() {
-        Assertions.assertEquals(fellesformat.get<XMLMsgHead>().msgInfo.type.v, apprecOK.msgTypeVerdi)
+        Assertions.assertEquals(
+            fellesformat.get<XMLMsgHead>().msgInfo.type.v,
+            apprecOK.msgTypeVerdi
+        )
     }
 
     @Test
@@ -359,13 +401,24 @@ internal class ApprecMapperTest {
 
     @Test
     internal fun `OK AppRec has the same healthcareProfessional name on the sender organisation`() {
-        Assertions.assertEquals("Frost Frida Perma", apprecOK.mottakerOrganisasjon.helsepersonell?.navn)
+        Assertions.assertEquals(
+            "Frost Frida Perma",
+            apprecOK.mottakerOrganisasjon.helsepersonell?.navn
+        )
     }
 
     @Test
     internal fun `OK AppRec has the same healthcareProfessional ident on the sender organisation`() {
         Assertions.assertEquals(
-            fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.healthcareProfessional.ident?.first()?.id,
+            fellesformat
+                .get<XMLMsgHead>()
+                .msgInfo
+                .sender
+                .organisation
+                .healthcareProfessional
+                .ident
+                ?.first()
+                ?.id,
             apprecOK.mottakerOrganisasjon.helsepersonell?.hovedIdent?.id,
         )
     }
@@ -445,7 +498,10 @@ internal class ApprecMapperTest {
 
     @Test
     internal fun `Avisst AppRec with validationResult has the same genDate as the source`() {
-        Assertions.assertEquals(getLocalDateTime(fellesformat.get<XMLMsgHead>().msgInfo.genDate), apprec.genDate)
+        Assertions.assertEquals(
+            getLocalDateTime(fellesformat.get<XMLMsgHead>().msgInfo.genDate),
+            apprec.genDate
+        )
     }
 
     @Test
@@ -455,7 +511,10 @@ internal class ApprecMapperTest {
 
     @Test
     internal fun `Avisst AppRec with validationResult has the same msgTypeBeskrivelse as the source`() {
-        Assertions.assertEquals(fellesformat.get<XMLMsgHead>().msgInfo.type.dn, apprec.msgTypeBeskrivelse)
+        Assertions.assertEquals(
+            fellesformat.get<XMLMsgHead>().msgInfo.type.dn,
+            apprec.msgTypeBeskrivelse
+        )
     }
 
     @Test
@@ -540,7 +599,15 @@ internal class ApprecMapperTest {
     @Test
     internal fun `Avisst AppRec with validationResult has the same healthcareProfessional ident on the sender organisation`() {
         Assertions.assertEquals(
-            fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.healthcareProfessional.ident?.first()?.id,
+            fellesformat
+                .get<XMLMsgHead>()
+                .msgInfo
+                .sender
+                .organisation
+                .healthcareProfessional
+                .ident
+                ?.first()
+                ?.id,
             apprec.mottakerOrganisasjon.helsepersonell?.hovedIdent?.id,
         )
     }

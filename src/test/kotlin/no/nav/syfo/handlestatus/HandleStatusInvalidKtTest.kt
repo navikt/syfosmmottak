@@ -4,6 +4,9 @@ import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import java.io.StringReader
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutionException
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.syfo.apprec.Apprec
@@ -19,23 +22,26 @@ import org.apache.kafka.clients.producer.RecordMetadata
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import java.io.StringReader
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutionException
 
 internal class HandleStatusInvalidKtTest {
     val kafkaApprecProducer = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
     val receivedSykmelding = mockk<ReceivedSykmelding>(relaxed = true)
-    val kafkaProducerReceviedSykmelding = mockk<KafkaProducer<String, ReceivedSykmelding>>(relaxed = true)
+    val kafkaProducerReceviedSykmelding =
+        mockk<KafkaProducer<String, ReceivedSykmelding>>(relaxed = true)
     val validationResultKafkaProducer = mockk<KafkaProducer<String, ValidationResult>>()
     val validationResult = ValidationResult(Status.INVALID, emptyList())
     val stringInput = getFileAsString("src/test/resources/sykemelding2013Regelsettversjon2.xml")
-    val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
+    val fellesformat =
+        fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
     val msgHead = fellesformat.get<XMLMsgHead>()
+
     fun setUpMocks() {
-        every { kafkaApprecProducer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
-        every { validationResultKafkaProducer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
-        every { kafkaProducerReceviedSykmelding.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
+        every { kafkaApprecProducer.send(any()) } returns
+            CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
+        every { validationResultKafkaProducer.send(any()) } returns
+            CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
+        every { kafkaProducerReceviedSykmelding.send(any()) } returns
+            CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
     }
 
     @BeforeEach
@@ -46,7 +52,15 @@ internal class HandleStatusInvalidKtTest {
     @Test
     internal fun `Send invalid OK`() {
         setUpMocks()
-        handleStatusInvalid(validationResult, kafkaProducerReceviedSykmelding, validationResultKafkaProducer, receivedSykmelding, fellesformat, kafkaApprecProducer, msgHead)
+        handleStatusInvalid(
+            validationResult,
+            kafkaProducerReceviedSykmelding,
+            validationResultKafkaProducer,
+            receivedSykmelding,
+            fellesformat,
+            kafkaApprecProducer,
+            msgHead
+        )
 
         verify(exactly = 1) { kafkaApprecProducer.send(any()) }
         verify(exactly = 1) { validationResultKafkaProducer.send(any()) }
@@ -123,7 +137,15 @@ internal class HandleStatusInvalidKtTest {
     }
 }
 
-private fun handleStatusInvalid(validationResult: ValidationResult, kafkaProducerReceviedSykmelding: KafkaProducer<String, ReceivedSykmelding>, validationResultKafkaProducer: KafkaProducer<String, ValidationResult>, receivedSykmelding: ReceivedSykmelding, fellesformat: XMLEIFellesformat, kafkaApprecProducer: KafkaProducer<String, Apprec>, msgHead: XMLMsgHead) {
+private fun handleStatusInvalid(
+    validationResult: ValidationResult,
+    kafkaProducerReceviedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
+    validationResultKafkaProducer: KafkaProducer<String, ValidationResult>,
+    receivedSykmelding: ReceivedSykmelding,
+    fellesformat: XMLEIFellesformat,
+    kafkaApprecProducer: KafkaProducer<String, Apprec>,
+    msgHead: XMLMsgHead
+) {
     handleStatusINVALID(
         validationResult,
         kafkaProducerReceviedSykmelding,

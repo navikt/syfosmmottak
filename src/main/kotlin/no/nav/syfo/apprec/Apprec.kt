@@ -1,7 +1,7 @@
 package no.nav.syfo.apprec
 
-import no.nav.syfo.model.ValidationResult
 import java.time.LocalDateTime
+import no.nav.syfo.model.ValidationResult
 
 data class Apprec(
     val ediloggid: String,
@@ -30,7 +30,6 @@ data class Helsepersonell(
     val hovedIdent: Ident,
     val typeId: Kodeverdier,
     val tilleggsIdenter: List<Ident>?,
-
 )
 
 data class Ident(

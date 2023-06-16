@@ -9,15 +9,24 @@ import java.util.GregorianCalendar
 import javax.xml.bind.DatatypeConverter
 
 class XMLDateTimeAdapter : LocalDateTimeXmlAdapter() {
-    override fun unmarshal(stringValue: String?): LocalDateTime? = when (stringValue) {
-        null -> null
-        else -> (DatatypeConverter.parseDateTime(stringValue) as GregorianCalendar).toZonedDateTime().toLocalDateTime()
-    }
+    override fun unmarshal(stringValue: String?): LocalDateTime? =
+        when (stringValue) {
+            null -> null
+            else ->
+                (DatatypeConverter.parseDateTime(stringValue) as GregorianCalendar)
+                    .toZonedDateTime()
+                    .toLocalDateTime()
+        }
 }
 
 class XMLDateAdapter : LocalDateXmlAdapter() {
-    override fun unmarshal(stringValue: String?): LocalDate? = when (stringValue) {
-        null -> null
-        else -> DatatypeConverter.parseDate(stringValue).toInstant().atZone(ZoneOffset.MAX).toLocalDate()
-    }
+    override fun unmarshal(stringValue: String?): LocalDate? =
+        when (stringValue) {
+            null -> null
+            else ->
+                DatatypeConverter.parseDate(stringValue)
+                    .toInstant()
+                    .atZone(ZoneOffset.MAX)
+                    .toLocalDate()
+        }
 }

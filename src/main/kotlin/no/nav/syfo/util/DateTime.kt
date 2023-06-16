@@ -10,7 +10,9 @@ fun getLocalDateTime(dateTime: String): LocalDateTime {
     try {
         return OffsetDateTime.parse(dateTime).atZoneSameInstant(ZoneOffset.UTC).toLocalDateTime()
     } catch (ex: DateTimeParseException) {
-        return LocalDateTime.parse(dateTime).atZone(ZoneId.of("Europe/Oslo")).withZoneSameInstant(ZoneOffset.UTC)
+        return LocalDateTime.parse(dateTime)
+            .atZone(ZoneId.of("Europe/Oslo"))
+            .withZoneSameInstant(ZoneOffset.UTC)
             .toLocalDateTime()
     }
 }

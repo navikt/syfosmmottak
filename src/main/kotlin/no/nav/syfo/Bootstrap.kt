@@ -10,6 +10,8 @@ import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.storage.Storage
 import com.google.cloud.storage.StorageOptions
 import io.prometheus.client.hotspot.DefaultExports
+import java.io.FileInputStream
+import javax.jms.Session
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -46,14 +48,13 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.io.FileInputStream
-import javax.jms.Session
 
-val objectMapper: ObjectMapper = ObjectMapper()
-    .registerModule(JavaTimeModule())
-    .registerKotlinModule()
-    .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-    .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+val objectMapper: ObjectMapper =
+    ObjectMapper()
+        .registerModule(JavaTimeModule())
+        .registerKotlinModule()
+        .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.syfosmmottak")
 
@@ -63,12 +64,15 @@ fun main() {
     val database = Database(env)
 
     val serviceUser = VaultServiceUser()
-    MqTlsUtils.getMqTlsConfig().forEach { key, value -> System.setProperty(key as String, value as String) }
+    MqTlsUtils.getMqTlsConfig().forEach { key, value ->
+        System.setProperty(key as String, value as String)
+    }
     val applicationState = ApplicationState()
-    val applicationEngine = createApplicationEngine(
-        env,
-        applicationState,
-    )
+    val applicationEngine =
+        createApplicationEngine(
+            env,
+            applicationState,
+        )
 
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
 
@@ -77,21 +81,37 @@ fun main() {
     val httpClients = HttpClients(env)
     val kafkaClients = KafkaClients(env)
 
-    val sykmeldingVedleggStorageCredentials: Credentials = GoogleCredentials.fromStream(FileInputStream("/var/run/secrets/sykmeldingvedlegg-google-creds.json"))
-    val sykmeldingVedleggStorage: Storage = StorageOptions.newBuilder().setCredentials(sykmeldingVedleggStorageCredentials).build().service
-    val bucketUploadService = BucketUploadService(env.sykmeldingVedleggBucketName, sykmeldingVedleggStorage)
+    val sykmeldingVedleggStorageCredentials: Credentials =
+        GoogleCredentials.fromStream(
+            FileInputStream("/var/run/secrets/sykmeldingvedlegg-google-creds.json")
+        )
+    val sykmeldingVedleggStorage: Storage =
+        StorageOptions.newBuilder()
+            .setCredentials(sykmeldingVedleggStorageCredentials)
+            .build()
+            .service
+    val bucketUploadService =
+        BucketUploadService(env.sykmeldingVedleggBucketName, sykmeldingVedleggStorage)
     val virusScanService = VirusScanService(httpClients.clamAvClient)
 
     val duplicationService = DuplicationService(database)
 
     launchListeners(
-        env, applicationState,
-        httpClients.emottakSubscriptionClient, kafkaClients.kafkaProducerReceivedSykmelding,
+        env,
+        applicationState,
+        httpClients.emottakSubscriptionClient,
+        kafkaClients.kafkaProducerReceivedSykmelding,
         kafkaClients.kafkaProducerValidationResult,
-        httpClients.syfoSykemeldingRuleClient, httpClients.pdlPersonService,
-        serviceUser, kafkaClients.manualValidationKafkaProducer,
-        kafkaClients.kafkaProducerApprec, kafkaClients.kafkaproducerManuellOppgave,
-        httpClients.norskHelsenettClient, bucketUploadService, virusScanService, duplicationService,
+        httpClients.syfoSykemeldingRuleClient,
+        httpClients.pdlPersonService,
+        serviceUser,
+        kafkaClients.manualValidationKafkaProducer,
+        kafkaClients.kafkaProducerApprec,
+        kafkaClients.kafkaproducerManuellOppgave,
+        httpClients.norskHelsenettClient,
+        bucketUploadService,
+        virusScanService,
+        duplicationService,
         httpClients.smtssClient,
     )
 
@@ -99,7 +119,10 @@ fun main() {
 }
 
 @DelicateCoroutinesApi
-fun createListener(applicationState: ApplicationState, action: suspend CoroutineScope.() -> Unit): Job =
+fun createListener(
+    applicationState: ApplicationState,
+    action: suspend CoroutineScope.() -> Unit
+): Job =
     GlobalScope.launch {
         try {
             action()
@@ -131,34 +154,37 @@ fun launchListeners(
     smtssClient: SmtssClient,
 ) {
     createListener(applicationState) {
-        connectionFactory(env).createConnection(serviceUser.serviceuserUsername, serviceUser.serviceuserPassword).use { connection ->
-            connection.start()
-            val session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE)
+        connectionFactory(env)
+            .createConnection(serviceUser.serviceuserUsername, serviceUser.serviceuserPassword)
+            .use { connection ->
+                connection.start()
+                val session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE)
 
-            val inputconsumer = session.consumerForQueue(env.inputQueueName)
-            val backoutProducer = session.producerForQueue(env.inputBackoutQueueName)
+                val inputconsumer = session.consumerForQueue(env.inputQueueName)
+                val backoutProducer = session.producerForQueue(env.inputBackoutQueueName)
 
-            BlockingApplicationRunner(
-                env,
-                applicationState,
-                emottakSubscriptionClient,
-                syfoSykemeldingRuleClient,
-                norskHelsenettClient,
-                pdlPersonService,
-                bucketUploadService,
-                kafkaproducerreceivedSykmelding,
-                kafkaproducervalidationResult,
-                kafkaManuelTaskProducer,
-                kafkaproducerApprec,
-                kafkaproducerManuellOppgave,
-                virusScanService,
-                duplicationService,
-                smtssClient,
-            ).run(
-                inputconsumer,
-                backoutProducer,
-            )
-        }
+                BlockingApplicationRunner(
+                        env,
+                        applicationState,
+                        emottakSubscriptionClient,
+                        syfoSykemeldingRuleClient,
+                        norskHelsenettClient,
+                        pdlPersonService,
+                        bucketUploadService,
+                        kafkaproducerreceivedSykmelding,
+                        kafkaproducervalidationResult,
+                        kafkaManuelTaskProducer,
+                        kafkaproducerApprec,
+                        kafkaproducerManuellOppgave,
+                        virusScanService,
+                        duplicationService,
+                        smtssClient,
+                    )
+                    .run(
+                        inputconsumer,
+                        backoutProducer,
+                    )
+            }
     }
 }
 
@@ -185,12 +211,25 @@ fun sendValidationResult(
     loggingMeta: LoggingMeta,
 ) {
     try {
-        kafkaproducervalidationResult.send(
-            ProducerRecord(behandlingsUtfallTopic, receivedSykmelding.sykmelding.id, validationResult),
-        ).get()
-        log.info("Validation results send to kafka {}, {}", behandlingsUtfallTopic, fields(loggingMeta))
+        kafkaproducervalidationResult
+            .send(
+                ProducerRecord(
+                    behandlingsUtfallTopic,
+                    receivedSykmelding.sykmelding.id,
+                    validationResult
+                ),
+            )
+            .get()
+        log.info(
+            "Validation results send to kafka {}, {}",
+            behandlingsUtfallTopic,
+            fields(loggingMeta)
+        )
     } catch (ex: Exception) {
-        log.error("failed to send validation result for sykmelding {}", receivedSykmelding.sykmelding.id)
+        log.error(
+            "failed to send validation result for sykmelding {}",
+            receivedSykmelding.sykmelding.id
+        )
         throw ex
     }
 }
@@ -201,12 +240,25 @@ fun sendReceivedSykmelding(
     kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
 ) {
     try {
-        kafkaproducerreceivedSykmelding.send(
-            ProducerRecord(receivedSykmeldingTopic, receivedSykmelding.sykmelding.id, receivedSykmelding),
-        ).get()
-        log.info("Sykmelding sendt to kafka topic {} sykmelding id {}", receivedSykmeldingTopic, receivedSykmelding.sykmelding.id)
+        kafkaproducerreceivedSykmelding
+            .send(
+                ProducerRecord(
+                    receivedSykmeldingTopic,
+                    receivedSykmelding.sykmelding.id,
+                    receivedSykmelding
+                ),
+            )
+            .get()
+        log.info(
+            "Sykmelding sendt to kafka topic {} sykmelding id {}",
+            receivedSykmeldingTopic,
+            receivedSykmelding.sykmelding.id
+        )
     } catch (ex: Exception) {
-        log.error("failed to send sykmelding to kafka result for sykmelding {}", receivedSykmelding.sykmelding.id)
+        log.error(
+            "failed to send sykmelding to kafka result for sykmelding {}",
+            receivedSykmelding.sykmelding.id
+        )
         throw ex
     }
 }

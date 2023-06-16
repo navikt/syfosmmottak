@@ -31,29 +31,31 @@ internal class PdlPersonServiceTest {
 
     @Test
     internal fun `Henter aktorid for pasient og lege`() {
-        coEvery { pdlClient.getIdenter(any(), any()) } returns GetPersonResponse(
-            ResponseData(
-                hentIdenterBolk = listOf(
-                    HentIdenterBolk(
-                        "fnrPasient",
+        coEvery { pdlClient.getIdenter(any(), any()) } returns
+            GetPersonResponse(
+                ResponseData(
+                    hentIdenterBolk =
                         listOf(
-                            PdlIdent("aktorIdPasient", false, "AKTORID"),
-                            PdlIdent("fnrPasient", false, "FOLKEREGISTERIDENT"),
+                            HentIdenterBolk(
+                                "fnrPasient",
+                                listOf(
+                                    PdlIdent("aktorIdPasient", false, "AKTORID"),
+                                    PdlIdent("fnrPasient", false, "FOLKEREGISTERIDENT"),
+                                ),
+                                "ok",
+                            ),
+                            HentIdenterBolk(
+                                "fnrLege",
+                                listOf(
+                                    PdlIdent("aktorIdLege", false, "AKTORID"),
+                                    PdlIdent("fnrLege", false, "FOLKEREGISTERIDENT"),
+                                ),
+                                "ok",
+                            ),
                         ),
-                        "ok",
-                    ),
-                    HentIdenterBolk(
-                        "fnrLege",
-                        listOf(
-                            PdlIdent("aktorIdLege", false, "AKTORID"),
-                            PdlIdent("fnrLege", false, "FOLKEREGISTERIDENT"),
-                        ),
-                        "ok",
-                    ),
                 ),
-            ),
-            errors = null,
-        )
+                errors = null,
+            )
 
         runBlocking {
             val identer = pdlPersonService.getIdenter(listOf("fnrPasient", "fnrLege"), loggingMeta)
@@ -65,30 +67,32 @@ internal class PdlPersonServiceTest {
 
     @Test
     internal fun `Henter nyeste fnr som fnr for pasient med flere identer`() {
-        coEvery { pdlClient.getIdenter(any(), any()) } returns GetPersonResponse(
-            ResponseData(
-                hentIdenterBolk = listOf(
-                    HentIdenterBolk(
-                        "fnrPasient",
+        coEvery { pdlClient.getIdenter(any(), any()) } returns
+            GetPersonResponse(
+                ResponseData(
+                    hentIdenterBolk =
                         listOf(
-                            PdlIdent("aktorIdPasient", false, "AKTORID"),
-                            PdlIdent("gammeltFnrPasient", true, "FOLKEREGISTERIDENT"),
-                            PdlIdent("fnrPasient", false, "FOLKEREGISTERIDENT"),
+                            HentIdenterBolk(
+                                "fnrPasient",
+                                listOf(
+                                    PdlIdent("aktorIdPasient", false, "AKTORID"),
+                                    PdlIdent("gammeltFnrPasient", true, "FOLKEREGISTERIDENT"),
+                                    PdlIdent("fnrPasient", false, "FOLKEREGISTERIDENT"),
+                                ),
+                                "ok",
+                            ),
+                            HentIdenterBolk(
+                                "fnrLege",
+                                listOf(
+                                    PdlIdent("aktorIdLege", false, "AKTORID"),
+                                    PdlIdent("fnrLege", false, "FOLKEREGISTERIDENT"),
+                                ),
+                                "ok",
+                            ),
                         ),
-                        "ok",
-                    ),
-                    HentIdenterBolk(
-                        "fnrLege",
-                        listOf(
-                            PdlIdent("aktorIdLege", false, "AKTORID"),
-                            PdlIdent("fnrLege", false, "FOLKEREGISTERIDENT"),
-                        ),
-                        "ok",
-                    ),
                 ),
-            ),
-            errors = null,
-        )
+                errors = null,
+            )
 
         runBlocking {
             val identer = pdlPersonService.getIdenter(listOf("fnrPasient", "fnrLege"), loggingMeta)
@@ -100,22 +104,24 @@ internal class PdlPersonServiceTest {
 
     @Test
     internal fun `Pasient-aktorid er null hvis pasient ikke finnes i PDL`() {
-        coEvery { pdlClient.getIdenter(any(), any()) } returns GetPersonResponse(
-            ResponseData(
-                hentIdenterBolk = listOf(
-                    HentIdenterBolk("fnrPasient", null, "not_found"),
-                    HentIdenterBolk(
-                        "fnrLege",
+        coEvery { pdlClient.getIdenter(any(), any()) } returns
+            GetPersonResponse(
+                ResponseData(
+                    hentIdenterBolk =
                         listOf(
-                            PdlIdent("aktorIdLege", false, "AKTORID"),
-                            PdlIdent("fnrLege", false, "FOLKEREGISTERIDENT"),
+                            HentIdenterBolk("fnrPasient", null, "not_found"),
+                            HentIdenterBolk(
+                                "fnrLege",
+                                listOf(
+                                    PdlIdent("aktorIdLege", false, "AKTORID"),
+                                    PdlIdent("fnrLege", false, "FOLKEREGISTERIDENT"),
+                                ),
+                                "ok",
+                            ),
                         ),
-                        "ok",
-                    ),
                 ),
-            ),
-            errors = null,
-        )
+                errors = null,
+            )
         runBlocking {
             val identer = pdlPersonService.getIdenter(listOf("fnrPasient", "fnrLege"), loggingMeta)
 

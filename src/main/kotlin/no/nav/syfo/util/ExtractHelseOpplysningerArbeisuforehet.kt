@@ -6,23 +6,20 @@ import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 import no.nav.helse.sm2013.TeleCom
 
-fun extractHelseOpplysningerArbeidsuforhet(fellesformat: XMLEIFellesformat): HelseOpplysningerArbeidsuforhet =
-    fellesformat.get<XMLMsgHead>().document[0].refDoc.content.any[0] as HelseOpplysningerArbeidsuforhet
+fun extractHelseOpplysningerArbeidsuforhet(
+    fellesformat: XMLEIFellesformat
+): HelseOpplysningerArbeidsuforhet =
+    fellesformat.get<XMLMsgHead>().document[0].refDoc.content.any[0]
+        as HelseOpplysningerArbeidsuforhet
 
 fun extractOrganisationNumberFromSender(fellesformat: XMLEIFellesformat): XMLIdent? =
-    fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.find {
-        it.typeId.v == "ENH"
-    }
+    fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.find { it.typeId.v == "ENH" }
 
 fun extractOrganisationRashNumberFromSender(fellesformat: XMLEIFellesformat): XMLIdent? =
-    fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.find {
-        it.typeId.v == "RSH"
-    }
+    fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.find { it.typeId.v == "RSH" }
 
 fun extractOrganisationHerNumberFromSender(fellesformat: XMLEIFellesformat): XMLIdent? =
-    fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.find {
-        it.typeId.v == "HER"
-    }
+    fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.find { it.typeId.v == "HER" }
 
 fun extractHpr(fellesformat: XMLEIFellesformat): XMLIdent? =
     fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.healthcareProfessional?.ident?.find {
@@ -36,8 +33,10 @@ fun extractHprBehandler(healthInformation: HelseOpplysningerArbeidsuforhet): Str
     healthInformation.behandler.id.find { it.typeId.v == "HPR" }?.id
 
 fun extractTlfFromKontaktInfo(kontaktInfo: List<TeleCom>?): String? =
-    if (kontaktInfo?.size != 0 && kontaktInfo?.firstOrNull()!!.teleAddress != null &&
-        kontaktInfo.firstOrNull()!!.teleAddress?.v?.contains("tel:") == true
+    if (
+        kontaktInfo?.size != 0 &&
+            kontaktInfo?.firstOrNull()!!.teleAddress != null &&
+            kontaktInfo.firstOrNull()!!.teleAddress?.v?.contains("tel:") == true
     ) {
         kontaktInfo.firstOrNull()!!.teleAddress?.v?.removePrefix("tel:")
     } else {
@@ -50,4 +49,5 @@ fun padHpr(hprnummer: String?): String? {
     }
     return hprnummer
 }
+
 inline fun <reified T> XMLEIFellesformat.get() = this.any.find { it is T } as T

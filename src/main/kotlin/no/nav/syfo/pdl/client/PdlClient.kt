@@ -19,16 +19,22 @@ class PdlClient(
     private val tema = "SYM"
 
     suspend fun getIdenter(fnrs: List<String>, stsToken: String): GetPersonResponse {
-        val getPersonRequest = GetPersonRequest(query = graphQlQuery, variables = GetPersonVariables(identer = fnrs))
+        val getPersonRequest =
+            GetPersonRequest(query = graphQlQuery, variables = GetPersonVariables(identer = fnrs))
         return getGraphQLResponse(getPersonRequest, stsToken)
     }
 
-    private suspend inline fun <reified R> getGraphQLResponse(graphQlBody: Any, stsToken: String): R {
-        return httpClient.post(basePath) {
-            setBody(graphQlBody)
-            header(HttpHeaders.Authorization, "Bearer $stsToken")
-            header(temaHeader, tema)
-            header(HttpHeaders.ContentType, "application/json")
-        }.body()
+    private suspend inline fun <reified R> getGraphQLResponse(
+        graphQlBody: Any,
+        stsToken: String
+    ): R {
+        return httpClient
+            .post(basePath) {
+                setBody(graphQlBody)
+                header(HttpHeaders.Authorization, "Bearer $stsToken")
+                header(temaHeader, tema)
+                header(HttpHeaders.ContentType, "application/json")
+            }
+            .body()
     }
 }

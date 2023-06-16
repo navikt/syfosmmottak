@@ -37,7 +37,8 @@ class HttpClients(environment: Environment) {
         HttpResponseValidator {
             handleResponseExceptionWithRequest { exception, _ ->
                 when (exception) {
-                    is SocketTimeoutException -> throw ServiceUnavailableException(exception.message)
+                    is SocketTimeoutException ->
+                        throw ServiceUnavailableException(exception.message)
                 }
             }
         }
@@ -49,7 +50,9 @@ class HttpClients(environment: Environment) {
             }
             retryIf(maxRetries) { request, response ->
                 if (response.status.value.let { it in 500..599 }) {
-                    log.warn("Retrying for statuscode ${response.status.value}, for url ${request.url}")
+                    log.warn(
+                        "Retrying for statuscode ${response.status.value}, for url ${request.url}"
+                    )
                     true
                 } else {
                     false
@@ -61,27 +64,48 @@ class HttpClients(environment: Environment) {
 
     private val httpClient = HttpClient(Apache, config)
 
-    private val accessTokenClientV2 = AccessTokenClientV2(
-        environment.aadAccessTokenV2Url,
-        environment.clientIdV2,
-        environment.clientSecretV2,
-        httpClient,
-    )
+    private val accessTokenClientV2 =
+        AccessTokenClientV2(
+            environment.aadAccessTokenV2Url,
+            environment.clientIdV2,
+            environment.clientSecretV2,
+            httpClient,
+        )
 
-    val syfoSykemeldingRuleClient = SyfoSykemeldingRuleClient(
-        environment.syfosmreglerApiUrl,
-        accessTokenClientV2,
-        environment.syfosmreglerApiScope,
-        httpClient,
-    )
+    val syfoSykemeldingRuleClient =
+        SyfoSykemeldingRuleClient(
+            environment.syfosmreglerApiUrl,
+            accessTokenClientV2,
+            environment.syfosmreglerApiScope,
+            httpClient,
+        )
 
-    val emottakSubscriptionClient = EmottakSubscriptionClient(environment.smgcpProxyUrl, accessTokenClientV2, environment.smgcpProxyScope, httpClient)
+    val emottakSubscriptionClient =
+        EmottakSubscriptionClient(
+            environment.smgcpProxyUrl,
+            accessTokenClientV2,
+            environment.smgcpProxyScope,
+            httpClient
+        )
 
-    val norskHelsenettClient = NorskHelsenettClient(environment.norskHelsenettEndpointURL, accessTokenClientV2, environment.helsenettproxyScope, httpClient)
+    val norskHelsenettClient =
+        NorskHelsenettClient(
+            environment.norskHelsenettEndpointURL,
+            accessTokenClientV2,
+            environment.helsenettproxyScope,
+            httpClient
+        )
 
-    val pdlPersonService = PdlFactory.getPdlService(environment, httpClient, accessTokenClientV2, environment.pdlScope)
+    val pdlPersonService =
+        PdlFactory.getPdlService(environment, httpClient, accessTokenClientV2, environment.pdlScope)
 
     val clamAvClient = ClamAvClient(httpClient, environment.clamAvEndpointUrl)
 
-    val smtssClient = SmtssClient(environment.smtssApiUrl, accessTokenClientV2, environment.smtssApiScope, httpClient)
+    val smtssClient =
+        SmtssClient(
+            environment.smtssApiUrl,
+            accessTokenClientV2,
+            environment.smtssApiScope,
+            httpClient
+        )
 }

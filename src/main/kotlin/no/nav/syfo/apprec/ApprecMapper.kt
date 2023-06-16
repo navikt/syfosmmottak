@@ -1,13 +1,13 @@
 package no.nav.syfo.apprec
 
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
+import no.nav.helse.msgHead.XMLCV as MsgHeadCV
 import no.nav.helse.msgHead.XMLHealthcareProfessional
 import no.nav.helse.msgHead.XMLIdent
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.helse.msgHead.XMLOrganisation
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.util.getLocalDateTime
-import no.nav.helse.msgHead.XMLCV as MsgHeadCV
 
 fun XMLEIFellesformat.toApprec(
     ediloggid: String,
@@ -20,38 +20,43 @@ fun XMLEIFellesformat.toApprec(
     msgGenDate: String,
     validationResult: ValidationResult? = null,
     ebService: String? = null,
-) = Apprec(
-    ediloggid = ediloggid,
-    msgId = msgId,
-    msgTypeVerdi = xmlMsgHead.msgInfo.type.v,
-    msgTypeBeskrivelse = xmlMsgHead.msgInfo.type?.dn ?: "",
-    genDate = getLocalDateTime(xmlMsgHead.msgInfo.genDate),
-    apprecStatus = apprecStatus,
-    tekstTilSykmelder = tekstTilSykmelder,
-    senderOrganisasjon = senderOrganisation.intoHCP(),
-    mottakerOrganisasjon = mottakerOrganisation.intoHCP(),
-    msgGenDate = msgGenDate,
-    validationResult = validationResult,
-    ebService = ebService,
-)
+) =
+    Apprec(
+        ediloggid = ediloggid,
+        msgId = msgId,
+        msgTypeVerdi = xmlMsgHead.msgInfo.type.v,
+        msgTypeBeskrivelse = xmlMsgHead.msgInfo.type?.dn ?: "",
+        genDate = getLocalDateTime(xmlMsgHead.msgInfo.genDate),
+        apprecStatus = apprecStatus,
+        tekstTilSykmelder = tekstTilSykmelder,
+        senderOrganisasjon = senderOrganisation.intoHCP(),
+        mottakerOrganisasjon = mottakerOrganisation.intoHCP(),
+        msgGenDate = msgGenDate,
+        validationResult = validationResult,
+        ebService = ebService,
+    )
 
 fun XMLHealthcareProfessional.intoHCPerson(): Helsepersonell =
     Helsepersonell(
-        navn = if (middleName == null) "$familyName $givenName" else "$familyName $givenName $middleName",
+        navn =
+            if (middleName == null) "$familyName $givenName"
+            else "$familyName $givenName $middleName",
         hovedIdent = ident.first().intoInst(),
         typeId = ident.first().typeId.intoKodeverdier(),
         tilleggsIdenter = getTilleggsIdenter(ident),
     )
 
-fun XMLOrganisation.intoHCP(): Organisation = Organisation(
-    hovedIdent = ident.first().intoInst(),
-    navn = organisationName,
-    tilleggsIdenter = getTilleggsIdenter(ident),
-    helsepersonell = when (healthcareProfessional != null) {
-        true -> healthcareProfessional.intoHCPerson()
-        else -> null
-    },
-)
+fun XMLOrganisation.intoHCP(): Organisation =
+    Organisation(
+        hovedIdent = ident.first().intoInst(),
+        navn = organisationName,
+        tilleggsIdenter = getTilleggsIdenter(ident),
+        helsepersonell =
+            when (healthcareProfessional != null) {
+                true -> healthcareProfessional.intoHCPerson()
+                else -> null
+            },
+    )
 
 fun getTilleggsIdenter(ident: List<XMLIdent>): List<Ident> {
     return ident.drop(1).mapNotNull {

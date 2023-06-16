@@ -20,10 +20,7 @@ suspend fun handleEmottakSubscription(
             StructuredArguments.fields(loggingMeta),
         )
         IKKE_OPPDATERT_PARTNERREG.inc()
-    } else if (
-        !partnerreferanse.isNullOrEmpty() &&
-        partnerreferanse.isNotBlank()
-    ) {
+    } else if (!partnerreferanse.isNullOrEmpty() && partnerreferanse.isNotBlank()) {
         emottakSubscriptionClient.startSubscription(
             tssId,
             msgHead,

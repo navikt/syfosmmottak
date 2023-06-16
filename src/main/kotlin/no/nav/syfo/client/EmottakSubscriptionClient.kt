@@ -6,13 +6,13 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
+import java.io.ByteArrayOutputStream
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.helse.msgHead.XMLSender
 import no.nav.syfo.log
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.senderMarshaller
-import java.io.ByteArrayOutputStream
 
 class EmottakSubscriptionClient(
     private val endpointUrl: String,
@@ -20,7 +20,8 @@ class EmottakSubscriptionClient(
     private val resourceId: String,
     private val httpClient: HttpClient,
 ) {
-    // This functionality is only necessary due to sending out dialogMelding and oppfølgingsplan to doctor
+    // This functionality is only necessary due to sending out dialogMelding and oppfølgingsplan to
+    // doctor
     suspend fun startSubscription(
         tssIdent: String,
         msgHead: XMLMsgHead,
@@ -28,7 +29,10 @@ class EmottakSubscriptionClient(
         msgId: String,
         loggingMeta: LoggingMeta,
     ) {
-        log.info("Update subscription emottak for tssid: $tssIdent {}", StructuredArguments.fields(loggingMeta))
+        log.info(
+            "Update subscription emottak for tssid: $tssIdent {}",
+            StructuredArguments.fields(loggingMeta)
+        )
         val accessToken = accessTokenClientV2.getAccessTokenV2(resourceId)
         httpClient.post("$endpointUrl/emottak/startsubscription") {
             contentType(ContentType.Application.Json)
@@ -45,10 +49,12 @@ class EmottakSubscriptionClient(
     }
 
     private fun convertSenderToBase64(sender: XMLSender): ByteArray =
-        ByteArrayOutputStream().use {
-            senderMarshaller.marshal(sender, it)
-            it
-        }.toByteArray()
+        ByteArrayOutputStream()
+            .use {
+                senderMarshaller.marshal(sender, it)
+                it
+            }
+            .toByteArray()
 }
 
 data class StartSubscriptionRequest(

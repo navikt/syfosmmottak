@@ -4,6 +4,9 @@ import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import java.io.StringReader
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutionException
 import kotlinx.coroutines.runBlocking
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.msgHead.XMLMsgHead
@@ -23,47 +26,53 @@ import org.apache.kafka.clients.producer.RecordMetadata
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import java.io.StringReader
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutionException
 
 internal class HandleStatusManualProcessingKtTest {
     val kafkaApprecProducer = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
     val receivedSykmelding = mockk<ReceivedSykmelding>(relaxed = true)
-    val kafkaProducerReceviedSykmelding = mockk<KafkaProducer<String, ReceivedSykmelding>>(relaxed = true)
+    val kafkaProducerReceviedSykmelding =
+        mockk<KafkaProducer<String, ReceivedSykmelding>>(relaxed = true)
     val kafkaManualTaskProducer = mockk<KafkaProducer<String, OpprettOppgaveKafkaMessage>>()
     val validationResultKafkaProducer = mockk<KafkaProducer<String, ValidationResult>>()
     val manuellOppgaveProducer = mockk<KafkaProducer<String, ManuellOppgave>>()
     val validationResult = ValidationResult(Status.MANUAL_PROCESSING, emptyList())
-    val validationResultIkkeManuell = ValidationResult(
-        Status.MANUAL_PROCESSING,
-        listOf(
-            RuleInfo(
-                ruleName = "SYKMELDING_MED_BEHANDLINGSDAGER",
-                messageForUser = "Sykmelding inneholder behandlingsdager.",
-                messageForSender = "Sykmelding inneholder behandlingsdager.",
-                ruleStatus = Status.MANUAL_PROCESSING,
+    val validationResultIkkeManuell =
+        ValidationResult(
+            Status.MANUAL_PROCESSING,
+            listOf(
+                RuleInfo(
+                    ruleName = "SYKMELDING_MED_BEHANDLINGSDAGER",
+                    messageForUser = "Sykmelding inneholder behandlingsdager.",
+                    messageForSender = "Sykmelding inneholder behandlingsdager.",
+                    ruleStatus = Status.MANUAL_PROCESSING,
+                ),
             ),
-        ),
-    )
+        )
     val stringInput = getFileAsString("src/test/resources/sykemelding2013Regelsettversjon2.xml")
-    val fellesformat = fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
+    val fellesformat =
+        fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
     val msgHead = fellesformat.get<XMLMsgHead>()
     val loggingMeta = LoggingMeta("", "", "")
+
     fun setUpMocks() {
-        every { kafkaApprecProducer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
-        every { kafkaManualTaskProducer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
-        every { manuellOppgaveProducer.send(any()) } returns CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
-        every { validationResultKafkaProducer.send(any()) } returns CompletableFuture<RecordMetadata>().apply {
-            complete(
-                mockk(),
-            )
-        }
-        every { kafkaProducerReceviedSykmelding.send(any()) } returns CompletableFuture<RecordMetadata>().apply {
-            complete(
-                mockk(),
-            )
-        }
+        every { kafkaApprecProducer.send(any()) } returns
+            CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
+        every { kafkaManualTaskProducer.send(any()) } returns
+            CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
+        every { manuellOppgaveProducer.send(any()) } returns
+            CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
+        every { validationResultKafkaProducer.send(any()) } returns
+            CompletableFuture<RecordMetadata>().apply {
+                complete(
+                    mockk(),
+                )
+            }
+        every { kafkaProducerReceviedSykmelding.send(any()) } returns
+            CompletableFuture<RecordMetadata>().apply {
+                complete(
+                    mockk(),
+                )
+            }
     }
 
     @BeforeEach
@@ -209,9 +218,7 @@ internal class HandleStatusManualProcessingKtTest {
 fun getFailingFuture(): CompletableFuture<RecordMetadata> {
     val future = CompletableFuture<RecordMetadata>()
 
-    future.completeAsync {
-        throw RuntimeException()
-    }
+    future.completeAsync { throw RuntimeException() }
     return future
 }
 

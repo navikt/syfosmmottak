@@ -1,5 +1,6 @@
 package no.nav.syfo.service
 
+import java.security.MessageDigest
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.duplicationcheck.db.extractDuplicateCheckByMottakId
@@ -9,7 +10,6 @@ import no.nav.syfo.duplicationcheck.db.persistDuplicateMessage
 import no.nav.syfo.duplicationcheck.model.Duplicate
 import no.nav.syfo.duplicationcheck.model.DuplicateCheck
 import no.nav.syfo.objectMapper
-import java.security.MessageDigest
 
 class DuplicationService(private val database: DatabaseInterface) {
     fun persistDuplicationCheck(
@@ -30,9 +30,10 @@ class DuplicationService(private val database: DatabaseInterface) {
         if (duplicationCheckSha256HealthInformation != null) {
             return duplicationCheckSha256HealthInformation
         } else {
-            val duplicationCheckMottakId = getLatestDuplicationCheck(
-                database.extractDuplicateCheckByMottakId(mottakId),
-            )
+            val duplicationCheckMottakId =
+                getLatestDuplicationCheck(
+                    database.extractDuplicateCheckByMottakId(mottakId),
+                )
             if (duplicationCheckMottakId != null) {
                 return duplicationCheckMottakId
             }

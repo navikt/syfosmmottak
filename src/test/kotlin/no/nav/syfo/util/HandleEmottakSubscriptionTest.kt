@@ -24,11 +24,20 @@ internal class HandleEmottakSubscriptionTest {
         val loggingMeta = LoggingMeta("1", "", "")
         val sykmeldingsId = "131-1--213-223-23"
 
-        coEvery { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) } returns Unit
-        coEvery { smtssClient.findBestTssIdEmottak(any(), any(), any(), any()) } returns "8000013123"
+        coEvery {
+            emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any())
+        } returns Unit
+        coEvery { smtssClient.findBestTssIdEmottak(any(), any(), any(), any()) } returns
+            "8000013123"
 
         runBlocking {
-            val tssId = smtssClient.findBestTssIdEmottak(signaturFnr, legekontorName, loggingMeta, sykmeldingsId)
+            val tssId =
+                smtssClient.findBestTssIdEmottak(
+                    signaturFnr,
+                    legekontorName,
+                    loggingMeta,
+                    sykmeldingsId
+                )
 
             handleEmottakSubscription(
                 tssId,
@@ -39,7 +48,9 @@ internal class HandleEmottakSubscriptionTest {
                 loggingMeta,
             )
 
-            coVerify(exactly = 1) { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) }
+            coVerify(exactly = 1) {
+                emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any())
+            }
         }
     }
 
@@ -56,11 +67,19 @@ internal class HandleEmottakSubscriptionTest {
         val signaturFnr = "13134544"
         val sykmeldingsId = "131-1--213-223-23"
 
-        coEvery { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) } returns Unit
+        coEvery {
+            emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any())
+        } returns Unit
         coEvery { smtssClient.findBestTssIdEmottak(any(), any(), any(), any()) } returns null
 
         runBlocking {
-            val tssId = smtssClient.findBestTssIdEmottak(signaturFnr, legekontorName, loggingMeta, sykmeldingsId)
+            val tssId =
+                smtssClient.findBestTssIdEmottak(
+                    signaturFnr,
+                    legekontorName,
+                    loggingMeta,
+                    sykmeldingsId
+                )
 
             handleEmottakSubscription(
                 tssId,
@@ -71,7 +90,9 @@ internal class HandleEmottakSubscriptionTest {
                 loggingMeta,
             )
 
-            coVerify(exactly = 0) { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) }
+            coVerify(exactly = 0) {
+                emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any())
+            }
         }
     }
 
@@ -87,11 +108,20 @@ internal class HandleEmottakSubscriptionTest {
         val signaturFnr = "13134544"
         val sykmeldingsId = "131-1--213-223-23"
 
-        coEvery { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) } returns Unit
-        coEvery { smtssClient.findBestTssIdEmottak(any(), any(), any(), any()) } returns "8000013123"
+        coEvery {
+            emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any())
+        } returns Unit
+        coEvery { smtssClient.findBestTssIdEmottak(any(), any(), any(), any()) } returns
+            "8000013123"
 
         runBlocking {
-            val tssId = smtssClient.findBestTssIdEmottak(signaturFnr, legekontorName, loggingMeta, sykmeldingsId)
+            val tssId =
+                smtssClient.findBestTssIdEmottak(
+                    signaturFnr,
+                    legekontorName,
+                    loggingMeta,
+                    sykmeldingsId
+                )
             handleEmottakSubscription(
                 tssId,
                 emottakSubscriptionClient,
@@ -101,7 +131,9 @@ internal class HandleEmottakSubscriptionTest {
                 loggingMeta,
             )
 
-            coVerify(exactly = 0) { emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any()) }
+            coVerify(exactly = 0) {
+                emottakSubscriptionClient.startSubscription(any(), any(), any(), any(), any())
+            }
         }
     }
 }

@@ -13,23 +13,36 @@ class PdlPersonService(
     private val pdlScope: String,
 ) {
 
-    suspend fun getIdenter(identer: List<String>, loggingMeta: LoggingMeta): Map<String, PdlPerson?> {
+    suspend fun getIdenter(
+        identer: List<String>,
+        loggingMeta: LoggingMeta
+    ): Map<String, PdlPerson?> {
         val stsToken = accessTokenClientV2.getAccessTokenV2(pdlScope)
         val pdlResponse = pdlClient.getIdenter(identer, stsToken)
 
         if (pdlResponse.errors != null) {
             pdlResponse.errors.forEach {
-                log.error("PDL returnerte error {}, {}", it, StructuredArguments.fields(loggingMeta))
+                log.error(
+                    "PDL returnerte error {}, {}",
+                    it,
+                    StructuredArguments.fields(loggingMeta)
+                )
             }
         }
-        if (pdlResponse.data.hentIdenterBolk == null || pdlResponse.data.hentIdenterBolk.isNullOrEmpty()) {
+        if (
+            pdlResponse.data.hentIdenterBolk == null ||
+                pdlResponse.data.hentIdenterBolk.isNullOrEmpty()
+        ) {
             log.error("Fant ikke identer i PDL {}", StructuredArguments.fields(loggingMeta))
             throw IllegalStateException("Fant ingen identer i PDL, skal ikke kunne skje!")
         }
 
         pdlResponse.data.hentIdenterBolk.forEach {
             if (it.code != "ok") {
-                log.warn("Mottok feilkode ${it.code} fra PDL for en eller flere identer, {}", StructuredArguments.fields(loggingMeta))
+                log.warn(
+                    "Mottok feilkode ${it.code} fra PDL for en eller flere identer, {}",
+                    StructuredArguments.fields(loggingMeta)
+                )
             }
         }
 
