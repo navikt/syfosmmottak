@@ -16,8 +16,8 @@ import no.nav.syfo.duplicationcheck.db.persistDuplicateMessage
 import no.nav.syfo.duplicationcheck.model.Duplicate
 import no.nav.syfo.duplicationcheck.model.DuplicateCheck
 
-class UtenStrekkode {
-    @JsonIgnore val strekkode: String? = null
+abstract class UtenStrekkode {
+    @get:JsonIgnore abstract val strekkode: String
 }
 
 private val sha256ObjectMapper: ObjectMapper =
