@@ -34,7 +34,7 @@ val flywayVersion = "9.20.0"
 val hikariVersion = "5.0.1"
 val postgresVersion = "42.6.0"
 val embeddedPostgresVersion = "2.0.4"
-val commonsCodecVersion = "1.15"
+val commonsCodecVersion = "1.16.0"
 val ktfmtVersion = "0.44"
 
 plugins {
