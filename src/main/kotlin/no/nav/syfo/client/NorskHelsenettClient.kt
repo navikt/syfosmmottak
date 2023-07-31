@@ -12,7 +12,7 @@ import io.ktor.http.HttpStatusCode.Companion.OK
 import io.ktor.http.HttpStatusCode.Companion.Unauthorized
 import java.io.IOException
 import net.logstash.logback.argument.StructuredArguments.fields
-import no.nav.syfo.log
+import no.nav.syfo.logger
 import no.nav.syfo.util.LoggingMeta
 
 class NorskHelsenettClient(
@@ -36,7 +36,7 @@ class NorskHelsenettClient(
             }
         when (httpResponse.status) {
             InternalServerError -> {
-                log.error(
+                logger.error(
                     "Syfohelsenettproxy kastet feilmelding for loggingMeta {} ved henting av behandler for hprNummer",
                     fields(loggingMeta),
                 )
@@ -45,11 +45,11 @@ class NorskHelsenettClient(
                 )
             }
             NotFound -> {
-                log.warn("Fant ikke behandler for hprNummer {}", fields(loggingMeta))
+                logger.warn("Fant ikke behandler for hprNummer {}", fields(loggingMeta))
                 return null
             }
             Unauthorized -> {
-                log.error(
+                logger.error(
                     "Norsk helsenett returnerte Unauthorized for henting av behandler for hprNummer"
                 )
                 throw RuntimeException(
@@ -57,11 +57,11 @@ class NorskHelsenettClient(
                 )
             }
             OK -> {
-                log.info("Hentet behandler for hprNummer {}", fields(loggingMeta))
+                logger.info("Hentet behandler for hprNummer {}", fields(loggingMeta))
                 return httpResponse.body<Behandler>()
             }
             else -> {
-                log.error("Feil ved henting av behandler. Statuskode: ${httpResponse.status}")
+                logger.error("Feil ved henting av behandler. Statuskode: ${httpResponse.status}")
                 throw RuntimeException(
                     "En ukjent feil oppsto ved ved henting av behandler ved søk på hprNummer. Statuskode: ${httpResponse.status}"
                 )
@@ -83,7 +83,7 @@ class NorskHelsenettClient(
             }
         when (httpResponse.status) {
             InternalServerError -> {
-                log.error(
+                logger.error(
                     "Syfohelsenettproxy kastet feilmelding for loggingMeta {} ved henting av behandler for fnr",
                     fields(loggingMeta),
                 )
@@ -92,21 +92,21 @@ class NorskHelsenettClient(
                 )
             }
             NotFound -> {
-                log.warn("Fant ikke behandler for fnr {}", fields(loggingMeta))
+                logger.warn("Fant ikke behandler for fnr {}", fields(loggingMeta))
                 return null
             }
             Unauthorized -> {
-                log.error("Norsk helsenett returnerte Unauthorized for henting av behandler")
+                logger.error("Norsk helsenett returnerte Unauthorized for henting av behandler")
                 throw RuntimeException(
                     "Norsk helsenett returnerte Unauthorized ved henting av behandler"
                 )
             }
             OK -> {
-                log.info("Hentet behandler for fnr {}", fields(loggingMeta))
+                logger.info("Hentet behandler for fnr {}", fields(loggingMeta))
                 return httpResponse.body<Behandler>()
             }
             else -> {
-                log.error("Feil ved henting av behandler. Statuskode: ${httpResponse.status}")
+                logger.error("Feil ved henting av behandler. Statuskode: ${httpResponse.status}")
                 throw RuntimeException(
                     "En ukjent feil oppsto ved ved henting av behandler. Statuskode: ${httpResponse.status}"
                 )
@@ -144,7 +144,7 @@ fun getHelsepersonellKategori(godkjenninger: List<Godkjenning>): String? =
         godkjenninger.find { it.helsepersonellkategori?.verdi == "KI" } != null -> "KI"
         else -> {
             val verdi = godkjenninger.firstOrNull()?.helsepersonellkategori?.verdi
-            log.warn(
+            logger.warn(
                 "Signerende behandler har ikke en helsepersonellkategori($verdi) vi kjenner igjen"
             )
             verdi

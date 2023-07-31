@@ -3,7 +3,7 @@ package no.nav.syfo.util
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
-import no.nav.syfo.Environment
+import no.nav.syfo.EnvironmentVariables
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.duplicationcheck.model.DuplicateCheck
 import no.nav.syfo.handlestatus.handleAktivitetOrPeriodeIsMissing
@@ -37,7 +37,7 @@ fun checkSM2013Content(
     ediLoggId: String,
     msgId: String,
     msgHead: XMLMsgHead,
-    env: Environment,
+    env: EnvironmentVariables,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
     duplicateCheck: DuplicateCheck,

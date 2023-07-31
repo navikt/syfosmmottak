@@ -2,7 +2,7 @@ package no.nav.syfo
 
 import no.nav.syfo.mq.MqConfig
 
-data class Environment(
+data class EnvironmentVariables(
     val smgcpProxyUrl: String = getEnvVar("SMGCP_PROXY_URL"),
     val smgcpProxyScope: String = getEnvVar("SMGCP_PROXY_SCOPE"),
     val syfosmreglerApiUrl: String = getEnvVar("SYFOSMREGLER_API_URL", "http://syfosmregler"),

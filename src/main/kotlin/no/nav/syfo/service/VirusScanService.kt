@@ -3,7 +3,7 @@ package no.nav.syfo.service
 import java.util.Base64
 import no.nav.syfo.client.ClamAvClient
 import no.nav.syfo.client.Status
-import no.nav.syfo.log
+import no.nav.syfo.logger
 import no.nav.syfo.metrics.VEDLEGG_OVER_300_MEGABYTE_COUNTER
 import no.nav.syfo.vedlegg.model.Vedlegg
 
@@ -29,7 +29,7 @@ class VirusScanService(
         return if (vedleggUnder300MegaByte.isEmpty()) {
             false
         } else {
-            log.info(
+            logger.info(
                 "Scanning vedlegg for virus, numbers of vedlegg: " + vedleggUnder300MegaByte.size
             )
             val scanResultMayContainVirus =
@@ -37,7 +37,7 @@ class VirusScanService(
                     it.Result != Status.OK
                 }
             scanResultMayContainVirus.map {
-                log.warn("Vedlegg may contain virus, filename: " + it.Filename)
+                logger.warn("Vedlegg may contain virus, filename: " + it.Filename)
             }
             scanResultMayContainVirus.isNotEmpty()
         }
@@ -46,7 +46,7 @@ class VirusScanService(
 
 fun logVedleggOver300MegaByteMetric(vedlegg: List<Vedlegg>) {
     vedlegg.forEach {
-        log.info("Vedlegg is over 300 megabyte: " + it.description)
+        logger.info("Vedlegg is over 300 megabyte: " + it.description)
         VEDLEGG_OVER_300_MEGABYTE_COUNTER.inc()
     }
 }

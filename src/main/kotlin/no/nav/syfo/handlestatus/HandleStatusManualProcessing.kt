@@ -10,7 +10,7 @@ import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.apprec.ApprecStatus
 import no.nav.syfo.apprec.toApprec
-import no.nav.syfo.log
+import no.nav.syfo.logger
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.OpprettOppgaveKafkaMessage
 import no.nav.syfo.model.PrioritetType
@@ -47,7 +47,7 @@ fun handleStatusMANUALPROCESSING(
     val sendToSyfosmManuell = sendToSyfosmManuell(ruleHits = validationResult.ruleHits)
 
     if (sendToSyfosmManuell) {
-        log.info(
+        logger.info(
             "Sending manuell oppgave to syfosmmanuell-backend {}",
             StructuredArguments.fields(loggingMeta)
         )
@@ -72,7 +72,7 @@ fun handleStatusMANUALPROCESSING(
             kafkaproducerManuellOppgave
         )
     } else {
-        log.info(
+        logger.info(
             "Sending manuell oppgave to syfosmoppgave {}",
             StructuredArguments.fields(loggingMeta)
         )
@@ -112,7 +112,7 @@ fun handleStatusMANUALPROCESSING(
                 fellesformat.get<XMLMottakenhetBlokk>().ebService,
             )
         sendReceipt(apprec, apprecTopic, kafkaproducerApprec, loggingMeta)
-        log.info(
+        logger.info(
             "Apprec receipt sent to kafka topic {}, {}",
             apprecTopic,
             StructuredArguments.fields(loggingMeta)
@@ -137,12 +137,12 @@ fun opprettOppgave(
                 ),
             )
             .get()
-        log.info(
+        logger.info(
             "Message sendt to topic: $produserOppgaveTopic {}",
             StructuredArguments.fields(loggingMeta)
         )
     } catch (ex: Exception) {
-        log.error(
+        logger.error(
             "Failed to send producer task for sykmelding {} to kafka",
             receivedSykmelding.sykmelding.id
         )
@@ -173,7 +173,7 @@ fun opprettOpprettOppgaveKafkaMessage(
                         it.ruleName == "SYKMELDING_MED_BEHANDLINGSDAGER"
                     } != null
                 ) {
-                    log.info(
+                    logger.info(
                         "Sykmelding inneholder behandlingsdager, {}",
                         StructuredArguments.fields(loggingMeta)
                     )
@@ -216,7 +216,7 @@ fun sendManuellTask(
             )
             .get()
     } catch (ex: Exception) {
-        log.error(
+        logger.error(
             "Failed to send manuell oppgave for sykmelding {} to kafka",
             receivedSykmelding.sykmelding.id
         )

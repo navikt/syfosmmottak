@@ -3,7 +3,7 @@ package no.nav.syfo.util
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.syfo.client.EmottakSubscriptionClient
-import no.nav.syfo.log
+import no.nav.syfo.logger
 import no.nav.syfo.metrics.IKKE_OPPDATERT_PARTNERREG
 
 suspend fun handleEmottakSubscription(
@@ -15,7 +15,7 @@ suspend fun handleEmottakSubscription(
     loggingMeta: LoggingMeta,
 ) {
     if (tssId == null) {
-        log.info(
+        logger.info(
             "SamhandlerPraksis is Not found, partnerreferanse: $partnerreferanse {}",
             StructuredArguments.fields(loggingMeta),
         )
@@ -29,7 +29,7 @@ suspend fun handleEmottakSubscription(
             loggingMeta,
         )
     } else {
-        log.info(
+        logger.info(
             "PartnerReferanse is empty or blank, subscription_emottak is not created,partnerreferanse: $partnerreferanse {}",
             StructuredArguments.fields(loggingMeta),
         )

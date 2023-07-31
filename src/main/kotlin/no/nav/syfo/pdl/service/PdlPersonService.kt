@@ -2,7 +2,7 @@ package no.nav.syfo.pdl.service
 
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.client.AccessTokenClientV2
-import no.nav.syfo.log
+import no.nav.syfo.logger
 import no.nav.syfo.pdl.client.PdlClient
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.util.LoggingMeta
@@ -22,7 +22,7 @@ class PdlPersonService(
 
         if (pdlResponse.errors != null) {
             pdlResponse.errors.forEach {
-                log.error(
+                logger.error(
                     "PDL returnerte error {}, {}",
                     it,
                     StructuredArguments.fields(loggingMeta)
@@ -33,13 +33,13 @@ class PdlPersonService(
             pdlResponse.data.hentIdenterBolk == null ||
                 pdlResponse.data.hentIdenterBolk.isNullOrEmpty()
         ) {
-            log.error("Fant ikke identer i PDL {}", StructuredArguments.fields(loggingMeta))
+            logger.error("Fant ikke identer i PDL {}", StructuredArguments.fields(loggingMeta))
             throw IllegalStateException("Fant ingen identer i PDL, skal ikke kunne skje!")
         }
 
         pdlResponse.data.hentIdenterBolk.forEach {
             if (it.code != "ok") {
-                log.warn(
+                logger.warn(
                     "Mottok feilkode ${it.code} fra PDL for en eller flere identer, {}",
                     StructuredArguments.fields(loggingMeta)
                 )
