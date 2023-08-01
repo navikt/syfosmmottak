@@ -10,7 +10,7 @@ import java.io.ByteArrayOutputStream
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.helse.msgHead.XMLSender
-import no.nav.syfo.log
+import no.nav.syfo.logger
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.senderMarshaller
 
@@ -29,7 +29,7 @@ class EmottakSubscriptionClient(
         msgId: String,
         loggingMeta: LoggingMeta,
     ) {
-        log.info(
+        logger.info(
             "Update subscription emottak for tssid: $tssIdent {}",
             StructuredArguments.fields(loggingMeta)
         )

@@ -9,19 +9,21 @@ import com.google.auth.Credentials
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.storage.Storage
 import com.google.cloud.storage.StorageOptions
+import io.ktor.server.application.*
+import io.ktor.server.engine.*
+import io.ktor.server.netty.*
+import io.ktor.server.routing.*
 import io.prometheus.client.hotspot.DefaultExports
 import java.io.FileInputStream
+import java.util.concurrent.TimeUnit
 import javax.jms.Session
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import net.logstash.logback.argument.StructuredArguments.fields
-import no.nav.syfo.application.ApplicationServer
-import no.nav.syfo.application.ApplicationState
+import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.application.BlockingApplicationRunner
-import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.bootstrap.HttpClients
 import no.nav.syfo.bootstrap.KafkaClients
@@ -38,6 +40,9 @@ import no.nav.syfo.mq.MqTlsUtils
 import no.nav.syfo.mq.connectionFactory
 import no.nav.syfo.mq.consumerForQueue
 import no.nav.syfo.mq.producerForQueue
+import no.nav.syfo.nais.isalive.naisIsAliveRoute
+import no.nav.syfo.nais.isready.naisIsReadyRoute
+import no.nav.syfo.nais.prometheus.naisPrometheusRoute
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.service.DuplicationService
 import no.nav.syfo.service.VirusScanService
@@ -56,30 +61,49 @@ val objectMapper: ObjectMapper =
         .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
-val log: Logger = LoggerFactory.getLogger("no.nav.syfo.syfosmmottak")
+val logger: Logger = LoggerFactory.getLogger("no.nav.syfo.syfosmmottak")
 
-@DelicateCoroutinesApi
 fun main() {
-    val env = Environment()
-    val database = Database(env)
+    val embeddedServer =
+        embeddedServer(
+            Netty,
+            port = EnvironmentVariables().applicationPort,
+            module = Application::module,
+        )
+    Runtime.getRuntime()
+        .addShutdownHook(
+            Thread {
+                embeddedServer.stop(TimeUnit.SECONDS.toMillis(10), TimeUnit.SECONDS.toMillis(10))
+            },
+        )
+    embeddedServer.start(true)
+}
 
-    val serviceUser = ApplicationServiceUser()
+@OptIn(DelicateCoroutinesApi::class)
+fun Application.module() {
+    val environmentVariables = EnvironmentVariables()
+    val applicationState = ApplicationState()
+    val database = Database(environmentVariables)
+
+    val applicationServiceUser = ApplicationServiceUser()
+
     MqTlsUtils.getMqTlsConfig().forEach { key, value ->
         System.setProperty(key as String, value as String)
     }
-    val applicationState = ApplicationState()
-    val applicationEngine =
-        createApplicationEngine(
-            env,
-            applicationState,
-        )
-
-    val applicationServer = ApplicationServer(applicationEngine, applicationState)
 
     DefaultExports.initialize()
 
-    val httpClients = HttpClients(env)
-    val kafkaClients = KafkaClients(env)
+    environment.monitor.subscribe(ApplicationStopped) {
+        applicationState.ready = false
+        applicationState.alive = false
+    }
+
+    configureRouting(applicationState = applicationState)
+
+    DefaultExports.initialize()
+
+    val httpClients = HttpClients(environmentVariables)
+    val kafkaClients = KafkaClients(environmentVariables)
 
     val sykmeldingVedleggStorageCredentials: Credentials =
         GoogleCredentials.fromStream(
@@ -91,20 +115,23 @@ fun main() {
             .build()
             .service
     val bucketUploadService =
-        BucketUploadService(env.sykmeldingVedleggBucketName, sykmeldingVedleggStorage)
+        BucketUploadService(
+            environmentVariables.sykmeldingVedleggBucketName,
+            sykmeldingVedleggStorage
+        )
     val virusScanService = VirusScanService(httpClients.clamAvClient)
 
     val duplicationService = DuplicationService(database)
 
     launchListeners(
-        env,
+        environmentVariables,
         applicationState,
         httpClients.emottakSubscriptionClient,
         kafkaClients.kafkaProducerReceivedSykmelding,
         kafkaClients.kafkaProducerValidationResult,
         httpClients.syfoSykemeldingRuleClient,
         httpClients.pdlPersonService,
-        serviceUser,
+        applicationServiceUser,
         kafkaClients.manualValidationKafkaProducer,
         kafkaClients.kafkaProducerApprec,
         kafkaClients.kafkaproducerManuellOppgave,
@@ -114,8 +141,6 @@ fun main() {
         duplicationService,
         httpClients.smtssClient,
     )
-
-    applicationServer.start()
 }
 
 @DelicateCoroutinesApi
@@ -127,7 +152,7 @@ fun createListener(
         try {
             action()
         } catch (e: TrackableException) {
-            log.error("En uhåndtert feil oppstod, applikasjonen restarter", e.cause)
+            logger.error("En uhåndtert feil oppstod, applikasjonen restarter", e.cause)
         } finally {
             applicationState.ready = false
             applicationState.alive = false
@@ -136,7 +161,7 @@ fun createListener(
 
 @DelicateCoroutinesApi
 fun launchListeners(
-    env: Environment,
+    environmentVariables: EnvironmentVariables,
     applicationState: ApplicationState,
     emottakSubscriptionClient: EmottakSubscriptionClient,
     kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
@@ -154,17 +179,18 @@ fun launchListeners(
     smtssClient: SmtssClient,
 ) {
     createListener(applicationState) {
-        connectionFactory(env)
+        connectionFactory(environmentVariables)
             .createConnection(serviceUser.serviceuserUsername, serviceUser.serviceuserPassword)
             .use { connection ->
                 connection.start()
                 val session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE)
 
-                val inputconsumer = session.consumerForQueue(env.inputQueueName)
-                val backoutProducer = session.producerForQueue(env.inputBackoutQueueName)
+                val inputconsumer = session.consumerForQueue(environmentVariables.inputQueueName)
+                val backoutProducer =
+                    session.producerForQueue(environmentVariables.inputBackoutQueueName)
 
                 BlockingApplicationRunner(
-                        env,
+                        environmentVariables,
                         applicationState,
                         emottakSubscriptionClient,
                         syfoSykemeldingRuleClient,
@@ -196,9 +222,12 @@ fun sendReceipt(
 ) {
     try {
         kafkaproducerApprec.send(ProducerRecord(apprecTopic, apprec)).get()
-        log.info("Apprec receipt sent to kafka topic $apprecTopic, {}", fields(loggingMeta))
+        logger.info(
+            "Apprec receipt sent to kafka topic $apprecTopic, {}",
+            StructuredArguments.fields(loggingMeta)
+        )
     } catch (ex: Exception) {
-        log.error("failed to send apprec to kafka {}", fields(loggingMeta))
+        logger.error("failed to send apprec to kafka {}", StructuredArguments.fields(loggingMeta))
         throw ex
     }
 }
@@ -220,13 +249,13 @@ fun sendValidationResult(
                 ),
             )
             .get()
-        log.info(
+        logger.info(
             "Validation results send to kafka {}, {}",
             behandlingsUtfallTopic,
-            fields(loggingMeta)
+            StructuredArguments.fields(loggingMeta)
         )
     } catch (ex: Exception) {
-        log.error(
+        logger.error(
             "failed to send validation result for sykmelding {}",
             receivedSykmelding.sykmelding.id
         )
@@ -249,16 +278,31 @@ fun sendReceivedSykmelding(
                 ),
             )
             .get()
-        log.info(
+        logger.info(
             "Sykmelding sendt to kafka topic {} sykmelding id {}",
             receivedSykmeldingTopic,
             receivedSykmelding.sykmelding.id
         )
     } catch (ex: Exception) {
-        log.error(
+        logger.error(
             "failed to send sykmelding to kafka result for sykmelding {}",
             receivedSykmelding.sykmelding.id
         )
         throw ex
     }
 }
+
+fun Application.configureRouting(applicationState: ApplicationState) {
+    routing {
+        naisIsAliveRoute(applicationState)
+        naisIsReadyRoute(applicationState)
+        naisPrometheusRoute()
+    }
+}
+
+data class ApplicationState(
+    var alive: Boolean = true,
+    var ready: Boolean = true,
+)
+
+class ServiceUnavailableException(message: String?) : Exception(message)

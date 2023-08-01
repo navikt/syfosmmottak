@@ -13,18 +13,18 @@ import io.ktor.client.plugins.HttpResponseValidator
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.serialization.jackson.jackson
-import no.nav.syfo.Environment
-import no.nav.syfo.application.exception.ServiceUnavailableException
+import no.nav.syfo.EnvironmentVariables
+import no.nav.syfo.ServiceUnavailableException
 import no.nav.syfo.client.AccessTokenClientV2
 import no.nav.syfo.client.ClamAvClient
 import no.nav.syfo.client.EmottakSubscriptionClient
 import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SmtssClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
-import no.nav.syfo.log
+import no.nav.syfo.logger
 import no.nav.syfo.pdl.PdlFactory
 
-class HttpClients(environment: Environment) {
+class HttpClients(environmentVariables: EnvironmentVariables) {
     private val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
         install(ContentNegotiation) {
             jackson {
@@ -45,12 +45,12 @@ class HttpClients(environment: Environment) {
         install(HttpRequestRetry) {
             constantDelay(100, 0, false)
             retryOnExceptionIf(3) { request, throwable ->
-                log.warn("Caught exception ${throwable.message}, for url ${request.url}")
+                logger.warn("Caught exception ${throwable.message}, for url ${request.url}")
                 true
             }
             retryIf(maxRetries) { request, response ->
                 if (response.status.value.let { it in 500..599 }) {
-                    log.warn(
+                    logger.warn(
                         "Retrying for statuscode ${response.status.value}, for url ${request.url}"
                     )
                     true
@@ -66,46 +66,51 @@ class HttpClients(environment: Environment) {
 
     private val accessTokenClientV2 =
         AccessTokenClientV2(
-            environment.aadAccessTokenV2Url,
-            environment.clientIdV2,
-            environment.clientSecretV2,
+            environmentVariables.aadAccessTokenV2Url,
+            environmentVariables.clientIdV2,
+            environmentVariables.clientSecretV2,
             httpClient,
         )
 
     val syfoSykemeldingRuleClient =
         SyfoSykemeldingRuleClient(
-            environment.syfosmreglerApiUrl,
+            environmentVariables.syfosmreglerApiUrl,
             accessTokenClientV2,
-            environment.syfosmreglerApiScope,
+            environmentVariables.syfosmreglerApiScope,
             httpClient,
         )
 
     val emottakSubscriptionClient =
         EmottakSubscriptionClient(
-            environment.smgcpProxyUrl,
+            environmentVariables.smgcpProxyUrl,
             accessTokenClientV2,
-            environment.smgcpProxyScope,
+            environmentVariables.smgcpProxyScope,
             httpClient
         )
 
     val norskHelsenettClient =
         NorskHelsenettClient(
-            environment.norskHelsenettEndpointURL,
+            environmentVariables.norskHelsenettEndpointURL,
             accessTokenClientV2,
-            environment.helsenettproxyScope,
+            environmentVariables.helsenettproxyScope,
             httpClient
         )
 
     val pdlPersonService =
-        PdlFactory.getPdlService(environment, httpClient, accessTokenClientV2, environment.pdlScope)
+        PdlFactory.getPdlService(
+            environmentVariables,
+            httpClient,
+            accessTokenClientV2,
+            environmentVariables.pdlScope
+        )
 
-    val clamAvClient = ClamAvClient(httpClient, environment.clamAvEndpointUrl)
+    val clamAvClient = ClamAvClient(httpClient, environmentVariables.clamAvEndpointUrl)
 
     val smtssClient =
         SmtssClient(
-            environment.smtssApiUrl,
+            environmentVariables.smtssApiUrl,
             accessTokenClientV2,
-            environment.smtssApiScope,
+            environmentVariables.smtssApiScope,
             httpClient
         )
 }

@@ -36,9 +36,18 @@ val postgresVersion = "42.6.0"
 val embeddedPostgresVersion = "2.0.4"
 val commonsCodecVersion = "1.16.0"
 val ktfmtVersion = "0.44"
+val jvmVersion= "17"
+
+application {
+    mainClass.set("no.nav.syfo.ApplicationKt")
+
+    val isDevelopment: Boolean = project.ext.has("development")
+    applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
+}
 
 plugins {
     kotlin("jvm") version "1.9.0"
+    id("io.ktor.plugin") version "2.3.2"
     id("com.diffplug.spotless") version "6.20.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("org.cyclonedx.bom") version "1.7.4"
@@ -124,7 +133,7 @@ dependencies {
 
 tasks {
     withType<Jar> {
-        manifest.attributes["Main-Class"] = "no.nav.syfo.BootstrapKt"
+        manifest.attributes["Main-Class"] = "no.nav.syfo.ApplicationKt"
     }
     create("printVersion") {
 
@@ -133,7 +142,7 @@ tasks {
         }
     }
     withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "17"
+        kotlinOptions.jvmTarget = jvmVersion
     }
 
 

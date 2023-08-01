@@ -9,7 +9,8 @@ import javax.jms.MessageConsumer
 import javax.jms.MessageProducer
 import javax.jms.TextMessage
 import kotlinx.coroutines.runBlocking
-import no.nav.syfo.Environment
+import no.nav.syfo.ApplicationState
+import no.nav.syfo.EnvironmentVariables
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.apprec.ApprecStatus
 import no.nav.syfo.client.Behandler
@@ -37,7 +38,7 @@ import org.junit.jupiter.api.Test
 internal class BlockingApplicationRunnerTest {
     val inputconsumer = mockk<MessageConsumer>(relaxed = true)
     val backoutProducer = mockk<MessageProducer>(relaxed = true)
-    val env = mockk<Environment>(relaxed = true)
+    val env = mockk<EnvironmentVariables>(relaxed = true)
     val applicationState = mockk<ApplicationState>()
     val emottakSubscriptionClient = mockk<EmottakSubscriptionClient>()
     val syfoSykemeldingRuleClient = mockk<SyfoSykemeldingRuleClient>()

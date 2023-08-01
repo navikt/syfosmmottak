@@ -11,7 +11,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import java.io.IOException
 import net.logstash.logback.argument.StructuredArguments.fields
-import no.nav.syfo.log
+import no.nav.syfo.logger
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.util.LoggingMeta
@@ -37,7 +37,7 @@ class SyfoSykemeldingRuleClient(
         if (httpResponse.status == HttpStatusCode.OK) {
             return httpResponse.body<ValidationResult>()
         } else {
-            log.error(
+            logger.error(
                 "Syfosmregler svarte med feilkode {} for {}",
                 httpResponse.status,
                 fields(loggingMeta)

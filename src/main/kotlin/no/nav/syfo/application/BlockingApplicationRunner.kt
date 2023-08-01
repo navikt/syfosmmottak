@@ -14,7 +14,8 @@ import net.logstash.logback.argument.StructuredArguments
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.eiFellesformat.XMLMottakenhetBlokk
 import no.nav.helse.msgHead.XMLMsgHead
-import no.nav.syfo.Environment
+import no.nav.syfo.ApplicationState
+import no.nav.syfo.EnvironmentVariables
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.client.Behandler
 import no.nav.syfo.client.EmottakSubscriptionClient
@@ -31,7 +32,7 @@ import no.nav.syfo.handlestatus.handleStatusOK
 import no.nav.syfo.handlestatus.handleVedleggContainsVirus
 import no.nav.syfo.handlestatus.handleVirksomhetssykmeldingOgFnrManglerIHPR
 import no.nav.syfo.handlestatus.handleVirksomhetssykmeldingOgHprMangler
-import no.nav.syfo.log
+import no.nav.syfo.logger
 import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
 import no.nav.syfo.metrics.REQUEST_TIME
 import no.nav.syfo.metrics.SYKMELDING_MISSNG_ORG_NUMBER_COUNTER
@@ -79,7 +80,7 @@ import org.xml.sax.InputSource
 private val sikkerlogg = LoggerFactory.getLogger("securelog")
 
 class BlockingApplicationRunner(
-    private val env: Environment,
+    private val env: EnvironmentVariables,
     private val applicationState: ApplicationState,
     private val emottakSubscriptionClient: EmottakSubscriptionClient,
     private val syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
@@ -146,7 +147,7 @@ class BlockingApplicationRunner(
                             orgNr = legekontorOrgNr,
                             msgId = msgHead.msgInfo.msgId,
                         )
-                    log.info("Received message, {}", StructuredArguments.fields(loggingMeta))
+                    logger.info("Received message, {}", StructuredArguments.fields(loggingMeta))
 
                     val healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat)
                     val ediLoggId = receiverBlock.ediLoggId
@@ -188,7 +189,7 @@ class BlockingApplicationRunner(
                             rulesetVersion,
                         )
 
-                    log.info(
+                    logger.info(
                         "Extracted data, ready to make sync calls to get more data, {}",
                         StructuredArguments.fields(loggingMeta),
                     )
@@ -200,7 +201,7 @@ class BlockingApplicationRunner(
 
                     if (legekontorOrgNr == null) {
                         SYKMELDING_MISSNG_ORG_NUMBER_COUNTER.inc()
-                        log.info(
+                        logger.info(
                             "Missing org number, from epj ${avsenderSystem.navn} {}",
                             StructuredArguments.fields(loggingMeta),
                         )
@@ -208,7 +209,7 @@ class BlockingApplicationRunner(
 
                     val signaturFnr =
                         if (erVirksomhetSykmelding) {
-                            log.info(
+                            logger.info(
                                 "Mottatt virksomhetssykmelding, {}",
                                 StructuredArguments.fields(loggingMeta)
                             )
@@ -280,11 +281,11 @@ class BlockingApplicationRunner(
                             )
                         }
 
-                    log.info(
+                    logger.info(
                         "tssIdEmottak is $tssIdEmottak {}",
                         StructuredArguments.fields(loggingMeta)
                     )
-                    log.info(
+                    logger.info(
                         "tssIdInfotrygd is $tssIdInfotrygd {}",
                         StructuredArguments.fields(loggingMeta)
                     )
@@ -402,7 +403,7 @@ class BlockingApplicationRunner(
                                 behandlerHprNr = behandlenedeBehandlerhprNummer,
                             )
                         if (originaltPasientFnr != pasient.fnr) {
-                            log.info(
+                            logger.info(
                                 "Sykmeldingen inneholder eldre ident for pasient, benytter nyeste fra PDL {}",
                                 StructuredArguments.fields(loggingMeta),
                             )
@@ -490,7 +491,7 @@ class BlockingApplicationRunner(
 
                         countNewDiagnoseCode(receivedSykmelding.sykmelding.medisinskVurdering)
 
-                        log.info(
+                        logger.info(
                             "Validating against rules, sykmeldingId {},  {}",
                             StructuredArguments.keyValue("sykmeldingId", sykmelding.id),
                             StructuredArguments.fields(loggingMeta),
@@ -560,7 +561,7 @@ class BlockingApplicationRunner(
                         val currentRequestLatency = requestLatency.observeDuration()
 
                         duplicationService.persistDuplicationCheck(duplicateCheck)
-                        log.info(
+                        logger.info(
                             "Message got outcome {}, {}, processing took {}s, {}, {}",
                             StructuredArguments.keyValue("status", validationResult.status),
                             StructuredArguments.keyValue(
@@ -575,7 +576,7 @@ class BlockingApplicationRunner(
                         )
                     }
                 } catch (e: Exception) {
-                    log.error(
+                    logger.error(
                         "Exception caught while handling message, sending to backout ${
                             StructuredArguments.fields(
                                 loggingMeta,

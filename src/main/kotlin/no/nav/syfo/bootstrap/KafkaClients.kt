@@ -1,6 +1,6 @@
 package no.nav.syfo.bootstrap
 
-import no.nav.syfo.Environment
+import no.nav.syfo.EnvironmentVariables
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.kafka.aiven.KafkaUtils
 import no.nav.syfo.kafka.toProducerConfig
@@ -12,7 +12,7 @@ import no.nav.syfo.util.JacksonKafkaSerializer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
 
-class KafkaClients(env: Environment) {
+class KafkaClients(env: EnvironmentVariables) {
 
     private val producerPropertiesAiven =
         KafkaUtils.getAivenKafkaConfig()

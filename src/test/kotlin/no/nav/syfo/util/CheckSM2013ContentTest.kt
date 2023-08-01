@@ -15,7 +15,7 @@ import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 import no.nav.helse.sm2013.Ident
 import no.nav.helse.sm2013.NavnType
 import no.nav.helse.sm2013.TeleCom
-import no.nav.syfo.Environment
+import no.nav.syfo.EnvironmentVariables
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.duplicationcheck.model.DuplicateCheck
 import no.nav.syfo.pdl.client.model.PdlIdent
@@ -41,7 +41,7 @@ internal class CheckSM2013ContentTest {
         val ediLoggId = "12312"
         val msgId = "1231-232"
         val msgHead = fellesformat.get<XMLMsgHead>()
-        val env = mockk<Environment>(relaxed = true)
+        val env = mockk<EnvironmentVariables>(relaxed = true)
         val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
         val duplicationService = mockk<DuplicationService>(relaxed = true)
 
@@ -98,7 +98,7 @@ internal class CheckSM2013ContentTest {
         val ediLoggId = "12312"
         val msgId = "1231-232"
         val msgHead = fellesformat.get<XMLMsgHead>()
-        val env = mockk<Environment>(relaxed = true)
+        val env = mockk<EnvironmentVariables>(relaxed = true)
         val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
         val duplicationService = mockk<DuplicationService>(relaxed = true)
         val duplicationCheck =
@@ -154,7 +154,7 @@ internal class CheckSM2013ContentTest {
         val ediLoggId = "12312"
         val msgId = "1231-232"
         val msgHead = fellesformat.get<XMLMsgHead>()
-        val env = mockk<Environment>(relaxed = true)
+        val env = mockk<EnvironmentVariables>(relaxed = true)
         val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
         val duplicationService = mockk<DuplicationService>(relaxed = true)
 
@@ -317,7 +317,7 @@ internal class CheckSM2013ContentTest {
         val ediLoggId = "12312"
         val msgId = "1231-232"
         val msgHead = fellesformat.get<XMLMsgHead>()
-        val env = mockk<Environment>(relaxed = true)
+        val env = mockk<EnvironmentVariables>(relaxed = true)
         val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
         val duplicationService = mockk<DuplicationService>(relaxed = true)
 
@@ -450,7 +450,7 @@ internal class CheckSM2013ContentTest {
         val ediLoggId = "12312"
         val msgId = "1231-232"
         val msgHead = fellesformat.get<XMLMsgHead>()
-        val env = mockk<Environment>(relaxed = true)
+        val env = mockk<EnvironmentVariables>(relaxed = true)
         val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
         val duplicationService = mockk<DuplicationService>(relaxed = true)
         val duplicationCheck =
@@ -590,7 +590,7 @@ internal class CheckSM2013ContentTest {
         val ediLoggId = "12312"
         val msgId = "1231-232"
         val msgHead = fellesformat.get<XMLMsgHead>()
-        val env = mockk<Environment>(relaxed = true)
+        val env = mockk<EnvironmentVariables>(relaxed = true)
         val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
         val duplicationService = mockk<DuplicationService>(relaxed = true)
         val duplicationCheck =
@@ -756,7 +756,7 @@ internal class CheckSM2013ContentTest {
         val ediLoggId = "12312"
         val msgId = "1231-232"
         val msgHead = fellesformat.get<XMLMsgHead>()
-        val env = mockk<Environment>(relaxed = true)
+        val env = mockk<EnvironmentVariables>(relaxed = true)
         val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
         val duplicationService = mockk<DuplicationService>(relaxed = true)
         val duplicationCheck =
@@ -922,7 +922,7 @@ internal class CheckSM2013ContentTest {
         val ediLoggId = "12312"
         val msgId = "1231-232"
         val msgHead = fellesformat.get<XMLMsgHead>()
-        val env = mockk<Environment>(relaxed = true)
+        val env = mockk<EnvironmentVariables>(relaxed = true)
         val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
         val duplicationService = mockk<DuplicationService>(relaxed = true)
         val duplicationCheck =
@@ -1095,7 +1095,7 @@ internal class CheckSM2013ContentTest {
         val ediLoggId = "12312"
         val msgId = "1231-232"
         val msgHead = fellesformat.get<XMLMsgHead>()
-        val env = mockk<Environment>(relaxed = true)
+        val env = mockk<EnvironmentVariables>(relaxed = true)
         val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
         val duplicationService = mockk<DuplicationService>(relaxed = true)
         val duplicationCheck =
@@ -1268,7 +1268,7 @@ internal class CheckSM2013ContentTest {
         val ediLoggId = "12312"
         val msgId = "1231-232"
         val msgHead = fellesformat.get<XMLMsgHead>()
-        val env = mockk<Environment>(relaxed = true)
+        val env = mockk<EnvironmentVariables>(relaxed = true)
         val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
         val duplicationService = mockk<DuplicationService>(relaxed = true)
         val duplicationCheck =
@@ -1441,7 +1441,7 @@ internal class CheckSM2013ContentTest {
         val ediLoggId = "12312"
         val msgId = "1231-232"
         val msgHead = fellesformat.get<XMLMsgHead>()
-        val env = mockk<Environment>(relaxed = true)
+        val env = mockk<EnvironmentVariables>(relaxed = true)
         val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
         val duplicationService = mockk<DuplicationService>(relaxed = true)
         val duplicationCheck =
@@ -1613,7 +1613,7 @@ internal class CheckSM2013ContentTest {
         val ediLoggId = "12312"
         val msgId = "1231-232"
         val msgHead = fellesformat.get<XMLMsgHead>()
-        val env = mockk<Environment>(relaxed = true)
+        val env = mockk<EnvironmentVariables>(relaxed = true)
         val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
         val duplicationService = mockk<DuplicationService>(relaxed = true)
         val duplicationCheck =
@@ -1786,7 +1786,7 @@ internal class CheckSM2013ContentTest {
         val ediLoggId = "12312"
         val msgId = "1231-232"
         val msgHead = fellesformat.get<XMLMsgHead>()
-        val env = mockk<Environment>(relaxed = true)
+        val env = mockk<EnvironmentVariables>(relaxed = true)
         val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
         val duplicationService = mockk<DuplicationService>(relaxed = true)
         val duplicationCheck =
@@ -1959,7 +1959,7 @@ internal class CheckSM2013ContentTest {
         val ediLoggId = "12312"
         val msgId = "1231-232"
         val msgHead = fellesformat.get<XMLMsgHead>()
-        val env = mockk<Environment>(relaxed = true)
+        val env = mockk<EnvironmentVariables>(relaxed = true)
         val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
         val duplicationService = mockk<DuplicationService>(relaxed = true)
         val duplicationCheck =
@@ -2132,7 +2132,7 @@ internal class CheckSM2013ContentTest {
         val ediLoggId = "12312"
         val msgId = "1231-232"
         val msgHead = fellesformat.get<XMLMsgHead>()
-        val env = mockk<Environment>(relaxed = true)
+        val env = mockk<EnvironmentVariables>(relaxed = true)
         val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
         val duplicationService = mockk<DuplicationService>(relaxed = true)
         val duplicationCheck =
@@ -2305,7 +2305,7 @@ internal class CheckSM2013ContentTest {
         val ediLoggId = "12312"
         val msgId = "1231-232"
         val msgHead = fellesformat.get<XMLMsgHead>()
-        val env = mockk<Environment>(relaxed = true)
+        val env = mockk<EnvironmentVariables>(relaxed = true)
         val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
         val duplicationService = mockk<DuplicationService>(relaxed = true)
         val duplicationCheck =
@@ -2490,7 +2490,7 @@ internal class CheckSM2013ContentTest {
         val ediLoggId = "12312"
         val msgId = "1231-232"
         val msgHead = fellesformat.get<XMLMsgHead>()
-        val env = mockk<Environment>(relaxed = true)
+        val env = mockk<EnvironmentVariables>(relaxed = true)
         val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
         val duplicationService = mockk<DuplicationService>(relaxed = true)
         val duplicationCheck =

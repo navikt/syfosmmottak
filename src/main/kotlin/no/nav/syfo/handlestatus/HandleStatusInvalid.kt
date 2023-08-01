@@ -5,13 +5,13 @@ import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.eiFellesformat.XMLMottakenhetBlokk
 import no.nav.helse.msgHead.XMLMsgHead
-import no.nav.syfo.Environment
+import no.nav.syfo.EnvironmentVariables
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.apprec.ApprecStatus
 import no.nav.syfo.apprec.toApprec
 import no.nav.syfo.duplicationcheck.model.Duplicate
 import no.nav.syfo.duplicationcheck.model.DuplicateCheck
-import no.nav.syfo.log
+import no.nav.syfo.logger
 import no.nav.syfo.metrics.INVALID_MESSAGE_NO_NOTICE
 import no.nav.syfo.metrics.SYKMELDING_AVVIST_DUPLIKCATE_COUNTER
 import no.nav.syfo.metrics.SYKMELDING_AVVIST_VIRUS_VEDLEGG_COUNTER
@@ -76,12 +76,12 @@ fun handleDuplicateSM2013Content(
     ediLoggId: String,
     msgId: String,
     msgHead: XMLMsgHead,
-    env: Environment,
+    env: EnvironmentVariables,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
     duplicate: Duplicate,
 ) {
-    log.warn(
+    logger.warn(
         "Melding med {} har samme innhold som tidligere mottatt sykmelding og er avvist som duplikat {} {}",
         keyValue("originalEdiLoggId", originalEdiLoggId),
         fields(loggingMeta),
@@ -101,7 +101,7 @@ fun handleDuplicateSM2013Content(
         )
 
     sendReceipt(apprec, env.apprecTopic, kafkaproducerApprec, loggingMeta)
-    log.info("Apprec receipt sent to kafka topic {}, {}", env.apprecTopic, fields(loggingMeta))
+    logger.info("Apprec receipt sent to kafka topic {}, {}", env.apprecTopic, fields(loggingMeta))
     duplicationService.persistDuplication(duplicate)
     INVALID_MESSAGE_NO_NOTICE.inc()
     SYKMELDING_AVVIST_DUPLIKCATE_COUNTER.inc()
@@ -113,12 +113,12 @@ fun handlePatientNotFoundInPDL(
     ediLoggId: String,
     msgId: String,
     msgHead: XMLMsgHead,
-    env: Environment,
+    env: EnvironmentVariables,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
     duplicateCheck: DuplicateCheck,
 ) {
-    log.warn(
+    logger.warn(
         "Sykmeldingen er avvist fordi pasienten ikke finnes i folkeregisteret {}, {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName),
@@ -144,12 +144,12 @@ fun handleDoctorNotFoundInPDL(
     ediLoggId: String,
     msgId: String,
     msgHead: XMLMsgHead,
-    env: Environment,
+    env: EnvironmentVariables,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
     duplicateCheck: DuplicateCheck,
 ) {
-    log.warn(
+    logger.warn(
         "Sykmeldingen er avvist fordi legen ikke finnes i folkeregisteret {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName),
@@ -175,12 +175,12 @@ fun handleAktivitetOrPeriodeIsMissing(
     ediLoggId: String,
     msgId: String,
     msgHead: XMLMsgHead,
-    env: Environment,
+    env: EnvironmentVariables,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
     duplicateCheck: DuplicateCheck,
 ) {
-    log.warn(
+    logger.warn(
         "Sykmeldingen er avvist fordi det ikke er oppgitt noen sykmeldingsperioder {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName),
@@ -206,12 +206,12 @@ fun handlePeriodetypeMangler(
     ediLoggId: String,
     msgId: String,
     msgHead: XMLMsgHead,
-    env: Environment,
+    env: EnvironmentVariables,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
     duplicateCheck: DuplicateCheck,
 ) {
-    log.warn(
+    logger.warn(
         "Sykmeldingen er avvist fordi det ikke er oppgitt noen type for en eller flere sykmeldingsperioder {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName),
@@ -237,12 +237,12 @@ fun handleBiDiagnoserDiagnosekodeIsMissing(
     ediLoggId: String,
     msgId: String,
     msgHead: XMLMsgHead,
-    env: Environment,
+    env: EnvironmentVariables,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
     duplicateCheck: DuplicateCheck,
 ) {
-    log.warn(
+    logger.warn(
         "Sykmeldingen er avvist fordi bidiagnoser er angitt, men mangler diagnosekode (v) {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName),
@@ -268,12 +268,12 @@ fun handleBiDiagnoserDiagnosekodeVerkIsMissing(
     ediLoggId: String,
     msgId: String,
     msgHead: XMLMsgHead,
-    env: Environment,
+    env: EnvironmentVariables,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
     duplicateCheck: DuplicateCheck,
 ) {
-    log.warn(
+    logger.warn(
         "Sykmeldingen er avvist fordi bidiagnoser er angitt, men mangler diagnosekodeverk (s) {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName),
@@ -299,12 +299,12 @@ fun handleBiDiagnoserDiagnosekodeBeskrivelseMissing(
     ediLoggId: String,
     msgId: String,
     msgHead: XMLMsgHead,
-    env: Environment,
+    env: EnvironmentVariables,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
     duplicateCheck: DuplicateCheck,
 ) {
-    log.warn(
+    logger.warn(
         "Sykmeldingen er avvist fordi bidiagnoser er angitt, men mangler diagnosekodebeskrivelse (dn) {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName),
@@ -330,12 +330,12 @@ fun handleFnrAndDnrAndHprIsmissingFromBehandler(
     ediLoggId: String,
     msgId: String,
     msgHead: XMLMsgHead,
-    env: Environment,
+    env: EnvironmentVariables,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
     duplicateCheck: DuplicateCheck,
 ) {
-    log.warn(
+    logger.warn(
         "Sykmeldingen er avvist fordi den mangler både fnr/dnr og HPR-nummer for behandler {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName),
@@ -361,12 +361,12 @@ fun handleHovedDiagnoseDiagnosekodeMissing(
     ediLoggId: String,
     msgId: String,
     msgHead: XMLMsgHead,
-    env: Environment,
+    env: EnvironmentVariables,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
     duplicateCheck: DuplicateCheck,
 ) {
-    log.warn(
+    logger.warn(
         "Sykmeldingen er avvist fordi hoveddiagnose mangler diagnosekode (v) {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName),
@@ -392,12 +392,12 @@ fun handleHovedDiagnoseDiagnoseBeskrivelseMissing(
     ediLoggId: String,
     msgId: String,
     msgHead: XMLMsgHead,
-    env: Environment,
+    env: EnvironmentVariables,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
     duplicateCheck: DuplicateCheck,
 ) {
-    log.warn(
+    logger.warn(
         "Sykmeldingen er avvist fordi hoveddiagnose mangler diagnosekodebeskrivelse (dn) {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName),
@@ -423,12 +423,12 @@ fun handleMedisinskeArsakskodeIsmissing(
     ediLoggId: String,
     msgId: String,
     msgHead: XMLMsgHead,
-    env: Environment,
+    env: EnvironmentVariables,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
     duplicateCheck: DuplicateCheck,
 ) {
-    log.warn(
+    logger.warn(
         "Sykmeldingen er avvist fordi medisinsk årsak er angitt, men årsakskode (v) mangler {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName),
@@ -454,12 +454,12 @@ fun handleMedisinskeArsakskodeHarUgyldigVerdi(
     ediLoggId: String,
     msgId: String,
     msgHead: XMLMsgHead,
-    env: Environment,
+    env: EnvironmentVariables,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
     duplicateCheck: DuplicateCheck,
 ) {
-    log.warn(
+    logger.warn(
         "Sykmeldingen er avvist fordi medisinsk årsak er angitt, men årsakskode (v) har ugyldig verdi {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName),
@@ -485,12 +485,12 @@ fun handleArbeidsplassenArsakskodeIsmissing(
     ediLoggId: String,
     msgId: String,
     msgHead: XMLMsgHead,
-    env: Environment,
+    env: EnvironmentVariables,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
     duplicateCheck: DuplicateCheck,
 ) {
-    log.warn(
+    logger.warn(
         "Sykmeldingen er avvist fordi arbeidsplassen er angitt som årsak, men årsakskode (v) mangler {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName),
@@ -516,12 +516,12 @@ fun handleArbeidsplassenArsakskodeHarUgyldigVerdi(
     ediLoggId: String,
     msgId: String,
     msgHead: XMLMsgHead,
-    env: Environment,
+    env: EnvironmentVariables,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
     duplicateCheck: DuplicateCheck,
 ) {
-    log.warn(
+    logger.warn(
         "Sykmeldingen er avvist fordi arbeidsplassen er angitt som årsak, men årsakskode (v) har ugyldig verdi {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName),
@@ -547,12 +547,12 @@ fun handleTestFnrInProd(
     ediLoggId: String,
     msgId: String,
     msgHead: XMLMsgHead,
-    env: Environment,
+    env: EnvironmentVariables,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
     duplicateCheck: DuplicateCheck,
 ) {
-    log.warn(
+    logger.warn(
         "Sykmelding avvist: Testfødselsnummer er kommet inn i produksjon! {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName),
@@ -569,7 +569,7 @@ fun handleTestFnrInProd(
         )
 
     sendReceipt(apprec, env.apprecTopic, kafkaproducerApprec, loggingMeta)
-    log.info("Apprec receipt sent to kafka topic {}, {}", env.apprecTopic, fields(loggingMeta))
+    logger.info("Apprec receipt sent to kafka topic {}, {}", env.apprecTopic, fields(loggingMeta))
     INVALID_MESSAGE_NO_NOTICE.inc()
     TEST_FNR_IN_PROD.inc()
     duplicationService.persistDuplicationCheck(duplicateCheck)
@@ -581,12 +581,12 @@ fun handleAnnenFraversArsakkodeVIsmissing(
     ediLoggId: String,
     msgId: String,
     msgHead: XMLMsgHead,
-    env: Environment,
+    env: EnvironmentVariables,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
     duplicateCheck: DuplicateCheck,
 ) {
-    log.warn(
+    logger.warn(
         "Sykmeldingen er avvist fordi annen fraværsårsak er angitt, men årsakskode (v) mangler {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName),
@@ -612,12 +612,12 @@ fun handleVirksomhetssykmeldingOgHprMangler(
     ediLoggId: String,
     msgId: String,
     msgHead: XMLMsgHead,
-    env: Environment,
+    env: EnvironmentVariables,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
     duplicateCheck: DuplicateCheck,
 ) {
-    log.warn(
+    logger.warn(
         "Virksomhetsykmeldingen er avvist fordi den mangler HPR-nummer for behandler {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName),
@@ -643,12 +643,12 @@ fun handleVirksomhetssykmeldingOgFnrManglerIHPR(
     ediLoggId: String,
     msgId: String,
     msgHead: XMLMsgHead,
-    env: Environment,
+    env: EnvironmentVariables,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
     duplicateCheck: DuplicateCheck,
 ) {
-    log.warn(
+    logger.warn(
         "Virksomhetsykmeldingen er avvist fordi fødselsnummer mangler i HPR for behandler {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName),
@@ -681,12 +681,12 @@ fun handleBehandletDatoMangler(
     ediLoggId: String,
     msgId: String,
     msgHead: XMLMsgHead,
-    env: Environment,
+    env: EnvironmentVariables,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
     duplicateCheck: DuplicateCheck,
 ) {
-    log.warn(
+    logger.warn(
         "Sykmeldingen er avvist fordi kontaktMedPasient behandletDato mangler {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName),
@@ -719,12 +719,12 @@ fun handleVedleggContainsVirus(
     ediLoggId: String,
     msgId: String,
     msgHead: XMLMsgHead,
-    env: Environment,
+    env: EnvironmentVariables,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
     duplicateCheck: DuplicateCheck,
 ) {
-    log.warn(
+    logger.warn(
         "Sykmelding er avvist fordi eit eller flere vedlegg kan potensielt inneholde virus {} {}",
         fields(loggingMeta),
         keyValue("avvistAv", env.applicationName),
@@ -748,14 +748,14 @@ fun handleVedleggContainsVirus(
 
 private fun sendApprec(
     apprec: Apprec,
-    env: Environment,
+    env: EnvironmentVariables,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     loggingMeta: LoggingMeta,
     duplicationService: DuplicationService,
     duplicateCheck: DuplicateCheck,
 ) {
     sendReceipt(apprec, env.apprecTopic, kafkaproducerApprec, loggingMeta)
-    log.info("Apprec receipt sent to kafka topic {}, {}", env.apprecTopic, fields(loggingMeta))
+    logger.info("Apprec receipt sent to kafka topic {}, {}", env.apprecTopic, fields(loggingMeta))
     INVALID_MESSAGE_NO_NOTICE.inc()
     duplicationService.persistDuplicationCheck(duplicateCheck)
 }

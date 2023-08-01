@@ -8,9 +8,8 @@ import io.ktor.client.request.header
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
-import java.net.http.HttpResponse
 import net.logstash.logback.argument.StructuredArguments
-import no.nav.syfo.log
+import no.nav.syfo.logger
 import no.nav.syfo.util.LoggingMeta
 
 class SmtssClient(
@@ -65,7 +64,7 @@ class SmtssClient(
                 httpResponse.body<TSSident>().tssid
             }
             HttpStatusCode.NotFound -> {
-                log.info(
+                logger.info(
                     "smtss responded with {} for {}",
                     httpResponse.status,
                     StructuredArguments.fields(loggingMeta),
@@ -73,7 +72,7 @@ class SmtssClient(
                 null
             }
             else -> {
-                log.error("Error getting TSS-id ${httpResponse.status}")
+                logger.error("Error getting TSS-id ${httpResponse.status}")
                 throw RuntimeException("Error getting TSS-id")
             }
         }
