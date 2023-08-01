@@ -5,38 +5,38 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val coroutinesVersion: String by project
-val fellesformatVersion: String by project
-val ibmMqVersion: String by project
-val javaxActivationVersion: String by project
-val jacksonVersion: String by project
-val jaxbApiVersion: String by project
-val kafkaVersion: String by project
-val kithHodemeldingVersion: String by project
-val kithApprecVersion: String by project
-val ktorVersion: String by project
-val logbackVersion: String by project
-val logstashEncoderVersion: String by project
-val prometheusVersion: String by project
-val smCommonVersion: String by project
-val sykmeldingVersion: String by project
-val jaxwsApiVersion: String by project
-val commonsTextVersion: String by project
-val javaxAnnotationApiVersion: String by project
-val jaxwsToolsVersion: String by project
-val jaxbRuntimeVersion: String by project
-val javaTimeAdapterVersion: String by project
-val mockkVersion: String by project
-val kotlinVersion: String by project
-val googleCloudStorageVersion: String by project
-val junitJupiterVersion: String by project
-val flywayVersion: String by project
-val hikariVersion: String by project
-val postgresVersion: String by project
-val embeddedPostgresVersion: String by project
-val commonsCodecVersion: String by project
-val ktfmtVersion: String by project
-val jvmVersion: String by project
+val coroutinesVersion = "1.7.3"
+val fellesformatVersion = "1.0.3"
+val ibmMqVersion = "9.3.1.0"
+val javaxActivationVersion = "1.1.1"
+val jacksonVersion = "2.15.2"
+val jaxbApiVersion = "2.4.0-b180830.0359"
+val kafkaVersion = "3.4.0"
+val kithHodemeldingVersion = "1.0.3"
+val kithApprecVersion = "1.0.3"
+val ktorVersion = "2.3.2"
+val logbackVersion = "1.4.8"
+val logstashEncoderVersion = "7.4"
+val prometheusVersion = "0.16.0"
+val smCommonVersion = "1.0.10"
+val sykmeldingVersion = "1.0.3"
+val jaxwsApiVersion = "2.3.1"
+val commonsTextVersion = "1.10.0"
+val javaxAnnotationApiVersion = "1.3.2"
+val jaxwsToolsVersion = "2.3.2"
+val jaxbRuntimeVersion = "2.4.0-b180830.0438"
+val javaTimeAdapterVersion = "1.1.3"
+val mockkVersion = "1.13.5"
+val kotlinVersion = "1.9.0"
+val googleCloudStorageVersion = "2.23.0"
+val junitJupiterVersion = "5.10.0"
+val flywayVersion = "9.21.1"
+val hikariVersion = "5.0.1"
+val postgresVersion = "42.6.0"
+val embeddedPostgresVersion = "2.0.4"
+val commonsCodecVersion = "1.16.0"
+val ktfmtVersion = "0.44"
+val jvmVersion= "17"
 
 application {
     mainClass.set("no.nav.syfo.ApplicationKt")
