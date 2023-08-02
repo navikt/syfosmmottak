@@ -10,25 +10,34 @@ import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.util.JacksonKafkaSerializer
 import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.clients.producer.ProducerConfig
 
-class KafkaClients(env: EnvironmentVariables) {
-
-    private val producerPropertiesAiven =
-        KafkaUtils.getAivenKafkaConfig()
-            .toProducerConfig(env.applicationName, valueSerializer = JacksonKafkaSerializer::class)
-
-    init {
-        producerPropertiesAiven[ProducerConfig.RETRIES_CONFIG] = 100_000
-        producerPropertiesAiven[ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG] = true
-    }
+class KafkaClients(environmentVariables: EnvironmentVariables) {
 
     val kafkaProducerReceivedSykmelding =
-        KafkaProducer<String, ReceivedSykmelding>(producerPropertiesAiven)
+        KafkaProducer<String, ReceivedSykmelding>(
+            getkafkaProducerConfig("received-sykmelding-producer", environmentVariables)
+        )
     val kafkaProducerValidationResult =
-        KafkaProducer<String, ValidationResult>(producerPropertiesAiven)
-    val kafkaProducerApprec = KafkaProducer<String, Apprec>(producerPropertiesAiven)
+        KafkaProducer<String, ValidationResult>(
+            getkafkaProducerConfig("validation-result-producer", environmentVariables)
+        )
+    val kafkaProducerApprec =
+        KafkaProducer<String, Apprec>(
+            getkafkaProducerConfig("apprec-producer", environmentVariables)
+        )
     val manualValidationKafkaProducer =
-        KafkaProducer<String, OpprettOppgaveKafkaMessage>(producerPropertiesAiven)
-    val kafkaproducerManuellOppgave = KafkaProducer<String, ManuellOppgave>(producerPropertiesAiven)
+        KafkaProducer<String, OpprettOppgaveKafkaMessage>(
+            getkafkaProducerConfig("manual-validation-oppgave-producer", environmentVariables)
+        )
+    val kafkaproducerManuellOppgave =
+        KafkaProducer<String, ManuellOppgave>(
+            getkafkaProducerConfig("manuell-oppgave-producer", environmentVariables)
+        )
 }
+
+private fun getkafkaProducerConfig(producerId: String, env: EnvironmentVariables) =
+    KafkaUtils.getAivenKafkaConfig(producerId)
+        .toProducerConfig(
+            env.applicationName,
+            valueSerializer = JacksonKafkaSerializer::class,
+        )
