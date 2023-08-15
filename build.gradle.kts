@@ -33,7 +33,6 @@ val postgresVersion = "42.6.0"
 val embeddedPostgresVersion = "2.0.4"
 val commonsCodecVersion = "1.16.0"
 val ktfmtVersion = "0.44"
-val jvmVersion= "17"
 
 application {
     mainClass.set("no.nav.syfo.ApplicationKt")
@@ -138,10 +137,6 @@ tasks {
             println(project.version)
         }
     }
-    withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = jvmVersion
-    }
-
 
     withType<ShadowJar> {
         transform(ServiceFileTransformer::class.java) {
