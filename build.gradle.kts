@@ -1,6 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransformer
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "no.nav.syfo"
 version = "1.0.0"
@@ -13,7 +12,7 @@ val jacksonVersion = "2.15.2"
 val jaxbApiVersion = "2.4.0-b180830.0359"
 val kafkaVersion = "3.4.0"
 val ktorVersion = "2.3.3"
-val logbackVersion = "1.4.9"
+val logbackVersion = "1.4.11"
 val logstashEncoderVersion = "7.4"
 val prometheusVersion = "0.16.0"
 val smCommonVersion = "1.0.12"
@@ -23,9 +22,9 @@ val javaxAnnotationApiVersion = "1.3.2"
 val jaxwsToolsVersion = "2.3.2"
 val jaxbRuntimeVersion = "2.4.0-b180830.0438"
 val javaTimeAdapterVersion = "1.1.3"
-val mockkVersion = "1.13.5"
+val mockkVersion = "1.13.7"
 val kotlinVersion = "1.9.0"
-val googleCloudStorageVersion = "2.26.0"
+val googleCloudStorageVersion = "2.26.1"
 val junitJupiterVersion = "5.10.0"
 val flywayVersion = "9.21.1"
 val hikariVersion = "5.0.1"
