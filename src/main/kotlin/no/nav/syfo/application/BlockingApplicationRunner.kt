@@ -1,6 +1,7 @@
 package no.nav.syfo.application
 
 import java.io.StringReader
+import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.UUID
 import javax.jms.MessageConsumer
@@ -26,6 +27,7 @@ import no.nav.syfo.client.getHelsepersonellKategori
 import no.nav.syfo.duplicationcheck.model.Duplicate
 import no.nav.syfo.duplicationcheck.model.DuplicateCheck
 import no.nav.syfo.handlestatus.handleDuplicateSM2013Content
+import no.nav.syfo.handlestatus.handleSignaturDatoInTheFuture
 import no.nav.syfo.handlestatus.handleStatusINVALID
 import no.nav.syfo.handlestatus.handleStatusMANUALPROCESSING
 import no.nav.syfo.handlestatus.handleStatusOK
@@ -116,7 +118,7 @@ class BlockingApplicationRunner(
                             is TextMessage -> message.text
                             else ->
                                 throw RuntimeException(
-                                    "Incoming message needs to be a byte message or text message"
+                                    "Incoming message needs to be a byte message or text message",
                                 )
                         }
                     INCOMING_MESSAGE_COUNTER.inc()
@@ -211,7 +213,7 @@ class BlockingApplicationRunner(
                         if (erVirksomhetSykmelding) {
                             logger.info(
                                 "Mottatt virksomhetssykmelding, {}",
-                                StructuredArguments.fields(loggingMeta)
+                                StructuredArguments.fields(loggingMeta),
                             )
                             VIRKSOMHETSYKMELDING.inc()
                             val hpr = extractHpr(fellesformat)?.id
@@ -259,7 +261,7 @@ class BlockingApplicationRunner(
                     val identer =
                         pdlPersonService.getIdenter(
                             listOf(signaturFnr, originaltPasientFnr),
-                            loggingMeta
+                            loggingMeta,
                         )
 
                     val tssIdEmottak =
@@ -267,7 +269,7 @@ class BlockingApplicationRunner(
                             signaturFnr,
                             legekontorOrgName,
                             loggingMeta,
-                            sykmeldingId
+                            sykmeldingId,
                         )
                     val tssIdInfotrygd =
                         if (!tssIdEmottak.isNullOrEmpty()) {
@@ -277,17 +279,17 @@ class BlockingApplicationRunner(
                                 signaturFnr,
                                 legekontorOrgName,
                                 loggingMeta,
-                                sykmeldingId
+                                sykmeldingId,
                             )
                         }
 
                     logger.info(
                         "tssIdEmottak is $tssIdEmottak {}",
-                        StructuredArguments.fields(loggingMeta)
+                        StructuredArguments.fields(loggingMeta),
                     )
                     logger.info(
                         "tssIdInfotrygd is $tssIdInfotrygd {}",
-                        StructuredArguments.fields(loggingMeta)
+                        StructuredArguments.fields(loggingMeta),
                     )
 
                     handleEmottakSubscription(
@@ -355,7 +357,7 @@ class BlockingApplicationRunner(
                         val signerendeBehandler =
                             norskHelsenettClient.getByFnr(
                                 fnr = signaturFnr,
-                                loggingMeta = loggingMeta
+                                loggingMeta = loggingMeta,
                             )
 
                         val behandlenedeBehandler =
@@ -433,6 +435,21 @@ class BlockingApplicationRunner(
                             }
                         }
 
+                        if (sykmelding.signaturDato.isAfter(LocalDateTime.now())) {
+                            handleSignaturDatoInTheFuture(
+                                loggingMeta,
+                                fellesformat,
+                                ediLoggId,
+                                msgId,
+                                msgHead,
+                                env,
+                                kafkaproducerApprec,
+                                duplicationService,
+                                duplicateCheck,
+                            )
+                            continue@loop
+                        }
+
                         val vedleggListe: List<String> =
                             if (vedlegg.isNotEmpty()) {
                                 bucketUploadService.lastOppVedlegg(
@@ -459,7 +476,7 @@ class BlockingApplicationRunner(
                                 personNrPasient = pasient.fnr!!,
                                 tlfPasient =
                                     extractTlfFromKontaktInfo(
-                                        healthInformation.pasient.kontaktInfo
+                                        healthInformation.pasient.kontaktInfo,
                                     ),
                                 personNrLege = signaturFnr,
                                 navLogId = ediLoggId,
@@ -499,7 +516,7 @@ class BlockingApplicationRunner(
                         val validationResult =
                             syfoSykemeldingRuleClient.executeRuleValidation(
                                 receivedSykmelding,
-                                loggingMeta
+                                loggingMeta,
                             )
 
                         when (validationResult.status) {
