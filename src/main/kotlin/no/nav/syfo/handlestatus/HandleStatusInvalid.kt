@@ -746,6 +746,37 @@ fun handleVedleggContainsVirus(
     sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
 }
 
+fun handleSignaturDatoInTheFuture(
+    loggingMeta: LoggingMeta,
+    fellesformat: XMLEIFellesformat,
+    ediLoggId: String,
+    msgId: String,
+    msgHead: XMLMsgHead,
+    env: EnvironmentVariables,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    duplicationService: DuplicationService,
+    duplicateCheck: DuplicateCheck,
+) {
+    logger.warn(
+        "Sykmeldingen er avvist fordi signaturdatoen(GenDate) er frem i tid {} {}",
+        fields(loggingMeta),
+        keyValue("avvistAv", env.applicationName),
+    )
+
+    val apprec =
+        fellesformatToAppprec(
+            fellesformat,
+            "Sykmeldingen kan ikke rettes, det må skrives en ny." +
+                "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
+                "Signaturdatoen(GenDate) er frem i tid. Kontakt din EPJ-leverandør",
+            ediLoggId,
+            msgId,
+            msgHead,
+        )
+
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
+}
+
 private fun sendApprec(
     apprec: Apprec,
     env: EnvironmentVariables,
