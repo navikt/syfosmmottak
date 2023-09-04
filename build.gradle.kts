@@ -1,6 +1,3 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransformer
-
 group = "no.nav.syfo"
 version = "1.0.0"
 
@@ -23,7 +20,7 @@ val jaxwsToolsVersion = "2.3.2"
 val jaxbRuntimeVersion = "2.4.0-b180830.0438"
 val javaTimeAdapterVersion = "1.1.3"
 val mockkVersion = "1.13.7"
-val kotlinVersion = "1.9.0"
+val kotlinVersion = "1.9.10"
 val googleCloudStorageVersion = "2.26.1"
 val junitJupiterVersion = "5.10.0"
 val flywayVersion = "9.21.1"
@@ -33,21 +30,21 @@ val embeddedPostgresVersion = "2.0.4"
 val commonsCodecVersion = "1.16.0"
 val ktfmtVersion = "0.44"
 
+
+plugins {
+    id("application")
+    kotlin("jvm") version "1.9.10"
+    id("com.diffplug.spotless") version "6.20.0"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("org.cyclonedx.bom") version "1.7.4"
+}
+
 application {
     mainClass.set("no.nav.syfo.ApplicationKt")
 
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
 }
-
-plugins {
-    kotlin("jvm") version "1.9.0"
-    id("io.ktor.plugin") version "2.3.3"
-    id("com.diffplug.spotless") version "6.20.0"
-    id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("org.cyclonedx.bom") version "1.7.4"
-}
-
 
 val githubUser: String by project
 val githubPassword: String by project
@@ -115,9 +112,9 @@ dependencies {
     implementation("com.zaxxer:HikariCP:$hikariVersion")
     implementation("org.flywaydb:flyway-core:$flywayVersion")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion")
-    testImplementation("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
+    testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
         exclude(group = "org.eclipse.jetty")
@@ -127,24 +124,22 @@ dependencies {
 
 
 tasks {
-    withType<Jar> {
-        manifest.attributes["Main-Class"] = "no.nav.syfo.ApplicationKt"
-    }
-    create("printVersion") {
 
-        doLast {
-            println(project.version)
+    shadowJar {
+        archiveBaseName.set("app")
+        archiveClassifier.set("")
+        isZip64 = true
+        manifest {
+            attributes(
+                mapOf(
+                    "Main-Class" to "no.nav.syfo.ApplicationKt",
+                ),
+            )
         }
     }
 
-    withType<ShadowJar> {
-        transform(ServiceFileTransformer::class.java) {
-            setPath("META-INF/cxf")
-            include("bus-extensions.txt")
-        }
-    }
 
-    withType<Test> {
+    test {
         useJUnitPlatform {}
         testLogging {
             events("skipped", "failed")
@@ -153,10 +148,13 @@ tasks {
         }
     }
 
+
     spotless {
         kotlin { ktfmt(ktfmtVersion).kotlinlangStyle() }
         check {
             dependsOn("spotlessApply")
         }
     }
+
+
 }
