@@ -102,7 +102,6 @@ Find the newest version of gradle here: https://gradle.org/releases/ Then run th
 ```
 
 ### Contact
-
 This project is maintained by [navikt/teamsykmelding](CODEOWNERS)
 
 Questions and/or feature requests? 

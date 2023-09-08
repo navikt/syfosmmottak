@@ -36,7 +36,6 @@ plugins {
     kotlin("jvm") version "1.9.10"
     id("com.diffplug.spotless") version "6.20.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("org.cyclonedx.bom") version "1.7.4"
 }
 
 application {
