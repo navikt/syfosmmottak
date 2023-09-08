@@ -8,11 +8,11 @@ val javaxActivationVersion = "1.1.1"
 val jacksonVersion = "2.15.2"
 val jaxbApiVersion = "2.4.0-b180830.0359"
 val kafkaVersion = "3.4.0"
-val ktorVersion = "2.3.3"
+val ktorVersion = "2.3.4"
 val logbackVersion = "1.4.11"
 val logstashEncoderVersion = "7.4"
 val prometheusVersion = "0.16.0"
-val smCommonVersion = "1.0.12"
+val smCommonVersion = "1.0.14"
 val jaxwsApiVersion = "2.3.1"
 val commonsTextVersion = "1.10.0"
 val javaxAnnotationApiVersion = "1.3.2"
@@ -34,7 +34,7 @@ val ktfmtVersion = "0.44"
 plugins {
     id("application")
     kotlin("jvm") version "1.9.10"
-    id("com.diffplug.spotless") version "6.20.0"
+    id("com.diffplug.spotless") version "6.21.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
