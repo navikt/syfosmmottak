@@ -44,10 +44,13 @@ fun extractTlfFromKontaktInfo(kontaktInfo: List<TeleCom>?): String? =
     }
 
 fun padHpr(hprnummer: String?): String? {
-    if (hprnummer?.length != null && hprnummer.length < 9) {
-        return hprnummer.padStart(9, '0')
+    return if (hprnummer?.length == null || hprnummer.length == 9) {
+        hprnummer
+    } else if (hprnummer.length < 9) {
+        hprnummer.padStart(9, '0')
+    } else {
+        null
     }
-    return hprnummer
 }
 
 inline fun <reified T> XMLEIFellesformat.get() = this.any.find { it is T } as T

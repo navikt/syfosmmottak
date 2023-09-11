@@ -40,4 +40,17 @@ internal class ExtractHelseOpplysningerArbeisuforehetTest {
 
         Assertions.assertEquals("123456789", hpr)
     }
+
+    @Test
+    internal fun `Testing extracting data from HelseOpplysningerArbeidsuforhet extract hpr when over 9 digits`() {
+        val stringInput =
+            no.nav.syfo.utils.getFileAsString(
+                "src/test/resources/fellesformatHprNumber10Digits.xml"
+            )
+        val fellesformat =
+            fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
+        val hpr = padHpr(extractHpr(fellesformat)?.id?.trim())
+
+        Assertions.assertEquals(null, hpr)
+    }
 }
