@@ -13,22 +13,28 @@ import no.nav.syfo.pdl.client.model.GetPersonVariables
 class PdlClient(
     private val httpClient: HttpClient,
     private val basePath: String,
-    private val graphQlQuery: String
+    private val graphQlQuery: String,
 ) {
     private val temaHeader = "TEMA"
     private val tema = "SYM"
 
     suspend fun getIdenter(fnrs: List<String>, stsToken: String): GetPersonResponse {
-        val getPersonRequest = GetPersonRequest(query = graphQlQuery, variables = GetPersonVariables(identer = fnrs))
+        val getPersonRequest =
+            GetPersonRequest(query = graphQlQuery, variables = GetPersonVariables(identer = fnrs))
         return getGraphQLResponse(getPersonRequest, stsToken)
     }
 
-    private suspend inline fun <reified R> getGraphQLResponse(graphQlBody: Any, stsToken: String): R {
-        return httpClient.post(basePath) {
-            setBody(graphQlBody)
-            header(HttpHeaders.Authorization, "Bearer $stsToken")
-            header(temaHeader, tema)
-            header(HttpHeaders.ContentType, "application/json")
-        }.body()
+    private suspend inline fun <reified R> getGraphQLResponse(
+        graphQlBody: Any,
+        stsToken: String
+    ): R {
+        return httpClient
+            .post(basePath) {
+                setBody(graphQlBody)
+                header(HttpHeaders.Authorization, "Bearer $stsToken")
+                header(temaHeader, tema)
+                header(HttpHeaders.ContentType, "application/json")
+            }
+            .body()
     }
 }

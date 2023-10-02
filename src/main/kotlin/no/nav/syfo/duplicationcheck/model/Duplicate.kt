@@ -9,5 +9,6 @@ data class Duplicate(
     val duplicateSykmeldingId: String,
     val mottattDate: LocalDateTime,
     val epjSystem: String,
-    val epjVersion: String
+    val epjVersion: String,
+    val orgNumber: String?,
 )

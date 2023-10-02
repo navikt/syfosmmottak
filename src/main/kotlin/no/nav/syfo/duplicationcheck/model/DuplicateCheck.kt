@@ -10,5 +10,6 @@ data class DuplicateCheck(
     val mottattDate: LocalDateTime,
     val epjSystem: String,
     val epjVersion: String,
-    val orgNumber: String?
+    val orgNumber: String?,
+    val rulesetVersion: String?,
 )

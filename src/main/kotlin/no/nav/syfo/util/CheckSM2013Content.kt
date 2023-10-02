@@ -3,13 +3,14 @@ package no.nav.syfo.util
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
-import no.nav.syfo.Environment
+import no.nav.syfo.EnvironmentVariables
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.duplicationcheck.model.DuplicateCheck
 import no.nav.syfo.handlestatus.handleAktivitetOrPeriodeIsMissing
 import no.nav.syfo.handlestatus.handleAnnenFraversArsakkodeVIsmissing
 import no.nav.syfo.handlestatus.handleArbeidsplassenArsakskodeHarUgyldigVerdi
 import no.nav.syfo.handlestatus.handleArbeidsplassenArsakskodeIsmissing
+import no.nav.syfo.handlestatus.handleBehandletDatoMangler
 import no.nav.syfo.handlestatus.handleBiDiagnoserDiagnosekodeBeskrivelseMissing
 import no.nav.syfo.handlestatus.handleBiDiagnoserDiagnosekodeIsMissing
 import no.nav.syfo.handlestatus.handleBiDiagnoserDiagnosekodeVerkIsMissing
@@ -36,145 +37,284 @@ fun checkSM2013Content(
     ediLoggId: String,
     msgId: String,
     msgHead: XMLMsgHead,
-    env: Environment,
+    env: EnvironmentVariables,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
-    duplicateCheck: DuplicateCheck
+    duplicateCheck: DuplicateCheck,
 ): Boolean {
     if (pasient?.aktorId == null || pasient.fnr == null) {
         handlePatientNotFoundInPDL(
-            loggingMeta, fellesformat,
-            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicateCheck
+            loggingMeta,
+            fellesformat,
+            ediLoggId,
+            msgId,
+            msgHead,
+            env,
+            kafkaproducerApprec,
+            duplicationService,
+            duplicateCheck,
         )
         return true
     }
 
     if (behandler?.aktorId == null) {
         handleDoctorNotFoundInPDL(
-            loggingMeta, fellesformat,
-            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicateCheck
+            loggingMeta,
+            fellesformat,
+            ediLoggId,
+            msgId,
+            msgHead,
+            env,
+            kafkaproducerApprec,
+            duplicationService,
+            duplicateCheck,
         )
         return true
     }
 
-    if (healthInformation.aktivitet == null || healthInformation.aktivitet.periode.isNullOrEmpty()) {
+    if (
+        healthInformation.aktivitet == null || healthInformation.aktivitet.periode.isNullOrEmpty()
+    ) {
         handleAktivitetOrPeriodeIsMissing(
-            loggingMeta, fellesformat,
-            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicateCheck
+            loggingMeta,
+            fellesformat,
+            ediLoggId,
+            msgId,
+            msgHead,
+            env,
+            kafkaproducerApprec,
+            duplicationService,
+            duplicateCheck,
         )
         return true
     }
 
     if (periodetypeIkkeAngitt(healthInformation.aktivitet)) {
         handlePeriodetypeMangler(
-            loggingMeta, fellesformat,
-            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicateCheck
+            loggingMeta,
+            fellesformat,
+            ediLoggId,
+            msgId,
+            msgHead,
+            env,
+            kafkaproducerApprec,
+            duplicationService,
+            duplicateCheck,
         )
         return true
     }
 
-    if (healthInformation.medisinskVurdering?.biDiagnoser != null &&
-        healthInformation.medisinskVurdering.biDiagnoser.diagnosekode.any { it.v.isNullOrEmpty() }
+    if (
+        healthInformation.medisinskVurdering?.biDiagnoser != null &&
+            healthInformation.medisinskVurdering.biDiagnoser.diagnosekode.any {
+                it.v.isNullOrEmpty()
+            }
     ) {
         handleBiDiagnoserDiagnosekodeIsMissing(
-            loggingMeta, fellesformat,
-            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicateCheck
+            loggingMeta,
+            fellesformat,
+            ediLoggId,
+            msgId,
+            msgHead,
+            env,
+            kafkaproducerApprec,
+            duplicationService,
+            duplicateCheck,
         )
         return true
     }
 
-    if (healthInformation.medisinskVurdering?.biDiagnoser != null &&
-        healthInformation.medisinskVurdering.biDiagnoser.diagnosekode.any { it.s.isNullOrEmpty() }
+    if (
+        healthInformation.medisinskVurdering?.biDiagnoser != null &&
+            healthInformation.medisinskVurdering.biDiagnoser.diagnosekode.any {
+                it.s.isNullOrEmpty()
+            }
     ) {
         handleBiDiagnoserDiagnosekodeVerkIsMissing(
-            loggingMeta, fellesformat,
-            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicateCheck
+            loggingMeta,
+            fellesformat,
+            ediLoggId,
+            msgId,
+            msgHead,
+            env,
+            kafkaproducerApprec,
+            duplicationService,
+            duplicateCheck,
         )
         return true
     }
 
-    if (healthInformation.medisinskVurdering?.biDiagnoser != null &&
-        healthInformation.medisinskVurdering.biDiagnoser.diagnosekode.any { it.dn.isNullOrEmpty() }
+    if (
+        healthInformation.medisinskVurdering?.biDiagnoser != null &&
+            healthInformation.medisinskVurdering.biDiagnoser.diagnosekode.any {
+                it.dn.isNullOrEmpty()
+            }
     ) {
         handleBiDiagnoserDiagnosekodeBeskrivelseMissing(
-            loggingMeta, fellesformat,
-            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicateCheck
+            loggingMeta,
+            fellesformat,
+            ediLoggId,
+            msgId,
+            msgHead,
+            env,
+            kafkaproducerApprec,
+            duplicationService,
+            duplicateCheck,
         )
         return true
     }
 
     if (fnrOgDnrMangler(healthInformation) && hprMangler(healthInformation)) {
         handleFnrAndDnrAndHprIsmissingFromBehandler(
-            loggingMeta, fellesformat,
-            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicateCheck
+            loggingMeta,
+            fellesformat,
+            ediLoggId,
+            msgId,
+            msgHead,
+            env,
+            kafkaproducerApprec,
+            duplicationService,
+            duplicateCheck,
         )
         return true
     }
 
-    if (healthInformation.medisinskVurdering?.hovedDiagnose?.diagnosekode != null &&
-        healthInformation.medisinskVurdering.hovedDiagnose.diagnosekode.v == null
+    if (
+        healthInformation.medisinskVurdering?.hovedDiagnose?.diagnosekode != null &&
+            healthInformation.medisinskVurdering.hovedDiagnose.diagnosekode.v == null
     ) {
         handleHovedDiagnoseDiagnosekodeMissing(
-            loggingMeta, fellesformat,
-            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicateCheck
+            loggingMeta,
+            fellesformat,
+            ediLoggId,
+            msgId,
+            msgHead,
+            env,
+            kafkaproducerApprec,
+            duplicationService,
+            duplicateCheck,
         )
         return true
     }
 
-    if (healthInformation.medisinskVurdering?.hovedDiagnose?.diagnosekode != null &&
-        healthInformation.medisinskVurdering.hovedDiagnose.diagnosekode.dn == null
+    if (
+        healthInformation.medisinskVurdering?.hovedDiagnose?.diagnosekode != null &&
+            healthInformation.medisinskVurdering.hovedDiagnose.diagnosekode.dn == null
     ) {
         handleHovedDiagnoseDiagnoseBeskrivelseMissing(
-            loggingMeta, fellesformat,
-            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicateCheck
+            loggingMeta,
+            fellesformat,
+            ediLoggId,
+            msgId,
+            msgHead,
+            env,
+            kafkaproducerApprec,
+            duplicationService,
+            duplicateCheck,
         )
         return true
     }
 
     if (medisinskeArsakskodeMangler(healthInformation)) {
         handleMedisinskeArsakskodeIsmissing(
-            loggingMeta, fellesformat,
-            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicateCheck
+            loggingMeta,
+            fellesformat,
+            ediLoggId,
+            msgId,
+            msgHead,
+            env,
+            kafkaproducerApprec,
+            duplicationService,
+            duplicateCheck,
         )
         return true
     }
 
     if (medisinskeArsakskodeHarUgyldigVerdi(healthInformation)) {
         handleMedisinskeArsakskodeHarUgyldigVerdi(
-            loggingMeta, fellesformat,
-            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicateCheck
+            loggingMeta,
+            fellesformat,
+            ediLoggId,
+            msgId,
+            msgHead,
+            env,
+            kafkaproducerApprec,
+            duplicationService,
+            duplicateCheck,
         )
         return true
     }
 
     if (arbeidsplassenArsakskodeMangler(healthInformation)) {
         handleArbeidsplassenArsakskodeIsmissing(
-            loggingMeta, fellesformat,
-            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicateCheck
+            loggingMeta,
+            fellesformat,
+            ediLoggId,
+            msgId,
+            msgHead,
+            env,
+            kafkaproducerApprec,
+            duplicationService,
+            duplicateCheck,
         )
         return true
     }
 
     if (arbeidsplassenArsakskodeHarUgyldigVerdi(healthInformation)) {
         handleArbeidsplassenArsakskodeHarUgyldigVerdi(
-            loggingMeta, fellesformat,
-            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicateCheck
+            loggingMeta,
+            fellesformat,
+            ediLoggId,
+            msgId,
+            msgHead,
+            env,
+            kafkaproducerApprec,
+            duplicationService,
+            duplicateCheck,
         )
         return true
     }
 
     if (erTestFnr(originaltPasientFnr) && env.cluster == "prod-gcp") {
         handleTestFnrInProd(
-            loggingMeta, fellesformat,
-            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicateCheck
+            loggingMeta,
+            fellesformat,
+            ediLoggId,
+            msgId,
+            msgHead,
+            env,
+            kafkaproducerApprec,
+            duplicationService,
+            duplicateCheck,
         )
         return true
     }
 
     if (annenFraversArsakkodeVMangler(healthInformation)) {
         handleAnnenFraversArsakkodeVIsmissing(
-            loggingMeta, fellesformat,
-            ediLoggId, msgId, msgHead, env, kafkaproducerApprec, duplicationService, duplicateCheck
+            loggingMeta,
+            fellesformat,
+            ediLoggId,
+            msgId,
+            msgHead,
+            env,
+            kafkaproducerApprec,
+            duplicationService,
+            duplicateCheck,
+        )
+        return true
+    }
+    if (behandletDatoMangler(healthInformation)) {
+        handleBehandletDatoMangler(
+            loggingMeta,
+            fellesformat,
+            ediLoggId,
+            msgId,
+            msgHead,
+            env,
+            kafkaproducerApprec,
+            duplicationService,
+            duplicateCheck,
         )
         return true
     }

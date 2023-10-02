@@ -59,6 +59,16 @@ spec:
         - application: syfohelsenettproxy
         - application: clamav
           namespace: nais-system
+        - application: smtss
+      external:
+        - host: smgcp-proxy.dev-fss-pub.nais.io
+        - host: syfohelsenettproxy.dev-fss-pub.nais.io
+        - host: pdl-api.dev-fss-pub.nais.io
+        - host: b27apvl222.preprod.local
+          ports:
+            - name: mq
+              port: 1413
+              protocol: TCP
   vault:
     enabled: false
   webproxy: false
@@ -103,3 +113,5 @@ spec:
       value: api://dev-gcp.teamsykmelding.syfosmregler/.default
     - name: MQ_KEYSTORE_PATH
       value: /var/run/keystore/syfosmmottak-keystore.jks
+    - name: SMTSS_API_SCOPE
+      value: api://dev-gcp.teamsykmelding.smtss/.default

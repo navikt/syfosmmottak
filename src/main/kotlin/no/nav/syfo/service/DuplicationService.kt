@@ -1,5 +1,12 @@
 package no.nav.syfo.service
 
+import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import java.security.MessageDigest
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 import no.nav.syfo.db.DatabaseInterface
 import no.nav.syfo.duplicationcheck.db.extractDuplicateCheckByMottakId
@@ -8,18 +15,28 @@ import no.nav.syfo.duplicationcheck.db.persistDuplicateCheck
 import no.nav.syfo.duplicationcheck.db.persistDuplicateMessage
 import no.nav.syfo.duplicationcheck.model.Duplicate
 import no.nav.syfo.duplicationcheck.model.DuplicateCheck
-import no.nav.syfo.objectMapper
-import java.security.MessageDigest
+
+abstract class UtenStrekkode {
+    @get:JsonIgnore abstract val strekkode: String
+}
+
+private val sha256ObjectMapper: ObjectMapper =
+    ObjectMapper()
+        .registerModule(JavaTimeModule())
+        .registerKotlinModule()
+        .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        .addMixIn(HelseOpplysningerArbeidsuforhet::class.java, UtenStrekkode::class.java)
 
 class DuplicationService(private val database: DatabaseInterface) {
     fun persistDuplicationCheck(
-        duplicateCheck: DuplicateCheck
+        duplicateCheck: DuplicateCheck,
     ) {
         database.persistDuplicateCheck(duplicateCheck)
     }
 
     fun persistDuplication(
-        duplicate: Duplicate
+        duplicate: Duplicate,
     ) {
         database.persistDuplicateMessage(duplicate)
     }
@@ -30,9 +47,10 @@ class DuplicationService(private val database: DatabaseInterface) {
         if (duplicationCheckSha256HealthInformation != null) {
             return duplicationCheckSha256HealthInformation
         } else {
-            val duplicationCheckMottakId = getLatestDuplicationCheck(
-                database.extractDuplicateCheckByMottakId(mottakId)
-            )
+            val duplicationCheckMottakId =
+                getLatestDuplicationCheck(
+                    database.extractDuplicateCheckByMottakId(mottakId),
+                )
             if (duplicationCheckMottakId != null) {
                 return duplicationCheckMottakId
             }
@@ -51,5 +69,5 @@ fun getLatestDuplicationCheck(duplicationChecks: List<DuplicateCheck>): Duplicat
 
 fun sha256hashstring(helseOpplysningerArbeidsuforhet: HelseOpplysningerArbeidsuforhet): String =
     MessageDigest.getInstance("SHA-256")
-        .digest(objectMapper.writeValueAsBytes(helseOpplysningerArbeidsuforhet))
+        .digest(sha256ObjectMapper.writeValueAsBytes(helseOpplysningerArbeidsuforhet))
         .fold("") { str, it -> str + "%02x".format(it) }

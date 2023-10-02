@@ -2,7 +2,7 @@ package no.nav.syfo
 
 import no.nav.syfo.mq.MqConfig
 
-data class Environment(
+data class EnvironmentVariables(
     val smgcpProxyUrl: String = getEnvVar("SMGCP_PROXY_URL"),
     val smgcpProxyScope: String = getEnvVar("SMGCP_PROXY_SCOPE"),
     val syfosmreglerApiUrl: String = getEnvVar("SYFOSMREGLER_API_URL", "http://syfosmregler"),
@@ -31,18 +31,22 @@ data class Environment(
     val pdlScope: String = getEnvVar("PDL_SCOPE"),
     val helsenettproxyScope: String = getEnvVar("HELSENETT_SCOPE"),
     val sykmeldingVedleggBucketName: String = getEnvVar("SYKMELDING_VEDLEGG_BUCKET_NAME"),
-    val clamAvEndpointUrl: String = getEnvVar("CLAMAV_ENDPOINT_URL", "http://clamav.nais-system.svc.cluster.local"),
+    val clamAvEndpointUrl: String =
+        getEnvVar("CLAMAV_ENDPOINT_URL", "http://clamav.nais-system.svc.cluster.local"),
     val databaseUsername: String = getEnvVar("DB_USERNAME"),
     val databasePassword: String = getEnvVar("DB_PASSWORD"),
     val dbHost: String = getEnvVar("DB_HOST"),
     val dbPort: String = getEnvVar("DB_PORT"),
     val dbName: String = getEnvVar("DB_DATABASE"),
+    val smtssApiUrl: String = "http://smtss",
+    val smtssApiScope: String = getEnvVar("SMTSS_API_SCOPE"),
 ) : MqConfig
 
-data class VaultServiceUser(
+data class ApplicationServiceUser(
     val serviceuserUsername: String = getEnvVar("SERVICEUSER_USERNAME"),
-    val serviceuserPassword: String = getEnvVar("SERVICEUSER_PASSWORD")
+    val serviceuserPassword: String = getEnvVar("SERVICEUSER_PASSWORD"),
 )
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =
-    System.getenv(varName) ?: defaultValue ?: throw RuntimeException("Missing required variable \"$varName\"")
+    System.getenv(varName)
+        ?: defaultValue ?: throw RuntimeException("Missing required variable \"$varName\"")

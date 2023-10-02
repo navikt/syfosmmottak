@@ -1,62 +1,55 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransformer
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val coroutinesVersion = "1.6.4"
-val fellesformatVersion = "1.e6fcef8"
+val coroutinesVersion = "1.7.3"
+val syfoXmlCodegenVersion = "2.0.1"
 val ibmMqVersion = "9.3.1.0"
 val javaxActivationVersion = "1.1.1"
-val jacksonVersion = "2.14.2"
+val jacksonVersion = "2.15.2"
 val jaxbApiVersion = "2.4.0-b180830.0359"
-val kafkaVersion = "3.3.1"
-val kithHodemeldingVersion = "1.e6fcef8"
-val kithApprecVersion = "1.e6fcef8"
-val kluentVersion = "1.72"
-val ktorVersion = "2.2.3"
-val logbackVersion = "1.4.4"
-val logstashEncoderVersion = "7.2"
+val kafkaVersion = "3.5.1"
+val ktorVersion = "2.3.4"
+val logbackVersion = "1.4.11"
+val logstashEncoderVersion = "7.4"
 val prometheusVersion = "0.16.0"
-val smCommonVersion = "1.d6548c5"
-val sykmeldingVersion = "1.e6fcef8"
+val smCommonVersion = "2.0.2"
 val jaxwsApiVersion = "2.3.1"
 val commonsTextVersion = "1.10.0"
 val javaxAnnotationApiVersion = "1.3.2"
 val jaxwsToolsVersion = "2.3.2"
 val jaxbRuntimeVersion = "2.4.0-b180830.0438"
 val javaTimeAdapterVersion = "1.1.3"
-val mockkVersion = "1.13.2"
-val kotlinVersion = "1.8.10"
-val googleCloudStorageVersion = "2.13.0"
-val kotestVersion = "5.5.4"
-val flywayVersion = "9.3.0"
+val mockkVersion = "1.13.8"
+val kotlinVersion = "1.9.10"
+val googleCloudStorageVersion = "2.27.1"
+val junitJupiterVersion = "5.10.0"
+val flywayVersion = "9.22.2"
 val hikariVersion = "5.0.1"
-val postgresVersion = "42.5.1"
-val embeddedPostgresVersion = "2.0.2"
-val commonsCodecVersion = "1.13"
+val postgresVersion = "42.6.0"
+val embeddedPostgresVersion = "2.0.4"
+val commonsCodecVersion = "1.16.0"
+val ktfmtVersion = "0.44"
+val snappyJavaVersion = "1.1.10.5"
 
 plugins {
-    kotlin("jvm") version "1.8.10"
-    id("org.jmailen.kotlinter") version "3.10.0"
-    id("com.diffplug.spotless") version "6.5.0"
-    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("application")
+    kotlin("jvm") version "1.9.10"
+    id("com.diffplug.spotless") version "6.22.0"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
+application {
+    mainClass.set("no.nav.syfo.ApplicationKt")
 
-val githubUser: String by project
-val githubPassword: String by project
+    val isDevelopment: Boolean = project.ext.has("development")
+    applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
+}
 
 repositories {
     mavenCentral()
     maven(url= "https://packages.confluent.io/maven/")
     maven {
-        url = uri("https://maven.pkg.github.com/navikt/syfosm-common")
-        credentials {
-            username = githubUser
-            password = githubPassword
-        }
+        url = uri("https://github-package-registry-mirror.gc.nav.no/cached/maven-release")
     }
 }
 
@@ -71,9 +64,11 @@ dependencies {
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-apache:$ktorVersion")
-    // override transient version 1.11 from io.ktor:ktor-client-apache due to security vulnerability
-    // https://devhub.checkmarx.com/cve-details/Cxeb68d52e-5509/
-    implementation("commons-codec:commons-codec:$commonsCodecVersion")
+    constraints {
+        implementation("commons-codec:commons-codec:$commonsCodecVersion") {
+            because("override transient from io.ktor:ktor-client-apache")
+        }
+    }
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
 
@@ -81,15 +76,20 @@ dependencies {
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
 
     implementation("org.apache.kafka:kafka_2.12:$kafkaVersion")
+    constraints {
+        implementation("org.xerial.snappy:snappy-java:$snappyJavaVersion") {
+            because("override transient from org.apache.kafka:kafka_2.12")
+        }
+    }
 
     implementation("com.fasterxml.jackson.module:jackson-module-jaxb-annotations:$jacksonVersion")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
-    implementation("no.nav.helse.xml:sm2013:$sykmeldingVersion")
-    implementation("no.nav.helse.xml:xmlfellesformat:$fellesformatVersion")
-    implementation("no.nav.helse.xml:kith-hodemelding:$kithHodemeldingVersion")
-    implementation("no.nav.helse.xml:kith-apprec:$kithApprecVersion")
+    implementation("no.nav.helse.xml:sm2013:$syfoXmlCodegenVersion")
+    implementation("no.nav.helse.xml:xmlfellesformat:$syfoXmlCodegenVersion")
+    implementation("no.nav.helse.xml:kith-hodemelding:$syfoXmlCodegenVersion")
+    implementation("no.nav.helse.xml:kith-apprec:$syfoXmlCodegenVersion")
 
     implementation("no.nav.helse:syfosm-common-models:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-networking:$smCommonVersion")
@@ -111,41 +111,34 @@ dependencies {
     implementation("com.zaxxer:HikariCP:$hikariVersion")
     implementation("org.flywaydb:flyway-core:$flywayVersion")
 
-    testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
+    testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
     testImplementation("io.mockk:mockk:$mockkVersion")
-    testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
         exclude(group = "org.eclipse.jetty")
     }
-
-    testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
     testImplementation("io.zonky.test:embedded-postgres:$embeddedPostgresVersion")
 }
 
 
 tasks {
-    withType<Jar> {
-        manifest.attributes["Main-Class"] = "no.nav.syfo.BootstrapKt"
-    }
-    create("printVersion") {
 
-        doLast {
-            println(project.version)
-        }
-    }
-    withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "17"
-    }
-
-
-    withType<ShadowJar> {
-        transform(ServiceFileTransformer::class.java) {
-            setPath("META-INF/cxf")
-            include("bus-extensions.txt")
+    shadowJar {
+        archiveBaseName.set("app")
+        archiveClassifier.set("")
+        isZip64 = true
+        manifest {
+            attributes(
+                mapOf(
+                    "Main-Class" to "no.nav.syfo.ApplicationKt",
+                ),
+            )
         }
     }
 
-    withType<Test> {
+
+    test {
         useJUnitPlatform {}
         testLogging {
             events("skipped", "failed")
@@ -154,7 +147,13 @@ tasks {
         }
     }
 
-    "check" {
-        dependsOn("formatKotlin")
+
+    spotless {
+        kotlin { ktfmt(ktfmtVersion).kotlinlangStyle() }
+        check {
+            dependsOn("spotlessApply")
+        }
     }
+
+
 }

@@ -3,7 +3,7 @@ package no.nav.syfo.vedlegg.model
 data class Vedlegg(
     val content: Content,
     val type: String,
-    val description: String
+    val description: String,
 )
 
 data class VedleggMessage(
@@ -12,7 +12,7 @@ data class VedleggMessage(
     val pasientAktorId: String,
     val msgId: String,
     val pasientFnr: String,
-    val source: String = "syfosmmottak"
+    val source: String = "syfosmmottak",
 )
 
 data class Content(val contentType: String, val content: String)

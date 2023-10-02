@@ -21,7 +21,7 @@ spec:
           enabled: true
   image: {{ image }}
   replicas:
-    min: 1
+    min: 2
     max: 4
     cpuThresholdPercentage: 90
   port: 8080
@@ -59,6 +59,15 @@ spec:
         - application: clamav
           namespace: nais-system
         - application: syfohelsenettproxy
+        - application: smtss
+      external:
+        - host: smgcp-proxy.prod-fss-pub.nais.io
+        - host: pdl-api.prod-fss-pub.nais.io
+        - host: mpls04.adeo.no
+          ports:
+            - name: mq
+              port: 1414
+              protocol: TCP
   vault:
     enabled: false
   webproxy: false
@@ -103,3 +112,5 @@ spec:
       value: api://prod-gcp.teamsykmelding.syfosmregler/.default
     - name: MQ_KEYSTORE_PATH
       value: /var/run/keystore/syfosmmottak-keystore.jks
+    - name: SMTSS_API_SCOPE
+      value: api://prod-gcp.teamsykmelding.smtss/.default

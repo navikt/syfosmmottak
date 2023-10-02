@@ -23,22 +23,22 @@ fun handleStatusOK(
     loggingMeta: LoggingMeta,
     okSykmeldingTopic: String,
     receivedSykmelding: ReceivedSykmelding,
-    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>
+    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
 ) {
-
     sendReceivedSykmelding(okSykmeldingTopic, receivedSykmelding, kafkaproducerreceivedSykmelding)
 
-    val apprec = fellesformat.toApprec(
-        ediLoggId,
-        msgId,
-        msgHead,
-        ApprecStatus.OK,
-        null,
-        msgHead.msgInfo.receiver.organisation,
-        msgHead.msgInfo.sender.organisation,
-        msgHead.msgInfo.genDate,
-        null,
-        fellesformat.get<XMLMottakenhetBlokk>().ebService
-    )
+    val apprec =
+        fellesformat.toApprec(
+            ediLoggId,
+            msgId,
+            msgHead,
+            ApprecStatus.OK,
+            null,
+            msgHead.msgInfo.receiver.organisation,
+            msgHead.msgInfo.sender.organisation,
+            msgHead.msgInfo.genDate,
+            null,
+            fellesformat.get<XMLMottakenhetBlokk>().ebService,
+        )
     sendReceipt(apprec, apprecTopic, kafkaproducerApprec, loggingMeta)
 }
