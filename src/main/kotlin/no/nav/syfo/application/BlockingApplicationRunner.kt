@@ -644,7 +644,7 @@ class BlockingApplicationRunner(
         } else if (behandlerfnr != null) {
             norskHelsenettClient.getByFnr(behandlerfnr, loggingMeta)
         } else if (organisationBehandlerHpr != null) {
-            norskHelsenettClient.getByFnr(organisationBehandlerHpr, loggingMeta)
+            norskHelsenettClient.getByHpr(organisationBehandlerHpr, loggingMeta)
         } else {
             null
         }
