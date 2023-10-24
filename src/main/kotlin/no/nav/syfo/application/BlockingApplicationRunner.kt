@@ -3,7 +3,7 @@ package no.nav.syfo.application
 import java.io.StringReader
 import java.time.LocalDateTime
 import java.time.ZoneOffset
-import java.util.UUID
+import java.util.*
 import javax.jms.MessageConsumer
 import javax.jms.MessageProducer
 import javax.jms.TextMessage
@@ -32,6 +32,7 @@ import no.nav.syfo.handlestatus.handleStatusINVALID
 import no.nav.syfo.handlestatus.handleStatusMANUALPROCESSING
 import no.nav.syfo.handlestatus.handleStatusOK
 import no.nav.syfo.handlestatus.handleVedleggContainsVirus
+import no.nav.syfo.handlestatus.handleVedleggOver300MB
 import no.nav.syfo.handlestatus.handleVirksomhetssykmeldingOgFnrManglerIHPR
 import no.nav.syfo.handlestatus.handleVirksomhetssykmeldingOgHprMangler
 import no.nav.syfo.logger
@@ -50,6 +51,7 @@ import no.nav.syfo.model.toSykmelding
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.service.DuplicationService
 import no.nav.syfo.service.VirusScanService
+import no.nav.syfo.service.fileSizeLagerThan300MegaBytes
 import no.nav.syfo.service.sha256hashstring
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.checkSM2013Content
@@ -419,6 +421,28 @@ class BlockingApplicationRunner(
                         }
 
                         if (vedlegg.isNotEmpty()) {
+                            val vedleggOver300MegaByte =
+                                vedlegg.filter {
+                                    fileSizeLagerThan300MegaBytes(
+                                        Base64.getMimeDecoder().decode(it.content.content)
+                                    )
+                                }
+
+                            if (vedleggOver300MegaByte.isNotEmpty()) {
+                                handleVedleggOver300MB(
+                                    loggingMeta,
+                                    fellesformat,
+                                    ediLoggId,
+                                    msgId,
+                                    msgHead,
+                                    env,
+                                    kafkaproducerApprec,
+                                    duplicationService,
+                                    duplicateCheck,
+                                )
+                                continue@loop
+                            }
+
                             if (virusScanService.vedleggContainsVirus(vedlegg)) {
                                 handleVedleggContainsVirus(
                                     loggingMeta,

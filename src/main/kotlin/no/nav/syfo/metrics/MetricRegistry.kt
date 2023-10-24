@@ -77,6 +77,13 @@ val VEDLEGG_OVER_300_MEGABYTE_COUNTER: Counter =
         .help("Number of vedleggs that is over 300 megabyte")
         .register()
 
+val VEDLEGG_AVVIST_OVER_300_MEGABYTE_COUNTER: Counter =
+    Counter.build()
+        .namespace(METRICS_NS)
+        .name("vedlegg_avvist_over_300_megabyte")
+        .help("Number of avvist due to vedlegg is over 300 megabyte")
+        .register()
+
 val SYKMELDING_AVVIST_VIRUS_VEDLEGG_COUNTER: Counter =
     Counter.build()
         .namespace(METRICS_NS)
