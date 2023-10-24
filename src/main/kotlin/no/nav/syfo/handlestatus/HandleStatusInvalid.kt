@@ -16,6 +16,7 @@ import no.nav.syfo.metrics.INVALID_MESSAGE_NO_NOTICE
 import no.nav.syfo.metrics.SYKMELDING_AVVIST_DUPLIKCATE_COUNTER
 import no.nav.syfo.metrics.SYKMELDING_AVVIST_VIRUS_VEDLEGG_COUNTER
 import no.nav.syfo.metrics.TEST_FNR_IN_PROD
+import no.nav.syfo.metrics.VEDLEGG_AVVIST_OVER_300_MEGABYTE_COUNTER
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.sendReceipt
@@ -711,6 +712,39 @@ fun handleBehandletDatoMangler(
         duplicationService,
         duplicateCheck,
     )
+}
+
+fun handleVedleggOver300MB(
+    loggingMeta: LoggingMeta,
+    fellesformat: XMLEIFellesformat,
+    ediLoggId: String,
+    msgId: String,
+    msgHead: XMLMsgHead,
+    env: EnvironmentVariables,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    duplicationService: DuplicationService,
+    duplicateCheck: DuplicateCheck,
+) {
+    logger.warn(
+        "Sykmelding er avvist fordi eit eller flere vedlegg er over 300 MB {} {}",
+        fields(loggingMeta),
+        keyValue("avvistAv", env.applicationName),
+    )
+
+    val apprec =
+        fellesformatToAppprec(
+            fellesformat,
+            "Sykmeldingen kan ikke rettes, det må skrives en ny." +
+                "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
+                "Eit eller flere vedlegg er over 300 MB",
+            ediLoggId,
+            msgId,
+            msgHead,
+        )
+
+    VEDLEGG_AVVIST_OVER_300_MEGABYTE_COUNTER.inc()
+
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
 }
 
 fun handleVedleggContainsVirus(
