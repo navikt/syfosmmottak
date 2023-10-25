@@ -5,10 +5,14 @@ import io.ktor.client.call.body
 import io.ktor.client.request.accept
 import io.ktor.client.request.get
 import io.ktor.client.request.header
+import io.ktor.client.statement.bodyAsText
+import io.ktor.client.statement.readText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
+import io.ktor.util.InternalAPI
 import net.logstash.logback.argument.StructuredArguments
+import no.nav.syfo.application.sikkerlogg
 import no.nav.syfo.logger
 import no.nav.syfo.util.LoggingMeta
 
@@ -25,6 +29,8 @@ class SmtssClient(
         sykmeldingId: String,
     ): String? {
         val accessToken = accessTokenClientV2.getAccessTokenV2(resourceId)
+
+        sikkerlogg.info("Henter TSS-id fra smtss sykmeldingId: $sykmeldingId, samhandlerFnr: $samhandlerFnr, samhandlerOrgName: $samhandlerOrgName")
         val httpResponse =
             httpClient.get("$endpointUrl/api/v1/samhandler/emottak") {
                 accept(ContentType.Application.Json)
@@ -55,6 +61,7 @@ class SmtssClient(
         return getResponse(httpResponse, loggingMeta)
     }
 
+    @OptIn(InternalAPI::class)
     private suspend fun getResponse(
         httpResponse: io.ktor.client.statement.HttpResponse,
         loggingMeta: LoggingMeta
@@ -72,7 +79,7 @@ class SmtssClient(
                 null
             }
             else -> {
-                logger.error("Error getting TSS-id ${httpResponse.status}")
+                logger.error("Error getting TSS-id ${httpResponse.status} : ${httpResponse.bodyAsText()}")
                 throw RuntimeException("Error getting TSS-id")
             }
         }
