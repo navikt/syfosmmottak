@@ -6,7 +6,6 @@ import io.ktor.client.request.accept
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
-import io.ktor.client.statement.readText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
@@ -30,7 +29,10 @@ class SmtssClient(
     ): String? {
         val accessToken = accessTokenClientV2.getAccessTokenV2(resourceId)
 
-        sikkerlogg.info("Henter TSS-id fra smtss sykmeldingId: $sykmeldingId, samhandlerFnr: $samhandlerFnr, samhandlerOrgName: $samhandlerOrgName")
+        sikkerlogg.info(
+            "Henter TSS-id fra smtss sykmeldingId: $sykmeldingId, samhandlerFnr: $samhandlerFnr, samhandlerOrgName: $samhandlerOrgName loggingMeta: {}",
+            StructuredArguments.fields(loggingMeta)
+        )
         val httpResponse =
             httpClient.get("$endpointUrl/api/v1/samhandler/emottak") {
                 accept(ContentType.Application.Json)
@@ -79,7 +81,9 @@ class SmtssClient(
                 null
             }
             else -> {
-                logger.error("Error getting TSS-id ${httpResponse.status} : ${httpResponse.bodyAsText()}")
+                logger.error(
+                    "Error getting TSS-id ${httpResponse.status} : ${httpResponse.bodyAsText()}"
+                )
                 throw RuntimeException("Error getting TSS-id")
             }
         }
