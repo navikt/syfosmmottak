@@ -7,6 +7,7 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import java.io.ByteArrayOutputStream
+import java.io.IOException
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.helse.msgHead.XMLSender
@@ -31,19 +32,31 @@ class EmottakSubscriptionClient(
     ) {
         logger.info(
             "Update subscription emottak for tssid: $tssIdent {}",
-            StructuredArguments.fields(loggingMeta)
+            StructuredArguments.fields(loggingMeta),
         )
         val accessToken = accessTokenClientV2.getAccessTokenV2(resourceId)
-        httpClient.post("$endpointUrl/emottak/startsubscription") {
-            contentType(ContentType.Application.Json)
-            header("Authorization", "Bearer $accessToken")
-            header("Nav-Call-Id", msgId)
-            setBody(
-                StartSubscriptionRequest(
-                    tssIdent = tssIdent,
-                    sender = convertSenderToBase64(msgHead.msgInfo.sender),
-                    partnerreferanse = partnerreferanse.toInt(),
-                ),
+        try {
+            httpClient.post("$endpointUrl/emottak/startsubscription") {
+                contentType(ContentType.Application.Json)
+                header("Authorization", "Bearer $accessToken")
+                header("Nav-Call-Id", msgId)
+                setBody(
+                    StartSubscriptionRequest(
+                        tssIdent = tssIdent,
+                        sender = convertSenderToBase64(msgHead.msgInfo.sender),
+                        partnerreferanse = partnerreferanse.toInt(),
+                    ),
+                )
+            }
+            logger.info(
+                "Started subscription for tss: $tssIdent and partnerRef: $partnerreferanse, msgId: $msgId"
+            )
+        } catch (exception: Exception) {
+            logger.error(
+                "Couldn't update emottak subscription due to error: ${exception}, msgId: $msgId"
+            )
+            throw IOException(
+                "Vi fikk en uventet feil fra smgcp, prøver på nytt! ${exception.message}, msgId: $msgId"
             )
         }
     }
