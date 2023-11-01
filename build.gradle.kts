@@ -20,10 +20,10 @@ val jaxwsToolsVersion = "2.3.2"
 val jaxbRuntimeVersion = "2.4.0-b180830.0438"
 val javaTimeAdapterVersion = "1.1.3"
 val mockkVersion = "1.13.8"
-val kotlinVersion = "1.9.10"
+val kotlinVersion = "1.9.20"
 val googleCloudStorageVersion = "2.29.0"
 val junitJupiterVersion = "5.10.0"
-val flywayVersion = "9.22.3"
+val flywayVersion = "10.0.0"
 val hikariVersion = "5.0.1"
 val postgresVersion = "42.6.0"
 val embeddedPostgresVersion = "2.0.4"
@@ -33,7 +33,7 @@ val snappyJavaVersion = "1.1.10.5"
 
 plugins {
     id("application")
-    kotlin("jvm") version "1.9.10"
+    kotlin("jvm") version "1.9.20"
     id("com.diffplug.spotless") version "6.22.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
