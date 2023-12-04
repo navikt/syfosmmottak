@@ -5,14 +5,14 @@ val coroutinesVersion = "1.7.3"
 val syfoXmlCodegenVersion = "2.0.1"
 val ibmMqVersion = "9.3.1.0"
 val javaxActivationVersion = "1.1.1"
-val jacksonVersion = "2.15.3"
+val jacksonVersion = "2.16.0"
 val jaxbApiVersion = "2.4.0-b180830.0359"
 val kafkaVersion = "3.6.0"
-val ktorVersion = "2.3.5"
-val logbackVersion = "1.4.11"
+val ktorVersion = "2.3.6"
+val logbackVersion = "1.4.14"
 val logstashEncoderVersion = "7.4"
 val prometheusVersion = "0.16.0"
-val smCommonVersion = "2.0.5"
+val smCommonVersion = "2.0.6"
 val jaxwsApiVersion = "2.3.1"
 val commonsTextVersion = "1.11.0"
 val javaxAnnotationApiVersion = "1.3.2"
@@ -20,21 +20,21 @@ val jaxwsToolsVersion = "2.3.2"
 val jaxbRuntimeVersion = "2.4.0-b180830.0438"
 val javaTimeAdapterVersion = "1.1.3"
 val mockkVersion = "1.13.8"
-val kotlinVersion = "1.9.20"
-val googleCloudStorageVersion = "2.29.0"
-val junitJupiterVersion = "5.10.0"
-val flywayVersion = "9.22.3"
-val hikariVersion = "5.0.1"
-val postgresVersion = "42.6.0"
-val embeddedPostgresVersion = "2.0.4"
+val kotlinVersion = "1.9.21"
+val googleCloudStorageVersion = "2.29.1"
+val junitJupiterVersion = "5.10.1"
+val flywayVersion = "10.1.0"
+val hikariVersion = "5.1.0"
+val postgresVersion = "42.7.0"
+val embeddedPostgresVersion = "2.0.5"
 val commonsCodecVersion = "1.16.0"
 val ktfmtVersion = "0.44"
 val snappyJavaVersion = "1.1.10.5"
 
 plugins {
     id("application")
-    kotlin("jvm") version "1.9.20"
-    id("com.diffplug.spotless") version "6.22.0"
+    kotlin("jvm") version "1.9.21"
+    id("com.diffplug.spotless") version "6.23.2"
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
@@ -109,7 +109,8 @@ dependencies {
 
     implementation("org.postgresql:postgresql:$postgresVersion")
     implementation("com.zaxxer:HikariCP:$hikariVersion")
-    implementation("org.flywaydb:flyway-core:$flywayVersion")
+    compileOnly("org.flywaydb:flyway-core:$flywayVersion")
+    implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
 
     testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
