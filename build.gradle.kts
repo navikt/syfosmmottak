@@ -21,12 +21,12 @@ val jaxbRuntimeVersion = "2.4.0-b180830.0438"
 val javaTimeAdapterVersion = "1.1.3"
 val mockkVersion = "1.13.8"
 val kotlinVersion = "1.9.21"
-val googleCloudStorageVersion = "2.29.1"
+val googleCloudStorageVersion = "2.30.0"
 val junitJupiterVersion = "5.10.1"
 val flywayVersion = "10.1.0"
 val hikariVersion = "5.1.0"
 val postgresVersion = "42.7.0"
-val embeddedPostgresVersion = "2.0.5"
+val embeddedPostgresVersion = "2.0.6"
 val commonsCodecVersion = "1.16.0"
 val ktfmtVersion = "0.44"
 val snappyJavaVersion = "1.1.10.5"
@@ -34,7 +34,7 @@ val snappyJavaVersion = "1.1.10.5"
 plugins {
     id("application")
     kotlin("jvm") version "1.9.21"
-    id("com.diffplug.spotless") version "6.23.2"
+    id("com.diffplug.spotless") version "6.23.3"
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
