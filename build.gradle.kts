@@ -30,6 +30,7 @@ val embeddedPostgresVersion = "2.0.6"
 val commonsCodecVersion = "1.16.0"
 val ktfmtVersion = "0.44"
 val snappyJavaVersion = "1.1.10.5"
+val jsonVersion = "20231013"
 
 plugins {
     id("application")
@@ -95,6 +96,11 @@ dependencies {
     implementation("no.nav.helse:syfosm-common-networking:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-mq:$smCommonVersion")
+    constraints {
+        implementation("org.json:json:$jsonVersion") {
+            because("override transient from com.ibm.mq:com.ibm.mq.allclient")
+        }
+    }
 
     implementation("com.google.cloud:google-cloud-storage:$googleCloudStorageVersion")
 
