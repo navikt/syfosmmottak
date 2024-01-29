@@ -64,9 +64,7 @@ spec:
         - host: pdl-api.prod-fss-pub.nais.io
         - host: mpls04.adeo.no
           ports:
-            - name: mq
-              port: 1414
-              protocol: TCP
+            - port: 1414
   vault:
     enabled: false
   webproxy: false

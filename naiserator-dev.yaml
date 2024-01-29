@@ -64,9 +64,7 @@ spec:
         - host: pdl-api.dev-fss-pub.nais.io
         - host: b27apvl222.preprod.local
           ports:
-            - name: mq
-              port: 1413
-              protocol: TCP
+            - port: 1413
   vault:
     enabled: false
   webproxy: false
