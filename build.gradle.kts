@@ -3,7 +3,7 @@ version = "1.0.0"
 
 val coroutinesVersion = "1.8.0"
 val syfoXmlCodegenVersion = "2.0.1"
-val ibmMqVersion = "9.3.1.0"
+val ibmMqVersion = "9.3.4.1"
 val javaxActivationVersion = "1.1.1"
 val jacksonVersion = "2.16.1"
 val jaxbApiVersion = "2.4.0-b180830.0359"
@@ -12,7 +12,6 @@ val ktorVersion = "2.3.8"
 val logbackVersion = "1.5.0"
 val logstashEncoderVersion = "7.4"
 val prometheusVersion = "0.16.0"
-val smCommonVersion = "2.0.8"
 val jaxwsApiVersion = "2.3.1"
 val commonsTextVersion = "1.11.0"
 val javaxAnnotationApiVersion = "1.3.2"
@@ -91,11 +90,7 @@ dependencies {
     implementation("no.nav.helse.xml:xmlfellesformat:$syfoXmlCodegenVersion")
     implementation("no.nav.helse.xml:kith-hodemelding:$syfoXmlCodegenVersion")
     implementation("no.nav.helse.xml:kith-apprec:$syfoXmlCodegenVersion")
-
-    implementation("no.nav.helse:syfosm-common-models:$smCommonVersion")
-    implementation("no.nav.helse:syfosm-common-networking:$smCommonVersion")
-    implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
-    implementation("no.nav.helse:syfosm-common-mq:$smCommonVersion")
+    implementation("com.ibm.mq:com.ibm.mq.allclient:$ibmMqVersion")
     constraints {
         implementation("org.json:json:$jsonVersion") {
             because("override transient from com.ibm.mq:com.ibm.mq.allclient")
