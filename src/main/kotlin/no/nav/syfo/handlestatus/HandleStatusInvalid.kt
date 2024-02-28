@@ -18,7 +18,9 @@ import no.nav.syfo.metrics.SYKMELDING_AVVIST_VIRUS_VEDLEGG_COUNTER
 import no.nav.syfo.metrics.TEST_FNR_IN_PROD
 import no.nav.syfo.metrics.VEDLEGG_AVVIST_OVER_300_MEGABYTE_COUNTER
 import no.nav.syfo.model.ReceivedSykmelding
+import no.nav.syfo.model.ReceivedSykmeldingWithValidation
 import no.nav.syfo.model.ValidationResult
+import no.nav.syfo.model.toReceivedSykmeldingWithValidation
 import no.nav.syfo.sendReceipt
 import no.nav.syfo.sendReceivedSykmelding
 import no.nav.syfo.sendValidationResult
@@ -29,7 +31,7 @@ import org.apache.kafka.clients.producer.KafkaProducer
 
 fun handleStatusINVALID(
     validationResult: ValidationResult,
-    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
+    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmeldingWithValidation>,
     kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
     avvistSykmeldingTopic: String,
     receivedSykmelding: ReceivedSykmelding,
@@ -51,7 +53,7 @@ fun handleStatusINVALID(
     )
     sendReceivedSykmelding(
         avvistSykmeldingTopic,
-        receivedSykmelding,
+        receivedSykmelding.toReceivedSykmeldingWithValidation(validationResult),
         kafkaproducerreceivedSykmelding
     )
     val apprec =

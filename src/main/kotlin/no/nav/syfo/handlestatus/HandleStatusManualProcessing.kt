@@ -15,8 +15,10 @@ import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.OpprettOppgaveKafkaMessage
 import no.nav.syfo.model.PrioritetType
 import no.nav.syfo.model.ReceivedSykmelding
+import no.nav.syfo.model.ReceivedSykmeldingWithValidation
 import no.nav.syfo.model.RuleInfo
 import no.nav.syfo.model.ValidationResult
+import no.nav.syfo.model.toReceivedSykmeldingWithValidation
 import no.nav.syfo.sendReceipt
 import no.nav.syfo.sendReceivedSykmelding
 import no.nav.syfo.sendValidationResult
@@ -36,7 +38,7 @@ fun handleStatusMANUALPROCESSING(
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     validationResult: ValidationResult,
     kafkaManuelTaskProducer: KafkaProducer<String, OpprettOppgaveKafkaMessage>,
-    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
+    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmeldingWithValidation>,
     manuellBehandlingSykmeldingTopic: String,
     kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
     behandlingsUtfallTopic: String,
@@ -86,7 +88,7 @@ fun handleStatusMANUALPROCESSING(
 
         sendReceivedSykmelding(
             manuellBehandlingSykmeldingTopic,
-            receivedSykmelding,
+            receivedSykmelding.toReceivedSykmeldingWithValidation(validationResult),
             kafkaproducerreceivedSykmelding
         )
 

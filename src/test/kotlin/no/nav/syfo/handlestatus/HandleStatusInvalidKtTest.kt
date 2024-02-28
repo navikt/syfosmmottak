@@ -11,6 +11,7 @@ import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.model.ReceivedSykmelding
+import no.nav.syfo.model.ReceivedSykmeldingWithValidation
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.util.LoggingMeta
@@ -27,7 +28,7 @@ internal class HandleStatusInvalidKtTest {
     val kafkaApprecProducer = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
     val receivedSykmelding = mockk<ReceivedSykmelding>(relaxed = true)
     val kafkaProducerReceviedSykmelding =
-        mockk<KafkaProducer<String, ReceivedSykmelding>>(relaxed = true)
+        mockk<KafkaProducer<String, ReceivedSykmeldingWithValidation>>(relaxed = true)
     val validationResultKafkaProducer = mockk<KafkaProducer<String, ValidationResult>>()
     val validationResult = ValidationResult(Status.INVALID, emptyList())
     val stringInput = getFileAsString("src/test/resources/sykemelding2013Regelsettversjon2.xml")
@@ -139,7 +140,7 @@ internal class HandleStatusInvalidKtTest {
 
 private fun handleStatusInvalid(
     validationResult: ValidationResult,
-    kafkaProducerReceviedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
+    kafkaProducerReceviedSykmelding: KafkaProducer<String, ReceivedSykmeldingWithValidation>,
     validationResultKafkaProducer: KafkaProducer<String, ValidationResult>,
     receivedSykmelding: ReceivedSykmelding,
     fellesformat: XMLEIFellesformat,

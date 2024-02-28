@@ -20,7 +20,7 @@ import no.nav.syfo.client.SmtssClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.OpprettOppgaveKafkaMessage
-import no.nav.syfo.model.ReceivedSykmelding
+import no.nav.syfo.model.ReceivedSykmeldingWithValidation
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.pdl.client.model.PdlIdent
@@ -46,7 +46,7 @@ internal class BlockingApplicationRunnerTest {
     val pdlPersonService = mockk<PdlPersonService>()
     val bucketUploadService = mockk<BucketUploadService>(relaxed = true)
     val kafkaproducerreceivedSykmelding =
-        mockk<KafkaProducer<String, ReceivedSykmelding>>(relaxed = true)
+        mockk<KafkaProducer<String, ReceivedSykmeldingWithValidation>>(relaxed = true)
     val kafkaproducervalidationResult =
         mockk<KafkaProducer<String, ValidationResult>>(relaxed = true)
     val kafkaManuelTaskProducer =
