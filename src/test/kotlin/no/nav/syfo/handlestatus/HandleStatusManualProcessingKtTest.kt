@@ -14,6 +14,7 @@ import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.OpprettOppgaveKafkaMessage
 import no.nav.syfo.model.ReceivedSykmelding
+import no.nav.syfo.model.ReceivedSykmeldingWithValidation
 import no.nav.syfo.model.RuleInfo
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
@@ -31,7 +32,7 @@ internal class HandleStatusManualProcessingKtTest {
     val kafkaApprecProducer = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
     val receivedSykmelding = mockk<ReceivedSykmelding>(relaxed = true)
     val kafkaProducerReceviedSykmelding =
-        mockk<KafkaProducer<String, ReceivedSykmelding>>(relaxed = true)
+        mockk<KafkaProducer<String, ReceivedSykmeldingWithValidation>>(relaxed = true)
     val kafkaManualTaskProducer = mockk<KafkaProducer<String, OpprettOppgaveKafkaMessage>>()
     val validationResultKafkaProducer = mockk<KafkaProducer<String, ValidationResult>>()
     val manuellOppgaveProducer = mockk<KafkaProducer<String, ManuellOppgave>>()
@@ -230,7 +231,7 @@ private fun handleManualProcessing(
     kafkaApprecProducer: KafkaProducer<String, Apprec>,
     validationResutl: ValidationResult,
     kafkaManualTaskProducer: KafkaProducer<String, OpprettOppgaveKafkaMessage>,
-    kafkaProducerReceviedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
+    kafkaProducerReceviedSykmelding: KafkaProducer<String, ReceivedSykmeldingWithValidation>,
     validationResultKafkaProducer: KafkaProducer<String, ValidationResult>,
     manuellOppgaveProducer: KafkaProducer<String, ManuellOppgave>,
 ) {

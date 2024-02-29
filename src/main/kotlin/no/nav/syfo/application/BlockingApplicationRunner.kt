@@ -44,6 +44,7 @@ import no.nav.syfo.metrics.VIRKSOMHETSYKMELDING
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.OpprettOppgaveKafkaMessage
 import no.nav.syfo.model.ReceivedSykmelding
+import no.nav.syfo.model.ReceivedSykmeldingWithValidation
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.model.toAvsenderSystem
@@ -91,7 +92,8 @@ class BlockingApplicationRunner(
     private val norskHelsenettClient: NorskHelsenettClient,
     private val pdlPersonService: PdlPersonService,
     private val bucketUploadService: BucketUploadService,
-    private val kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
+    private val kafkaproducerreceivedSykmelding:
+        KafkaProducer<String, ReceivedSykmeldingWithValidation>,
     private val kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
     private val kafkaManuelTaskProducer: KafkaProducer<String, OpprettOppgaveKafkaMessage>,
     private val kafkaproducerApprec: KafkaProducer<String, Apprec>,

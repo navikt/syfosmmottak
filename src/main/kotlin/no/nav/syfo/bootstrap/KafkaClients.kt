@@ -7,7 +7,7 @@ import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.kafka.aiven.KafkaUtils
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.OpprettOppgaveKafkaMessage
-import no.nav.syfo.model.ReceivedSykmelding
+import no.nav.syfo.model.ReceivedSykmeldingWithValidation
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.util.JacksonKafkaSerializer
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -31,7 +31,7 @@ fun Properties.toProducerConfig(
 class KafkaClients(environmentVariables: EnvironmentVariables) {
 
     val kafkaProducerReceivedSykmelding =
-        KafkaProducer<String, ReceivedSykmelding>(
+        KafkaProducer<String, ReceivedSykmeldingWithValidation>(
             getkafkaProducerConfig("received-sykmelding-producer", environmentVariables)
         )
     val kafkaProducerValidationResult =

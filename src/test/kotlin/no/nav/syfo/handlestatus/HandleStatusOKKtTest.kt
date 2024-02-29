@@ -11,6 +11,7 @@ import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.model.ReceivedSykmelding
+import no.nav.syfo.model.ReceivedSykmeldingWithValidation
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.fellesformatUnmarshaller
 import no.nav.syfo.util.get
@@ -27,7 +28,7 @@ internal class HandleStatusOKKtTest {
     val kafkaApprecProducer = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
     val receivedSykmelding = mockk<ReceivedSykmelding>(relaxed = true)
     val kafkaProducerReceviedSykmelding =
-        mockk<KafkaProducer<String, ReceivedSykmelding>>(relaxed = true)
+        mockk<KafkaProducer<String, ReceivedSykmeldingWithValidation>>(relaxed = true)
 
     val stringInput = getFileAsString("src/test/resources/sykemelding2013Regelsettversjon2.xml")
     val fellesformat =

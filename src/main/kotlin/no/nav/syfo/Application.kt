@@ -35,6 +35,7 @@ import no.nav.syfo.db.Database
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.OpprettOppgaveKafkaMessage
 import no.nav.syfo.model.ReceivedSykmelding
+import no.nav.syfo.model.ReceivedSykmeldingWithValidation
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.mq.MqTlsUtils
 import no.nav.syfo.mq.connectionFactory
@@ -164,7 +165,7 @@ fun launchListeners(
     environmentVariables: EnvironmentVariables,
     applicationState: ApplicationState,
     emottakSubscriptionClient: EmottakSubscriptionClient,
-    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
+    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmeldingWithValidation>,
     kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
     syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
     pdlPersonService: PdlPersonService,
@@ -265,9 +266,10 @@ fun sendValidationResult(
 
 fun sendReceivedSykmelding(
     receivedSykmeldingTopic: String,
-    receivedSykmelding: ReceivedSykmelding,
-    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
+    receivedSykmelding: ReceivedSykmeldingWithValidation,
+    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmeldingWithValidation>,
 ) {
+
     try {
         kafkaproducerreceivedSykmelding
             .send(

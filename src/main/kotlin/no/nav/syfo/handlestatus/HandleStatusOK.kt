@@ -7,6 +7,10 @@ import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.apprec.ApprecStatus
 import no.nav.syfo.apprec.toApprec
 import no.nav.syfo.model.ReceivedSykmelding
+import no.nav.syfo.model.ReceivedSykmeldingWithValidation
+import no.nav.syfo.model.Status
+import no.nav.syfo.model.ValidationResult
+import no.nav.syfo.model.toReceivedSykmeldingWithValidation
 import no.nav.syfo.sendReceipt
 import no.nav.syfo.sendReceivedSykmelding
 import no.nav.syfo.util.LoggingMeta
@@ -23,9 +27,15 @@ fun handleStatusOK(
     loggingMeta: LoggingMeta,
     okSykmeldingTopic: String,
     receivedSykmelding: ReceivedSykmelding,
-    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmelding>,
+    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmeldingWithValidation>,
 ) {
-    sendReceivedSykmelding(okSykmeldingTopic, receivedSykmelding, kafkaproducerreceivedSykmelding)
+    sendReceivedSykmelding(
+        okSykmeldingTopic,
+        receivedSykmelding.toReceivedSykmeldingWithValidation(
+            ValidationResult(status = Status.OK, ruleHits = emptyList())
+        ),
+        kafkaproducerreceivedSykmelding
+    )
 
     val apprec =
         fellesformat.toApprec(
