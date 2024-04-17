@@ -8,6 +8,7 @@ import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.duplicationcheck.model.DuplicateCheck
 import no.nav.syfo.handlestatus.handleAktivitetOrPeriodeIsMissing
 import no.nav.syfo.handlestatus.handleAnnenFraversArsakkodeVIsmissing
+import no.nav.syfo.handlestatus.handleArbeidsgiverUgyldigVerdi
 import no.nav.syfo.handlestatus.handleArbeidsplassenArsakskodeHarUgyldigVerdi
 import no.nav.syfo.handlestatus.handleArbeidsplassenArsakskodeIsmissing
 import no.nav.syfo.handlestatus.handleBehandletDatoMangler
@@ -306,6 +307,20 @@ fun checkSM2013Content(
     }
     if (behandletDatoMangler(healthInformation)) {
         handleBehandletDatoMangler(
+            loggingMeta,
+            fellesformat,
+            ediLoggId,
+            msgId,
+            msgHead,
+            env,
+            kafkaproducerApprec,
+            duplicationService,
+            duplicateCheck,
+        )
+        return true
+    }
+    if (arbeidsgiverUgyldigVerdi(healthInformation)) {
+        handleArbeidsgiverUgyldigVerdi(
             loggingMeta,
             fellesformat,
             ediLoggId,

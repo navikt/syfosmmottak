@@ -716,6 +716,44 @@ fun handleBehandletDatoMangler(
     )
 }
 
+fun handleArbeidsgiverUgyldigVerdi(
+    loggingMeta: LoggingMeta,
+    fellesformat: XMLEIFellesformat,
+    ediLoggId: String,
+    msgId: String,
+    msgHead: XMLMsgHead,
+    env: EnvironmentVariables,
+    kafkaproducerApprec: KafkaProducer<String, Apprec>,
+    duplicationService: DuplicationService,
+    duplicateCheck: DuplicateCheck,
+) {
+    logger.warn(
+        "Sykmeldingen er avvist fordi arbeidsgiver verdi mangler {} {}",
+        fields(loggingMeta),
+        keyValue("avvistAv", env.applicationName),
+    )
+
+    val apprec =
+        fellesformatToAppprec(
+            fellesformat,
+            "Sykmeldingen kan ikke rettes, det må skrives en ny." +
+                "Pasienten har ikke fått beskjed, men venter på ny sykmelding fra deg. Grunnet følgende:" +
+                "Arbeidsgiver HarArbeidsgiver V mangler i sykmeldingen. Kontakt din EPJ-leverandør",
+            ediLoggId,
+            msgId,
+            msgHead,
+        )
+
+    sendApprec(
+        apprec,
+        env,
+        kafkaproducerApprec,
+        loggingMeta,
+        duplicationService,
+        duplicateCheck,
+    )
+}
+
 fun handleVedleggOver300MB(
     loggingMeta: LoggingMeta,
     fellesformat: XMLEIFellesformat,
