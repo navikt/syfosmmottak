@@ -119,3 +119,7 @@ fun periodetypeIkkeAngitt(aktivitet: HelseOpplysningerArbeidsuforhet.Aktivitet):
 fun behandletDatoMangler(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean {
     return healthInformation.kontaktMedPasient.behandletDato == null
 }
+
+fun arbeidsgiverUgyldigVerdi(healthInformation: HelseOpplysningerArbeidsuforhet): Boolean {
+    return healthInformation.arbeidsgiver.harArbeidsgiver.v.isNullOrEmpty()
+}
