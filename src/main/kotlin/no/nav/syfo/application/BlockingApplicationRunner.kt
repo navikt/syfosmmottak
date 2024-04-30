@@ -93,7 +93,7 @@ class BlockingApplicationRunner(
     private val pdlPersonService: PdlPersonService,
     private val bucketUploadService: BucketUploadService,
     private val kafkaproducerreceivedSykmelding:
-        KafkaProducer<String, ReceivedSykmeldingWithValidation>,
+    KafkaProducer<String, ReceivedSykmeldingWithValidation>,
     private val kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
     private val kafkaManuelTaskProducer: KafkaProducer<String, OpprettOppgaveKafkaMessage>,
     private val kafkaproducerApprec: KafkaProducer<String, Apprec>,
@@ -109,11 +109,7 @@ class BlockingApplicationRunner(
     ) {
         wrapExceptions {
             loop@ while (applicationState.ready) {
-                val randomUuid = UUID.randomUUID().toString()
-                logger.info("TRACE_DEBUG: Polling for message, trace id: $randomUuid")
                 val message = inputconsumer.receive(1000)
-                logger.info("TRACE_DEBUG: Received message, trace id: $randomUuid")
-
                 var loggingMeta: LoggingMeta? = null
                 if (message == null) {
                     delay(100)
@@ -133,19 +129,16 @@ class BlockingApplicationRunner(
                     val requestLatency = REQUEST_TIME.startTimer()
                     val fellesformat = safeUnmarshal(inputMessageText)
 
-                    logger.info("TRACE_DEBUG: Before vedlegg, trace id: $randomUuid")
                     val vedlegg = getVedlegg(fellesformat)
                     if (vedlegg.isNotEmpty()) {
                         SYKMELDING_VEDLEGG_COUNTER.inc()
                         removeVedleggFromFellesformat(fellesformat)
                     }
-                    logger.info("TRACE_DEBUG: After vedlegg, trace id: $randomUuid")
                     val fellesformatText =
                         when (vedlegg.isNotEmpty()) {
                             true -> fellesformatMarshaller.toString(fellesformat)
                             false -> inputMessageText
                         }
-                    logger.info("TRACE_DEBUG: AFter fellesformat, trace id: $randomUuid")
                     val receiverBlock = fellesformat.get<XMLMottakenhetBlokk>()
                     val msgHead = fellesformat.get<XMLMsgHead>()
                     val legekontorOrgNr =
@@ -159,7 +152,6 @@ class BlockingApplicationRunner(
                             orgNr = legekontorOrgNr,
                             msgId = msgHead.msgInfo.msgId,
                         )
-                    logger.info("TRACE_DEBUG: Received message, trace id: $randomUuid")
                     logger.info("Received message, {}", StructuredArguments.fields(loggingMeta))
 
                     val healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat)
@@ -167,17 +159,15 @@ class BlockingApplicationRunner(
                     val sha256String = sha256hashstring(healthInformation)
                     val msgId = msgHead.msgInfo.msgId
 
-                    logger.info("TRACE_DEBUG: After health information, trace id: $randomUuid")
 
                     val legekontorHerId = extractOrganisationHerNumberFromSender(fellesformat)?.id
                     val legekontorReshId = extractOrganisationRashNumberFromSender(fellesformat)?.id
                     val legekontorOrgName =
                         msgHead.msgInfo.sender.organisation.organisationName.replace(
                             "[^\\p{ASCII}]".toRegex(),
-                            ""
+                            "",
                         )
 
-                    logger.info("TRACE_DEBUG: After legekontorstuff, trace id: $randomUuid")
 
                     val partnerReferanse = receiverBlock.partnerReferanse
 
@@ -193,7 +183,6 @@ class BlockingApplicationRunner(
 
                     val avsenderSystem = healthInformation.avsenderSystem.toAvsenderSystem()
 
-                    logger.info("TRACE_DEBUG: Before sykmelding stuff, trace id: $randomUuid")
                     val sykmeldingId = UUID.randomUUID().toString()
 
                     val rulesetVersion = healthInformation.regelSettVersjon
@@ -211,7 +200,6 @@ class BlockingApplicationRunner(
                             rulesetVersion,
                         )
 
-                    logger.info("TRACE_DEBUG: Before extract, trace id: $randomUuid")
                     logger.info(
                         "Extracted data, ready to make sync calls to get more data, {}",
                         StructuredArguments.fields(loggingMeta),
@@ -230,7 +218,6 @@ class BlockingApplicationRunner(
                         )
                     }
 
-                    logger.info("TRACE_DEBUG: Before signatur, trace id: $randomUuid")
                     val signaturFnr =
                         if (erVirksomhetSykmelding) {
                             logger.info(
@@ -279,17 +266,13 @@ class BlockingApplicationRunner(
                         } else {
                             receiverBlock.avsenderFnrFraDigSignatur
                         }
-                    logger.info("TRACE_DEBUG: After signatur, trace id: $randomUuid")
 
-                    logger.info("TRACE_DEBUG: before PDL, trace id: $randomUuid")
                     val identer =
                         pdlPersonService.getIdenter(
                             listOf(signaturFnr, originaltPasientFnr),
                             loggingMeta,
                         )
-                    logger.info("TRACE_DEBUG: After PDL, trace id: $randomUuid")
 
-                    logger.info("TRACE_DEBUG: Before TSSID, trace id: $randomUuid")
                     val tssIdEmottak =
                         smtssClient.findBestTssIdEmottak(
                             signaturFnr,
@@ -297,9 +280,7 @@ class BlockingApplicationRunner(
                             loggingMeta,
                             sykmeldingId,
                         )
-                    logger.info("TRACE_DEBUG: After TSSID, trace id: $randomUuid")
 
-                    logger.info("TRACE_DEBUG: Before TSSID INFOTOAST, trace id: $randomUuid")
                     val tssIdInfotrygd =
                         if (!tssIdEmottak.isNullOrEmpty()) {
                             tssIdEmottak
@@ -311,7 +292,6 @@ class BlockingApplicationRunner(
                                 sykmeldingId,
                             )
                         }
-                    logger.info("TRACE_DEBUG: After TTSID INFOTOAST, trace id: $randomUuid")
 
                     logger.info(
                         "tssIdEmottak is $tssIdEmottak {}",
@@ -322,7 +302,6 @@ class BlockingApplicationRunner(
                         StructuredArguments.fields(loggingMeta),
                     )
 
-                    logger.info("TRACE_DEBUG: Before emottak sub, trace id: $randomUuid")
                     handleEmottakSubscription(
                         tssIdEmottak,
                         emottakSubscriptionClient,
@@ -331,17 +310,13 @@ class BlockingApplicationRunner(
                         partnerReferanse,
                         loggingMeta,
                     )
-                    logger.info("TRACE_DEBUG: After emottak sub, trace id: $randomUuid")
 
 
-                    logger.info("TRACE_DEBUG: Before dup check, trace id: $randomUuid")
                     // HERE IS THE WRON GCODE
                     val duplicationCheckSha256String =
                         duplicationService.getDuplicationCheck(sha256String, ediLoggId)
-                    logger.info("TRACE_DEBUG: After dup check, trace id: $randomUuid")
 
                     if (duplicationCheckSha256String != null) {
-                        logger.info("TRACE_DEBUG: Inside dup check not null, trace id: $randomUuid")
                         val duplicate =
                             Duplicate(
                                 sykmeldingId,
@@ -366,10 +341,8 @@ class BlockingApplicationRunner(
                             duplicationService,
                             duplicate,
                         )
-                        logger.info("TRACE_DEBUG: After dup check not null, trace id: $randomUuid")
                         continue@loop
                     } else {
-                        logger.info("TRACE_DEBUG: Inside dup check IS! null, trace id: $randomUuid")
                         val pasient = identer[originaltPasientFnr]
                         val behandler = identer[signaturFnr]
 
@@ -390,23 +363,20 @@ class BlockingApplicationRunner(
                                 duplicateCheck,
                             )
                         ) {
-                            logger.info("TRACE_DEBUG: Inside dup check skipping??, trace id: $randomUuid")
                             continue@loop
                         }
 
-                        logger.info("TRACE_DEBUG: Inside dup check before behandler, trace id: $randomUuid")
                         val signerendeBehandler =
                             norskHelsenettClient.getByFnr(
                                 fnr = signaturFnr,
                                 loggingMeta = loggingMeta,
                             )
-                        logger.info("TRACE_DEBUG: Inside dup check after behandler, trace id: $randomUuid")
 
                         val behandlenedeBehandler =
                             if (
                                 extractFnrDnrFraBehandler(healthInformation) != null ||
-                                    padHpr(extractHpr(fellesformat)?.id?.trim()) != null ||
-                                    padHpr(extractHprBehandler(healthInformation)?.trim()) != null
+                                padHpr(extractHpr(fellesformat)?.id?.trim()) != null ||
+                                padHpr(extractHprBehandler(healthInformation)?.trim()) != null
                             ) {
                                 getBehandlenedeBehandler(
                                     padHpr(extractHprBehandler(healthInformation)?.trim()),
@@ -418,7 +388,6 @@ class BlockingApplicationRunner(
                                 null
                             }
 
-                        logger.info("TRACE_DEBUG: Inside dup check before behandlene behandler, trace id: $randomUuid")
                         val behandlenedeBehandlerFnr =
                             extractFnrDnrFraBehandler(healthInformation)
                                 ?: getBehandlerFnr(
@@ -426,19 +395,16 @@ class BlockingApplicationRunner(
                                     signerendeBehandler = signerendeBehandler,
                                     behandlenedeBehandler = behandlenedeBehandler,
                                 )
-                                    ?: signaturFnr
-                        logger.info("TRACE_DEBUG: Inside dup check after behandlene behandler, trace id: $randomUuid")
+                                ?: signaturFnr
 
-                        logger.info("TRACE_DEBUG: Inside dup check before behandlene behandler (HPR), trace id: $randomUuid")
                         val behandlenedeBehandlerhprNummer =
                             padHpr(extractHpr(fellesformat)?.id?.trim())
                                 ?: getBehandlerHprNr(
                                     behandlerHpr =
-                                        padHpr(extractHprBehandler(healthInformation)?.trim()),
+                                    padHpr(extractHprBehandler(healthInformation)?.trim()),
                                     avsenderHpr = padHpr(extractHpr(fellesformat)?.id?.trim()),
                                     behandlenedeBehandler = behandlenedeBehandler,
                                 )
-                        logger.info("TRACE_DEBUG: Inside dup check after behandlene behandler (HPR), trace id: $randomUuid")
 
                         val sykmelding =
                             healthInformation.toSykmelding(
@@ -464,12 +430,11 @@ class BlockingApplicationRunner(
                             )
                         }
 
-                        logger.info("TRACE_DEBUG: Inside dup check before vedlegg, trace id: $randomUuid")
                         if (vedlegg.isNotEmpty()) {
                             val vedleggOver300MegaByte =
                                 vedlegg.filter {
                                     fileSizeLagerThan300MegaBytes(
-                                        Base64.getMimeDecoder().decode(it.content.content)
+                                        Base64.getMimeDecoder().decode(it.content.content),
                                     )
                                 }
 
@@ -503,7 +468,6 @@ class BlockingApplicationRunner(
                                 continue@loop
                             }
                         }
-                        logger.info("TRACE_DEBUG: Inside dup check after vedlegg, trace id: $randomUuid")
 
 
                         if (sykmelding.signaturDato.isAfter(LocalDateTime.now())) {
@@ -521,7 +485,6 @@ class BlockingApplicationRunner(
                             continue@loop
                         }
 
-                        logger.info("TRACE_DEBUG: Inside dup check before vedlegg LISTE, trace id: $randomUuid")
                         val vedleggListe: List<String> =
                             if (vedlegg.isNotEmpty()) {
                                 bucketUploadService.lastOppVedlegg(
@@ -529,11 +492,11 @@ class BlockingApplicationRunner(
                                     msgId = msgId,
                                     personNrPasient = pasient.fnr!!,
                                     behandlerInfo =
-                                        BehandlerInfo(
-                                            fornavn = sykmelding.behandler.fornavn,
-                                            etternavn = sykmelding.behandler.etternavn,
-                                            fnr = signaturFnr,
-                                        ),
+                                    BehandlerInfo(
+                                        fornavn = sykmelding.behandler.fornavn,
+                                        etternavn = sykmelding.behandler.etternavn,
+                                        fnr = signaturFnr,
+                                    ),
                                     pasientAktoerId = sykmelding.pasientAktoerId,
                                     sykmeldingId = sykmelding.id,
                                     loggingMeta = loggingMeta,
@@ -541,7 +504,6 @@ class BlockingApplicationRunner(
                             } else {
                                 emptyList()
                             }
-                        logger.info("TRACE_DEBUG: Inside dup check after vedlegg LISTE, trace id: $randomUuid")
 
                         // ASSUMED OK HER
                         val receivedSykmelding =
@@ -549,19 +511,19 @@ class BlockingApplicationRunner(
                                 sykmelding = sykmelding,
                                 personNrPasient = pasient.fnr!!,
                                 tlfPasient =
-                                    extractTlfFromKontaktInfo(
-                                        healthInformation.pasient.kontaktInfo,
-                                    ),
+                                extractTlfFromKontaktInfo(
+                                    healthInformation.pasient.kontaktInfo,
+                                ),
                                 personNrLege = signaturFnr,
                                 navLogId = ediLoggId,
                                 msgId = msgId,
                                 legeHprNr = signerendeBehandler?.hprNummer,
                                 legeHelsepersonellkategori =
-                                    signerendeBehandler?.godkjenninger?.let {
-                                        getHelsepersonellKategori(
-                                            it,
-                                        )
-                                    },
+                                signerendeBehandler?.godkjenninger?.let {
+                                    getHelsepersonellKategori(
+                                        it,
+                                    )
+                                },
                                 legekontorOrgNr = legekontorOrgNr,
                                 legekontorOrgName = legekontorOrgName,
                                 legekontorHerId = legekontorHerId,
@@ -593,7 +555,6 @@ class BlockingApplicationRunner(
                                 loggingMeta,
                             )
 
-                        logger.info("TRACE_DEBUG: Inside dup check before WHEN, trace id: $randomUuid")
                         when (validationResult.status) {
                             Status.OK ->
                                 handleStatusOK(
@@ -607,8 +568,9 @@ class BlockingApplicationRunner(
                                     okSykmeldingTopic = env.okSykmeldingTopic,
                                     receivedSykmelding = receivedSykmelding,
                                     kafkaproducerreceivedSykmelding =
-                                        kafkaproducerreceivedSykmelding,
+                                    kafkaproducerreceivedSykmelding,
                                 )
+
                             Status.MANUAL_PROCESSING ->
                                 handleStatusMANUALPROCESSING(
                                     receivedSykmelding = receivedSykmelding,
@@ -622,20 +584,21 @@ class BlockingApplicationRunner(
                                     validationResult = validationResult,
                                     kafkaManuelTaskProducer = kafkaManuelTaskProducer,
                                     kafkaproducerreceivedSykmelding =
-                                        kafkaproducerreceivedSykmelding,
+                                    kafkaproducerreceivedSykmelding,
                                     manuellBehandlingSykmeldingTopic =
-                                        env.manuellBehandlingSykmeldingTopic,
+                                    env.manuellBehandlingSykmeldingTopic,
                                     kafkaproducervalidationResult = kafkaproducervalidationResult,
                                     behandlingsUtfallTopic = env.behandlingsUtfallTopic,
                                     kafkaproducerManuellOppgave = kafkaproducerManuellOppgave,
                                     syfoSmManuellTopic = env.syfoSmManuellTopic,
                                     produserOppgaveTopic = env.produserOppgaveTopic,
                                 )
+
                             Status.INVALID ->
                                 handleStatusINVALID(
                                     validationResult = validationResult,
                                     kafkaproducerreceivedSykmelding =
-                                        kafkaproducerreceivedSykmelding,
+                                    kafkaproducerreceivedSykmelding,
                                     kafkaproducervalidationResult = kafkaproducervalidationResult,
                                     avvistSykmeldingTopic = env.avvistSykmeldingTopic,
                                     receivedSykmelding = receivedSykmelding,
@@ -714,9 +677,11 @@ class BlockingApplicationRunner(
             null -> {
                 null
             }
+
             signerendeBehandler?.hprNummer -> {
                 signerendeBehandler.fnr
             }
+
             else -> {
                 behandlenedeBehandler?.fnr
             }

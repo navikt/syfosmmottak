@@ -43,25 +43,18 @@ class DuplicationService(private val database: DatabaseInterface) {
     }
 
     fun getDuplicationCheck(sha256HealthInformation: String, mottakId: String): DuplicateCheck? {
-        logger.info("DUP CHECK TRACE: Before DB1 $mottakId")
         val duplicationCheckSha256HealthInformation = database.extractDuplicateCheckBySha256HealthInformation(sha256HealthInformation)
-        logger.info("DUP CHECK TRACE: After DB1  $mottakId")
 
         if (duplicationCheckSha256HealthInformation != null) {
-            logger.info("DUP CHECK TRACE: was not null, returning $mottakId")
             return duplicationCheckSha256HealthInformation
         } else {
-            logger.info("DUP CHECK TRACE: NULL, before get latest (DB2): $mottakId")
             val duplicationCheckMottakId =
                 getLatestDuplicationCheck(
                     database.extractDuplicateCheckByMottakId(mottakId),
                 )
-            logger.info("DUP CHECK TRACE: NULL, after get latest (DB2): $mottakId")
             if (duplicationCheckMottakId != null) {
-                logger.info("DUP CHECK TRACE: NULL, duplicationCheckMottakId: $mottakId")
                 return duplicationCheckMottakId
             }
-            logger.info("DUP CHECK TRACE: NULL, duplicationCheckMottakId was null: $mottakId")
             return null
         }
     }
