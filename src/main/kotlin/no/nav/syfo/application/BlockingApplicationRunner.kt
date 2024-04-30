@@ -109,7 +109,11 @@ class BlockingApplicationRunner(
     ) {
         wrapExceptions {
             loop@ while (applicationState.ready) {
+                val randomUuid = UUID.randomUUID().toString()
+                logger.info("Polling for message, trace id: $randomUuid")
                 val message = inputconsumer.receive(1000)
+                logger.info("Received message, trace id: $randomUuid")
+
                 var loggingMeta: LoggingMeta? = null
                 if (message == null) {
                     delay(100)
