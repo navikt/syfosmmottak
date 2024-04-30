@@ -335,6 +335,7 @@ class BlockingApplicationRunner(
 
 
                     logger.info("TRACE_DEBUG: Before dup check, trace id: $randomUuid")
+                    // HERE IS THE WRON GCODE
                     val duplicationCheckSha256String =
                         duplicationService.getDuplicationCheck(sha256String, ediLoggId)
                     logger.info("TRACE_DEBUG: After dup check, trace id: $randomUuid")
