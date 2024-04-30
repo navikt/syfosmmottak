@@ -271,6 +271,11 @@ fun sendReceivedSykmelding(
 ) {
 
     try {
+        logger.info(
+            "Before sending sykmelding to kafka topic {} sykmelding id {}",
+            receivedSykmeldingTopic,
+            receivedSykmelding.sykmelding.id
+        )
         kafkaproducerreceivedSykmelding
             .send(
                 ProducerRecord(
