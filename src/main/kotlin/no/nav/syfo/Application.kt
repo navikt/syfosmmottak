@@ -108,7 +108,7 @@ fun Application.module() {
 
     val sykmeldingVedleggStorageCredentials: Credentials =
         GoogleCredentials.fromStream(
-            FileInputStream("/var/run/secrets/sykmeldingvedlegg-google-creds.json")
+            FileInputStream("/var/run/secrets/sykmeldingvedlegg-google-creds.json"),
         )
     val sykmeldingVedleggStorage: Storage =
         StorageOptions.newBuilder()
@@ -118,7 +118,7 @@ fun Application.module() {
     val bucketUploadService =
         BucketUploadService(
             environmentVariables.sykmeldingVedleggBucketName,
-            sykmeldingVedleggStorage
+            sykmeldingVedleggStorage,
         )
     val virusScanService = VirusScanService(httpClients.clamAvClient)
 
@@ -206,11 +206,10 @@ fun launchListeners(
                         virusScanService,
                         duplicationService,
                         smtssClient,
-                    )
-                    .run(
                         inputconsumer,
                         backoutProducer,
                     )
+                    .run()
             }
     }
 }
@@ -225,7 +224,7 @@ fun sendReceipt(
         kafkaproducerApprec.send(ProducerRecord(apprecTopic, apprec)).get()
         logger.info(
             "Apprec receipt sent to kafka topic $apprecTopic, {}",
-            StructuredArguments.fields(loggingMeta)
+            StructuredArguments.fields(loggingMeta),
         )
     } catch (ex: Exception) {
         logger.error("failed to send apprec to kafka {}", StructuredArguments.fields(loggingMeta))
@@ -246,19 +245,19 @@ fun sendValidationResult(
                 ProducerRecord(
                     behandlingsUtfallTopic,
                     receivedSykmelding.sykmelding.id,
-                    validationResult
+                    validationResult,
                 ),
             )
             .get()
         logger.info(
             "Validation results send to kafka {}, {}",
             behandlingsUtfallTopic,
-            StructuredArguments.fields(loggingMeta)
+            StructuredArguments.fields(loggingMeta),
         )
     } catch (ex: Exception) {
         logger.error(
             "failed to send validation result for sykmelding {}",
-            receivedSykmelding.sykmelding.id
+            receivedSykmelding.sykmelding.id,
         )
         throw ex
     }
@@ -274,26 +273,26 @@ fun sendReceivedSykmelding(
         logger.info(
             "Before sending sykmelding to kafka topic {} sykmelding id {}",
             receivedSykmeldingTopic,
-            receivedSykmelding.sykmelding.id
+            receivedSykmelding.sykmelding.id,
         )
         kafkaproducerreceivedSykmelding
             .send(
                 ProducerRecord(
                     receivedSykmeldingTopic,
                     receivedSykmelding.sykmelding.id,
-                    receivedSykmelding
+                    receivedSykmelding,
                 ),
             )
             .get()
         logger.info(
             "Sykmelding sendt to kafka topic {} sykmelding id {}",
             receivedSykmeldingTopic,
-            receivedSykmelding.sykmelding.id
+            receivedSykmelding.sykmelding.id,
         )
     } catch (ex: Exception) {
         logger.error(
             "failed to send sykmelding to kafka result for sykmelding {}",
-            receivedSykmelding.sykmelding.id
+            receivedSykmelding.sykmelding.id,
         )
         throw ex
     }

@@ -15,7 +15,6 @@ import no.nav.syfo.duplicationcheck.db.persistDuplicateCheck
 import no.nav.syfo.duplicationcheck.db.persistDuplicateMessage
 import no.nav.syfo.duplicationcheck.model.Duplicate
 import no.nav.syfo.duplicationcheck.model.DuplicateCheck
-import no.nav.syfo.logger
 
 abstract class UtenStrekkode {
     @get:JsonIgnore abstract val strekkode: String
@@ -43,7 +42,8 @@ class DuplicationService(private val database: DatabaseInterface) {
     }
 
     fun getDuplicationCheck(sha256HealthInformation: String, mottakId: String): DuplicateCheck? {
-        val duplicationCheckSha256HealthInformation = database.extractDuplicateCheckBySha256HealthInformation(sha256HealthInformation)
+        val duplicationCheckSha256HealthInformation =
+            database.extractDuplicateCheckBySha256HealthInformation(sha256HealthInformation)
 
         if (duplicationCheckSha256HealthInformation != null) {
             return duplicationCheckSha256HealthInformation
