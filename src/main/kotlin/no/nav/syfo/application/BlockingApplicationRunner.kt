@@ -1,5 +1,6 @@
 package no.nav.syfo.application
 
+import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import java.io.StringReader
 import java.time.LocalDateTime
@@ -187,8 +188,11 @@ class BlockingApplicationRunner(
             val avsenderSystem = healthInformation.avsenderSystem.toAvsenderSystem()
 
             val sykmeldingId = UUID.randomUUID().toString()
-
             val rulesetVersion = healthInformation.regelSettVersjon
+
+            // Enrich current span with sykmelding id
+            val currentSpan = Span.current()
+            currentSpan.setAttribute("sykmeldingId", sykmeldingId)
 
             val duplicateCheck =
                 DuplicateCheck(
