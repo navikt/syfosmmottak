@@ -1,9 +1,11 @@
 package no.nav.syfo.application
 
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import java.io.StringReader
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.*
+import javax.jms.Message
 import javax.jms.MessageConsumer
 import javax.jms.MessageProducer
 import javax.jms.TextMessage
@@ -93,7 +95,7 @@ class BlockingApplicationRunner(
     private val pdlPersonService: PdlPersonService,
     private val bucketUploadService: BucketUploadService,
     private val kafkaproducerreceivedSykmelding:
-    KafkaProducer<String, ReceivedSykmeldingWithValidation>,
+        KafkaProducer<String, ReceivedSykmeldingWithValidation>,
     private val kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
     private val kafkaManuelTaskProducer: KafkaProducer<String, OpprettOppgaveKafkaMessage>,
     private val kafkaproducerApprec: KafkaProducer<String, Apprec>,
@@ -101,236 +103,134 @@ class BlockingApplicationRunner(
     private val virusScanService: VirusScanService,
     private val duplicationService: DuplicationService,
     private val smtssClient: SmtssClient,
+    private val inputconsumer: MessageConsumer,
+    private val backoutProducer: MessageProducer,
 ) {
 
-    suspend fun run(
-        inputconsumer: MessageConsumer,
-        backoutProducer: MessageProducer,
-    ) {
+    suspend fun run() {
         wrapExceptions {
             loop@ while (applicationState.ready) {
                 val message = inputconsumer.receive(1000)
-                var loggingMeta: LoggingMeta? = null
                 if (message == null) {
                     delay(100)
                     continue
                 }
 
-                try {
-                    val inputMessageText =
-                        when (message) {
-                            is TextMessage -> message.text
-                            else ->
-                                throw RuntimeException(
-                                    "Incoming message needs to be a byte message or text message",
-                                )
-                        }
-                    INCOMING_MESSAGE_COUNTER.inc()
-                    val requestLatency = REQUEST_TIME.startTimer()
-                    val fellesformat = safeUnmarshal(inputMessageText)
+                processMqMessage(message)
+            }
+        }
+    }
 
-                    val vedlegg = getVedlegg(fellesformat)
-                    if (vedlegg.isNotEmpty()) {
-                        SYKMELDING_VEDLEGG_COUNTER.inc()
-                        removeVedleggFromFellesformat(fellesformat)
-                    }
-                    val fellesformatText =
-                        when (vedlegg.isNotEmpty()) {
-                            true -> fellesformatMarshaller.toString(fellesformat)
-                            false -> inputMessageText
-                        }
-                    val receiverBlock = fellesformat.get<XMLMottakenhetBlokk>()
-                    val msgHead = fellesformat.get<XMLMsgHead>()
-                    val legekontorOrgNr =
-                        extractOrganisationNumberFromSender(fellesformat)
-                            ?.id
-                            ?.replace(" ", "")
-                            ?.trim()
-                    loggingMeta =
-                        LoggingMeta(
-                            mottakId = receiverBlock.ediLoggId,
-                            orgNr = legekontorOrgNr,
-                            msgId = msgHead.msgInfo.msgId,
+    @WithSpan
+    private suspend fun processMqMessage(message: Message) {
+        var loggingMeta: LoggingMeta? = null
+        try {
+            val inputMessageText =
+                when (message) {
+                    is TextMessage -> message.text
+                    else ->
+                        throw RuntimeException(
+                            "Incoming message needs to be a byte message or text message",
                         )
-                    logger.info("Received message, {}", StructuredArguments.fields(loggingMeta))
+                }
+            INCOMING_MESSAGE_COUNTER.inc()
+            val requestLatency = REQUEST_TIME.startTimer()
+            val fellesformat = safeUnmarshal(inputMessageText)
 
-                    val healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat)
-                    val ediLoggId = receiverBlock.ediLoggId
-                    val sha256String = sha256hashstring(healthInformation)
-                    val msgId = msgHead.msgInfo.msgId
+            val vedlegg = getVedlegg(fellesformat)
+            if (vedlegg.isNotEmpty()) {
+                SYKMELDING_VEDLEGG_COUNTER.inc()
+                removeVedleggFromFellesformat(fellesformat)
+            }
+            val fellesformatText =
+                when (vedlegg.isNotEmpty()) {
+                    true -> fellesformatMarshaller.toString(fellesformat)
+                    false -> inputMessageText
+                }
+            val receiverBlock = fellesformat.get<XMLMottakenhetBlokk>()
+            val msgHead = fellesformat.get<XMLMsgHead>()
+            val legekontorOrgNr =
+                extractOrganisationNumberFromSender(fellesformat)?.id?.replace(" ", "")?.trim()
+            loggingMeta =
+                LoggingMeta(
+                    mottakId = receiverBlock.ediLoggId,
+                    orgNr = legekontorOrgNr,
+                    msgId = msgHead.msgInfo.msgId,
+                )
+            logger.info("Received message, {}", StructuredArguments.fields(loggingMeta))
 
+            val healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat)
+            val ediLoggId = receiverBlock.ediLoggId
+            val sha256String = sha256hashstring(healthInformation)
+            val msgId = msgHead.msgInfo.msgId
 
-                    val legekontorHerId = extractOrganisationHerNumberFromSender(fellesformat)?.id
-                    val legekontorReshId = extractOrganisationRashNumberFromSender(fellesformat)?.id
-                    val legekontorOrgName =
-                        msgHead.msgInfo.sender.organisation.organisationName.replace(
-                            "[^\\p{ASCII}]".toRegex(),
-                            "",
-                        )
+            val legekontorHerId = extractOrganisationHerNumberFromSender(fellesformat)?.id
+            val legekontorReshId = extractOrganisationRashNumberFromSender(fellesformat)?.id
+            val legekontorOrgName =
+                msgHead.msgInfo.sender.organisation.organisationName.replace(
+                    "[^\\p{ASCII}]".toRegex(),
+                    "",
+                )
 
+            val partnerReferanse = receiverBlock.partnerReferanse
 
-                    val partnerReferanse = receiverBlock.partnerReferanse
+            val originaltPasientFnr = healthInformation.pasient.fodselsnummer.id
+            val erVirksomhetSykmelding = receiverBlock.ebService == "SykmeldingVirksomhet"
 
-                    val originaltPasientFnr = healthInformation.pasient.fodselsnummer.id
-                    val erVirksomhetSykmelding = receiverBlock.ebService == "SykmeldingVirksomhet"
+            val mottatDato =
+                receiverBlock.mottattDatotid
+                    .toGregorianCalendar()
+                    .toZonedDateTime()
+                    .withZoneSameInstant(ZoneOffset.UTC)
+                    .toLocalDateTime()
 
-                    val mottatDato =
-                        receiverBlock.mottattDatotid
-                            .toGregorianCalendar()
-                            .toZonedDateTime()
-                            .withZoneSameInstant(ZoneOffset.UTC)
-                            .toLocalDateTime()
+            val avsenderSystem = healthInformation.avsenderSystem.toAvsenderSystem()
 
-                    val avsenderSystem = healthInformation.avsenderSystem.toAvsenderSystem()
+            val sykmeldingId = UUID.randomUUID().toString()
 
-                    val sykmeldingId = UUID.randomUUID().toString()
+            val rulesetVersion = healthInformation.regelSettVersjon
 
-                    val rulesetVersion = healthInformation.regelSettVersjon
+            val duplicateCheck =
+                DuplicateCheck(
+                    sykmeldingId,
+                    sha256String,
+                    ediLoggId,
+                    msgId,
+                    mottatDato,
+                    avsenderSystem.navn,
+                    avsenderSystem.versjon,
+                    legekontorOrgNr,
+                    rulesetVersion,
+                )
 
-                    val duplicateCheck =
-                        DuplicateCheck(
-                            sykmeldingId,
-                            sha256String,
-                            ediLoggId,
-                            msgId,
-                            mottatDato,
-                            avsenderSystem.navn,
-                            avsenderSystem.versjon,
-                            legekontorOrgNr,
-                            rulesetVersion,
-                        )
+            logger.info(
+                "Extracted data, ready to make sync calls to get more data, {}",
+                StructuredArguments.fields(loggingMeta),
+            )
 
+            sikkerlogg.info(
+                "fellesformat: $fellesformatText",
+                StructuredArguments.fields(loggingMeta),
+            )
+
+            if (legekontorOrgNr == null) {
+                SYKMELDING_MISSNG_ORG_NUMBER_COUNTER.inc()
+                logger.info(
+                    "Missing org number, from epj ${avsenderSystem.navn} {}",
+                    StructuredArguments.fields(loggingMeta),
+                )
+            }
+
+            val signaturFnr =
+                if (erVirksomhetSykmelding) {
                     logger.info(
-                        "Extracted data, ready to make sync calls to get more data, {}",
+                        "Mottatt virksomhetssykmelding, {}",
                         StructuredArguments.fields(loggingMeta),
                     )
-
-                    sikkerlogg.info(
-                        "fellesformat: $fellesformatText",
-                        StructuredArguments.fields(loggingMeta),
-                    )
-
-                    if (legekontorOrgNr == null) {
-                        SYKMELDING_MISSNG_ORG_NUMBER_COUNTER.inc()
-                        logger.info(
-                            "Missing org number, from epj ${avsenderSystem.navn} {}",
-                            StructuredArguments.fields(loggingMeta),
-                        )
-                    }
-
-                    val signaturFnr =
-                        if (erVirksomhetSykmelding) {
-                            logger.info(
-                                "Mottatt virksomhetssykmelding, {}",
-                                StructuredArguments.fields(loggingMeta),
-                            )
-                            VIRKSOMHETSYKMELDING.inc()
-                            val hpr = extractHpr(fellesformat)?.id
-                            if (hpr == null) {
-                                handleVirksomhetssykmeldingOgHprMangler(
-                                    loggingMeta,
-                                    fellesformat,
-                                    ediLoggId,
-                                    msgId,
-                                    msgHead,
-                                    env,
-                                    kafkaproducerApprec,
-                                    duplicationService,
-                                    duplicateCheck,
-                                )
-                                continue@loop
-                            }
-
-                            val formatedHpr = padHpr(hpr.trim())!!
-
-                            val fnr =
-                                norskHelsenettClient
-                                    .getByHpr(hprNummer = formatedHpr, loggingMeta = loggingMeta)
-                                    ?.fnr
-                            if (fnr == null) {
-                                handleVirksomhetssykmeldingOgFnrManglerIHPR(
-                                    loggingMeta,
-                                    fellesformat,
-                                    ediLoggId,
-                                    msgId,
-                                    msgHead,
-                                    env,
-                                    kafkaproducerApprec,
-                                    duplicationService,
-                                    duplicateCheck,
-                                )
-                                continue@loop
-                            } else {
-                                fnr
-                            }
-                        } else {
-                            receiverBlock.avsenderFnrFraDigSignatur
-                        }
-
-                    val identer =
-                        pdlPersonService.getIdenter(
-                            listOf(signaturFnr, originaltPasientFnr),
-                            loggingMeta,
-                        )
-
-                    val tssIdEmottak =
-                        smtssClient.findBestTssIdEmottak(
-                            signaturFnr,
-                            legekontorOrgName,
-                            loggingMeta,
-                            sykmeldingId,
-                        )
-
-                    val tssIdInfotrygd =
-                        if (!tssIdEmottak.isNullOrEmpty()) {
-                            tssIdEmottak
-                        } else {
-                            smtssClient.findBestTssInfotrygdId(
-                                signaturFnr,
-                                legekontorOrgName,
-                                loggingMeta,
-                                sykmeldingId,
-                            )
-                        }
-
-                    logger.info(
-                        "tssIdEmottak is $tssIdEmottak {}",
-                        StructuredArguments.fields(loggingMeta),
-                    )
-                    logger.info(
-                        "tssIdInfotrygd is $tssIdInfotrygd {}",
-                        StructuredArguments.fields(loggingMeta),
-                    )
-
-                    handleEmottakSubscription(
-                        tssIdEmottak,
-                        emottakSubscriptionClient,
-                        msgHead,
-                        msgId,
-                        partnerReferanse,
-                        loggingMeta,
-                    )
-
-
-                    // HERE IS THE WRON GCODE
-                    val duplicationCheckSha256String =
-                        duplicationService.getDuplicationCheck(sha256String, ediLoggId)
-
-                    if (duplicationCheckSha256String != null) {
-                        val duplicate =
-                            Duplicate(
-                                sykmeldingId,
-                                ediLoggId,
-                                msgId,
-                                duplicationCheckSha256String.sykmeldingId,
-                                mottatDato,
-                                avsenderSystem.navn,
-                                avsenderSystem.versjon,
-                                legekontorOrgNr,
-                            )
-
-                        handleDuplicateSM2013Content(
-                            duplicationCheckSha256String.mottakId,
+                    VIRKSOMHETSYKMELDING.inc()
+                    val hpr = extractHpr(fellesformat)?.id
+                    if (hpr == null) {
+                        handleVirksomhetssykmeldingOgHprMangler(
                             loggingMeta,
                             fellesformat,
                             ediLoggId,
@@ -339,311 +239,399 @@ class BlockingApplicationRunner(
                             env,
                             kafkaproducerApprec,
                             duplicationService,
-                            duplicate,
+                            duplicateCheck,
                         )
-                        continue@loop
-                    } else {
-                        val pasient = identer[originaltPasientFnr]
-                        val behandler = identer[signaturFnr]
-
-                        if (
-                            checkSM2013Content(
-                                pasient,
-                                behandler,
-                                healthInformation,
-                                originaltPasientFnr,
-                                loggingMeta,
-                                fellesformat,
-                                ediLoggId,
-                                msgId,
-                                msgHead,
-                                env,
-                                kafkaproducerApprec,
-                                duplicationService,
-                                duplicateCheck,
-                            )
-                        ) {
-                            continue@loop
-                        }
-
-                        val signerendeBehandler =
-                            norskHelsenettClient.getByFnr(
-                                fnr = signaturFnr,
-                                loggingMeta = loggingMeta,
-                            )
-
-                        val behandlenedeBehandler =
-                            if (
-                                extractFnrDnrFraBehandler(healthInformation) != null ||
-                                padHpr(extractHpr(fellesformat)?.id?.trim()) != null ||
-                                padHpr(extractHprBehandler(healthInformation)?.trim()) != null
-                            ) {
-                                getBehandlenedeBehandler(
-                                    padHpr(extractHprBehandler(healthInformation)?.trim()),
-                                    padHpr(extractHpr(fellesformat)?.id?.trim()),
-                                    padHpr(extractFnrDnrFraBehandler(healthInformation)?.trim()),
-                                    loggingMeta,
-                                )
-                            } else {
-                                null
-                            }
-
-                        val behandlenedeBehandlerFnr =
-                            extractFnrDnrFraBehandler(healthInformation)
-                                ?: getBehandlerFnr(
-                                    avsenderHpr = padHpr(extractHpr(fellesformat)?.id?.trim()),
-                                    signerendeBehandler = signerendeBehandler,
-                                    behandlenedeBehandler = behandlenedeBehandler,
-                                )
-                                ?: signaturFnr
-
-                        val behandlenedeBehandlerhprNummer =
-                            padHpr(extractHpr(fellesformat)?.id?.trim())
-                                ?: getBehandlerHprNr(
-                                    behandlerHpr =
-                                    padHpr(extractHprBehandler(healthInformation)?.trim()),
-                                    avsenderHpr = padHpr(extractHpr(fellesformat)?.id?.trim()),
-                                    behandlenedeBehandler = behandlenedeBehandler,
-                                )
-
-                        val sykmelding =
-                            healthInformation.toSykmelding(
-                                sykmeldingId = sykmeldingId,
-                                pasientAktoerId = pasient?.aktorId!!,
-                                legeAktoerId = behandler?.aktorId!!,
-                                msgId = msgId,
-                                signaturDato = getLocalDateTime(msgHead.msgInfo.genDate),
-                                behandlerFnr = behandlenedeBehandlerFnr,
-                                behandlerHprNr = behandlenedeBehandlerhprNummer,
-                            )
-                        if (originaltPasientFnr != pasient.fnr) {
-                            logger.info(
-                                "Sykmeldingen inneholder eldre ident for pasient, benytter nyeste fra PDL {}",
-                                StructuredArguments.fields(loggingMeta),
-                            )
-                            sikkerlogg.info(
-                                "Sykmeldingen inneholder eldre ident for pasient, benytter nyeste fra PDL" +
-                                    "originaltPasientFnr: {}, pasientFnr: {}, {}",
-                                originaltPasientFnr,
-                                pasient.fnr,
-                                StructuredArguments.fields(loggingMeta),
-                            )
-                        }
-
-                        if (vedlegg.isNotEmpty()) {
-                            val vedleggOver300MegaByte =
-                                vedlegg.filter {
-                                    fileSizeLagerThan300MegaBytes(
-                                        Base64.getMimeDecoder().decode(it.content.content),
-                                    )
-                                }
-
-                            if (vedleggOver300MegaByte.isNotEmpty()) {
-                                handleVedleggOver300MB(
-                                    loggingMeta,
-                                    fellesformat,
-                                    ediLoggId,
-                                    msgId,
-                                    msgHead,
-                                    env,
-                                    kafkaproducerApprec,
-                                    duplicationService,
-                                    duplicateCheck,
-                                )
-                                continue@loop
-                            }
-
-                            if (virusScanService.vedleggContainsVirus(vedlegg)) {
-                                handleVedleggContainsVirus(
-                                    loggingMeta,
-                                    fellesformat,
-                                    ediLoggId,
-                                    msgId,
-                                    msgHead,
-                                    env,
-                                    kafkaproducerApprec,
-                                    duplicationService,
-                                    duplicateCheck,
-                                )
-                                continue@loop
-                            }
-                        }
-
-
-                        if (sykmelding.signaturDato.isAfter(LocalDateTime.now())) {
-                            handleSignaturDatoInTheFuture(
-                                loggingMeta,
-                                fellesformat,
-                                ediLoggId,
-                                msgId,
-                                msgHead,
-                                env,
-                                kafkaproducerApprec,
-                                duplicationService,
-                                duplicateCheck,
-                            )
-                            continue@loop
-                        }
-
-                        val vedleggListe: List<String> =
-                            if (vedlegg.isNotEmpty()) {
-                                bucketUploadService.lastOppVedlegg(
-                                    vedlegg = vedlegg,
-                                    msgId = msgId,
-                                    personNrPasient = pasient.fnr!!,
-                                    behandlerInfo =
-                                    BehandlerInfo(
-                                        fornavn = sykmelding.behandler.fornavn,
-                                        etternavn = sykmelding.behandler.etternavn,
-                                        fnr = signaturFnr,
-                                    ),
-                                    pasientAktoerId = sykmelding.pasientAktoerId,
-                                    sykmeldingId = sykmelding.id,
-                                    loggingMeta = loggingMeta,
-                                )
-                            } else {
-                                emptyList()
-                            }
-
-                        // ASSUMED OK HER
-                        val receivedSykmelding =
-                            ReceivedSykmelding(
-                                sykmelding = sykmelding,
-                                personNrPasient = pasient.fnr!!,
-                                tlfPasient =
-                                extractTlfFromKontaktInfo(
-                                    healthInformation.pasient.kontaktInfo,
-                                ),
-                                personNrLege = signaturFnr,
-                                navLogId = ediLoggId,
-                                msgId = msgId,
-                                legeHprNr = signerendeBehandler?.hprNummer,
-                                legeHelsepersonellkategori =
-                                signerendeBehandler?.godkjenninger?.let {
-                                    getHelsepersonellKategori(
-                                        it,
-                                    )
-                                },
-                                legekontorOrgNr = legekontorOrgNr,
-                                legekontorOrgName = legekontorOrgName,
-                                legekontorHerId = legekontorHerId,
-                                legekontorReshId = legekontorReshId,
-                                mottattDato = mottatDato,
-                                rulesetVersion = rulesetVersion,
-                                fellesformat = fellesformatText,
-                                tssid = tssIdInfotrygd ?: "",
-                                merknader = null,
-                                partnerreferanse = partnerReferanse,
-                                vedlegg = vedleggListe,
-                                utenlandskSykmelding = null,
-                            )
-
-                        if (behandlenedeBehandlerFnr != signaturFnr) {
-                            logUlikBehandler(loggingMeta)
-                        }
-
-                        countNewDiagnoseCode(receivedSykmelding.sykmelding.medisinskVurdering)
-
-                        logger.info(
-                            "Validating against rules, sykmeldingId {},  {}",
-                            StructuredArguments.keyValue("sykmeldingId", sykmelding.id),
-                            StructuredArguments.fields(loggingMeta),
-                        )
-                        val validationResult =
-                            syfoSykemeldingRuleClient.executeRuleValidation(
-                                receivedSykmelding,
-                                loggingMeta,
-                            )
-
-                        when (validationResult.status) {
-                            Status.OK ->
-                                handleStatusOK(
-                                    fellesformat = fellesformat,
-                                    ediLoggId = ediLoggId,
-                                    msgId = msgId,
-                                    msgHead = msgHead,
-                                    apprecTopic = env.apprecTopic,
-                                    kafkaproducerApprec = kafkaproducerApprec,
-                                    loggingMeta = loggingMeta,
-                                    okSykmeldingTopic = env.okSykmeldingTopic,
-                                    receivedSykmelding = receivedSykmelding,
-                                    kafkaproducerreceivedSykmelding =
-                                    kafkaproducerreceivedSykmelding,
-                                )
-
-                            Status.MANUAL_PROCESSING ->
-                                handleStatusMANUALPROCESSING(
-                                    receivedSykmelding = receivedSykmelding,
-                                    loggingMeta = loggingMeta,
-                                    fellesformat = fellesformat,
-                                    ediLoggId = ediLoggId,
-                                    msgId = msgId,
-                                    msgHead = msgHead,
-                                    apprecTopic = env.apprecTopic,
-                                    kafkaproducerApprec = kafkaproducerApprec,
-                                    validationResult = validationResult,
-                                    kafkaManuelTaskProducer = kafkaManuelTaskProducer,
-                                    kafkaproducerreceivedSykmelding =
-                                    kafkaproducerreceivedSykmelding,
-                                    manuellBehandlingSykmeldingTopic =
-                                    env.manuellBehandlingSykmeldingTopic,
-                                    kafkaproducervalidationResult = kafkaproducervalidationResult,
-                                    behandlingsUtfallTopic = env.behandlingsUtfallTopic,
-                                    kafkaproducerManuellOppgave = kafkaproducerManuellOppgave,
-                                    syfoSmManuellTopic = env.syfoSmManuellTopic,
-                                    produserOppgaveTopic = env.produserOppgaveTopic,
-                                )
-
-                            Status.INVALID ->
-                                handleStatusINVALID(
-                                    validationResult = validationResult,
-                                    kafkaproducerreceivedSykmelding =
-                                    kafkaproducerreceivedSykmelding,
-                                    kafkaproducervalidationResult = kafkaproducervalidationResult,
-                                    avvistSykmeldingTopic = env.avvistSykmeldingTopic,
-                                    receivedSykmelding = receivedSykmelding,
-                                    loggingMeta = loggingMeta,
-                                    fellesformat = fellesformat,
-                                    apprecTopic = env.apprecTopic,
-                                    behandlingsUtfallTopic = env.behandlingsUtfallTopic,
-                                    kafkaproducerApprec = kafkaproducerApprec,
-                                    ediLoggId = ediLoggId,
-                                    msgId = msgId,
-                                    msgHead = msgHead,
-                                )
-                        }
-
-                        val currentRequestLatency = requestLatency.observeDuration()
-
-                        duplicationService.persistDuplicationCheck(duplicateCheck)
-                        logger.info(
-                            "Message got outcome {}, {}, processing took {}s, {}, {}",
-                            StructuredArguments.keyValue("status", validationResult.status),
-                            StructuredArguments.keyValue(
-                                "ruleHits",
-                                validationResult.ruleHits.joinToString(", ", "(", ")") {
-                                    it.ruleName
-                                },
-                            ),
-                            StructuredArguments.keyValue("latency", currentRequestLatency),
-                            StructuredArguments.fields(loggingMeta),
-                            StructuredArguments.keyValue("sykmeldingId", sykmeldingId),
-                        )
+                        return
                     }
-                } catch (e: Exception) {
-                    logger.error(
-                        "Exception caught while handling message, sending to backout ${
-                            StructuredArguments.fields(
-                                loggingMeta,
-                            )
-                        }",
-                        e,
-                    )
-                    backoutProducer.send(message)
-                } finally {
-                    message.acknowledge()
+
+                    val formatedHpr = padHpr(hpr.trim())!!
+
+                    val fnr =
+                        norskHelsenettClient
+                            .getByHpr(hprNummer = formatedHpr, loggingMeta = loggingMeta)
+                            ?.fnr
+                    if (fnr == null) {
+                        handleVirksomhetssykmeldingOgFnrManglerIHPR(
+                            loggingMeta,
+                            fellesformat,
+                            ediLoggId,
+                            msgId,
+                            msgHead,
+                            env,
+                            kafkaproducerApprec,
+                            duplicationService,
+                            duplicateCheck,
+                        )
+                        return
+                    } else {
+                        fnr
+                    }
+                } else {
+                    receiverBlock.avsenderFnrFraDigSignatur
                 }
+
+            val identer =
+                pdlPersonService.getIdenter(
+                    listOf(signaturFnr, originaltPasientFnr),
+                    loggingMeta,
+                )
+
+            val tssIdEmottak =
+                smtssClient.findBestTssIdEmottak(
+                    signaturFnr,
+                    legekontorOrgName,
+                    loggingMeta,
+                    sykmeldingId,
+                )
+
+            val tssIdInfotrygd =
+                if (!tssIdEmottak.isNullOrEmpty()) {
+                    tssIdEmottak
+                } else {
+                    smtssClient.findBestTssInfotrygdId(
+                        signaturFnr,
+                        legekontorOrgName,
+                        loggingMeta,
+                        sykmeldingId,
+                    )
+                }
+
+            logger.info(
+                "tssIdEmottak is $tssIdEmottak {}",
+                StructuredArguments.fields(loggingMeta),
+            )
+            logger.info(
+                "tssIdInfotrygd is $tssIdInfotrygd {}",
+                StructuredArguments.fields(loggingMeta),
+            )
+
+            handleEmottakSubscription(
+                tssIdEmottak,
+                emottakSubscriptionClient,
+                msgHead,
+                msgId,
+                partnerReferanse,
+                loggingMeta,
+            )
+
+            val duplicationCheckSha256String =
+                duplicationService.getDuplicationCheck(sha256String, ediLoggId)
+
+            if (duplicationCheckSha256String != null) {
+                val duplicate =
+                    Duplicate(
+                        sykmeldingId,
+                        ediLoggId,
+                        msgId,
+                        duplicationCheckSha256String.sykmeldingId,
+                        mottatDato,
+                        avsenderSystem.navn,
+                        avsenderSystem.versjon,
+                        legekontorOrgNr,
+                    )
+
+                handleDuplicateSM2013Content(
+                    duplicationCheckSha256String.mottakId,
+                    loggingMeta,
+                    fellesformat,
+                    ediLoggId,
+                    msgId,
+                    msgHead,
+                    env,
+                    kafkaproducerApprec,
+                    duplicationService,
+                    duplicate,
+                )
+                return
+            } else {
+                val pasient = identer[originaltPasientFnr]
+                val behandler = identer[signaturFnr]
+
+                if (
+                    checkSM2013Content(
+                        pasient,
+                        behandler,
+                        healthInformation,
+                        originaltPasientFnr,
+                        loggingMeta,
+                        fellesformat,
+                        ediLoggId,
+                        msgId,
+                        msgHead,
+                        env,
+                        kafkaproducerApprec,
+                        duplicationService,
+                        duplicateCheck,
+                    )
+                ) {
+                    return
+                }
+
+                val signerendeBehandler =
+                    norskHelsenettClient.getByFnr(
+                        fnr = signaturFnr,
+                        loggingMeta = loggingMeta,
+                    )
+
+                val behandlenedeBehandler =
+                    if (
+                        extractFnrDnrFraBehandler(healthInformation) != null ||
+                            padHpr(extractHpr(fellesformat)?.id?.trim()) != null ||
+                            padHpr(extractHprBehandler(healthInformation)?.trim()) != null
+                    ) {
+                        getBehandlenedeBehandler(
+                            padHpr(extractHprBehandler(healthInformation)?.trim()),
+                            padHpr(extractHpr(fellesformat)?.id?.trim()),
+                            padHpr(extractFnrDnrFraBehandler(healthInformation)?.trim()),
+                            loggingMeta,
+                        )
+                    } else {
+                        null
+                    }
+
+                val behandlenedeBehandlerFnr =
+                    extractFnrDnrFraBehandler(healthInformation)
+                        ?: getBehandlerFnr(
+                            avsenderHpr = padHpr(extractHpr(fellesformat)?.id?.trim()),
+                            signerendeBehandler = signerendeBehandler,
+                            behandlenedeBehandler = behandlenedeBehandler,
+                        )
+                            ?: signaturFnr
+
+                val behandlenedeBehandlerhprNummer =
+                    padHpr(extractHpr(fellesformat)?.id?.trim())
+                        ?: getBehandlerHprNr(
+                            behandlerHpr = padHpr(extractHprBehandler(healthInformation)?.trim()),
+                            avsenderHpr = padHpr(extractHpr(fellesformat)?.id?.trim()),
+                            behandlenedeBehandler = behandlenedeBehandler,
+                        )
+
+                val sykmelding =
+                    healthInformation.toSykmelding(
+                        sykmeldingId = sykmeldingId,
+                        pasientAktoerId = pasient?.aktorId!!,
+                        legeAktoerId = behandler?.aktorId!!,
+                        msgId = msgId,
+                        signaturDato = getLocalDateTime(msgHead.msgInfo.genDate),
+                        behandlerFnr = behandlenedeBehandlerFnr,
+                        behandlerHprNr = behandlenedeBehandlerhprNummer,
+                    )
+                if (originaltPasientFnr != pasient.fnr) {
+                    logger.info(
+                        "Sykmeldingen inneholder eldre ident for pasient, benytter nyeste fra PDL {}",
+                        StructuredArguments.fields(loggingMeta),
+                    )
+                    sikkerlogg.info(
+                        "Sykmeldingen inneholder eldre ident for pasient, benytter nyeste fra PDL" +
+                            "originaltPasientFnr: {}, pasientFnr: {}, {}",
+                        originaltPasientFnr,
+                        pasient.fnr,
+                        StructuredArguments.fields(loggingMeta),
+                    )
+                }
+
+                if (vedlegg.isNotEmpty()) {
+                    val vedleggOver300MegaByte =
+                        vedlegg.filter {
+                            fileSizeLagerThan300MegaBytes(
+                                Base64.getMimeDecoder().decode(it.content.content),
+                            )
+                        }
+
+                    if (vedleggOver300MegaByte.isNotEmpty()) {
+                        handleVedleggOver300MB(
+                            loggingMeta,
+                            fellesformat,
+                            ediLoggId,
+                            msgId,
+                            msgHead,
+                            env,
+                            kafkaproducerApprec,
+                            duplicationService,
+                            duplicateCheck,
+                        )
+                        return
+                    }
+
+                    if (virusScanService.vedleggContainsVirus(vedlegg)) {
+                        handleVedleggContainsVirus(
+                            loggingMeta,
+                            fellesformat,
+                            ediLoggId,
+                            msgId,
+                            msgHead,
+                            env,
+                            kafkaproducerApprec,
+                            duplicationService,
+                            duplicateCheck,
+                        )
+                        return
+                    }
+                }
+
+                if (sykmelding.signaturDato.isAfter(LocalDateTime.now())) {
+                    handleSignaturDatoInTheFuture(
+                        loggingMeta,
+                        fellesformat,
+                        ediLoggId,
+                        msgId,
+                        msgHead,
+                        env,
+                        kafkaproducerApprec,
+                        duplicationService,
+                        duplicateCheck,
+                    )
+                    return
+                }
+
+                val vedleggListe: List<String> =
+                    if (vedlegg.isNotEmpty()) {
+                        bucketUploadService.lastOppVedlegg(
+                            vedlegg = vedlegg,
+                            msgId = msgId,
+                            personNrPasient = pasient.fnr!!,
+                            behandlerInfo =
+                                BehandlerInfo(
+                                    fornavn = sykmelding.behandler.fornavn,
+                                    etternavn = sykmelding.behandler.etternavn,
+                                    fnr = signaturFnr,
+                                ),
+                            pasientAktoerId = sykmelding.pasientAktoerId,
+                            sykmeldingId = sykmelding.id,
+                            loggingMeta = loggingMeta,
+                        )
+                    } else {
+                        emptyList()
+                    }
+
+                val receivedSykmelding =
+                    ReceivedSykmelding(
+                        sykmelding = sykmelding,
+                        personNrPasient = pasient.fnr!!,
+                        tlfPasient =
+                            extractTlfFromKontaktInfo(
+                                healthInformation.pasient.kontaktInfo,
+                            ),
+                        personNrLege = signaturFnr,
+                        navLogId = ediLoggId,
+                        msgId = msgId,
+                        legeHprNr = signerendeBehandler?.hprNummer,
+                        legeHelsepersonellkategori =
+                            signerendeBehandler?.godkjenninger?.let {
+                                getHelsepersonellKategori(
+                                    it,
+                                )
+                            },
+                        legekontorOrgNr = legekontorOrgNr,
+                        legekontorOrgName = legekontorOrgName,
+                        legekontorHerId = legekontorHerId,
+                        legekontorReshId = legekontorReshId,
+                        mottattDato = mottatDato,
+                        rulesetVersion = rulesetVersion,
+                        fellesformat = fellesformatText,
+                        tssid = tssIdInfotrygd ?: "",
+                        merknader = null,
+                        partnerreferanse = partnerReferanse,
+                        vedlegg = vedleggListe,
+                        utenlandskSykmelding = null,
+                    )
+
+                if (behandlenedeBehandlerFnr != signaturFnr) {
+                    logUlikBehandler(loggingMeta)
+                }
+
+                countNewDiagnoseCode(receivedSykmelding.sykmelding.medisinskVurdering)
+
+                logger.info(
+                    "Validating against rules, sykmeldingId {},  {}",
+                    StructuredArguments.keyValue("sykmeldingId", sykmelding.id),
+                    StructuredArguments.fields(loggingMeta),
+                )
+                val validationResult =
+                    syfoSykemeldingRuleClient.executeRuleValidation(
+                        receivedSykmelding,
+                        loggingMeta,
+                    )
+
+                when (validationResult.status) {
+                    Status.OK ->
+                        handleStatusOK(
+                            fellesformat = fellesformat,
+                            ediLoggId = ediLoggId,
+                            msgId = msgId,
+                            msgHead = msgHead,
+                            apprecTopic = env.apprecTopic,
+                            kafkaproducerApprec = kafkaproducerApprec,
+                            loggingMeta = loggingMeta,
+                            okSykmeldingTopic = env.okSykmeldingTopic,
+                            receivedSykmelding = receivedSykmelding,
+                            kafkaproducerreceivedSykmelding = kafkaproducerreceivedSykmelding,
+                        )
+                    Status.MANUAL_PROCESSING ->
+                        handleStatusMANUALPROCESSING(
+                            receivedSykmelding = receivedSykmelding,
+                            loggingMeta = loggingMeta,
+                            fellesformat = fellesformat,
+                            ediLoggId = ediLoggId,
+                            msgId = msgId,
+                            msgHead = msgHead,
+                            apprecTopic = env.apprecTopic,
+                            kafkaproducerApprec = kafkaproducerApprec,
+                            validationResult = validationResult,
+                            kafkaManuelTaskProducer = kafkaManuelTaskProducer,
+                            kafkaproducerreceivedSykmelding = kafkaproducerreceivedSykmelding,
+                            manuellBehandlingSykmeldingTopic = env.manuellBehandlingSykmeldingTopic,
+                            kafkaproducervalidationResult = kafkaproducervalidationResult,
+                            behandlingsUtfallTopic = env.behandlingsUtfallTopic,
+                            kafkaproducerManuellOppgave = kafkaproducerManuellOppgave,
+                            syfoSmManuellTopic = env.syfoSmManuellTopic,
+                            produserOppgaveTopic = env.produserOppgaveTopic,
+                        )
+                    Status.INVALID ->
+                        handleStatusINVALID(
+                            validationResult = validationResult,
+                            kafkaproducerreceivedSykmelding = kafkaproducerreceivedSykmelding,
+                            kafkaproducervalidationResult = kafkaproducervalidationResult,
+                            avvistSykmeldingTopic = env.avvistSykmeldingTopic,
+                            receivedSykmelding = receivedSykmelding,
+                            loggingMeta = loggingMeta,
+                            fellesformat = fellesformat,
+                            apprecTopic = env.apprecTopic,
+                            behandlingsUtfallTopic = env.behandlingsUtfallTopic,
+                            kafkaproducerApprec = kafkaproducerApprec,
+                            ediLoggId = ediLoggId,
+                            msgId = msgId,
+                            msgHead = msgHead,
+                        )
+                }
+
+                val currentRequestLatency = requestLatency.observeDuration()
+
+                duplicationService.persistDuplicationCheck(duplicateCheck)
+                logger.info(
+                    "Message got outcome {}, {}, processing took {}s, {}, {}",
+                    StructuredArguments.keyValue("status", validationResult.status),
+                    StructuredArguments.keyValue(
+                        "ruleHits",
+                        validationResult.ruleHits.joinToString(", ", "(", ")") { it.ruleName },
+                    ),
+                    StructuredArguments.keyValue("latency", currentRequestLatency),
+                    StructuredArguments.fields(loggingMeta),
+                    StructuredArguments.keyValue("sykmeldingId", sykmeldingId),
+                )
             }
+        } catch (e: Exception) {
+            logger.error(
+                "Exception caught while handling message, sending to backout ${
+                    StructuredArguments.fields(
+                        loggingMeta,
+                    )
+                }",
+                e,
+            )
+            backoutProducer.send(message)
+        } finally {
+            message.acknowledge()
         }
     }
 
@@ -677,11 +665,9 @@ class BlockingApplicationRunner(
             null -> {
                 null
             }
-
             signerendeBehandler?.hprNummer -> {
                 signerendeBehandler.fnr
             }
-
             else -> {
                 behandlenedeBehandler?.fnr
             }

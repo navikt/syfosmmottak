@@ -74,6 +74,8 @@ internal class BlockingApplicationRunnerTest {
             virusScanService,
             duplicationService,
             smtssClient,
+            inputconsumer,
+            backoutProducer,
         )
 
     @BeforeEach
@@ -133,7 +135,7 @@ internal class BlockingApplicationRunnerTest {
         every { inputconsumer.receive(1000) } returns textMessage
 
         runBlocking {
-            blockingApplicationRunner.run(inputconsumer, backoutProducer)
+            blockingApplicationRunner.run()
 
             coVerify {
                 kafkaproducerApprec.send(match { it.value().apprecStatus == ApprecStatus.OK })
@@ -159,7 +161,7 @@ internal class BlockingApplicationRunnerTest {
             )
 
         runBlocking {
-            blockingApplicationRunner.run(inputconsumer, backoutProducer)
+            blockingApplicationRunner.run()
 
             coVerify {
                 kafkaproducerApprec.send(
@@ -190,7 +192,7 @@ internal class BlockingApplicationRunnerTest {
         every { textMessage.text } returns stringInput
         every { inputconsumer.receive(1000) } returns textMessage
         runBlocking {
-            blockingApplicationRunner.run(inputconsumer, backoutProducer)
+            blockingApplicationRunner.run()
 
             coVerify {
                 kafkaproducerApprec.send(match { it.value().apprecStatus == ApprecStatus.OK })
@@ -207,7 +209,7 @@ internal class BlockingApplicationRunnerTest {
 
         runBlocking {
             try {
-                blockingApplicationRunner.run(inputconsumer, backoutProducer)
+                blockingApplicationRunner.run()
             } catch (exception: Exception) {
                 Assertions.assertEquals(
                     "Incoming message needs to be a byte message or text message",
@@ -222,13 +224,13 @@ internal class BlockingApplicationRunnerTest {
         every { applicationState.ready } returns true andThen false
         val stringInput =
             getFileAsString(
-                "src/test/resources/sykemelding2013Regelsettversjon3gendatefremitid.xml"
+                "src/test/resources/sykemelding2013Regelsettversjon3gendatefremitid.xml",
             )
         val textMessage = mockk<TextMessage>(relaxed = true)
         every { textMessage.text } returns stringInput
         every { inputconsumer.receive(1000) } returns textMessage
         runBlocking {
-            blockingApplicationRunner.run(inputconsumer, backoutProducer)
+            blockingApplicationRunner.run()
 
             coVerify {
                 kafkaproducerApprec.send(match { it.value().apprecStatus == ApprecStatus.AVVIST })

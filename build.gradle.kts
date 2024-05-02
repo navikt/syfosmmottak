@@ -30,6 +30,7 @@ val commonsCodecVersion = "1.16.1"
 val ktfmtVersion = "0.44"
 val snappyJavaVersion = "1.1.10.5"
 val jsonVersion = "20240303"
+val opentelemetryVersion = "2.3.0"
 
 plugins {
     id("application")
@@ -47,7 +48,7 @@ application {
 
 repositories {
     mavenCentral()
-    maven(url= "https://packages.confluent.io/maven/")
+    maven(url = "https://packages.confluent.io/maven/")
     maven {
         url = uri("https://github-package-registry-mirror.gc.nav.no/cached/maven-release")
     }
@@ -91,6 +92,7 @@ dependencies {
     implementation("no.nav.helse.xml:kith-hodemelding:$syfoXmlCodegenVersion")
     implementation("no.nav.helse.xml:kith-apprec:$syfoXmlCodegenVersion")
     implementation("com.ibm.mq:com.ibm.mq.allclient:$ibmMqVersion")
+    implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:$opentelemetryVersion")
     constraints {
         implementation("org.json:json:$jsonVersion") {
             because("override transient from com.ibm.mq:com.ibm.mq.allclient")
@@ -127,9 +129,9 @@ dependencies {
 tasks {
 
     shadowJar {
-mergeServiceFiles {
-     setPath("META-INF/services/org.flywaydb.core.extensibility.Plugin")
- }
+        mergeServiceFiles {
+            setPath("META-INF/services/org.flywaydb.core.extensibility.Plugin")
+        }
         archiveBaseName.set("app")
         archiveClassifier.set("")
         isZip64 = true
