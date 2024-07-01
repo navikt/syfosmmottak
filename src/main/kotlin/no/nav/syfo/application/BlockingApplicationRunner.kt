@@ -84,6 +84,8 @@ import no.nav.syfo.vedlegg.model.BehandlerInfo
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
 import org.xml.sax.InputSource
+import java.time.Instant
+import java.time.OffsetTime
 
 val sikkerlogg = LoggerFactory.getLogger("securelog")
 
@@ -116,7 +118,8 @@ class BlockingApplicationRunner(
                     delay(100)
                     continue
                 }
-
+                val messageTimestamp = OffsetTime.ofInstant(Instant.ofEpochMilli(message.jmsTimestamp), ZoneOffset.UTC)
+                logger.info("Received message with timestamp {}", messageTimestamp)
                 processMqMessage(message)
             }
         }
