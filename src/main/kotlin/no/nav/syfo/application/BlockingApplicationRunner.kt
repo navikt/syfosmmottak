@@ -3,7 +3,9 @@ package no.nav.syfo.application
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import java.io.StringReader
+import java.time.Instant
 import java.time.LocalDateTime
+import java.time.OffsetTime
 import java.time.ZoneOffset
 import java.util.*
 import javax.jms.Message
@@ -40,6 +42,7 @@ import no.nav.syfo.handlestatus.handleVirksomhetssykmeldingOgFnrManglerIHPR
 import no.nav.syfo.handlestatus.handleVirksomhetssykmeldingOgHprMangler
 import no.nav.syfo.logger
 import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
+import no.nav.syfo.metrics.INCOMING_MESSAGE_DELAY
 import no.nav.syfo.metrics.REQUEST_TIME
 import no.nav.syfo.metrics.SYKMELDING_MISSNG_ORG_NUMBER_COUNTER
 import no.nav.syfo.metrics.SYKMELDING_VEDLEGG_COUNTER
@@ -116,7 +119,10 @@ class BlockingApplicationRunner(
                     delay(100)
                     continue
                 }
+                val messageTimestamp =
+                    OffsetTime.ofInstant(Instant.ofEpochMilli(message.jmsTimestamp), ZoneOffset.UTC)
 
+                logger.info("Received message with timestamp {}", messageTimestamp)
                 processMqMessage(message)
             }
         }
@@ -135,6 +141,10 @@ class BlockingApplicationRunner(
                         )
                 }
             INCOMING_MESSAGE_COUNTER.inc()
+            val now = Instant.now().toEpochMilli()
+            val delay = now - message.jmsTimestamp
+            INCOMING_MESSAGE_DELAY.observe(delay / 1000.0)
+
             val requestLatency = REQUEST_TIME.startTimer()
             val fellesformat = safeUnmarshal(inputMessageText)
 
