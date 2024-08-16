@@ -5,9 +5,9 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import javax.jms.MessageConsumer
-import javax.jms.MessageProducer
-import javax.jms.TextMessage
+import jakarta.jms.MessageConsumer
+import jakarta.jms.MessageProducer
+import jakarta.jms.TextMessage
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.ApplicationState
 import no.nav.syfo.EnvironmentVariables

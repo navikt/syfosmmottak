@@ -2,16 +2,16 @@ package no.nav.syfo.application
 
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
+import jakarta.jms.Message
+import jakarta.jms.MessageConsumer
+import jakarta.jms.MessageProducer
+import jakarta.jms.TextMessage
 import java.io.StringReader
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.OffsetTime
 import java.time.ZoneOffset
 import java.util.*
-import javax.jms.Message
-import javax.jms.MessageConsumer
-import javax.jms.MessageProducer
-import javax.jms.TextMessage
 import javax.xml.parsers.SAXParserFactory
 import javax.xml.transform.Source
 import javax.xml.transform.sax.SAXSource

@@ -19,7 +19,7 @@ val jaxwsToolsVersion = "2.3.2"
 val jaxbRuntimeVersion = "2.4.0-b180830.0438"
 val javaTimeAdapterVersion = "1.1.3"
 val mockkVersion = "1.13.10"
-val kotlinVersion = "1.9.23"
+val kotlinVersion = "2.0.10"
 val googleCloudStorageVersion = "2.36.1"
 val junitJupiterVersion = "5.10.2"
 val flywayVersion = "10.11.0"
@@ -29,14 +29,13 @@ val embeddedPostgresVersion = "2.0.7"
 val commonsCodecVersion = "1.16.1"
 val ktfmtVersion = "0.44"
 val snappyJavaVersion = "1.1.10.5"
-val jsonVersion = "20240303"
 val opentelemetryVersion = "2.3.0"
 
 plugins {
     id("application")
-    kotlin("jvm") version "1.9.23"
+    kotlin("jvm") version "2.0.10"
     id("com.diffplug.spotless") version "6.25.0"
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("com.gradleup.shadow") version "8.3.0"
 }
 
 application {
@@ -91,13 +90,8 @@ dependencies {
     implementation("no.nav.helse.xml:xmlfellesformat:$syfoXmlCodegenVersion")
     implementation("no.nav.helse.xml:kith-hodemelding:$syfoXmlCodegenVersion")
     implementation("no.nav.helse.xml:kith-apprec:$syfoXmlCodegenVersion")
-    implementation("com.ibm.mq:com.ibm.mq.allclient:$ibmMqVersion")
+    implementation("com.ibm.mq:com.ibm.mq.jakarta.client:$ibmMqVersion")
     implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:$opentelemetryVersion")
-    constraints {
-        implementation("org.json:json:$jsonVersion") {
-            because("override transient from com.ibm.mq:com.ibm.mq.allclient")
-        }
-    }
 
     implementation("com.google.cloud:google-cloud-storage:$googleCloudStorageVersion")
 
