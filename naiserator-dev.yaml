@@ -73,9 +73,6 @@ spec:
         - host: b27apvl222.preprod.local
           ports:
             - port: 1413
-  vault:
-    enabled: false
-  webproxy: false
   envFrom:
     - secret: srvsyfosmmottak-secrets
     - secret: syfosmmottak-keystore-pwd

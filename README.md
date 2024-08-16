@@ -11,9 +11,14 @@ This project contains just the receiving part of a sykmelding2013 message
 * MQ
 * Kafka
 
-#### Requirements
+### Prerequisites
+* JDK 21
 
-* JDK 17
+Make sure you have the Java JDK 21 installed
+You can check which version you have installed using this command:
+``` bash
+java -version
+```
 
 ## FlowChart
 This the high level flow of the application
