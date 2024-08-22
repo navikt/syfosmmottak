@@ -61,7 +61,9 @@ dependencies {
     implementation("io.prometheus:simpleclient_common:$prometheusVersion")
 
     implementation("io.ktor:ktor-server-core:$ktorVersion")
-    implementation("io.ktor:ktor-server-netty:$ktorVersion")
+    implementation("io.ktor:ktor-server-netty:$ktorVersion") {
+        exclude(group = "io.netty", module = "netty-codec")
+    }
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-apache:$ktorVersion")
     constraints {
