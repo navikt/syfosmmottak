@@ -55,18 +55,12 @@ fun extractTlfFromKontaktInfo(kontaktInfo: List<TeleCom>): String? {
             ?.v
             ?.removePrefix("mailto:")
 
-    return if (
-        phoneNumber == null &&
-            email == null &&
-            kontaktInfo?.size != 0 &&
-            kontaktInfo?.firstOrNull()?.teleAddress != null &&
-            kontaktInfo?.firstOrNull()?.teleAddress!!.v != null
-    ) {
-        kontaktInfo?.firstOrNull()?.teleAddress?.v
-    } else if (phoneNumber != null) {
+    return if (phoneNumber != null) {
         phoneNumber
-    } else {
+    } else if (email != null) {
         email
+    } else {
+        kontaktInfo?.firstOrNull()?.teleAddress?.v
     }
 }
 
