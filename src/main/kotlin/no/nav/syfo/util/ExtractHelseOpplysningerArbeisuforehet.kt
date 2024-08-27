@@ -32,16 +32,43 @@ fun extractFnrDnrFraBehandler(healthInformation: HelseOpplysningerArbeidsuforhet
 fun extractHprBehandler(healthInformation: HelseOpplysningerArbeidsuforhet): String? =
     healthInformation.behandler.id.find { it.typeId.v == "HPR" }?.id
 
-fun extractTlfFromKontaktInfo(kontaktInfo: List<TeleCom>): String? =
-    if (
-        kontaktInfo.isNotEmpty() &&
-            kontaktInfo.firstOrNull()!!.teleAddress != null &&
-            kontaktInfo.firstOrNull()!!.teleAddress?.v?.contains("tel:") == true
+fun extractTlfFromKontaktInfo(kontaktInfo: List<TeleCom>): String? {
+
+    val phoneNumber =
+        kontaktInfo
+            ?.find {
+                it.teleAddress?.v?.contains("tel:") == true &&
+                    (it?.typeTelecom
+                        ?.v
+                        ?.contains(
+                            "HP",
+                        ) == true || it?.typeTelecom?.dn?.contains("Hovedtelefon") == true)
+            }
+            ?.teleAddress
+            ?.v
+            ?.removePrefix("tel:")
+
+    val email =
+        kontaktInfo
+            ?.find { it.teleAddress?.v?.contains("mailto:") == true }
+            ?.teleAddress
+            ?.v
+            ?.removePrefix("mailto:")
+
+    return if (
+        phoneNumber == null &&
+            email == null &&
+            kontaktInfo?.size != 0 &&
+            kontaktInfo?.firstOrNull()?.teleAddress != null &&
+            kontaktInfo?.firstOrNull()?.teleAddress!!.v != null
     ) {
-        kontaktInfo.firstOrNull()!!.teleAddress?.v?.removePrefix("tel:")
+        kontaktInfo?.firstOrNull()?.teleAddress?.v
+    } else if (phoneNumber != null) {
+        phoneNumber
     } else {
-        kontaktInfo.firstOrNull()?.teleAddress?.v
+        email
     }
+}
 
 fun padHpr(hprnummer: String?): String? {
     return if (hprnummer?.length == null || hprnummer.length == 9) {
