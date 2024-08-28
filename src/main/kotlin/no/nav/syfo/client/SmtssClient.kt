@@ -9,7 +9,6 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
-import io.ktor.util.InternalAPI
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.application.sikkerlogg
 import no.nav.syfo.logger
@@ -63,7 +62,6 @@ class SmtssClient(
         return getResponse(httpResponse, loggingMeta)
     }
 
-    @OptIn(InternalAPI::class)
     private suspend fun getResponse(
         httpResponse: io.ktor.client.statement.HttpResponse,
         loggingMeta: LoggingMeta
