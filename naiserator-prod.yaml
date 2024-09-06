@@ -75,12 +75,9 @@ spec:
             - port: 1414
   envFrom:
     - secret: srvsyfosmmottak-secrets
-    - secret: syfosmmottak-keystore-pwd
   filesFrom:
     - mountPath: /var/run/secrets
       secret: sykmeldingvedlegg-google-creds
-    - mountPath: /var/run/keystore
-      secret: syfosmmottak-keystore
   secureLogs:
     enabled: true
   env:
@@ -112,7 +109,5 @@ spec:
       value: https://smgcp-proxy.prod-fss-pub.nais.io
     - name: SYFOSMREGLER_API_SCOPE
       value: api://prod-gcp.teamsykmelding.syfosmregler/.default
-    - name: MQ_KEYSTORE_PATH
-      value: /var/run/keystore/syfosmmottak-keystore.jks
     - name: SMTSS_API_SCOPE
       value: api://prod-gcp.teamsykmelding.smtss/.default
