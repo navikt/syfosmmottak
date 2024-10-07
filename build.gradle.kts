@@ -30,6 +30,7 @@ val commonsCodecVersion = "1.17.1"
 val ktfmtVersion = "0.44"
 val snappyJavaVersion = "1.1.10.6"
 val opentelemetryVersion = "2.3.0"
+val diagnosekoderVersion = "1.2024.0"
 
 plugins {
     id("application")
@@ -110,6 +111,7 @@ dependencies {
     implementation("com.zaxxer:HikariCP:$hikariVersion")
     compileOnly("org.flywaydb:flyway-core:$flywayVersion")
     implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
+    implementation("no.nav.helse:diagnosekoder:$diagnosekoderVersion")
 
     testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")

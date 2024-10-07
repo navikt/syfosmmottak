@@ -332,6 +332,28 @@ internal class SykmeldingMapperTest {
     }
 
     @Test
+    internal fun `test T4n code`() {
+        val originalCode =
+            CV().apply {
+                v = "T4n"
+                s = "2.16.578.1.12.4.1.1.7110"
+            }
+        val mappedDiagnosis = originalCode.toDiagnose()
+        Assertions.assertEquals("T4n", mappedDiagnosis.kode)
+    }
+
+    @Test
+    internal fun `test T4N code`() {
+        val originalCode =
+            CV().apply {
+                v = "T4N"
+                s = "2.16.578.1.12.4.1.1.7110"
+            }
+        val mappedDiagnosis = originalCode.toDiagnose()
+        Assertions.assertEquals("T4n", mappedDiagnosis.kode)
+    }
+
+    @Test
     internal fun `Setter bistandUmiddelbart til true hvis beskrivBistandNAV er angitt og regelsettversjon 3`() {
         val originalMeldingTilNAV =
             HelseOpplysningerArbeidsuforhet.MeldingTilNav().apply {
