@@ -1,11 +1,13 @@
 package no.nav.syfo.model
 
 import java.time.LocalDateTime
+import no.nav.helse.diagnosekoder.Diagnosekoder
 import no.nav.helse.sm2013.Address
 import no.nav.helse.sm2013.ArsakType
 import no.nav.helse.sm2013.CS
 import no.nav.helse.sm2013.CV
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
+import no.nav.syfo.logger
 import no.nav.syfo.util.extractTlfFromKontaktInfo
 
 fun HelseOpplysningerArbeidsuforhet.toSykmelding(
@@ -83,12 +85,37 @@ fun HelseOpplysningerArbeidsuforhet.MedisinskVurdering.toMedisinskVurdering() =
         annenFraversArsak = annenFraversArsak?.toAnnenFraversArsak(),
     )
 
-fun CV.toDiagnose() =
+fun CV.toDiagnose(): Diagnose {
     if (v.contains(".")) {
-        Diagnose(s, v.replace(".", "").uppercase(), dn)
+        return toDiagnoseCode(s, v.replace(".", ""), dn)
     } else {
-        Diagnose(s, v.uppercase(), dn)
+        return toDiagnoseCode(s, v, dn)
     }
+}
+
+fun toDiagnoseCode(system: String, code: String, dn: String?): Diagnose {
+    val codes =
+        when (system) {
+            Diagnosekoder.ICPC2_CODE -> Diagnosekoder.icpc2
+            Diagnosekoder.ICD10_CODE -> Diagnosekoder.icd10
+            else -> {
+                logger.error("Unknown diagnose code system: $system")
+                emptyMap()
+            }
+        }
+    if (codes.keys.contains(code)) {
+        return Diagnose(system, code, dn)
+    }
+    logger.info("did not find diagnose code: $code, system: $system")
+    val codeUppercase = codes.entries.firstOrNull { it.key.uppercase() == code.uppercase() }
+    if (codeUppercase != null) {
+        logger.info(
+            "found diagnose code with uppercase check code: $code, uppercase: $codeUppercase"
+        )
+        return Diagnose(system, codeUppercase.key, dn)
+    }
+    return Diagnose(system, code, dn)
+}
 
 fun ArsakType.toAnnenFraversArsak() =
     AnnenFraversArsak(
