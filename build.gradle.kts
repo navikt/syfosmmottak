@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 group = "no.nav.syfo"
 version = "1.0.0"
 
@@ -8,7 +10,7 @@ val javaxActivationVersion = "1.1.1"
 val jacksonVersion = "2.17.2"
 val jaxbApiVersion = "2.4.0-b180830.0359"
 val kafkaVersion = "3.8.0"
-val ktorVersion = "2.3.12"
+val ktorVersion = "3.0.0"
 val logbackVersion = "1.5.7"
 val logstashEncoderVersion = "8.0"
 val prometheusVersion = "0.16.0"
@@ -31,6 +33,9 @@ val ktfmtVersion = "0.44"
 val snappyJavaVersion = "1.1.10.6"
 val opentelemetryVersion = "2.3.0"
 val diagnosekoderVersion = "1.2024.0"
+
+val javaVersion = JvmTarget.JVM_21
+
 
 plugins {
     id("application")
@@ -123,6 +128,12 @@ dependencies {
     testImplementation("io.zonky.test:embedded-postgres:$embeddedPostgresVersion")
 }
 
+kotlin {
+    compilerOptions {
+        jvmTarget.set(javaVersion)
+    }
+}
+
 
 tasks {
 
@@ -147,6 +158,7 @@ tasks {
         useJUnitPlatform {}
         testLogging {
             events("skipped", "failed")
+            showStandardStreams = true
             showStackTraces = true
             exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
         }
