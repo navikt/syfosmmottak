@@ -41,10 +41,9 @@ import no.nav.syfo.mq.MqTlsUtils
 import no.nav.syfo.mq.connectionFactory
 import no.nav.syfo.mq.consumerForQueue
 import no.nav.syfo.mq.producerForQueue
-import no.nav.syfo.nais.isalive.naisIsAliveRoute
-import no.nav.syfo.nais.isready.naisIsReadyRoute
-import no.nav.syfo.nais.prometheus.naisPrometheusRoute
 import no.nav.syfo.pdl.service.PdlPersonService
+import no.nav.syfo.plugins.configureLifecycleHooks
+import no.nav.syfo.plugins.configureRouting
 import no.nav.syfo.service.DuplicationService
 import no.nav.syfo.service.VirusScanService
 import no.nav.syfo.util.LoggingMeta
@@ -94,14 +93,8 @@ fun Application.module() {
 
     DefaultExports.initialize()
 
-    environment.monitor.subscribe(ApplicationStopped) {
-        applicationState.ready = false
-        applicationState.alive = false
-    }
-
+    configureLifecycleHooks(applicationState = applicationState)
     configureRouting(applicationState = applicationState)
-
-    DefaultExports.initialize()
 
     val httpClients = HttpClients(environmentVariables)
     val kafkaClients = KafkaClients(environmentVariables)
@@ -295,14 +288,6 @@ fun sendReceivedSykmelding(
             receivedSykmelding.sykmelding.id,
         )
         throw ex
-    }
-}
-
-fun Application.configureRouting(applicationState: ApplicationState) {
-    routing {
-        naisIsAliveRoute(applicationState)
-        naisIsReadyRoute(applicationState)
-        naisPrometheusRoute()
     }
 }
 
