@@ -14,10 +14,8 @@ val ktorVersion = "3.0.0"
 val logbackVersion = "1.5.7"
 val logstashEncoderVersion = "8.0"
 val prometheusVersion = "0.16.0"
-val jaxwsApiVersion = "2.3.1"
 val commonsTextVersion = "1.12.0"
 val javaxAnnotationApiVersion = "1.3.2"
-val jaxwsToolsVersion = "2.3.2"
 val jaxbRuntimeVersion = "2.4.0-b180830.0438"
 val javaTimeAdapterVersion = "1.1.3"
 val mockkVersion = "1.13.10"
@@ -33,6 +31,9 @@ val ktfmtVersion = "0.44"
 val snappyJavaVersion = "1.1.10.6"
 val opentelemetryVersion = "2.3.0"
 val diagnosekoderVersion = "1.2024.0"
+
+///Due to vulnerabilities
+val nettycommonVersion = "4.1.115.Final"
 
 val javaVersion = JvmTarget.JVM_21
 
@@ -67,8 +68,12 @@ dependencies {
     implementation("io.prometheus:simpleclient_common:$prometheusVersion")
 
     implementation("io.ktor:ktor-server-core:$ktorVersion")
-    implementation("io.ktor:ktor-server-netty:$ktorVersion") {
-        exclude(group = "io.netty", module = "netty-codec")
+    implementation("io.ktor:ktor-server-netty:$ktorVersion"){
+        constraints {
+            implementation("io.netty:netty-common:$nettycommonVersion") {
+                because("Due to vulnerabilities in io.ktor:ktor-server-netty")
+            }
+        }
     }
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-apache:$ktorVersion")
