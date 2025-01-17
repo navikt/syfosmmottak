@@ -51,6 +51,8 @@ This the high level flow of the application
 ``` bash
 ./gradlew run
 ```
+> **Note**
+> There are probably many services and environment variables that need to be set up, for the application to work properly.
 
 ### Building the application
 #### Compile and package application
