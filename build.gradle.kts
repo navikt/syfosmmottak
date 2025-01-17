@@ -3,46 +3,47 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val coroutinesVersion = "1.8.0"
+val javaVersion = JvmTarget.JVM_21
+
+
+val coroutinesVersion = "1.10.1"
 val syfoXmlCodegenVersion = "2.0.1"
 val ibmMqVersion = "9.4.0.0"
 val javaxActivationVersion = "1.1.1"
 val jacksonVersion = "2.17.2"
 val jaxbApiVersion = "2.4.0-b180830.0359"
 val kafkaVersion = "3.8.0"
-val ktorVersion = "3.0.0"
-val logbackVersion = "1.5.7"
+val ktorVersion = "3.0.3"
+val logbackVersion = "1.5.16"
 val logstashEncoderVersion = "8.0"
 val prometheusVersion = "0.16.0"
 val commonsTextVersion = "1.12.0"
 val javaxAnnotationApiVersion = "1.3.2"
 val jaxbRuntimeVersion = "2.4.0-b180830.0438"
 val javaTimeAdapterVersion = "1.1.3"
-val mockkVersion = "1.13.10"
-val kotlinVersion = "2.0.20"
-val googleCloudStorageVersion = "2.36.1"
-val junitJupiterVersion = "5.10.2"
-val flywayVersion = "10.17.2"
-val hikariVersion = "5.1.0"
-val postgresVersion = "42.7.3"
+val mockkVersion = "1.13.16"
+val kotlinVersion = "2.1.0"
+val googleCloudStorageVersion = "2.47.0"
+val junitJupiterVersion = "5.11.4"
+val flywayVersion = "11.1.1"
+val hikariVersion = "6.2.1"
+val postgresVersion = "42.7.5"
 val embeddedPostgresVersion = "2.0.7"
-val commonsCodecVersion = "1.17.1"
 val ktfmtVersion = "0.44"
-val snappyJavaVersion = "1.1.10.6"
-val opentelemetryVersion = "2.3.0"
-val diagnosekoderVersion = "1.2024.0"
+val opentelemetryVersion = "2.11.0"
+val diagnosekoderVersion = "1.2025.0"
 
 ///Due to vulnerabilities
 val nettycommonVersion = "4.1.115.Final"
-
-val javaVersion = JvmTarget.JVM_21
+val snappyJavaVersion = "1.1.10.6"
+val commonsCodecVersion = "1.17.1"
 
 
 plugins {
     id("application")
-    kotlin("jvm") version "2.0.20"
-    id("com.diffplug.spotless") version "6.25.0"
-    id("com.gradleup.shadow") version "8.3.0"
+    kotlin("jvm") version "2.1.0"
+    id("com.diffplug.spotless") version "7.0.2"
+    id("com.gradleup.shadow") version "8.3.5"
 }
 
 application {
