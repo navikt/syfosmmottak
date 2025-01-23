@@ -12,7 +12,7 @@ val ibmMqVersion = "9.4.0.0"
 val javaxActivationVersion = "1.1.1"
 val jacksonVersion = "2.17.2"
 val jaxbApiVersion = "2.4.0-b180830.0359"
-val kafkaVersion = "3.8.0"
+val kafkaVersion = "3.9.0"
 val ktorVersion = "3.0.3"
 val logbackVersion = "1.5.16"
 val logstashEncoderVersion = "8.0"
@@ -28,7 +28,7 @@ val junitJupiterVersion = "5.11.4"
 val flywayVersion = "11.1.1"
 val hikariVersion = "6.2.1"
 val postgresVersion = "42.7.5"
-val embeddedPostgresVersion = "2.0.7"
+val embeddedPostgresVersion = "2.1.0"
 val ktfmtVersion = "0.44"
 val opentelemetryVersion = "2.11.0"
 val diagnosekoderVersion = "1.2025.0"
@@ -55,7 +55,6 @@ application {
 
 repositories {
     mavenCentral()
-    maven(url = "https://packages.confluent.io/maven/")
     maven {
         url = uri("https://github-package-registry-mirror.gc.nav.no/cached/maven-release")
     }
@@ -131,7 +130,9 @@ dependencies {
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
         exclude(group = "org.eclipse.jetty")
     }
-    testImplementation("io.zonky.test:embedded-postgres:$embeddedPostgresVersion")
+    testImplementation("io.zonky.test:embedded-postgres:$embeddedPostgresVersion") {
+        exclude(group = "commons-io", module = "commons-io")
+    }
 }
 
 kotlin {
