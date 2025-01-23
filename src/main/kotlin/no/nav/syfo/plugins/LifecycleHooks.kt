@@ -5,8 +5,9 @@ import no.nav.syfo.ApplicationState
 
 fun Application.configureLifecycleHooks(applicationState: ApplicationState) {
 
-    this.monitor.subscribe(ApplicationStarted) { applicationState.ready = true }
-    this.monitor.subscribe(ApplicationStopped) {
+    monitor.subscribe(ApplicationStarted) { applicationState.ready = true }
+    monitor.subscribe(ServerReady) { applicationState.ready = true }
+    monitor.subscribe(ApplicationStopped) {
         applicationState.ready = false
         applicationState.alive = false
     }
