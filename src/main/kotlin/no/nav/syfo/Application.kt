@@ -12,11 +12,9 @@ import com.google.cloud.storage.StorageOptions
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import io.ktor.server.routing.*
 import io.prometheus.client.hotspot.DefaultExports
 import jakarta.jms.Session
 import java.io.FileInputStream
-import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -69,12 +67,6 @@ fun main() {
             Netty,
             port = EnvironmentVariables().applicationPort,
             module = Application::module,
-        )
-    Runtime.getRuntime()
-        .addShutdownHook(
-            Thread {
-                embeddedServer.stop(TimeUnit.SECONDS.toMillis(10), TimeUnit.SECONDS.toMillis(10))
-            },
         )
     embeddedServer.start(true)
 }
@@ -292,8 +284,8 @@ fun sendReceivedSykmelding(
 }
 
 data class ApplicationState(
-    var alive: Boolean = true,
-    var ready: Boolean = true,
+    var alive: Boolean = false,
+    var ready: Boolean = false,
 )
 
 class ServiceUnavailableException(message: String?) : Exception(message)
