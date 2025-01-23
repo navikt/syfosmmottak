@@ -35,6 +35,26 @@ internal class SelfTest {
     }
 
     @Test
+    internal fun `App is not ready after ApplicationStopping is raised`() {
+        testApplication {
+            application {
+                routing {
+                    val applicationState = ApplicationState()
+                    naisIsAliveRoute(applicationState)
+                    naisIsReadyRoute(applicationState)
+                    configureLifecycleHooks(applicationState)
+                }
+                monitor.raise(ServerReady, this.environment)
+                monitor.raise(ApplicationStopping, this)
+            }
+
+            val readyResponse = client.get("/internal/is_ready")
+            assertEquals(HttpStatusCode.InternalServerError, readyResponse.status)
+            assertEquals("Please wait! I'm not ready :(", readyResponse.bodyAsText())
+        }
+    }
+
+    @Test
     internal fun `Returns ok on is_alive`() {
         testApplication {
             application {
