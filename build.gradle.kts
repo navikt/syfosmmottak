@@ -13,7 +13,7 @@ val javaxActivationVersion = "1.1.1"
 val jacksonVersion = "2.17.2"
 val jaxbApiVersion = "2.4.0-b180830.0359"
 val kafkaVersion = "3.9.0"
-val ktorVersion = "3.0.3"
+val ktorVersion = "3.1.0"
 val logbackVersion = "1.5.16"
 val logstashEncoderVersion = "8.0"
 val prometheusVersion = "0.16.0"
@@ -34,7 +34,7 @@ val opentelemetryVersion = "2.11.0"
 val diagnosekoderVersion = "1.2025.0"
 
 ///Due to vulnerabilities
-val nettycommonVersion = "4.1.115.Final"
+val nettycommonVersion = "4.1.118.Final"
 val snappyJavaVersion = "1.1.10.6"
 val commonsCodecVersion = "1.17.1"
 
