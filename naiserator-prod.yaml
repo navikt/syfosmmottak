@@ -75,9 +75,7 @@ spec:
             - port: 1414
   envFrom:
     - secret: srvsyfosmmottak-secrets
-  filesFrom:
-    - mountPath: /var/run/secrets
-      secret: sykmeldingvedlegg-google-creds
+    - secret: syfosmmottak-secret
   secureLogs:
     enabled: true
   env:
@@ -101,8 +99,6 @@ spec:
       value: api://prod-fss.pdl.pdl-api/.default
     - name: HELSENETT_SCOPE
       value: api://prod-gcp.teamsykmelding.syfohelsenettproxy/.default
-    - name: SYKMELDING_VEDLEGG_BUCKET_NAME
-      value: teamsykmelding-sykmelding-vedlegg-bucket-prod
     - name: SMGCP_PROXY_SCOPE
       value: api://prod-fss.teamsykmelding.smgcp-proxy/.default
     - name: SMGCP_PROXY_URL
