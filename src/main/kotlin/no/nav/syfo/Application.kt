@@ -40,6 +40,7 @@ import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.plugins.configureLifecycleHooks
 import no.nav.syfo.plugins.configureRouting
 import no.nav.syfo.service.DuplicationService
+import no.nav.syfo.service.UploadSykmeldingService
 import no.nav.syfo.service.VirusScanService
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.TrackableException
@@ -88,11 +89,11 @@ fun Application.module() {
     val httpClients = HttpClients(environmentVariables)
     val kafkaClients = KafkaClients(environmentVariables)
 
-    val sykmeldingVedleggStorage: Storage = StorageOptions.newBuilder().build().service
+    val storage: Storage = StorageOptions.newBuilder().build().service
     val bucketUploadService =
         BucketUploadService(
             environmentVariables.sykmeldingVedleggBucketName,
-            sykmeldingVedleggStorage,
+            storage,
         )
     val virusScanService = VirusScanService(httpClients.clamAvClient)
 
@@ -115,6 +116,11 @@ fun Application.module() {
         virusScanService,
         duplicationService,
         httpClients.smtssClient,
+        uploadSykmeldingService =
+            UploadSykmeldingService(
+                tsmSykmeldingBucket = environmentVariables.tsmSykmeldingBucket,
+                storage = storage
+            )
     )
 }
 
@@ -152,6 +158,7 @@ fun launchListeners(
     virusScanService: VirusScanService,
     duplicationService: DuplicationService,
     smtssClient: SmtssClient,
+    uploadSykmeldingService: UploadSykmeldingService,
 ) {
     createListener(applicationState) {
         connectionFactory(environmentVariables)
@@ -182,6 +189,7 @@ fun launchListeners(
                         smtssClient,
                         inputconsumer,
                         backoutProducer,
+                        uploadSykmeldingService,
                     )
                     .run()
             }

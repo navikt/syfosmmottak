@@ -40,6 +40,7 @@ data class EnvironmentVariables(
     val dbName: String = getEnvVar("DB_DATABASE"),
     val smtssApiUrl: String = "http://smtss",
     val smtssApiScope: String = getEnvVar("SMTSS_API_SCOPE"),
+    val tsmSykmeldingBucket: String = getEnvVar("TSM_SYKMELDING_BUCKET_NAME"),
 ) : MqConfig
 
 data class ApplicationServiceUser(
