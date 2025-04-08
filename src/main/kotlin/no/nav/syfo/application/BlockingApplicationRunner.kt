@@ -57,6 +57,7 @@ import no.nav.syfo.model.toAvsenderSystem
 import no.nav.syfo.model.toSykmelding
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.service.DuplicationService
+import no.nav.syfo.service.UploadSykmeldingService
 import no.nav.syfo.service.VirusScanService
 import no.nav.syfo.service.fileSizeLagerThan300MegaBytes
 import no.nav.syfo.service.sha256hashstring
@@ -109,6 +110,7 @@ class BlockingApplicationRunner(
     private val smtssClient: SmtssClient,
     private val inputconsumer: MessageConsumer,
     private val backoutProducer: MessageProducer,
+    private val UploadSykmeldingService: UploadSykmeldingService,
 ) {
 
     suspend fun run() {
@@ -620,8 +622,9 @@ class BlockingApplicationRunner(
                 }
 
                 val currentRequestLatency = requestLatency.observeDuration()
-
+                UploadSykmeldingService.uploadOriginalMessage(sykmeldingId, inputMessageText)
                 duplicationService.persistDuplicationCheck(duplicateCheck)
+
                 logger.info(
                     "Message got outcome {}, {}, processing took {}s, {}, {}",
                     StructuredArguments.keyValue("status", validationResult.status),

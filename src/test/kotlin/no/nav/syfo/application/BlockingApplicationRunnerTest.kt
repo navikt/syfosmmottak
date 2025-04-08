@@ -27,6 +27,7 @@ import no.nav.syfo.pdl.client.model.PdlIdent
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.service.DuplicationService
+import no.nav.syfo.service.UploadSykmeldingService
 import no.nav.syfo.service.VirusScanService
 import no.nav.syfo.utils.getFileAsString
 import no.nav.syfo.vedlegg.google.BucketUploadService
@@ -56,7 +57,7 @@ internal class BlockingApplicationRunnerTest {
     val virusScanService = mockk<VirusScanService>(relaxed = true)
     val duplicationService = mockk<DuplicationService>(relaxed = true)
     val smtssClient = mockk<SmtssClient>()
-
+    val uploadSykmeldingServiced = mockk<UploadSykmeldingService>(relaxed = true)
     val blockingApplicationRunner =
         BlockingApplicationRunner(
             env,
@@ -76,6 +77,7 @@ internal class BlockingApplicationRunnerTest {
             smtssClient,
             inputconsumer,
             backoutProducer,
+            uploadSykmeldingServiced
         )
 
     @BeforeEach
