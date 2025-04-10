@@ -77,6 +77,7 @@ spec:
   envFrom:
     - secret: srvsyfosmmottak-secrets
     - secret: syfosmmottak-secret
+    - secret: syfosmmottak-unleash-api-token
   secureLogs:
     enabled: true
   env:
