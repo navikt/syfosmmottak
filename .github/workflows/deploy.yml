@@ -1,5 +1,9 @@
 name: Deploy app to dev and prod
-on: push
+on:
+  push:
+    paths-ignore:
+      - .github/workflows/deploy-unleash.yaml
+      - unleash.yaml
 
 permissions:
   actions: read
