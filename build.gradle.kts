@@ -32,7 +32,7 @@ val embeddedPostgresVersion = "2.1.0"
 val ktfmtVersion = "0.44"
 val opentelemetryVersion = "2.11.0"
 val diagnosekoderVersion = "1.2025.0"
-
+val unleashVersion = "10.2.2"
 ///Due to vulnerabilities
 val nettycommonVersion = "4.1.118.Final"
 val snappyJavaVersion = "1.1.10.6"
@@ -116,6 +116,8 @@ dependencies {
     implementation("javax.xml.bind:jaxb-api:$jaxbApiVersion")
     implementation("org.glassfish.jaxb:jaxb-runtime:$jaxbRuntimeVersion")
     implementation("javax.activation:activation:$javaxActivationVersion")
+
+    implementation("io.getunleash:unleash-client-java:$unleashVersion")
 
     implementation("org.postgresql:postgresql:$postgresVersion")
     implementation("com.zaxxer:HikariCP:$hikariVersion")

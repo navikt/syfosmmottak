@@ -1,5 +1,6 @@
 package no.nav.syfo.application
 
+import io.getunleash.Unleash
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -58,6 +59,7 @@ internal class BlockingApplicationRunnerTest {
     val duplicationService = mockk<DuplicationService>(relaxed = true)
     val smtssClient = mockk<SmtssClient>()
     val uploadSykmeldingServiced = mockk<UploadSykmeldingService>(relaxed = true)
+    val unleash: Unleash = mockk(relaxed = true)
     val blockingApplicationRunner =
         BlockingApplicationRunner(
             env,
@@ -77,7 +79,8 @@ internal class BlockingApplicationRunnerTest {
             smtssClient,
             inputconsumer,
             backoutProducer,
-            uploadSykmeldingServiced
+            uploadSykmeldingServiced,
+            unleash,
         )
 
     @BeforeEach

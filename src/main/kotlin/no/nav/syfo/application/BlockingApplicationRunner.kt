@@ -1,5 +1,6 @@
 package no.nav.syfo.application
 
+import io.getunleash.Unleash
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import jakarta.jms.Message
@@ -111,6 +112,7 @@ class BlockingApplicationRunner(
     private val inputconsumer: MessageConsumer,
     private val backoutProducer: MessageProducer,
     private val UploadSykmeldingService: UploadSykmeldingService,
+    private val unleash: Unleash,
 ) {
 
     suspend fun run() {
@@ -582,6 +584,7 @@ class BlockingApplicationRunner(
                             okSykmeldingTopic = env.okSykmeldingTopic,
                             receivedSykmelding = receivedSykmelding,
                             kafkaproducerreceivedSykmelding = kafkaproducerreceivedSykmelding,
+                            unleash
                         )
                     Status.MANUAL_PROCESSING ->
                         handleStatusMANUALPROCESSING(
@@ -602,6 +605,7 @@ class BlockingApplicationRunner(
                             kafkaproducerManuellOppgave = kafkaproducerManuellOppgave,
                             syfoSmManuellTopic = env.syfoSmManuellTopic,
                             produserOppgaveTopic = env.produserOppgaveTopic,
+                            unleash
                         )
                     Status.INVALID ->
                         handleStatusINVALID(
@@ -618,6 +622,7 @@ class BlockingApplicationRunner(
                             ediLoggId = ediLoggId,
                             msgId = msgId,
                             msgHead = msgHead,
+                            unleash
                         )
                 }
 
