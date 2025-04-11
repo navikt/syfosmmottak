@@ -1,5 +1,6 @@
 package no.nav.syfo.handlestatus
 
+import io.getunleash.Unleash
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
@@ -35,6 +36,7 @@ internal class HandleStatusInvalidKtTest {
     val fellesformat =
         fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
     val msgHead = fellesformat.get<XMLMsgHead>()
+    val unleash: Unleash = mockk(relaxed = true)
 
     fun setUpMocks() {
         every { kafkaApprecProducer.send(any()) } returns
@@ -60,7 +62,8 @@ internal class HandleStatusInvalidKtTest {
             receivedSykmelding,
             fellesformat,
             kafkaApprecProducer,
-            msgHead
+            msgHead,
+            unleash
         )
 
         verify(exactly = 1) { kafkaApprecProducer.send(any()) }
@@ -82,6 +85,7 @@ internal class HandleStatusInvalidKtTest {
                 fellesformat,
                 kafkaApprecProducer,
                 msgHead,
+                unleash
             )
         }
     }
@@ -99,6 +103,7 @@ internal class HandleStatusInvalidKtTest {
                 fellesformat,
                 kafkaApprecProducer,
                 msgHead,
+                unleash
             )
         }
     }
@@ -116,6 +121,7 @@ internal class HandleStatusInvalidKtTest {
                 fellesformat,
                 kafkaApprecProducer,
                 msgHead,
+                unleash
             )
         }
     }
@@ -133,6 +139,7 @@ internal class HandleStatusInvalidKtTest {
                 fellesformat,
                 kafkaApprecProducer,
                 msgHead,
+                unleash
             )
         }
     }
@@ -145,7 +152,8 @@ private fun handleStatusInvalid(
     receivedSykmelding: ReceivedSykmelding,
     fellesformat: XMLEIFellesformat,
     kafkaApprecProducer: KafkaProducer<String, Apprec>,
-    msgHead: XMLMsgHead
+    msgHead: XMLMsgHead,
+    unleash: Unleash
 ) {
     handleStatusINVALID(
         validationResult,
@@ -161,5 +169,6 @@ private fun handleStatusInvalid(
         "",
         "",
         msgHead,
+        unleash,
     )
 }

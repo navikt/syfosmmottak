@@ -7,6 +7,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.google.cloud.storage.Storage
 import com.google.cloud.storage.StorageOptions
+import io.getunleash.Unleash
+import io.ktor.http.headers
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
@@ -42,6 +44,7 @@ import no.nav.syfo.plugins.configureRouting
 import no.nav.syfo.service.DuplicationService
 import no.nav.syfo.service.UploadSykmeldingService
 import no.nav.syfo.service.VirusScanService
+import no.nav.syfo.unleash.getUnleash
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.TrackableException
 import no.nav.syfo.vedlegg.google.BucketUploadService
@@ -190,6 +193,7 @@ fun launchListeners(
                         inputconsumer,
                         backoutProducer,
                         uploadSykmeldingService,
+                        getUnleash()
                     )
                     .run()
             }
@@ -220,15 +224,22 @@ fun sendValidationResult(
     behandlingsUtfallTopic: String,
     receivedSykmelding: ReceivedSykmelding,
     loggingMeta: LoggingMeta,
+    unleash: Unleash,
 ) {
     try {
+        val processingTarget = unleash.isEnabled("SYFOSMMOTTAK_PROCESSING_TARGET")
+        val producerRecord =
+            ProducerRecord(
+                behandlingsUtfallTopic,
+                receivedSykmelding.sykmelding.id,
+                validationResult,
+            )
+        if (processingTarget) {
+            producerRecord.headers().add("processing-target", "tsm".toByteArray())
+        }
         kafkaproducervalidationResult
             .send(
-                ProducerRecord(
-                    behandlingsUtfallTopic,
-                    receivedSykmelding.sykmelding.id,
-                    validationResult,
-                ),
+                producerRecord,
             )
             .get()
         logger.info(
@@ -249,6 +260,7 @@ fun sendReceivedSykmelding(
     receivedSykmeldingTopic: String,
     receivedSykmelding: ReceivedSykmeldingWithValidation,
     kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmeldingWithValidation>,
+    unleash: Unleash
 ) {
 
     try {
@@ -257,15 +269,18 @@ fun sendReceivedSykmelding(
             receivedSykmeldingTopic,
             receivedSykmelding.sykmelding.id,
         )
-        kafkaproducerreceivedSykmelding
-            .send(
-                ProducerRecord(
-                    receivedSykmeldingTopic,
-                    receivedSykmelding.sykmelding.id,
-                    receivedSykmelding,
-                ),
+        val processingTarget = unleash.isEnabled("SYFOSMMOTTAK_PROCESSING_TARGET")
+
+        val record =
+            ProducerRecord(
+                receivedSykmeldingTopic,
+                receivedSykmelding.sykmelding.id,
+                receivedSykmelding,
             )
-            .get()
+        if (processingTarget) {
+            record.headers().add("processing-target", "tsm".toByteArray())
+        }
+        kafkaproducerreceivedSykmelding.send(record).get()
         logger.info(
             "Sykmelding sendt to kafka topic {} sykmelding id {}",
             receivedSykmeldingTopic,

@@ -68,6 +68,7 @@ spec:
         - application: syfohelsenettproxy
         - application: smtss
       external:
+        - host: teamsykmelding-unleash-api.nav.cloud.nais.io
         - host: smgcp-proxy.prod-fss-pub.nais.io
         - host: pdl-api.prod-fss-pub.nais.io
         - host: mpls04.adeo.no

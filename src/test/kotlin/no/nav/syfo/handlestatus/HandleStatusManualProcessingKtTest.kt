@@ -1,5 +1,6 @@
 package no.nav.syfo.handlestatus
 
+import io.getunleash.Unleash
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
@@ -54,6 +55,7 @@ internal class HandleStatusManualProcessingKtTest {
         fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
     val msgHead = fellesformat.get<XMLMsgHead>()
     val loggingMeta = LoggingMeta("", "", "")
+    val unleash: Unleash = mockk(relaxed = true)
 
     fun setUpMocks() {
         every { kafkaApprecProducer.send(any()) } returns
@@ -96,6 +98,7 @@ internal class HandleStatusManualProcessingKtTest {
             kafkaProducerReceviedSykmelding,
             validationResultKafkaProducer,
             manuellOppgaveProducer,
+            unleash
         )
 
         verify(exactly = 0) { kafkaApprecProducer.send(any()) }
@@ -122,6 +125,7 @@ internal class HandleStatusManualProcessingKtTest {
                     kafkaProducerReceviedSykmelding,
                     validationResultKafkaProducer,
                     manuellOppgaveProducer,
+                    unleash
                 )
             }
         }
@@ -144,6 +148,7 @@ internal class HandleStatusManualProcessingKtTest {
                     kafkaProducerReceviedSykmelding,
                     validationResultKafkaProducer,
                     manuellOppgaveProducer,
+                    unleash
                 )
             }
         }
@@ -166,6 +171,7 @@ internal class HandleStatusManualProcessingKtTest {
                     kafkaProducerReceviedSykmelding,
                     validationResultKafkaProducer,
                     manuellOppgaveProducer,
+                    unleash
                 )
             }
         }
@@ -188,6 +194,7 @@ internal class HandleStatusManualProcessingKtTest {
                     kafkaProducerReceviedSykmelding,
                     validationResultKafkaProducer,
                     manuellOppgaveProducer,
+                    unleash
                 )
             }
         }
@@ -210,6 +217,7 @@ internal class HandleStatusManualProcessingKtTest {
                     kafkaProducerReceviedSykmelding,
                     validationResultKafkaProducer,
                     manuellOppgaveProducer,
+                    unleash
                 )
             }
         }
@@ -234,6 +242,7 @@ private fun handleManualProcessing(
     kafkaProducerReceviedSykmelding: KafkaProducer<String, ReceivedSykmeldingWithValidation>,
     validationResultKafkaProducer: KafkaProducer<String, ValidationResult>,
     manuellOppgaveProducer: KafkaProducer<String, ManuellOppgave>,
+    unleash: Unleash
 ) {
     handleStatusMANUALPROCESSING(
         receivedSykmelding,
@@ -253,5 +262,6 @@ private fun handleManualProcessing(
         manuellOppgaveProducer,
         "",
         "",
+        unleash,
     )
 }
