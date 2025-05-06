@@ -1,5 +1,6 @@
 package no.nav.syfo.application
 
+import io.getunleash.Unleash
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import jakarta.jms.Message
@@ -111,6 +112,7 @@ class BlockingApplicationRunner(
     private val inputconsumer: MessageConsumer,
     private val backoutProducer: MessageProducer,
     private val UploadSykmeldingService: UploadSykmeldingService,
+    private val unleash: Unleash,
 ) {
 
     suspend fun run() {
@@ -568,6 +570,7 @@ class BlockingApplicationRunner(
                         receivedSykmelding,
                         loggingMeta,
                     )
+                val tsmProcessingTarget = unleash.isEnabled("SYFOSMMOTTAK_PROCESSING_TARGET")
 
                 when (validationResult.status) {
                     Status.OK ->
@@ -582,6 +585,7 @@ class BlockingApplicationRunner(
                             okSykmeldingTopic = env.okSykmeldingTopic,
                             receivedSykmelding = receivedSykmelding,
                             kafkaproducerreceivedSykmelding = kafkaproducerreceivedSykmelding,
+                            tsmProcessingTarget = tsmProcessingTarget
                         )
                     Status.MANUAL_PROCESSING ->
                         handleStatusMANUALPROCESSING(
@@ -602,6 +606,7 @@ class BlockingApplicationRunner(
                             kafkaproducerManuellOppgave = kafkaproducerManuellOppgave,
                             syfoSmManuellTopic = env.syfoSmManuellTopic,
                             produserOppgaveTopic = env.produserOppgaveTopic,
+                            tsmProcessingTarget = tsmProcessingTarget
                         )
                     Status.INVALID ->
                         handleStatusINVALID(
@@ -618,6 +623,7 @@ class BlockingApplicationRunner(
                             ediLoggId = ediLoggId,
                             msgId = msgId,
                             msgHead = msgHead,
+                            tsmProcessingTarget = tsmProcessingTarget
                         )
                 }
 

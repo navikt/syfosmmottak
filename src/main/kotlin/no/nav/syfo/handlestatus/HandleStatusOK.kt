@@ -28,13 +28,15 @@ fun handleStatusOK(
     okSykmeldingTopic: String,
     receivedSykmelding: ReceivedSykmelding,
     kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmeldingWithValidation>,
+    tsmProcessingTarget: Boolean
 ) {
     sendReceivedSykmelding(
         okSykmeldingTopic,
         receivedSykmelding.toReceivedSykmeldingWithValidation(
             ValidationResult(status = Status.OK, ruleHits = emptyList())
         ),
-        kafkaproducerreceivedSykmelding
+        kafkaproducerreceivedSykmelding,
+        tsmProcessingTarget
     )
 
     val apprec =
