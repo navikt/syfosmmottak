@@ -55,7 +55,7 @@ internal class HandleStatusOKKtTest {
             "topic",
             receivedSykmelding,
             kafkaProducerReceviedSykmelding,
-            unleash
+            false
         )
         verify(exactly = 1) { kafkaProducerReceviedSykmelding.send(any()) }
         verify(exactly = 1) { kafkaApprecProducer.send(any()) }
@@ -81,7 +81,7 @@ internal class HandleStatusOKKtTest {
                     "topic",
                     receivedSykmelding,
                     kafkaProducerReceviedSykmelding,
-                    unleash
+                    false
                 )
             }
         Assertions.assertInstanceOf(RuntimeException::class.java, exception.cause)
@@ -115,7 +115,7 @@ internal class HandleStatusOKKtTest {
                     "topic",
                     receivedSykmelding,
                     kafkaProducerReceviedSykmelding,
-                    unleash
+                    false
                 )
             }
         Assertions.assertInstanceOf(RuntimeException::class.java, exception.cause)

@@ -1,6 +1,5 @@
 package no.nav.syfo.handlestatus
 
-import io.getunleash.Unleash
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -46,7 +45,7 @@ fun handleStatusMANUALPROCESSING(
     kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
     syfoSmManuellTopic: String,
     produserOppgaveTopic: String,
-    unleash: Unleash,
+    tsmProcessingTarget: Boolean,
 ) {
     val sendToSyfosmManuell = sendToSyfosmManuell(ruleHits = validationResult.ruleHits)
 
@@ -92,7 +91,7 @@ fun handleStatusMANUALPROCESSING(
             manuellBehandlingSykmeldingTopic,
             receivedSykmelding.toReceivedSykmeldingWithValidation(validationResult),
             kafkaproducerreceivedSykmelding,
-            unleash
+            tsmProcessingTarget
         )
 
         sendValidationResult(
@@ -101,7 +100,7 @@ fun handleStatusMANUALPROCESSING(
             behandlingsUtfallTopic,
             receivedSykmelding,
             loggingMeta,
-            unleash
+            tsmProcessingTarget
         )
 
         val apprec =

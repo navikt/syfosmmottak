@@ -1,6 +1,5 @@
 package no.nav.syfo.handlestatus
 
-import io.getunleash.Unleash
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.eiFellesformat.XMLMottakenhetBlokk
 import no.nav.helse.msgHead.XMLMsgHead
@@ -29,7 +28,7 @@ fun handleStatusOK(
     okSykmeldingTopic: String,
     receivedSykmelding: ReceivedSykmelding,
     kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmeldingWithValidation>,
-    unleash: Unleash,
+    tsmProcessingTarget: Boolean
 ) {
     sendReceivedSykmelding(
         okSykmeldingTopic,
@@ -37,7 +36,7 @@ fun handleStatusOK(
             ValidationResult(status = Status.OK, ruleHits = emptyList())
         ),
         kafkaproducerreceivedSykmelding,
-        unleash,
+        tsmProcessingTarget
     )
 
     val apprec =

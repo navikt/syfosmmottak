@@ -1,6 +1,5 @@
 package no.nav.syfo.handlestatus
 
-import io.getunleash.Unleash
 import net.logstash.logback.argument.StructuredArguments.fields
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
@@ -44,7 +43,7 @@ fun handleStatusINVALID(
     ediLoggId: String,
     msgId: String,
     msgHead: XMLMsgHead,
-    unleash: Unleash,
+    tsmProcessingTarget: Boolean,
 ) {
     sendValidationResult(
         validationResult,
@@ -52,13 +51,13 @@ fun handleStatusINVALID(
         behandlingsUtfallTopic,
         receivedSykmelding,
         loggingMeta,
-        unleash
+        tsmProcessingTarget
     )
     sendReceivedSykmelding(
         avvistSykmeldingTopic,
         receivedSykmelding.toReceivedSykmeldingWithValidation(validationResult),
         kafkaproducerreceivedSykmelding,
-        unleash
+        tsmProcessingTarget
     )
     val apprec =
         fellesformat.toApprec(

@@ -7,7 +7,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.google.cloud.storage.Storage
 import com.google.cloud.storage.StorageOptions
-import io.getunleash.Unleash
 import io.ktor.http.headers
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
@@ -224,17 +223,17 @@ fun sendValidationResult(
     behandlingsUtfallTopic: String,
     receivedSykmelding: ReceivedSykmelding,
     loggingMeta: LoggingMeta,
-    unleash: Unleash,
+    tsmProcessingTarget: Boolean,
 ) {
     try {
-        val processingTarget = unleash.isEnabled("SYFOSMMOTTAK_PROCESSING_TARGET")
+
         val producerRecord =
             ProducerRecord(
                 behandlingsUtfallTopic,
                 receivedSykmelding.sykmelding.id,
                 validationResult,
             )
-        if (processingTarget) {
+        if (tsmProcessingTarget) {
             producerRecord.headers().add("processing-target", "tsm".toByteArray())
         }
         kafkaproducervalidationResult
@@ -260,7 +259,7 @@ fun sendReceivedSykmelding(
     receivedSykmeldingTopic: String,
     receivedSykmelding: ReceivedSykmeldingWithValidation,
     kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmeldingWithValidation>,
-    unleash: Unleash
+    tsmProcessingTarget: Boolean
 ) {
 
     try {
@@ -269,15 +268,13 @@ fun sendReceivedSykmelding(
             receivedSykmeldingTopic,
             receivedSykmelding.sykmelding.id,
         )
-        val processingTarget = unleash.isEnabled("SYFOSMMOTTAK_PROCESSING_TARGET")
-
         val record =
             ProducerRecord(
                 receivedSykmeldingTopic,
                 receivedSykmelding.sykmelding.id,
                 receivedSykmelding,
             )
-        if (processingTarget) {
+        if (tsmProcessingTarget) {
             record.headers().add("processing-target", "tsm".toByteArray())
         }
         kafkaproducerreceivedSykmelding.send(record).get()
