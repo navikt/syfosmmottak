@@ -52,6 +52,9 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+const val PROCESSING_TARGET_HEADER = "processing-target"
+const val TSM_PROCESSING_TARGET_VALUE = "tsm"
+
 val objectMapper: ObjectMapper =
     ObjectMapper()
         .registerModule(JavaTimeModule())
@@ -234,7 +237,7 @@ fun sendValidationResult(
                 validationResult,
             )
         if (tsmProcessingTarget) {
-            producerRecord.headers().add("processing-target", "tsm".toByteArray())
+            producerRecord.headers().add(PROCESSING_TARGET_HEADER, TSM_PROCESSING_TARGET_VALUE.toByteArray())
         }
         kafkaproducervalidationResult
             .send(
@@ -275,7 +278,7 @@ fun sendReceivedSykmelding(
                 receivedSykmelding,
             )
         if (tsmProcessingTarget) {
-            record.headers().add("processing-target", "tsm".toByteArray())
+            record.headers().add(PROCESSING_TARGET_HEADER, TSM_PROCESSING_TARGET_VALUE.toByteArray())
         }
         kafkaproducerreceivedSykmelding.send(record).get()
         logger.info(
