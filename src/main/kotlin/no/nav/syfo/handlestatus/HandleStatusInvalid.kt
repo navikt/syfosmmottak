@@ -43,7 +43,6 @@ fun handleStatusINVALID(
     ediLoggId: String,
     msgId: String,
     msgHead: XMLMsgHead,
-    tsmProcessingTarget: Boolean,
 ) {
     sendValidationResult(
         validationResult,
@@ -51,13 +50,11 @@ fun handleStatusINVALID(
         behandlingsUtfallTopic,
         receivedSykmelding,
         loggingMeta,
-        tsmProcessingTarget
     )
     sendReceivedSykmelding(
         avvistSykmeldingTopic,
         receivedSykmelding.toReceivedSykmeldingWithValidation(validationResult),
         kafkaproducerreceivedSykmelding,
-        tsmProcessingTarget
     )
     val apprec =
         fellesformat.toApprec(

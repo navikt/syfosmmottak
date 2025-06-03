@@ -45,7 +45,6 @@ fun handleStatusMANUALPROCESSING(
     kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
     syfoSmManuellTopic: String,
     produserOppgaveTopic: String,
-    tsmProcessingTarget: Boolean,
 ) {
     val sendToSyfosmManuell = sendToSyfosmManuell(ruleHits = validationResult.ruleHits)
 
@@ -91,7 +90,6 @@ fun handleStatusMANUALPROCESSING(
             manuellBehandlingSykmeldingTopic,
             receivedSykmelding.toReceivedSykmeldingWithValidation(validationResult),
             kafkaproducerreceivedSykmelding,
-            tsmProcessingTarget
         )
 
         sendValidationResult(
@@ -100,7 +98,6 @@ fun handleStatusMANUALPROCESSING(
             behandlingsUtfallTopic,
             receivedSykmelding,
             loggingMeta,
-            tsmProcessingTarget
         )
 
         val apprec =

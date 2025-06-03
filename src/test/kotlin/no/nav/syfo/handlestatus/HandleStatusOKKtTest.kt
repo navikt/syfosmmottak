@@ -1,6 +1,5 @@
 package no.nav.syfo.handlestatus
 
-import io.getunleash.Unleash
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
@@ -35,7 +34,6 @@ internal class HandleStatusOKKtTest {
     val fellesformat =
         fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
     val msgHead = fellesformat.get<XMLMsgHead>()
-    val unleash = mockk<Unleash>(relaxed = true)
 
     @BeforeEach
     internal fun `Set up`() {
@@ -55,7 +53,6 @@ internal class HandleStatusOKKtTest {
             "topic",
             receivedSykmelding,
             kafkaProducerReceviedSykmelding,
-            false
         )
         verify(exactly = 1) { kafkaProducerReceviedSykmelding.send(any()) }
         verify(exactly = 1) { kafkaApprecProducer.send(any()) }
@@ -81,7 +78,6 @@ internal class HandleStatusOKKtTest {
                     "topic",
                     receivedSykmelding,
                     kafkaProducerReceviedSykmelding,
-                    false
                 )
             }
         Assertions.assertInstanceOf(RuntimeException::class.java, exception.cause)
@@ -115,7 +111,6 @@ internal class HandleStatusOKKtTest {
                     "topic",
                     receivedSykmelding,
                     kafkaProducerReceviedSykmelding,
-                    false
                 )
             }
         Assertions.assertInstanceOf(RuntimeException::class.java, exception.cause)

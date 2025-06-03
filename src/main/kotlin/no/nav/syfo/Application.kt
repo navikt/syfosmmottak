@@ -7,10 +7,9 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.google.cloud.storage.Storage
 import com.google.cloud.storage.StorageOptions
-import io.ktor.http.headers
-import io.ktor.server.application.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
+import io.ktor.server.application.Application
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.netty.Netty
 import io.prometheus.client.hotspot.DefaultExports
 import jakarta.jms.Session
 import kotlinx.coroutines.CoroutineScope
@@ -43,7 +42,6 @@ import no.nav.syfo.plugins.configureRouting
 import no.nav.syfo.service.DuplicationService
 import no.nav.syfo.service.UploadSykmeldingService
 import no.nav.syfo.service.VirusScanService
-import no.nav.syfo.unleash.getUnleash
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.TrackableException
 import no.nav.syfo.vedlegg.google.BucketUploadService
@@ -195,7 +193,6 @@ fun launchListeners(
                         inputconsumer,
                         backoutProducer,
                         uploadSykmeldingService,
-                        getUnleash()
                     )
                     .run()
             }
@@ -226,7 +223,6 @@ fun sendValidationResult(
     behandlingsUtfallTopic: String,
     receivedSykmelding: ReceivedSykmelding,
     loggingMeta: LoggingMeta,
-    tsmProcessingTarget: Boolean,
 ) {
     try {
 
@@ -236,9 +232,11 @@ fun sendValidationResult(
                 receivedSykmelding.sykmelding.id,
                 validationResult,
             )
-        if (tsmProcessingTarget) {
-            producerRecord.headers().add(PROCESSING_TARGET_HEADER, TSM_PROCESSING_TARGET_VALUE.toByteArray())
-        }
+
+        producerRecord
+            .headers()
+            .add(PROCESSING_TARGET_HEADER, TSM_PROCESSING_TARGET_VALUE.toByteArray())
+
         kafkaproducervalidationResult
             .send(
                 producerRecord,
@@ -262,7 +260,6 @@ fun sendReceivedSykmelding(
     receivedSykmeldingTopic: String,
     receivedSykmelding: ReceivedSykmeldingWithValidation,
     kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmeldingWithValidation>,
-    tsmProcessingTarget: Boolean
 ) {
 
     try {
@@ -277,9 +274,9 @@ fun sendReceivedSykmelding(
                 receivedSykmelding.sykmelding.id,
                 receivedSykmelding,
             )
-        if (tsmProcessingTarget) {
-            record.headers().add(PROCESSING_TARGET_HEADER, TSM_PROCESSING_TARGET_VALUE.toByteArray())
-        }
+
+        record.headers().add(PROCESSING_TARGET_HEADER, TSM_PROCESSING_TARGET_VALUE.toByteArray())
+
         kafkaproducerreceivedSykmelding.send(record).get()
         logger.info(
             "Sykmelding sendt to kafka topic {} sykmelding id {}",
