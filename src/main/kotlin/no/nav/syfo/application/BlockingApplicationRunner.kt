@@ -52,7 +52,6 @@ import no.nav.syfo.model.OpprettOppgaveKafkaMessage
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ReceivedSykmeldingWithValidation
 import no.nav.syfo.model.Status
-import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.model.toAvsenderSystem
 import no.nav.syfo.model.toSykmelding
 import no.nav.syfo.pdl.service.PdlPersonService
@@ -101,7 +100,6 @@ class BlockingApplicationRunner(
     private val bucketUploadService: BucketUploadService,
     private val kafkaproducerreceivedSykmelding:
         KafkaProducer<String, ReceivedSykmeldingWithValidation>,
-    private val kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
     private val kafkaManuelTaskProducer: KafkaProducer<String, OpprettOppgaveKafkaMessage>,
     private val kafkaproducerApprec: KafkaProducer<String, Apprec>,
     private val kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
@@ -597,8 +595,6 @@ class BlockingApplicationRunner(
                             kafkaManuelTaskProducer = kafkaManuelTaskProducer,
                             kafkaproducerreceivedSykmelding = kafkaproducerreceivedSykmelding,
                             manuellBehandlingSykmeldingTopic = env.manuellBehandlingSykmeldingTopic,
-                            kafkaproducervalidationResult = kafkaproducervalidationResult,
-                            behandlingsUtfallTopic = env.behandlingsUtfallTopic,
                             kafkaproducerManuellOppgave = kafkaproducerManuellOppgave,
                             syfoSmManuellTopic = env.syfoSmManuellTopic,
                             produserOppgaveTopic = env.produserOppgaveTopic,
@@ -607,13 +603,11 @@ class BlockingApplicationRunner(
                         handleStatusINVALID(
                             validationResult = validationResult,
                             kafkaproducerreceivedSykmelding = kafkaproducerreceivedSykmelding,
-                            kafkaproducervalidationResult = kafkaproducervalidationResult,
                             avvistSykmeldingTopic = env.avvistSykmeldingTopic,
                             receivedSykmelding = receivedSykmelding,
                             loggingMeta = loggingMeta,
                             fellesformat = fellesformat,
                             apprecTopic = env.apprecTopic,
-                            behandlingsUtfallTopic = env.behandlingsUtfallTopic,
                             kafkaproducerApprec = kafkaproducerApprec,
                             ediLoggId = ediLoggId,
                             msgId = msgId,

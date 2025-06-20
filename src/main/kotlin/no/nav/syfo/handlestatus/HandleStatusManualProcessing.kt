@@ -21,7 +21,6 @@ import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.model.toReceivedSykmeldingWithValidation
 import no.nav.syfo.sendReceipt
 import no.nav.syfo.sendReceivedSykmelding
-import no.nav.syfo.sendValidationResult
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.get
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -40,8 +39,6 @@ fun handleStatusMANUALPROCESSING(
     kafkaManuelTaskProducer: KafkaProducer<String, OpprettOppgaveKafkaMessage>,
     kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmeldingWithValidation>,
     manuellBehandlingSykmeldingTopic: String,
-    kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
-    behandlingsUtfallTopic: String,
     kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
     syfoSmManuellTopic: String,
     produserOppgaveTopic: String,
@@ -90,14 +87,6 @@ fun handleStatusMANUALPROCESSING(
             manuellBehandlingSykmeldingTopic,
             receivedSykmelding.toReceivedSykmeldingWithValidation(validationResult),
             kafkaproducerreceivedSykmelding,
-        )
-
-        sendValidationResult(
-            validationResult,
-            kafkaproducervalidationResult,
-            behandlingsUtfallTopic,
-            receivedSykmelding,
-            loggingMeta,
         )
 
         val apprec =

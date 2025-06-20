@@ -34,7 +34,6 @@ internal class HandleStatusManualProcessingKtTest {
     val kafkaProducerReceviedSykmelding =
         mockk<KafkaProducer<String, ReceivedSykmeldingWithValidation>>(relaxed = true)
     val kafkaManualTaskProducer = mockk<KafkaProducer<String, OpprettOppgaveKafkaMessage>>()
-    val validationResultKafkaProducer = mockk<KafkaProducer<String, ValidationResult>>()
     val manuellOppgaveProducer = mockk<KafkaProducer<String, ManuellOppgave>>()
     val validationResult = ValidationResult(Status.MANUAL_PROCESSING, emptyList())
     val validationResultIkkeManuell =
@@ -62,12 +61,6 @@ internal class HandleStatusManualProcessingKtTest {
             CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
         every { manuellOppgaveProducer.send(any()) } returns
             CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
-        every { validationResultKafkaProducer.send(any()) } returns
-            CompletableFuture<RecordMetadata>().apply {
-                complete(
-                    mockk(),
-                )
-            }
         every { kafkaProducerReceviedSykmelding.send(any()) } returns
             CompletableFuture<RecordMetadata>().apply {
                 complete(
@@ -94,14 +87,12 @@ internal class HandleStatusManualProcessingKtTest {
             validationResult,
             kafkaManualTaskProducer,
             kafkaProducerReceviedSykmelding,
-            validationResultKafkaProducer,
             manuellOppgaveProducer,
         )
 
         verify(exactly = 0) { kafkaApprecProducer.send(any()) }
         verify(exactly = 0) { kafkaManualTaskProducer.send(any()) }
         verify(exactly = 1) { manuellOppgaveProducer.send(any()) }
-        verify(exactly = 0) { validationResultKafkaProducer.send(any()) }
         verify(exactly = 0) { kafkaProducerReceviedSykmelding.send(any()) }
     }
 
@@ -120,7 +111,6 @@ internal class HandleStatusManualProcessingKtTest {
                     validationResult,
                     kafkaManualTaskProducer,
                     kafkaProducerReceviedSykmelding,
-                    validationResultKafkaProducer,
                     manuellOppgaveProducer,
                 )
             }
@@ -142,29 +132,6 @@ internal class HandleStatusManualProcessingKtTest {
                     validationResultIkkeManuell,
                     kafkaManualTaskProducer,
                     kafkaProducerReceviedSykmelding,
-                    validationResultKafkaProducer,
-                    manuellOppgaveProducer,
-                )
-            }
-        }
-    }
-
-    @Test
-    internal fun `Should throw exeption when sending validationResults fails`() {
-        setUpMocks()
-        every { validationResultKafkaProducer.send(any()) } returns getFailingFuture()
-        assertThrows<ExecutionException> {
-            runBlocking {
-                handleManualProcessing(
-                    receivedSykmelding,
-                    loggingMeta,
-                    fellesformat,
-                    msgHead,
-                    kafkaApprecProducer,
-                    validationResultIkkeManuell,
-                    kafkaManualTaskProducer,
-                    kafkaProducerReceviedSykmelding,
-                    validationResultKafkaProducer,
                     manuellOppgaveProducer,
                 )
             }
@@ -186,7 +153,6 @@ internal class HandleStatusManualProcessingKtTest {
                     validationResultIkkeManuell,
                     kafkaManualTaskProducer,
                     kafkaProducerReceviedSykmelding,
-                    validationResultKafkaProducer,
                     manuellOppgaveProducer,
                 )
             }
@@ -208,7 +174,6 @@ internal class HandleStatusManualProcessingKtTest {
                     validationResultIkkeManuell,
                     kafkaManualTaskProducer,
                     kafkaProducerReceviedSykmelding,
-                    validationResultKafkaProducer,
                     manuellOppgaveProducer,
                 )
             }
@@ -232,7 +197,6 @@ private fun handleManualProcessing(
     validationResutl: ValidationResult,
     kafkaManualTaskProducer: KafkaProducer<String, OpprettOppgaveKafkaMessage>,
     kafkaProducerReceviedSykmelding: KafkaProducer<String, ReceivedSykmeldingWithValidation>,
-    validationResultKafkaProducer: KafkaProducer<String, ValidationResult>,
     manuellOppgaveProducer: KafkaProducer<String, ManuellOppgave>,
 ) {
     handleStatusMANUALPROCESSING(
@@ -247,8 +211,6 @@ private fun handleManualProcessing(
         validationResutl,
         kafkaManualTaskProducer,
         kafkaProducerReceviedSykmelding,
-        "",
-        validationResultKafkaProducer,
         "",
         manuellOppgaveProducer,
         "",

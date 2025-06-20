@@ -23,7 +23,6 @@ import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.model.toReceivedSykmeldingWithValidation
 import no.nav.syfo.sendReceipt
 import no.nav.syfo.sendReceivedSykmelding
-import no.nav.syfo.sendValidationResult
 import no.nav.syfo.service.DuplicationService
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.get
@@ -32,25 +31,16 @@ import org.apache.kafka.clients.producer.KafkaProducer
 fun handleStatusINVALID(
     validationResult: ValidationResult,
     kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmeldingWithValidation>,
-    kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
     avvistSykmeldingTopic: String,
     receivedSykmelding: ReceivedSykmelding,
     loggingMeta: LoggingMeta,
     fellesformat: XMLEIFellesformat,
     apprecTopic: String,
-    behandlingsUtfallTopic: String,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     ediLoggId: String,
     msgId: String,
     msgHead: XMLMsgHead,
 ) {
-    sendValidationResult(
-        validationResult,
-        kafkaproducervalidationResult,
-        behandlingsUtfallTopic,
-        receivedSykmelding,
-        loggingMeta,
-    )
     sendReceivedSykmelding(
         avvistSykmeldingTopic,
         receivedSykmelding.toReceivedSykmeldingWithValidation(validationResult),

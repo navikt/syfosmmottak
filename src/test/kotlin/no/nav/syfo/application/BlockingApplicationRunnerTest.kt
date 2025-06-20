@@ -48,8 +48,6 @@ internal class BlockingApplicationRunnerTest {
     val bucketUploadService = mockk<BucketUploadService>(relaxed = true)
     val kafkaproducerreceivedSykmelding =
         mockk<KafkaProducer<String, ReceivedSykmeldingWithValidation>>(relaxed = true)
-    val kafkaproducervalidationResult =
-        mockk<KafkaProducer<String, ValidationResult>>(relaxed = true)
     val kafkaManuelTaskProducer =
         mockk<KafkaProducer<String, OpprettOppgaveKafkaMessage>>(relaxed = true)
     val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
@@ -68,7 +66,6 @@ internal class BlockingApplicationRunnerTest {
             pdlPersonService,
             bucketUploadService,
             kafkaproducerreceivedSykmelding,
-            kafkaproducervalidationResult,
             kafkaManuelTaskProducer,
             kafkaproducerApprec,
             kafkaproducerManuellOppgave,

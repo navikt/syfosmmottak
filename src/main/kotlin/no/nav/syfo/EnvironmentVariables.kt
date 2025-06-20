@@ -13,7 +13,6 @@ data class EnvironmentVariables(
     val okSykmeldingTopic: String = "teamsykmelding.ok-sykmelding",
     val manuellBehandlingSykmeldingTopic: String = "teamsykmelding.manuell-behandling-sykmelding",
     val avvistSykmeldingTopic: String = "teamsykmelding.avvist-sykmelding",
-    val behandlingsUtfallTopic: String = "teamsykmelding.sykmelding-behandlingsutfall",
     val apprecTopic: String = "teamsykmelding.sykmelding-apprec",
     val produserOppgaveTopic: String = "teamsykmelding.oppgave-produser-oppgave",
     override val mqHostname: String = getEnvVar("MQ_HOST_NAME"),

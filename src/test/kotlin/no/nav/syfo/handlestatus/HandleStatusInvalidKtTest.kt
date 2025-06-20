@@ -29,7 +29,6 @@ internal class HandleStatusInvalidKtTest {
     val receivedSykmelding = mockk<ReceivedSykmelding>(relaxed = true)
     val kafkaProducerReceviedSykmelding =
         mockk<KafkaProducer<String, ReceivedSykmeldingWithValidation>>(relaxed = true)
-    val validationResultKafkaProducer = mockk<KafkaProducer<String, ValidationResult>>()
     val validationResult = ValidationResult(Status.INVALID, emptyList())
     val stringInput = getFileAsString("src/test/resources/sykemelding2013Regelsettversjon2.xml")
     val fellesformat =
@@ -38,8 +37,6 @@ internal class HandleStatusInvalidKtTest {
 
     fun setUpMocks() {
         every { kafkaApprecProducer.send(any()) } returns
-            CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
-        every { validationResultKafkaProducer.send(any()) } returns
             CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
         every { kafkaProducerReceviedSykmelding.send(any()) } returns
             CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
@@ -56,7 +53,6 @@ internal class HandleStatusInvalidKtTest {
         handleStatusInvalid(
             validationResult,
             kafkaProducerReceviedSykmelding,
-            validationResultKafkaProducer,
             receivedSykmelding,
             fellesformat,
             kafkaApprecProducer,
@@ -64,7 +60,6 @@ internal class HandleStatusInvalidKtTest {
         )
 
         verify(exactly = 1) { kafkaApprecProducer.send(any()) }
-        verify(exactly = 1) { validationResultKafkaProducer.send(any()) }
         verify(exactly = 1) { kafkaProducerReceviedSykmelding.send(any()) }
     }
 
@@ -77,24 +72,6 @@ internal class HandleStatusInvalidKtTest {
             handleStatusInvalid(
                 validationResult,
                 kafkaProducerReceviedSykmelding,
-                validationResultKafkaProducer,
-                receivedSykmelding,
-                fellesformat,
-                kafkaApprecProducer,
-                msgHead,
-            )
-        }
-    }
-
-    @Test
-    internal fun `Should fail when validationResultProducer fails`() {
-        setUpMocks()
-        every { validationResultKafkaProducer.send(any()) } returns getFailingFuture()
-        assertThrows<ExecutionException> {
-            handleStatusInvalid(
-                validationResult,
-                kafkaProducerReceviedSykmelding,
-                validationResultKafkaProducer,
                 receivedSykmelding,
                 fellesformat,
                 kafkaApprecProducer,
@@ -111,7 +88,6 @@ internal class HandleStatusInvalidKtTest {
             handleStatusInvalid(
                 validationResult,
                 kafkaProducerReceviedSykmelding,
-                validationResultKafkaProducer,
                 receivedSykmelding,
                 fellesformat,
                 kafkaApprecProducer,
@@ -128,7 +104,6 @@ internal class HandleStatusInvalidKtTest {
             handleStatusInvalid(
                 validationResult,
                 kafkaProducerReceviedSykmelding,
-                validationResultKafkaProducer,
                 receivedSykmelding,
                 fellesformat,
                 kafkaApprecProducer,
@@ -141,7 +116,6 @@ internal class HandleStatusInvalidKtTest {
 private fun handleStatusInvalid(
     validationResult: ValidationResult,
     kafkaProducerReceviedSykmelding: KafkaProducer<String, ReceivedSykmeldingWithValidation>,
-    validationResultKafkaProducer: KafkaProducer<String, ValidationResult>,
     receivedSykmelding: ReceivedSykmelding,
     fellesformat: XMLEIFellesformat,
     kafkaApprecProducer: KafkaProducer<String, Apprec>,
@@ -150,12 +124,10 @@ private fun handleStatusInvalid(
     handleStatusINVALID(
         validationResult,
         kafkaProducerReceviedSykmelding,
-        validationResultKafkaProducer,
         "",
         receivedSykmelding,
         LoggingMeta("", "", ""),
         fellesformat,
-        "",
         "",
         kafkaApprecProducer,
         "",

@@ -29,9 +29,7 @@ import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.db.Database
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.OpprettOppgaveKafkaMessage
-import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ReceivedSykmeldingWithValidation
-import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.mq.MqTlsUtils
 import no.nav.syfo.mq.connectionFactory
 import no.nav.syfo.mq.consumerForQueue
@@ -107,7 +105,6 @@ fun Application.module() {
         applicationState,
         httpClients.emottakSubscriptionClient,
         kafkaClients.kafkaProducerReceivedSykmelding,
-        kafkaClients.kafkaProducerValidationResult,
         httpClients.syfoSykemeldingRuleClient,
         httpClients.pdlPersonService,
         applicationServiceUser,
@@ -149,7 +146,6 @@ fun launchListeners(
     applicationState: ApplicationState,
     emottakSubscriptionClient: EmottakSubscriptionClient,
     kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmeldingWithValidation>,
-    kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
     syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
     pdlPersonService: PdlPersonService,
     serviceUser: ApplicationServiceUser,
@@ -183,7 +179,6 @@ fun launchListeners(
                         pdlPersonService,
                         bucketUploadService,
                         kafkaproducerreceivedSykmelding,
-                        kafkaproducervalidationResult,
                         kafkaManuelTaskProducer,
                         kafkaproducerApprec,
                         kafkaproducerManuellOppgave,
@@ -213,45 +208,6 @@ fun sendReceipt(
         )
     } catch (ex: Exception) {
         logger.error("failed to send apprec to kafka {}", StructuredArguments.fields(loggingMeta))
-        throw ex
-    }
-}
-
-fun sendValidationResult(
-    validationResult: ValidationResult,
-    kafkaproducervalidationResult: KafkaProducer<String, ValidationResult>,
-    behandlingsUtfallTopic: String,
-    receivedSykmelding: ReceivedSykmelding,
-    loggingMeta: LoggingMeta,
-) {
-    try {
-
-        val producerRecord =
-            ProducerRecord(
-                behandlingsUtfallTopic,
-                receivedSykmelding.sykmelding.id,
-                validationResult,
-            )
-
-        producerRecord
-            .headers()
-            .add(PROCESSING_TARGET_HEADER, TSM_PROCESSING_TARGET_VALUE.toByteArray())
-
-        kafkaproducervalidationResult
-            .send(
-                producerRecord,
-            )
-            .get()
-        logger.info(
-            "Validation results send to kafka {}, {}",
-            behandlingsUtfallTopic,
-            StructuredArguments.fields(loggingMeta),
-        )
-    } catch (ex: Exception) {
-        logger.error(
-            "failed to send validation result for sykmelding {}",
-            receivedSykmelding.sykmelding.id,
-        )
         throw ex
     }
 }
