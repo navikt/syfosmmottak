@@ -48,8 +48,10 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-const val PROCESSING_TARGET_HEADER = "processing-target"
-const val TSM_PROCESSING_TARGET_VALUE = "tsm"
+const val SOURCE_NAMESPACE_HEADER = "source-namespace"
+const val SOURCE_APP_HEADER = "source-app"
+const val SOURCE_APP = "syfosmmottak"
+const val SOURCE_NAMESPACE = "teamsykmelding"
 
 val objectMapper: ObjectMapper =
     ObjectMapper()
@@ -231,7 +233,8 @@ fun sendReceivedSykmelding(
                 receivedSykmelding,
             )
 
-        record.headers().add(PROCESSING_TARGET_HEADER, TSM_PROCESSING_TARGET_VALUE.toByteArray())
+        record.headers().add(SOURCE_NAMESPACE_HEADER, SOURCE_NAMESPACE.toByteArray())
+        record.headers().add(SOURCE_APP_HEADER, SOURCE_APP.toByteArray())
 
         kafkaproducerreceivedSykmelding.send(record).get()
         logger.info(

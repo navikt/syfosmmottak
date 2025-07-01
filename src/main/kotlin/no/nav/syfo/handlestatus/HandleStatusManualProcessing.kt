@@ -7,6 +7,10 @@ import net.logstash.logback.argument.StructuredArguments
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.eiFellesformat.XMLMottakenhetBlokk
 import no.nav.helse.msgHead.XMLMsgHead
+import no.nav.syfo.SOURCE_APP
+import no.nav.syfo.SOURCE_APP_HEADER
+import no.nav.syfo.SOURCE_NAMESPACE
+import no.nav.syfo.SOURCE_NAMESPACE_HEADER
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.apprec.ApprecStatus
 import no.nav.syfo.apprec.toApprec
@@ -201,11 +205,11 @@ fun sendManuellTask(
                 validationResult,
                 apprec,
             )
-        kafkaproducerManuellOppgave
-            .send(
-                ProducerRecord(syfoSmManuellTopic, receivedSykmelding.sykmelding.id, manuellOppgave)
-            )
-            .get()
+        val record =
+            ProducerRecord(syfoSmManuellTopic, receivedSykmelding.sykmelding.id, manuellOppgave)
+        record.headers().add(SOURCE_NAMESPACE_HEADER, SOURCE_NAMESPACE.toByteArray())
+        record.headers().add(SOURCE_APP_HEADER, SOURCE_APP.toByteArray())
+        kafkaproducerManuellOppgave.send(record).get()
     } catch (ex: Exception) {
         logger.error(
             "Failed to send manuell oppgave for sykmelding {} to kafka",
