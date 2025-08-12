@@ -23,10 +23,10 @@ val jaxbRuntimeVersion = "2.4.0-b180830.0438"
 val javaTimeAdapterVersion = "1.1.3"
 val mockkVersion = "1.14.5"
 val kotlinVersion = "2.2.0"
-val googleCloudStorageVersion = "2.54.0"
+val googleCloudStorageVersion = "2.55.0"
 val junitJupiterVersion = "5.13.4"
-val flywayVersion = "11.10.5"
-val hikariVersion = "7.0.0"
+val flywayVersion = "11.11.0"
+val hikariVersion = "7.0.1"
 val postgresVersion = "42.7.7"
 val embeddedPostgresVersion = "2.1.0"
 val ktfmtVersion = "0.44"
@@ -42,7 +42,7 @@ plugins {
     id("application")
     kotlin("jvm") version "2.2.0"
     id("com.diffplug.spotless") version "7.2.1"
-    id("com.gradleup.shadow") version "8.3.9"
+    id("com.gradleup.shadow") version "9.0.1"
 }
 
 application {
