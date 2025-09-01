@@ -21,24 +21,31 @@ fun extractOrganisationRashNumberFromSender(fellesformat: XMLEIFellesformat): XM
 fun extractOrganisationHerNumberFromSender(fellesformat: XMLEIFellesformat): XMLIdent? =
     fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.ident.find { it.typeId.v == "HER" }
 
-fun extractHpr(fellesformat: XMLEIFellesformat): XMLIdent? =
-    fellesformat.get<XMLMsgHead>().msgInfo.sender.organisation.healthcareProfessional?.ident?.find {
-        it.typeId.v == "HPR"
-    }
+fun extractHprOrganization(fellesformat: XMLEIFellesformat): String? =
+    fellesformat
+        .get<XMLMsgHead>()
+        .msgInfo
+        .sender
+        .organisation
+        .healthcareProfessional
+        ?.ident
+        ?.find { it.typeId.v == "HPR" }
+        ?.id
+        ?.let { padHpr(it.trim()) }
 
 fun extractFnrDnrFraBehandler(healthInformation: HelseOpplysningerArbeidsuforhet): String? =
     healthInformation.behandler.id.find { it.typeId.v == "FNR" || it.typeId.v == "DNR" }?.id
 
 fun extractHprBehandler(healthInformation: HelseOpplysningerArbeidsuforhet): String? =
-    healthInformation.behandler.id.find { it.typeId.v == "HPR" }?.id
+    healthInformation.behandler.id.find { it.typeId.v == "HPR" }?.id?.let { padHpr(it.trim()) }
 
 fun extractTlfFromKontaktInfo(kontaktInfo: List<TeleCom>): String? {
 
     val phoneNumber =
         kontaktInfo
-            ?.find {
+            .find {
                 it.teleAddress?.v?.contains("tel:") == true &&
-                    (it?.typeTelecom
+                    (it.typeTelecom
                         ?.v
                         ?.contains(
                             "HP",
@@ -50,18 +57,12 @@ fun extractTlfFromKontaktInfo(kontaktInfo: List<TeleCom>): String? {
 
     val email =
         kontaktInfo
-            ?.find { it.teleAddress?.v?.contains("mailto:") == true }
+            .find { it.teleAddress?.v?.contains("mailto:") == true }
             ?.teleAddress
             ?.v
             ?.removePrefix("mailto:")
 
-    return if (phoneNumber != null) {
-        phoneNumber
-    } else if (email != null) {
-        email
-    } else {
-        kontaktInfo?.firstOrNull()?.teleAddress?.v
-    }
+    return phoneNumber ?: (email ?: kontaktInfo.firstOrNull()?.teleAddress?.v)
 }
 
 fun padHpr(hprnummer: String?): String? {

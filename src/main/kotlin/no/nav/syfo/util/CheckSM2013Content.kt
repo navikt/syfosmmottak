@@ -30,7 +30,7 @@ import org.apache.kafka.clients.producer.KafkaProducer
 
 fun checkSM2013Content(
     pasient: PdlPerson?,
-    behandler: PdlPerson?,
+    signerendeBehandler: PdlPerson?,
     healthInformation: HelseOpplysningerArbeidsuforhet,
     originaltPasientFnr: String,
     loggingMeta: LoggingMeta,
@@ -58,7 +58,7 @@ fun checkSM2013Content(
         return true
     }
 
-    if (behandler?.aktorId == null) {
+    if (signerendeBehandler?.aktorId == null) {
         handleDoctorNotFoundInPDL(
             loggingMeta,
             fellesformat,

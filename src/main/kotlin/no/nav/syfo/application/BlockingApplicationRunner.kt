@@ -20,6 +20,7 @@ import net.logstash.logback.argument.StructuredArguments
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.eiFellesformat.XMLMottakenhetBlokk
 import no.nav.helse.msgHead.XMLMsgHead
+import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 import no.nav.syfo.ApplicationState
 import no.nav.syfo.EnvironmentVariables
 import no.nav.syfo.apprec.Apprec
@@ -62,11 +63,10 @@ import no.nav.syfo.service.fileSizeLagerThan300MegaBytes
 import no.nav.syfo.service.sha256hashstring
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.checkSM2013Content
-import no.nav.syfo.util.countNewDiagnoseCode
 import no.nav.syfo.util.extractFnrDnrFraBehandler
 import no.nav.syfo.util.extractHelseOpplysningerArbeidsuforhet
-import no.nav.syfo.util.extractHpr
 import no.nav.syfo.util.extractHprBehandler
+import no.nav.syfo.util.extractHprOrganization
 import no.nav.syfo.util.extractOrganisationHerNumberFromSender
 import no.nav.syfo.util.extractOrganisationNumberFromSender
 import no.nav.syfo.util.extractOrganisationRashNumberFromSender
@@ -235,14 +235,14 @@ class BlockingApplicationRunner(
                 )
             }
 
-            val signaturFnr =
+            val signerendeBehandler: Behandler? =
                 if (erVirksomhetSykmelding) {
                     logger.info(
                         "Mottatt virksomhetssykmelding, {}",
                         StructuredArguments.fields(loggingMeta),
                     )
                     VIRKSOMHETSYKMELDING.inc()
-                    val hpr = extractHpr(fellesformat)?.id
+                    val hpr = extractHprOrganization(fellesformat)
                     if (hpr == null) {
                         handleVirksomhetssykmeldingOgHprMangler(
                             loggingMeta,
@@ -260,11 +260,12 @@ class BlockingApplicationRunner(
 
                     val formatedHpr = padHpr(hpr.trim())!!
 
-                    val fnr =
-                        norskHelsenettClient
-                            .getByHpr(hprNummer = formatedHpr, loggingMeta = loggingMeta)
-                            ?.fnr
-                    if (fnr == null) {
+                    val behandler =
+                        norskHelsenettClient.getByHpr(
+                            hprNummer = formatedHpr,
+                            loggingMeta = loggingMeta
+                        )
+                    if (behandler?.fnr == null) {
                         handleVirksomhetssykmeldingOgFnrManglerIHPR(
                             loggingMeta,
                             fellesformat,
@@ -278,21 +279,27 @@ class BlockingApplicationRunner(
                         )
                         return
                     } else {
-                        fnr
+                        behandler
                     }
                 } else {
-                    receiverBlock.avsenderFnrFraDigSignatur
+                    norskHelsenettClient.getByFnr(
+                        receiverBlock.avsenderFnrFraDigSignatur,
+                        loggingMeta = loggingMeta
+                    )
                 }
+            requireNotNull(signerendeBehandler) {
+                "Signerende behandler er null, should not happen! ${loggingMeta}"
+            }
 
             val identer =
                 pdlPersonService.getIdenter(
-                    listOf(signaturFnr, originaltPasientFnr),
+                    listOf(signerendeBehandler.fnr, originaltPasientFnr),
                     loggingMeta,
                 )
 
             val tssIdEmottak =
                 smtssClient.findBestTssIdEmottak(
-                    signaturFnr,
+                    signerendeBehandler.fnr,
                     legekontorOrgName,
                     loggingMeta,
                     sykmeldingId,
@@ -303,7 +310,7 @@ class BlockingApplicationRunner(
                     tssIdEmottak
                 } else {
                     smtssClient.findBestTssInfotrygdId(
-                        signaturFnr,
+                        signerendeBehandler.fnr,
                         legekontorOrgName,
                         loggingMeta,
                         sykmeldingId,
@@ -359,12 +366,12 @@ class BlockingApplicationRunner(
                 return
             } else {
                 val pasient = identer[originaltPasientFnr]
-                val behandler = identer[signaturFnr]
+                val signerende = identer[signerendeBehandler.fnr]
 
                 if (
                     checkSM2013Content(
                         pasient,
-                        behandler,
+                        signerende,
                         healthInformation,
                         originaltPasientFnr,
                         loggingMeta,
@@ -381,54 +388,32 @@ class BlockingApplicationRunner(
                     return
                 }
 
-                val signerendeBehandler =
-                    norskHelsenettClient.getByFnr(
-                        fnr = signaturFnr,
-                        loggingMeta = loggingMeta,
-                    )
+                requireNotNull(pasient?.fnr) {
+                    "Pasient not in PDL, should not happen! $loggingMeta"
+                }
+                requireNotNull(pasient.aktorId) {
+                    "Pasient not in PDL, should not happen! $loggingMeta"
+                }
+                requireNotNull(signerende?.fnr) {
+                    "Signerende behandler not in PDL, should not happen! $loggingMeta"
+                }
+                requireNotNull(signerende.aktorId) {
+                    "Signerende behandler not in PDL, should not happen! $loggingMeta"
+                }
 
                 val behandlenedeBehandler =
-                    if (
-                        extractFnrDnrFraBehandler(healthInformation) != null ||
-                            padHpr(extractHpr(fellesformat)?.id?.trim()) != null ||
-                            padHpr(extractHprBehandler(healthInformation)?.trim()) != null
-                    ) {
-                        getBehandlenedeBehandler(
-                            padHpr(extractHprBehandler(healthInformation)?.trim()),
-                            padHpr(extractHpr(fellesformat)?.id?.trim()),
-                            padHpr(extractFnrDnrFraBehandler(healthInformation)?.trim()),
-                            loggingMeta,
-                        )
-                    } else {
-                        null
-                    }
-
-                val behandlenedeBehandlerFnr =
-                    extractFnrDnrFraBehandler(healthInformation)
-                        ?: getBehandlerFnr(
-                            avsenderHpr = padHpr(extractHpr(fellesformat)?.id?.trim()),
-                            signerendeBehandler = signerendeBehandler,
-                            behandlenedeBehandler = behandlenedeBehandler,
-                        )
-                            ?: signaturFnr
-
-                val behandlenedeBehandlerhprNummer =
-                    padHpr(extractHpr(fellesformat)?.id?.trim())
-                        ?: getBehandlerHprNr(
-                            behandlerHpr = padHpr(extractHprBehandler(healthInformation)?.trim()),
-                            avsenderHpr = padHpr(extractHpr(fellesformat)?.id?.trim()),
-                            behandlenedeBehandler = behandlenedeBehandler,
-                        )
+                    getBehandlenedeBehandler(healthInformation, fellesformat, loggingMeta)
 
                 val sykmelding =
                     healthInformation.toSykmelding(
                         sykmeldingId = sykmeldingId,
-                        pasientAktoerId = pasient?.aktorId!!,
-                        legeAktoerId = behandler?.aktorId!!,
+                        pasientAktoerId = pasient.aktorId,
+                        legeAktoerId = signerende.aktorId,
                         msgId = msgId,
                         signaturDato = getLocalDateTime(msgHead.msgInfo.genDate),
-                        behandlerFnr = behandlenedeBehandlerFnr,
-                        behandlerHprNr = behandlenedeBehandlerhprNummer,
+                        behandlerFnr = behandlenedeBehandler?.fnr ?: signerende.fnr,
+                        behandlerHprNr = behandlenedeBehandler?.hprNummer
+                                ?: signerendeBehandler.hprNummer,
                     )
                 if (originaltPasientFnr != pasient.fnr) {
                     logger.info(
@@ -503,12 +488,12 @@ class BlockingApplicationRunner(
                         bucketUploadService.lastOppVedlegg(
                             vedlegg = vedlegg,
                             msgId = msgId,
-                            personNrPasient = pasient.fnr!!,
+                            personNrPasient = pasient.fnr,
                             behandlerInfo =
                                 BehandlerInfo(
                                     fornavn = sykmelding.behandler.fornavn,
                                     etternavn = sykmelding.behandler.etternavn,
-                                    fnr = signaturFnr,
+                                    fnr = behandlenedeBehandler?.fnr,
                                 ),
                             pasientAktoerId = sykmelding.pasientAktoerId,
                             sykmeldingId = sykmelding.id,
@@ -521,21 +506,19 @@ class BlockingApplicationRunner(
                 val receivedSykmelding =
                     ReceivedSykmelding(
                         sykmelding = sykmelding,
-                        personNrPasient = pasient.fnr!!,
+                        personNrPasient = pasient.fnr,
                         tlfPasient =
                             extractTlfFromKontaktInfo(
                                 healthInformation.pasient.kontaktInfo,
                             ),
-                        personNrLege = signaturFnr,
+                        personNrLege = signerendeBehandler.fnr,
                         navLogId = ediLoggId,
                         msgId = msgId,
-                        legeHprNr = signerendeBehandler?.hprNummer,
+                        legeHprNr = signerendeBehandler.hprNummer,
                         legeHelsepersonellkategori =
-                            signerendeBehandler?.godkjenninger?.let {
-                                getHelsepersonellKategori(
-                                    it,
-                                )
-                            },
+                            getHelsepersonellKategori(
+                                signerendeBehandler.godkjenninger,
+                            ),
                         legekontorOrgNr = legekontorOrgNr,
                         legekontorOrgName = legekontorOrgName,
                         legekontorHerId = legekontorHerId,
@@ -550,11 +533,9 @@ class BlockingApplicationRunner(
                         utenlandskSykmelding = null,
                     )
 
-                if (behandlenedeBehandlerFnr != signaturFnr) {
+                if (behandlenedeBehandler?.fnr != signerendeBehandler.fnr) {
                     logUlikBehandler(loggingMeta)
                 }
-
-                countNewDiagnoseCode(receivedSykmelding.sykmelding.medisinskVurdering)
 
                 logger.info(
                     "Validating against rules, sykmeldingId {},  {}",
@@ -647,19 +628,28 @@ class BlockingApplicationRunner(
     }
 
     private suspend fun getBehandlenedeBehandler(
-        behandlerHpr: String?,
-        organisationBehandlerHpr: String?,
-        behandlerfnr: String?,
+        healthInformation: HelseOpplysningerArbeidsuforhet,
+        fellesformat: XMLEIFellesformat,
         loggingMeta: LoggingMeta,
     ): Behandler? {
-        return if (behandlerHpr != null) {
-            norskHelsenettClient.getByHpr(behandlerHpr, loggingMeta)
-        } else if (behandlerfnr != null) {
-            norskHelsenettClient.getByFnr(behandlerfnr, loggingMeta)
-        } else if (organisationBehandlerHpr != null) {
-            norskHelsenettClient.getByHpr(organisationBehandlerHpr, loggingMeta)
-        } else {
-            null
+
+        val behandlerHpr =
+            padHpr(extractHprBehandler(healthInformation))?.let {
+                norskHelsenettClient.getByHpr(it, loggingMeta)
+            }
+        if (behandlerHpr != null) {
+            return behandlerHpr
+        }
+        val behandlerFromFnr =
+            extractFnrDnrFraBehandler(healthInformation)?.let {
+                norskHelsenettClient.getByFnr(it, loggingMeta)
+            }
+        if (behandlerFromFnr != null) {
+            return behandlerFromFnr
+        }
+
+        return extractHprOrganization(fellesformat)?.let {
+            norskHelsenettClient.getByHpr(it, loggingMeta)
         }
     }
 

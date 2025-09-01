@@ -97,19 +97,21 @@ internal class BlockingApplicationRunnerTest {
                         ),
                     ),
             )
-        coEvery { norskHelsenettClient.getByFnr(any(), any()) } returns
-            Behandler(
-                emptyList(),
-                "",
-                "HPR",
-                null,
-                null,
-                null,
-            )
+        coEvery { norskHelsenettClient.getByFnr(any(), any()) } coAnswers
+            {
+                Behandler(
+                    emptyList(),
+                    this.args[0] as String,
+                    "HPR",
+                    null,
+                    null,
+                    null,
+                )
+            }
         coEvery { norskHelsenettClient.getByHpr(any(), any()) } returns
             Behandler(
                 emptyList(),
-                "",
+                "12345678912",
                 "HPR",
                 null,
                 null,

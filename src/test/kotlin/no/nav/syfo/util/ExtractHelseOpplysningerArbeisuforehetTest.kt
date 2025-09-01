@@ -36,7 +36,7 @@ internal class ExtractHelseOpplysningerArbeisuforehetTest {
         val stringInput = no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
         val fellesformat =
             fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
-        val hpr = padHpr(extractHpr(fellesformat)?.id?.trim())
+        val hpr = extractHprOrganization(fellesformat)
 
         Assertions.assertEquals("123456789", hpr)
     }
@@ -49,7 +49,7 @@ internal class ExtractHelseOpplysningerArbeisuforehetTest {
             )
         val fellesformat =
             fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
-        val hpr = padHpr(extractHpr(fellesformat)?.id?.trim())
+        val hpr = extractHprOrganization(fellesformat)
 
         Assertions.assertEquals(null, hpr)
     }

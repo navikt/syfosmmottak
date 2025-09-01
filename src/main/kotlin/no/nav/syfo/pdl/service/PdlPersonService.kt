@@ -30,8 +30,7 @@ class PdlPersonService(
             }
         }
         if (
-            pdlResponse.data.hentIdenterBolk == null ||
-                pdlResponse.data.hentIdenterBolk.isNullOrEmpty()
+            pdlResponse.data.hentIdenterBolk == null || pdlResponse.data.hentIdenterBolk.isEmpty()
         ) {
             logger.error("Fant ikke identer i PDL {}", StructuredArguments.fields(loggingMeta))
             throw IllegalStateException("Fant ingen identer i PDL, skal ikke kunne skje!")

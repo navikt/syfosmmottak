@@ -117,8 +117,8 @@ class NorskHelsenettClient(
 
 data class Behandler(
     val godkjenninger: List<Godkjenning>,
-    val fnr: String?,
-    val hprNummer: String?,
+    val fnr: String,
+    val hprNummer: String,
     val fornavn: String?,
     val mellomnavn: String?,
     val etternavn: String?,
