@@ -288,7 +288,11 @@ class BlockingApplicationRunner(
                     )
                 }
             requireNotNull(signerendeBehandler) {
-                "Signerende behandler er null, should not happen! ${loggingMeta}"
+                "Signerende behandler er null, should not happen! $loggingMeta"
+            }
+
+            requireNotNull(signerendeBehandler.fnr) {
+                "Signernede behandler fnr is null, should not happen! $loggingMeta"
             }
 
             val identer =
@@ -672,20 +676,6 @@ class BlockingApplicationRunner(
             else -> {
                 behandlenedeBehandler?.fnr
             }
-        }
-    }
-
-    private fun getBehandlerHprNr(
-        behandlerHpr: String?,
-        avsenderHpr: String?,
-        behandlenedeBehandler: Behandler?,
-    ): String? {
-        if (behandlerHpr != null) {
-            return behandlerHpr
-        } else if (avsenderHpr != null) {
-            return avsenderHpr
-        } else {
-            return behandlenedeBehandler?.hprNummer
         }
     }
 
