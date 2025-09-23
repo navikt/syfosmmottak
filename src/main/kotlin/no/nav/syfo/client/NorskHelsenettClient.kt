@@ -69,9 +69,22 @@ class NorskHelsenettClient(
         }
     }
 
-    suspend fun getByFnr(fnr: String, loggingMeta: LoggingMeta): Behandler? {
+    suspend fun getByFnr(fnr: List<String>, loggingMeta: LoggingMeta): Behandler? {
         val accessToken = accessTokenClient.getAccessTokenV2(resourceId)
+        for (fnrToFind in fnr) {
+            val behandler = tryGetBehandler(accessToken, loggingMeta, fnrToFind)
+            if (behandler != null) {
+                return behandler
+            }
+        }
+        return null
+    }
 
+    private suspend fun tryGetBehandler(
+        accessToken: String,
+        loggingMeta: LoggingMeta,
+        fnr: String,
+    ): Behandler? {
         val httpResponse =
             httpClient.get("$endpointUrl/api/v2/behandler") {
                 accept(ContentType.Application.Json)
@@ -88,7 +101,7 @@ class NorskHelsenettClient(
                     fields(loggingMeta),
                 )
                 throw IOException(
-                    "Syfohelsenettproxy kastet feilmelding og svarte status ${httpResponse.status} ved søk på fnr"
+                    "Syfohelsenettproxy kastet feilmelding og svarte status ${httpResponse.status} ved søk på fnr",
                 )
             }
             NotFound -> {
@@ -98,7 +111,7 @@ class NorskHelsenettClient(
             Unauthorized -> {
                 logger.error("Norsk helsenett returnerte Unauthorized for henting av behandler")
                 throw RuntimeException(
-                    "Norsk helsenett returnerte Unauthorized ved henting av behandler"
+                    "Norsk helsenett returnerte Unauthorized ved henting av behandler",
                 )
             }
             OK -> {
@@ -108,7 +121,7 @@ class NorskHelsenettClient(
             else -> {
                 logger.error("Feil ved henting av behandler. Statuskode: ${httpResponse.status}")
                 throw RuntimeException(
-                    "En ukjent feil oppsto ved ved henting av behandler. Statuskode: ${httpResponse.status}"
+                    "En ukjent feil oppsto ved ved henting av behandler. Statuskode: ${httpResponse.status}",
                 )
             }
         }

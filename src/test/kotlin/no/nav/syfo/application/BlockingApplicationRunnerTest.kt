@@ -101,7 +101,7 @@ internal class BlockingApplicationRunnerTest {
             {
                 Behandler(
                     emptyList(),
-                    this.args[0] as String,
+                    (this.args[0] as List<String>).first(),
                     "HPR",
                     null,
                     null,

@@ -55,6 +55,7 @@ import no.nav.syfo.model.ReceivedSykmeldingWithValidation
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.toAvsenderSystem
 import no.nav.syfo.model.toSykmelding
+import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.service.DuplicationService
 import no.nav.syfo.service.UploadSykmeldingService
@@ -235,7 +236,7 @@ class BlockingApplicationRunner(
                 )
             }
 
-            val signerendeBehandler: Behandler? =
+            val (signerendeBehandler: Behandler?, identer: Map<String, PdlPerson?>) =
                 if (erVirksomhetSykmelding) {
                     logger.info(
                         "Mottatt virksomhetssykmelding, {}",
@@ -279,14 +280,22 @@ class BlockingApplicationRunner(
                         )
                         return
                     } else {
-                        behandler
+                        behandler to
+                            getIdenter(listOf(behandler.fnr, originaltPasientFnr), loggingMeta)
                     }
                 } else {
+                    val identer =
+                        getIdenter(
+                            listOf(receiverBlock.avsenderFnrFraDigSignatur, originaltPasientFnr),
+                            loggingMeta
+                        )
                     norskHelsenettClient.getByFnr(
-                        receiverBlock.avsenderFnrFraDigSignatur,
+                        identer[receiverBlock.avsenderFnrFraDigSignatur]?.folkereigsterIdenter
+                            ?: emptyList(),
                         loggingMeta = loggingMeta
-                    )
+                    ) to identer
                 }
+
             requireNotNull(signerendeBehandler) {
                 "Signerende behandler er null, should not happen! $loggingMeta"
             }
@@ -294,12 +303,6 @@ class BlockingApplicationRunner(
             requireNotNull(signerendeBehandler.fnr) {
                 "Signernede behandler fnr is null, should not happen! $loggingMeta"
             }
-
-            val identer =
-                pdlPersonService.getIdenter(
-                    listOf(signerendeBehandler.fnr, originaltPasientFnr),
-                    loggingMeta,
-                )
 
             val tssIdEmottak =
                 smtssClient.findBestTssIdEmottak(
@@ -631,6 +634,15 @@ class BlockingApplicationRunner(
         }
     }
 
+    private suspend fun getIdenter(
+        identer: List<String>,
+        loggingMeta: LoggingMeta
+    ): Map<String, PdlPerson?> =
+        pdlPersonService.getIdenter(
+            identer,
+            loggingMeta,
+        )
+
     private suspend fun getBehandlenedeBehandler(
         healthInformation: HelseOpplysningerArbeidsuforhet,
         fellesformat: XMLEIFellesformat,
@@ -646,7 +658,7 @@ class BlockingApplicationRunner(
         }
         val behandlerFromFnr =
             extractFnrDnrFraBehandler(healthInformation)?.let {
-                norskHelsenettClient.getByFnr(it, loggingMeta)
+                norskHelsenettClient.getByFnr(listOf(it), loggingMeta)
             }
         if (behandlerFromFnr != null) {
             return behandlerFromFnr
@@ -654,28 +666,6 @@ class BlockingApplicationRunner(
 
         return extractHprOrganization(fellesformat)?.let {
             norskHelsenettClient.getByHpr(it, loggingMeta)
-        }
-    }
-
-    /**
-     * Finds the sender's FNR, either by matching HPR against signerende behandler or by doing a
-     * lookup against HPR
-     */
-    private fun getBehandlerFnr(
-        avsenderHpr: String?,
-        signerendeBehandler: Behandler?,
-        behandlenedeBehandler: Behandler?,
-    ): String? {
-        return when (avsenderHpr) {
-            null -> {
-                null
-            }
-            signerendeBehandler?.hprNummer -> {
-                signerendeBehandler.fnr
-            }
-            else -> {
-                behandlenedeBehandler?.fnr
-            }
         }
     }
 

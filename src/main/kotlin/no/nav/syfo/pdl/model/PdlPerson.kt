@@ -8,4 +8,6 @@ data class PdlPerson(
     val fnr: String? =
         identer.firstOrNull { it.gruppe == "FOLKEREGISTERIDENT" && !it.historisk }?.ident
     val aktorId: String? = identer.firstOrNull { it.gruppe == "AKTORID" && !it.historisk }?.ident
+    val folkereigsterIdenter: List<String> =
+        identer.filter { it.gruppe == "FOLKEREGISTERIDENT" }.map { it.ident }
 }
