@@ -45,6 +45,10 @@ class PdlPersonService(
             }
         }
 
+        pdlResponse.data.hentIdenterBolk.forEach { identBolk ->
+            val identer = identBolk.identer
+        }
+
         return pdlResponse.data.hentIdenterBolk.associate { hentIdenterBolk ->
             hentIdenterBolk.ident to hentIdenterBolk.identer?.let { PdlPerson(it) }
         }

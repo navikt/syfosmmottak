@@ -289,15 +289,21 @@ class BlockingApplicationRunner(
                             listOf(receiverBlock.avsenderFnrFraDigSignatur, originaltPasientFnr),
                             loggingMeta
                         )
-                    norskHelsenettClient.getByFnr(
-                        identer[receiverBlock.avsenderFnrFraDigSignatur]?.folkereigsterIdenter
-                            ?: emptyList(),
-                        loggingMeta = loggingMeta
-                    ) to identer
+                    norskHelsenettClient
+                        .getByFnr(
+                            identer[receiverBlock.avsenderFnrFraDigSignatur]?.folkereigsterIdenter
+                                ?: emptyList(),
+                            loggingMeta = loggingMeta
+                        )
+                        ?.copy(fnr = receiverBlock.avsenderFnrFraDigSignatur) to identer
                 }
 
             requireNotNull(signerendeBehandler) {
                 "Signerende behandler er null, should not happen! $loggingMeta"
+            }
+
+            requireNotNull(signerendeBehandler.fnr) {
+                "Signernede behandler fnr is null, should not happen! $loggingMeta"
             }
 
             requireNotNull(signerendeBehandler.fnr) {
@@ -373,12 +379,25 @@ class BlockingApplicationRunner(
                 return
             } else {
                 val pasient = identer[originaltPasientFnr]
-                val signerende = identer[signerendeBehandler.fnr]
+                val signerendeFnr = signerendeBehandler.fnr
+                val signerendeAktorId = identer[signerendeBehandler.fnr]?.aktorId
 
+                requireNotNull(pasient?.fnr) {
+                    "Pasient not in PDL, should not happen! $loggingMeta"
+                }
+                requireNotNull(pasient.aktorId) {
+                    "Pasient not in PDL, should not happen! $loggingMeta"
+                }
+                requireNotNull(signerendeFnr) {
+                    "Signerende behandler not in PDL, should not happen! $loggingMeta"
+                }
+                requireNotNull(signerendeAktorId) {
+                    "Signerende behandler not in PDL, should not happen! $loggingMeta"
+                }
                 if (
                     checkSM2013Content(
                         pasient,
-                        signerende,
+                        signerendeAktorId = signerendeAktorId,
                         healthInformation,
                         originaltPasientFnr,
                         loggingMeta,
@@ -395,19 +414,6 @@ class BlockingApplicationRunner(
                     return
                 }
 
-                requireNotNull(pasient?.fnr) {
-                    "Pasient not in PDL, should not happen! $loggingMeta"
-                }
-                requireNotNull(pasient.aktorId) {
-                    "Pasient not in PDL, should not happen! $loggingMeta"
-                }
-                requireNotNull(signerende?.fnr) {
-                    "Signerende behandler not in PDL, should not happen! $loggingMeta"
-                }
-                requireNotNull(signerende.aktorId) {
-                    "Signerende behandler not in PDL, should not happen! $loggingMeta"
-                }
-
                 val behandlenedeBehandler =
                     getBehandlenedeBehandler(healthInformation, fellesformat, loggingMeta)
 
@@ -415,10 +421,10 @@ class BlockingApplicationRunner(
                     healthInformation.toSykmelding(
                         sykmeldingId = sykmeldingId,
                         pasientAktoerId = pasient.aktorId,
-                        legeAktoerId = signerende.aktorId,
+                        legeAktoerId = signerendeAktorId,
                         msgId = msgId,
                         signaturDato = getLocalDateTime(msgHead.msgInfo.genDate),
-                        behandlerFnr = behandlenedeBehandler?.fnr ?: signerende.fnr,
+                        behandlerFnr = behandlenedeBehandler?.fnr ?: signerendeBehandler.fnr,
                         behandlerHprNr = behandlenedeBehandler?.hprNummer
                                 ?: signerendeBehandler.hprNummer,
                     )

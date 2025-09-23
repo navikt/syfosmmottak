@@ -61,7 +61,7 @@ internal class CheckSM2013ContentTest {
         val checkSM2013Content =
             checkSM2013Content(
                 pasient,
-                behandler,
+                behandler.aktorId,
                 healthInformation,
                 originaltPasientFnr,
                 loggingMeta,
@@ -337,7 +337,7 @@ internal class CheckSM2013ContentTest {
         val checkSM2013Content =
             checkSM2013Content(
                 pasientPDL,
-                behandlerPdl,
+                behandlerPdl.aktorId,
                 healthInformation,
                 originaltPasientFnr,
                 loggingMeta,
@@ -1114,7 +1114,7 @@ internal class CheckSM2013ContentTest {
         val checkSM2013Content =
             checkSM2013Content(
                 pasientPDL,
-                behandlerPdl,
+                behandlerPdl.aktorId,
                 healthInformation,
                 originaltPasientFnr,
                 loggingMeta,
@@ -1287,7 +1287,7 @@ internal class CheckSM2013ContentTest {
         val checkSM2013Content =
             checkSM2013Content(
                 pasientPDL,
-                behandlerPdl,
+                behandlerPdl.aktorId,
                 healthInformation,
                 originaltPasientFnr,
                 loggingMeta,
@@ -1460,7 +1460,7 @@ internal class CheckSM2013ContentTest {
         val checkSM2013Content =
             checkSM2013Content(
                 pasientPDL,
-                behandlerPdl,
+                behandlerPdl.aktorId,
                 healthInformation,
                 originaltPasientFnr,
                 loggingMeta,
@@ -1632,7 +1632,7 @@ internal class CheckSM2013ContentTest {
         val checkSM2013Content =
             checkSM2013Content(
                 pasientPDL,
-                behandlerPdl,
+                behandlerPdl.aktorId,
                 healthInformation,
                 originaltPasientFnr,
                 loggingMeta,
@@ -1805,7 +1805,7 @@ internal class CheckSM2013ContentTest {
         val checkSM2013Content =
             checkSM2013Content(
                 pasientPDL,
-                behandlerPdl,
+                behandlerPdl.aktorId,
                 healthInformation,
                 originaltPasientFnr,
                 loggingMeta,
@@ -1978,7 +1978,7 @@ internal class CheckSM2013ContentTest {
         val checkSM2013Content =
             checkSM2013Content(
                 pasientPDL,
-                behandlerPdl,
+                behandlerPdl.aktorId,
                 healthInformation,
                 originaltPasientFnr,
                 loggingMeta,
@@ -2151,7 +2151,7 @@ internal class CheckSM2013ContentTest {
         val checkSM2013Content =
             checkSM2013Content(
                 pasientPDL,
-                behandlerPdl,
+                behandlerPdl.aktorId,
                 healthInformation,
                 originaltPasientFnr,
                 loggingMeta,
@@ -2326,7 +2326,7 @@ internal class CheckSM2013ContentTest {
         val checkSM2013Content =
             checkSM2013Content(
                 pasientPDL,
-                behandlerPdl,
+                behandlerPdl.aktorId,
                 healthInformation,
                 originaltPasientFnr,
                 loggingMeta,
@@ -2511,7 +2511,7 @@ internal class CheckSM2013ContentTest {
         val checkSM2013Content =
             checkSM2013Content(
                 pasientPDL,
-                behandlerPdl,
+                behandlerPdl.aktorId,
                 healthInformation,
                 originaltPasientFnr,
                 loggingMeta,
