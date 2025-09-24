@@ -29,7 +29,7 @@ import no.nav.syfo.service.DuplicationService
 import org.apache.kafka.clients.producer.KafkaProducer
 
 fun checkSM2013Content(
-    pasientFnr: PdlPerson?,
+    pasient: PdlPerson?,
     signerendeAktorId: String?,
     healthInformation: HelseOpplysningerArbeidsuforhet,
     originaltPasientFnr: String,
@@ -43,7 +43,7 @@ fun checkSM2013Content(
     duplicationService: DuplicationService,
     duplicateCheck: DuplicateCheck,
 ): Boolean {
-    if (pasientFnr?.aktorId == null || pasientFnr.fnr == null) {
+    if (pasient?.aktorId == null || pasient.fnr == null) {
         handlePatientNotFoundInPDL(
             loggingMeta,
             fellesformat,

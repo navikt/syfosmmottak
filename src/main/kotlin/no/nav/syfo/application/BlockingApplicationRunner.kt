@@ -294,7 +294,8 @@ class BlockingApplicationRunner(
                             identer[receiverBlock.avsenderFnrFraDigSignatur]?.folkereigsterIdenter
                                 ?: emptyList(),
                             loggingMeta = loggingMeta
-                        )?.copy(fnr = receiverBlock.avsenderFnrFraDigSignatur) to identer
+                        )
+                        ?.copy(fnr = receiverBlock.avsenderFnrFraDigSignatur) to identer
                 }
 
             requireNotNull(signerendeBehandler) {
@@ -381,18 +382,6 @@ class BlockingApplicationRunner(
                 val signerendeFnr = signerendeBehandler.fnr
                 val signerendeAktorId = identer[signerendeBehandler.fnr]?.aktorId
 
-                requireNotNull(pasient?.fnr) {
-                    "Pasient not in PDL, should not happen! $loggingMeta"
-                }
-                requireNotNull(pasient.aktorId) {
-                    "Pasient not in PDL, should not happen! $loggingMeta"
-                }
-                requireNotNull(signerendeFnr) {
-                    "Signerende behandler not in PDL, should not happen! $loggingMeta"
-                }
-                requireNotNull(signerendeAktorId) {
-                    "Signerende behandler not in PDL, should not happen! $loggingMeta"
-                }
                 if (
                     checkSM2013Content(
                         pasient,
@@ -411,6 +400,18 @@ class BlockingApplicationRunner(
                     )
                 ) {
                     return
+                }
+                requireNotNull(pasient?.fnr) {
+                    "Pasient not in PDL, should not happen! $loggingMeta"
+                }
+                requireNotNull(pasient.aktorId) {
+                    "Pasient not in PDL, should not happen! $loggingMeta"
+                }
+                requireNotNull(signerendeFnr) {
+                    "Signerende behandler not in PDL, should not happen! $loggingMeta"
+                }
+                requireNotNull(signerendeAktorId) {
+                    "Signerende behandler not in PDL, should not happen! $loggingMeta"
                 }
 
                 val behandlenedeBehandler =

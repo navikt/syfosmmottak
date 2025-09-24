@@ -9,5 +9,8 @@ data class PdlPerson(
         identer.firstOrNull { it.gruppe == "FOLKEREGISTERIDENT" && !it.historisk }?.ident
     val aktorId: String? = identer.firstOrNull { it.gruppe == "AKTORID" && !it.historisk }?.ident
     val folkereigsterIdenter: List<String> =
-        identer.filter { it.gruppe == "FOLKEREGISTERIDENT" }.sortedBy { it.historisk }.map { it.ident }
+        identer
+            .filter { it.gruppe == "FOLKEREGISTERIDENT" }
+            .sortedBy { it.historisk }
+            .map { it.ident }
 }
