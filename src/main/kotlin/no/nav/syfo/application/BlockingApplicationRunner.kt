@@ -294,8 +294,7 @@ class BlockingApplicationRunner(
                             identer[receiverBlock.avsenderFnrFraDigSignatur]?.folkereigsterIdenter
                                 ?: emptyList(),
                             loggingMeta = loggingMeta
-                        )
-                        ?.copy(fnr = receiverBlock.avsenderFnrFraDigSignatur) to identer
+                        )?.copy(fnr = receiverBlock.avsenderFnrFraDigSignatur) to identer
                 }
 
             requireNotNull(signerendeBehandler) {
