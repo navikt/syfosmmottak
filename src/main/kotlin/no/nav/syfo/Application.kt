@@ -169,6 +169,7 @@ fun launchListeners(
                 val session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE)
 
                 val inputconsumer = session.consumerForQueue(environmentVariables.inputQueueName)
+
                 val backoutProducer =
                     session.producerForQueue(environmentVariables.inputBackoutQueueName)
 

@@ -116,6 +116,7 @@ class BlockingApplicationRunner(
         wrapExceptions {
             loop@ while (applicationState.ready) {
                 val message = inputconsumer.receive(1000)
+
                 if (message == null) {
                     delay(100)
                     continue
@@ -141,6 +142,15 @@ class BlockingApplicationRunner(
                             "Incoming message needs to be a byte message or text message",
                         )
                 }
+            val properties =
+                message.propertyNames
+                    .asSequence()
+                    .map { it as String }
+                    .associateWith { message.getObjectProperty(it) }
+
+            logger.info("properties: $properties")
+            logger.info("Retrying message with id ${message.jmsMessageID}")
+
             INCOMING_MESSAGE_COUNTER.inc()
             val now = Instant.now().toEpochMilli()
             val delay = now - message.jmsTimestamp
