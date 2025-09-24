@@ -91,6 +91,8 @@ import org.xml.sax.InputSource
 
 val sikkerlogg = LoggerFactory.getLogger("securelog")
 
+private const val RETRY_COUNT_PROPERTY_NAME = "X_Retry_Count"
+
 class BlockingApplicationRunner(
     private val env: EnvironmentVariables,
     private val applicationState: ApplicationState,
@@ -142,14 +144,11 @@ class BlockingApplicationRunner(
                             "Incoming message needs to be a byte message or text message",
                         )
                 }
-            val properties =
-                message.propertyNames
-                    .asSequence()
-                    .map { it as String }
-                    .associateWith { message.getObjectProperty(it) }
+            val retryCount = message.getIntProperty(RETRY_COUNT_PROPERTY_NAME) ?: 0
 
-            logger.info("properties: $properties")
-            logger.info("Retrying message with id ${message.jmsMessageID}")
+            logger.info(
+                "Processing message with id:  ${message.jmsMessageID}, retry count: $retryCount"
+            )
 
             INCOMING_MESSAGE_COUNTER.inc()
             val now = Instant.now().toEpochMilli()
@@ -644,6 +643,8 @@ class BlockingApplicationRunner(
                 }",
                 e,
             )
+            val retryCount = (message.getIntProperty(RETRY_COUNT_PROPERTY_NAME) ?: 0) + 1
+            message.setIntProperty(RETRY_COUNT_PROPERTY_NAME, retryCount)
             backoutProducer.send(message)
         } finally {
             message.acknowledge()
