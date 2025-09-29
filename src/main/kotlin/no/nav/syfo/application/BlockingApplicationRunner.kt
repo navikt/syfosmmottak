@@ -311,56 +311,6 @@ class BlockingApplicationRunner(
                         ?.copy(fnr = receiverBlock.avsenderFnrFraDigSignatur) to identer
                 }
 
-            requireNotNull(signerendeBehandler) {
-                "Signerende behandler er null, should not happen! $loggingMeta"
-            }
-
-            requireNotNull(signerendeBehandler.fnr) {
-                "Signernede behandler fnr is null, should not happen! $loggingMeta"
-            }
-
-            requireNotNull(signerendeBehandler.fnr) {
-                "Signernede behandler fnr is null, should not happen! $loggingMeta"
-            }
-
-            val tssIdEmottak =
-                smtssClient.findBestTssIdEmottak(
-                    signerendeBehandler.fnr,
-                    legekontorOrgName,
-                    loggingMeta,
-                    sykmeldingId,
-                )
-
-            val tssIdInfotrygd =
-                if (!tssIdEmottak.isNullOrEmpty()) {
-                    tssIdEmottak
-                } else {
-                    smtssClient.findBestTssInfotrygdId(
-                        signerendeBehandler.fnr,
-                        legekontorOrgName,
-                        loggingMeta,
-                        sykmeldingId,
-                    )
-                }
-
-            logger.info(
-                "tssIdEmottak is $tssIdEmottak {}",
-                StructuredArguments.fields(loggingMeta),
-            )
-            logger.info(
-                "tssIdInfotrygd is $tssIdInfotrygd {}",
-                StructuredArguments.fields(loggingMeta),
-            )
-
-            handleEmottakSubscription(
-                tssIdEmottak,
-                emottakSubscriptionClient,
-                msgHead,
-                msgId,
-                partnerReferanse,
-                loggingMeta,
-            )
-
             val duplicationCheckSha256String =
                 duplicationService.getDuplicationCheck(sha256String, ediLoggId)
 
@@ -392,8 +342,8 @@ class BlockingApplicationRunner(
                 return
             } else {
                 val pasient = identer[originaltPasientFnr]
-                val signerendeFnr = signerendeBehandler.fnr
-                val signerendeAktorId = identer[signerendeBehandler.fnr]?.aktorId
+                val signerendeFnr = signerendeBehandler?.fnr
+                val signerendeAktorId = signerendeFnr?.let { identer[it] }?.aktorId
 
                 if (
                     checkSM2013Content(
@@ -414,6 +364,7 @@ class BlockingApplicationRunner(
                 ) {
                     return
                 }
+
                 requireNotNull(pasient?.fnr) {
                     "Pasient not in PDL, should not happen! $loggingMeta"
                 }
@@ -426,6 +377,44 @@ class BlockingApplicationRunner(
                 requireNotNull(signerendeAktorId) {
                     "Signerende behandler not in PDL, should not happen! $loggingMeta"
                 }
+
+                val tssIdEmottak =
+                    smtssClient.findBestTssIdEmottak(
+                        signerendeBehandler.fnr,
+                        legekontorOrgName,
+                        loggingMeta,
+                        sykmeldingId,
+                    )
+
+                val tssIdInfotrygd =
+                    if (!tssIdEmottak.isNullOrEmpty()) {
+                        tssIdEmottak
+                    } else {
+                        smtssClient.findBestTssInfotrygdId(
+                            signerendeBehandler.fnr,
+                            legekontorOrgName,
+                            loggingMeta,
+                            sykmeldingId,
+                        )
+                    }
+
+                logger.info(
+                    "tssIdEmottak is $tssIdEmottak {}",
+                    StructuredArguments.fields(loggingMeta),
+                )
+                logger.info(
+                    "tssIdInfotrygd is $tssIdInfotrygd {}",
+                    StructuredArguments.fields(loggingMeta),
+                )
+
+                handleEmottakSubscription(
+                    tssIdEmottak,
+                    emottakSubscriptionClient,
+                    msgHead,
+                    msgId,
+                    partnerReferanse,
+                    loggingMeta,
+                )
 
                 val behandlenedeBehandler =
                     getBehandlenedeBehandler(healthInformation, fellesformat, loggingMeta)
