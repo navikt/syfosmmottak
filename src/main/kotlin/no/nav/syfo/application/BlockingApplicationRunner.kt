@@ -641,6 +641,7 @@ class BlockingApplicationRunner(
                     true -> message.getIntProperty(RETRY_COUNT_PROPERTY_NAME)
                     else -> 0
                 } + 1
+            message.setIntProperty(RETRY_COUNT_PROPERTY_NAME, retryCount)
             backoutProducer.send(message)
         } finally {
             message.acknowledge()
