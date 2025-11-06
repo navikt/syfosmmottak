@@ -87,7 +87,7 @@ fun Application.module() {
     DefaultExports.initialize()
 
     configureLifecycleHooks(applicationState = applicationState)
-    configureRouting(applicationState = applicationState)
+    configureRouting(applicationState = applicationState, environmentVariables)
 
     val httpClients = HttpClients(environmentVariables)
     val kafkaClients = KafkaClients(environmentVariables)
