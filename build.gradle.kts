@@ -8,40 +8,40 @@ val javaVersion = JvmTarget.JVM_21
 
 val coroutinesVersion = "1.10.2"
 val syfoXmlCodegenVersion = "2.0.1"
-val ibmMqVersion = "9.4.4.0"
+val ibmMqVersion = "9.4.4.1"
 val javaxActivationVersion = "1.1.1"
 val jacksonVersion = "2.20.1"
 val jaxbApiVersion = "2.4.0-b180830.0359"
 val kafkaVersion = "3.9.1"
-val ktorVersion = "3.3.2"
-val logbackVersion = "1.5.20"
+val ktorVersion = "3.3.3"
+val logbackVersion = "1.5.23"
 val logstashEncoderVersion = "9.0"
 val prometheusVersion = "0.16.0"
-val commonsTextVersion = "1.14.0"
+val commonsTextVersion = "1.15.0"
 val javaxAnnotationApiVersion = "1.3.2"
 val jaxbRuntimeVersion = "2.4.0-b180830.0438"
 val javaTimeAdapterVersion = "1.1.3"
-val mockkVersion = "1.14.6"
-val kotlinVersion = "2.2.21"
-val googleCloudStorageVersion = "2.59.0"
+val mockkVersion = "1.14.7"
+val kotlinVersion = "2.3.0"
+val googleCloudStorageVersion = "2.61.0"
 val junitJupiterVersion = "6.0.1"
-val flywayVersion = "11.15.0"
+val flywayVersion = "11.20.0"
 val hikariVersion = "7.0.2"
 val postgresVersion = "42.7.8"
-val embeddedPostgresVersion = "2.1.1"
+val embeddedPostgresVersion = "2.2.0"
 val ktfmtVersion = "0.44"
-val opentelemetryVersion = "2.21.0"
+val opentelemetryVersion = "2.23.0"
 val diagnosekoderVersion = "1.2025.0"
 ///Due to vulnerabilities
-val nettycommonVersion = "4.2.7.Final"
+val nettycommonVersion = "4.2.9.Final"
 val snappyJavaVersion = "1.1.10.8"
 val commonsCodecVersion = "1.20.0"
 
 
 plugins {
     id("application")
-    kotlin("jvm") version "2.2.21"
-    id("com.diffplug.spotless") version "8.0.0"
+    kotlin("jvm") version "2.3.0"
+    id("com.diffplug.spotless") version "8.1.0"
 }
 
 application {
