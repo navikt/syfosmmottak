@@ -64,6 +64,8 @@ spec:
   accessPolicy:
     outbound:
       rules:
+        - application: logging
+          namespace: nais-system
         - application: syfosmregler
         - application: clamav
           namespace: nais-system
@@ -80,8 +82,6 @@ spec:
     - secret: srvsyfosmmottak-secrets
     - secret: syfosmmottak-secret
     - secret: syfosmmottak-unleash-api-token
-  secureLogs:
-    enabled: true
   env:
     - name: MQ_HOST_NAME
       value: mpls04.adeo.no

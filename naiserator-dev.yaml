@@ -65,6 +65,8 @@ spec:
   accessPolicy:
     outbound:
       rules:
+        - application: logging
+          namespace: nais-system
         - application: syfosmregler
         - application: syfohelsenettproxy
         - application: clamav
@@ -81,8 +83,6 @@ spec:
     - secret: srvsyfosmmottak-secrets
     - secret: syfosmmottak-secret
     - secret: syfosmmottak-unleash-api-token
-  secureLogs:
-    enabled: true
   env:
     - name: MQ_HOST_NAME
       value: b27apvl222.preprod.local

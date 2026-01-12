@@ -89,7 +89,7 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
 import org.xml.sax.InputSource
 
-val sikkerlogg = LoggerFactory.getLogger("securelog")
+val sikkerlogg = LoggerFactory.getLogger("teamlog")
 
 class BlockingApplicationRunner(
     private val env: EnvironmentVariables,
