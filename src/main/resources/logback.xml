@@ -18,7 +18,7 @@
         <appender-ref ref="team-logs"/>
     </logger>
 
-    <logger name="no.nav" level="INFO">
+    <logger name="no.nav" level="INFO" additivity="false">
         <appender-ref ref="stdout_json"/>
     </logger>
     <logger name="org.apache.kafka" level="WARN" />
