@@ -10,10 +10,10 @@ val coroutinesVersion = "1.10.2"
 val syfoXmlCodegenVersion = "2.0.1"
 val ibmMqVersion = "9.4.4.0"
 val javaxActivationVersion = "1.1.1"
-val jacksonVersion = "2.20.1"
+val jacksonVersion = "2.20.2"
 val jaxbApiVersion = "2.4.0-b180830.0359"
 val kafkaVersion = "3.9.1"
-val ktorVersion = "3.3.2"
+val ktorVersion = "3.4.0"
 val logbackVersion = "1.5.20"
 val logstashEncoderVersion = "9.0"
 val prometheusVersion = "0.16.0"
@@ -33,9 +33,7 @@ val ktfmtVersion = "0.44"
 val opentelemetryVersion = "2.21.0"
 val diagnosekoderVersion = "1.2025.0"
 ///Due to vulnerabilities
-val nettycommonVersion = "4.2.7.Final"
 val snappyJavaVersion = "1.1.10.8"
-val commonsCodecVersion = "1.20.0"
 
 
 plugins {
@@ -67,19 +65,8 @@ dependencies {
 
     implementation("io.ktor:ktor-server-core:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion"){
-        constraints {
-            implementation("io.netty:netty-common:$nettycommonVersion") {
-                because("Due to vulnerabilities in io.ktor:ktor-server-netty")
-            }
-        }
-    }
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-apache:$ktorVersion")
-    constraints {
-        implementation("commons-codec:commons-codec:$commonsCodecVersion") {
-            because("override transient from io.ktor:ktor-client-apache")
-        }
-    }
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
 
@@ -130,6 +117,7 @@ dependencies {
     testImplementation("io.zonky.test:embedded-postgres:$embeddedPostgresVersion") {
         exclude(group = "commons-io", module = "commons-io")
     }
+    }
 }
 
 kotlin {
@@ -158,6 +146,4 @@ tasks {
             dependsOn("spotlessApply")
         }
     }
-
-
 }
