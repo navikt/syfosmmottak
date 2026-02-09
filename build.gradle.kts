@@ -14,7 +14,7 @@ val jacksonVersion = "2.20.2"
 val jaxbApiVersion = "2.4.0-b180830.0359"
 val kafkaVersion = "3.9.1"
 val ktorVersion = "3.4.0"
-val logbackVersion = "1.5.20"
+val logbackVersion = "1.5.26"
 val logstashEncoderVersion = "9.0"
 val prometheusVersion = "0.16.0"
 val commonsTextVersion = "1.14.0"
@@ -28,13 +28,10 @@ val junitJupiterVersion = "6.0.1"
 val flywayVersion = "11.15.0"
 val hikariVersion = "7.0.2"
 val postgresVersion = "42.7.8"
-val embeddedPostgresVersion = "2.1.1"
 val ktfmtVersion = "0.44"
 val opentelemetryVersion = "2.21.0"
 val diagnosekoderVersion = "1.2025.0"
-///Due to vulnerabilities
-val snappyJavaVersion = "1.1.10.8"
-
+val testcontainerVersio = "2.0.1"
 
 plugins {
     id("application")
@@ -64,7 +61,7 @@ dependencies {
     implementation("io.prometheus:simpleclient_common:$prometheusVersion")
 
     implementation("io.ktor:ktor-server-core:$ktorVersion")
-    implementation("io.ktor:ktor-server-netty:$ktorVersion"){
+    implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-apache:$ktorVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
@@ -73,12 +70,7 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
 
-    implementation("org.apache.kafka:kafka_2.12:$kafkaVersion")
-    constraints {
-        implementation("org.xerial.snappy:snappy-java:$snappyJavaVersion") {
-            because("override transient from org.apache.kafka:kafka_2.12")
-        }
-    }
+    implementation("org.apache.kafka:kafka-clients:$kafkaVersion")
 
     implementation("com.fasterxml.jackson.module:jackson-module-jaxb-annotations:$jacksonVersion")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
@@ -107,16 +99,13 @@ dependencies {
     implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
     implementation("no.nav.helse:diagnosekoder:$diagnosekoderVersion")
 
+    testImplementation("org.testcontainers:testcontainers-postgresql:$testcontainerVersio")
     testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
         exclude(group = "org.eclipse.jetty")
-    }
-    testImplementation("io.zonky.test:embedded-postgres:$embeddedPostgresVersion") {
-        exclude(group = "commons-io", module = "commons-io")
-    }
     }
 }
 
