@@ -31,7 +31,7 @@ val postgresVersion = "42.7.8"
 val ktfmtVersion = "0.44"
 val opentelemetryVersion = "2.21.0"
 val diagnosekoderVersion = "1.2025.0"
-val testcontainerVersio = "2.0.1"
+val testcontainerVersio = "2.0.3"
 
 plugins {
     id("application")
