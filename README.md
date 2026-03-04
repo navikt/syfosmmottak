@@ -60,7 +60,7 @@ To build locally and run the integration tests you can simply run
 ``` bash
 ./gradlew installDist
 ```
- or  on windows 
+ or on windows 
 `gradlew.bat installDist`
 
 ### Upgrading the gradle wrapper
