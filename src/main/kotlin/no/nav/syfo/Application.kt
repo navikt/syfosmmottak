@@ -239,14 +239,11 @@ fun sendReceivedSykmelding(
 
         kafkaproducerreceivedSykmelding.send(record).get()
         logger.info(
-            "Sykmelding sendt to kafka topic {} sykmelding id {}",
-            receivedSykmeldingTopic,
-            receivedSykmelding.sykmelding.id,
+            "Sykmelding sendt to kafka topic $receivedSykmeldingTopic sykmelding id ${receivedSykmelding.sykmelding.id}",
         )
     } catch (ex: Exception) {
         logger.error(
-            "failed to send sykmelding to kafka result for sykmelding {}",
-            receivedSykmelding.sykmelding.id,
+            "failed to send sykmelding to kafka result for sykmelding ${receivedSykmelding.sykmelding.id}",
         )
         throw ex
     }
