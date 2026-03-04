@@ -52,7 +52,7 @@ This the high level flow of the application
 ./gradlew run
 ```
 > **Note**
-> There are probably many services and environment variables that need to be set up, for the application to work properly.
+> There are many services and environment variables that need to be set up, for the application to work properly.
 
 ### Building the application
 #### Compile and package application
