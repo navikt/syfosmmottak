@@ -1,6 +1,6 @@
 [![Build status](https://github.com/navikt/syfosmmottak/workflows/Deploy%20to%20dev%20and%20prod/badge.svg)](https://github.com/navikt/syfosmmottak/workflows/Deploy%20to%20dev%20and%20prod/badge.svg)
 # SYFOsmmottak
-This project contains just the receiving part of a sykmelding2013 message
+This project contains just the receiving part of a sykmelding2013 messages
 
 ## Technologies used
 * Kotlin
