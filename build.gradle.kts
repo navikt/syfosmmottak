@@ -22,7 +22,7 @@ val javaxAnnotationApiVersion = "1.3.2"
 val jaxbRuntimeVersion = "2.4.0-b180830.0438"
 val javaTimeAdapterVersion = "1.1.3"
 val mockkVersion = "1.14.6"
-val kotlinVersion = "2.2.21"
+val kotlinVersion = "2.3.10"
 val googleCloudStorageVersion = "2.62.1"
 val junitJupiterVersion = "6.0.1"
 val flywayVersion = "11.15.0"
@@ -35,7 +35,7 @@ val testcontainerVersio = "2.0.3"
 
 plugins {
     id("application")
-    kotlin("jvm") version "2.2.21"
+    kotlin("jvm") version "2.3.10"
     id("com.diffplug.spotless") version "8.0.0"
 }
 
