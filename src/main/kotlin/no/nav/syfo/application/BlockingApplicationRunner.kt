@@ -1,6 +1,7 @@
 package no.nav.syfo.application
 
 import io.opentelemetry.api.trace.Span
+import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import jakarta.jms.Message
 import jakarta.jms.MessageConsumer
@@ -55,6 +56,7 @@ import no.nav.syfo.model.ReceivedSykmeldingWithValidation
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.toAvsenderSystem
 import no.nav.syfo.model.toSykmelding
+import no.nav.syfo.objectMapper
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.service.DuplicationService
@@ -617,14 +619,17 @@ class BlockingApplicationRunner(
                 )
             }
         } catch (e: Exception) {
+            val span = Span.current()
+            span.recordException(e)
+            span.setStatus(StatusCode.ERROR)
+
             logger.error(
-                "Exception caught while handling message, sending to backout ${
-                    StructuredArguments.fields(
-                        loggingMeta,
-                    )
-                }",
+                "Exception caught while handling message, sending to backout ${StructuredArguments.fields(loggingMeta)}",
                 e,
             )
+            sikkerlogg.info(objectMapper.writeValueAsString(message))
+            sikkerlogg.error(e.stackTraceToString())
+
             backoutProducer.send(message)
         } finally {
             message.acknowledge()
@@ -666,6 +671,7 @@ class BlockingApplicationRunner(
         }
     }
 
+    @WithSpan
     private fun safeUnmarshal(inputMessageText: String): XMLEIFellesformat {
         // Disable XXE
         val spf: SAXParserFactory = SAXParserFactory.newInstance()

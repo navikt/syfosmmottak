@@ -1,5 +1,6 @@
 package no.nav.syfo.util
 
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.syfo.vedlegg.model.Content
@@ -10,6 +11,7 @@ fun removeVedleggFromFellesformat(fellesformat: XMLEIFellesformat) {
     fellesformat.get<XMLMsgHead>().document.removeIf { it.documentConnection?.v == "V" }
 }
 
+@WithSpan
 fun getVedlegg(fellesformat: XMLEIFellesformat): List<Vedlegg> {
     return fellesformat
         .get<XMLMsgHead>()
