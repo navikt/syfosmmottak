@@ -41,7 +41,6 @@ import no.nav.syfo.service.DuplicationService
 import no.nav.syfo.service.UploadSykmeldingService
 import no.nav.syfo.service.VirusScanService
 import no.nav.syfo.util.LoggingMeta
-import no.nav.syfo.util.TrackableException
 import no.nav.syfo.vedlegg.google.BucketUploadService
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -134,8 +133,8 @@ fun createListener(
     GlobalScope.launch {
         try {
             action()
-        } catch (e: TrackableException) {
-            logger.error("En uhåndtert feil oppstod, applikasjonen restarter", e.cause)
+        } catch (e: Exception) {
+            logger.error("En uhåndtert feil oppstod, applikasjonen restarter", e)
         } finally {
             applicationState.ready = false
             applicationState.alive = false

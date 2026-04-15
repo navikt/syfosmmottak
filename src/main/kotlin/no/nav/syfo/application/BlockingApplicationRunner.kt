@@ -84,7 +84,6 @@ import no.nav.syfo.util.logUlikBehandler
 import no.nav.syfo.util.padHpr
 import no.nav.syfo.util.removeVedleggFromFellesformat
 import no.nav.syfo.util.toString
-import no.nav.syfo.util.wrapExceptions
 import no.nav.syfo.vedlegg.google.BucketUploadService
 import no.nav.syfo.vedlegg.model.BehandlerInfo
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -102,7 +101,7 @@ class BlockingApplicationRunner(
     private val pdlPersonService: PdlPersonService,
     private val bucketUploadService: BucketUploadService,
     private val kafkaproducerreceivedSykmelding:
-        KafkaProducer<String, ReceivedSykmeldingWithValidation>,
+    KafkaProducer<String, ReceivedSykmeldingWithValidation>,
     private val kafkaManuelTaskProducer: KafkaProducer<String, OpprettOppgaveKafkaMessage>,
     private val kafkaproducerApprec: KafkaProducer<String, Apprec>,
     private val kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
@@ -115,20 +114,18 @@ class BlockingApplicationRunner(
 ) {
 
     suspend fun run() {
-        wrapExceptions {
-            loop@ while (applicationState.ready) {
-                val message = inputconsumer.receive(1000)
+        loop@ while (applicationState.ready) {
+            val message = inputconsumer.receive(1000)
 
-                if (message == null) {
-                    delay(100)
-                    continue
-                }
-                val messageTimestamp =
-                    OffsetTime.ofInstant(Instant.ofEpochMilli(message.jmsTimestamp), ZoneOffset.UTC)
-
-                logger.info("Received message with timestamp {}", messageTimestamp)
-                processMqMessage(message)
+            if (message == null) {
+                delay(100)
+                continue
             }
+            val messageTimestamp =
+                OffsetTime.ofInstant(Instant.ofEpochMilli(message.jmsTimestamp), ZoneOffset.UTC)
+
+            logger.info("Received message with timestamp {}", messageTimestamp)
+            processMqMessage(message)
         }
     }
 
@@ -267,8 +264,8 @@ class BlockingApplicationRunner(
 
                     val behandler =
                         norskHelsenettClient.getByHpr(
-                            hprNummer = formatedHpr,
-                            loggingMeta = loggingMeta
+                                hprNummer = formatedHpr,
+                                loggingMeta = loggingMeta,
                         )
                     if (behandler?.fnr == null) {
                         handleVirksomhetssykmeldingOgFnrManglerIHPR(
@@ -290,14 +287,17 @@ class BlockingApplicationRunner(
                 } else {
                     val identer =
                         getIdenter(
-                            listOf(receiverBlock.avsenderFnrFraDigSignatur, originaltPasientFnr),
-                            loggingMeta
+                                listOf(
+                                        receiverBlock.avsenderFnrFraDigSignatur,
+                                        originaltPasientFnr
+                                ),
+                                loggingMeta,
                         )
                     norskHelsenettClient
                         .getByFnr(
-                            identer[receiverBlock.avsenderFnrFraDigSignatur]?.folkereigsterIdenter
-                                ?: emptyList(),
-                            loggingMeta = loggingMeta
+                                identer[receiverBlock.avsenderFnrFraDigSignatur]?.folkereigsterIdenter
+                                    ?: emptyList(),
+                                loggingMeta = loggingMeta,
                         )
                         ?.copy(fnr = receiverBlock.avsenderFnrFraDigSignatur) to identer
                 }
@@ -419,7 +419,7 @@ class BlockingApplicationRunner(
                         signaturDato = getLocalDateTime(msgHead.msgInfo.genDate),
                         behandlerFnr = behandlenedeBehandler?.fnr ?: signerendeBehandler.fnr,
                         behandlerHprNr = behandlenedeBehandler?.hprNummer
-                                ?: signerendeBehandler.hprNummer,
+                            ?: signerendeBehandler.hprNummer,
                     )
                 if (originaltPasientFnr != pasient.fnr) {
                     logger.info(
@@ -568,6 +568,7 @@ class BlockingApplicationRunner(
                             receivedSykmelding = receivedSykmelding,
                             kafkaproducerreceivedSykmelding = kafkaproducerreceivedSykmelding,
                         )
+
                     Status.MANUAL_PROCESSING ->
                         handleStatusMANUALPROCESSING(
                             receivedSykmelding = receivedSykmelding,
@@ -586,6 +587,7 @@ class BlockingApplicationRunner(
                             syfoSmManuellTopic = env.syfoSmManuellTopic,
                             produserOppgaveTopic = env.produserOppgaveTopic,
                         )
+
                     Status.INVALID ->
                         handleStatusINVALID(
                             validationResult = validationResult,
@@ -624,10 +626,17 @@ class BlockingApplicationRunner(
             span.setStatus(StatusCode.ERROR)
 
             logger.error(
-                "Exception caught while handling message, sending to backout ${StructuredArguments.fields(loggingMeta)}",
+                "Exception caught while handling message, sending to backout ${
+                    StructuredArguments.fields(
+                            loggingMeta,
+                    )
+                }",
                 e,
             )
-            sikkerlogg.info(objectMapper.writeValueAsString(message))
+            logger.error("Message is bad, ${message.jmsTimestamp}, ${message.jmsType}, ${message.jmsMessageID}, see teamlogs for more info")
+            if (message is TextMessage) {
+                sikkerlogg.error("The bad message is TextMessage, text: ${message.text}")
+            }
             sikkerlogg.error(e.stackTraceToString())
 
             backoutProducer.send(message)
