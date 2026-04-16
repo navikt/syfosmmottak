@@ -556,7 +556,7 @@ class BlockingApplicationRunner(
                     receivedSykmelding.sykmelding.avsenderSystem.navn,
                     signeringsType,
                     recursive.toString()
-                )
+                ).inc()
                 when (validationResult.status) {
                     Status.OK ->
                         handleStatusOK(
