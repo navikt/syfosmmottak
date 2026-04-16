@@ -56,7 +56,6 @@ import no.nav.syfo.model.ReceivedSykmeldingWithValidation
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.toAvsenderSystem
 import no.nav.syfo.model.toSykmelding
-import no.nav.syfo.objectMapper
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.service.DuplicationService
@@ -101,7 +100,7 @@ class BlockingApplicationRunner(
     private val pdlPersonService: PdlPersonService,
     private val bucketUploadService: BucketUploadService,
     private val kafkaproducerreceivedSykmelding:
-    KafkaProducer<String, ReceivedSykmeldingWithValidation>,
+        KafkaProducer<String, ReceivedSykmeldingWithValidation>,
     private val kafkaManuelTaskProducer: KafkaProducer<String, OpprettOppgaveKafkaMessage>,
     private val kafkaproducerApprec: KafkaProducer<String, Apprec>,
     private val kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
@@ -264,8 +263,8 @@ class BlockingApplicationRunner(
 
                     val behandler =
                         norskHelsenettClient.getByHpr(
-                                hprNummer = formatedHpr,
-                                loggingMeta = loggingMeta,
+                            hprNummer = formatedHpr,
+                            loggingMeta = loggingMeta,
                         )
                     if (behandler?.fnr == null) {
                         handleVirksomhetssykmeldingOgFnrManglerIHPR(
@@ -287,17 +286,14 @@ class BlockingApplicationRunner(
                 } else {
                     val identer =
                         getIdenter(
-                                listOf(
-                                        receiverBlock.avsenderFnrFraDigSignatur,
-                                        originaltPasientFnr
-                                ),
-                                loggingMeta,
+                            listOf(receiverBlock.avsenderFnrFraDigSignatur, originaltPasientFnr),
+                            loggingMeta,
                         )
                     norskHelsenettClient
                         .getByFnr(
-                                identer[receiverBlock.avsenderFnrFraDigSignatur]?.folkereigsterIdenter
-                                    ?: emptyList(),
-                                loggingMeta = loggingMeta,
+                            identer[receiverBlock.avsenderFnrFraDigSignatur]?.folkereigsterIdenter
+                                ?: emptyList(),
+                            loggingMeta = loggingMeta,
                         )
                         ?.copy(fnr = receiverBlock.avsenderFnrFraDigSignatur) to identer
                 }
@@ -419,7 +415,7 @@ class BlockingApplicationRunner(
                         signaturDato = getLocalDateTime(msgHead.msgInfo.genDate),
                         behandlerFnr = behandlenedeBehandler?.fnr ?: signerendeBehandler.fnr,
                         behandlerHprNr = behandlenedeBehandler?.hprNummer
-                            ?: signerendeBehandler.hprNummer,
+                                ?: signerendeBehandler.hprNummer,
                     )
                 if (originaltPasientFnr != pasient.fnr) {
                     logger.info(
@@ -568,7 +564,6 @@ class BlockingApplicationRunner(
                             receivedSykmelding = receivedSykmelding,
                             kafkaproducerreceivedSykmelding = kafkaproducerreceivedSykmelding,
                         )
-
                     Status.MANUAL_PROCESSING ->
                         handleStatusMANUALPROCESSING(
                             receivedSykmelding = receivedSykmelding,
@@ -587,7 +582,6 @@ class BlockingApplicationRunner(
                             syfoSmManuellTopic = env.syfoSmManuellTopic,
                             produserOppgaveTopic = env.produserOppgaveTopic,
                         )
-
                     Status.INVALID ->
                         handleStatusINVALID(
                             validationResult = validationResult,
@@ -633,7 +627,9 @@ class BlockingApplicationRunner(
                 }",
                 e,
             )
-            logger.error("Message is bad, ${message.jmsTimestamp}, ${message.jmsType}, ${message.jmsMessageID}, see teamlogs for more info")
+            logger.error(
+                "Message is bad, ${message.jmsTimestamp}, ${message.jmsType}, ${message.jmsMessageID}, see teamlogs for more info"
+            )
             if (message is TextMessage) {
                 sikkerlogg.error("The bad message is TextMessage, text: ${message.text}")
             }
