@@ -35,7 +35,7 @@ internal class CheckSM2013ContentTest {
 
         val pasient = null
         val behandler = mockk<PdlPerson>(relaxed = true)
-        val healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat)
+        val (healthInformation, _) = extractHelseOpplysningerArbeidsuforhet(fellesformat)
         val originaltPasientFnr = "10987654321"
         val loggingMeta = mockk<LoggingMeta>(relaxed = true)
         val ediLoggId = "12312"
@@ -92,7 +92,7 @@ internal class CheckSM2013ContentTest {
                 ),
             )
         val behandler = null
-        val healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat)
+        val (healthInformation, _) = extractHelseOpplysningerArbeidsuforhet(fellesformat)
         val originaltPasientFnr = "10987654321"
         val loggingMeta = mockk<LoggingMeta>(relaxed = true)
         val ediLoggId = "12312"
@@ -148,7 +148,7 @@ internal class CheckSM2013ContentTest {
                 ),
             )
         val behandler = null
-        val healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat)
+        val (healthInformation, _) = extractHelseOpplysningerArbeidsuforhet(fellesformat)
         val originaltPasientFnr = "10987654321"
         val loggingMeta = mockk<LoggingMeta>(relaxed = true)
         val ediLoggId = "12312"

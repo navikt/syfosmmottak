@@ -112,3 +112,11 @@ val SYKMELDING_MISSNG_ORG_NUMBER_COUNTER: Counter =
         .name("sykmelding_missing_org_number")
         .help("Antall sykmeldinger som mangler orgnummer")
         .register()
+
+val SYKMELDING_XML_SIGNERING: Counter =
+    Counter.build()
+        .namespace(METRICS_NS)
+        .name("sykmelding_with_helse_id")
+        .help("Antall sykmeldinger som sendt inn med gitt signering")
+        .labelNames("epj", "signering", "recursive")
+        .register()

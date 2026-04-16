@@ -48,6 +48,7 @@ import no.nav.syfo.metrics.INCOMING_MESSAGE_DELAY
 import no.nav.syfo.metrics.REQUEST_TIME
 import no.nav.syfo.metrics.SYKMELDING_MISSNG_ORG_NUMBER_COUNTER
 import no.nav.syfo.metrics.SYKMELDING_VEDLEGG_COUNTER
+import no.nav.syfo.metrics.SYKMELDING_XML_SIGNERING
 import no.nav.syfo.metrics.VIRKSOMHETSYKMELDING
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.OpprettOppgaveKafkaMessage
@@ -79,6 +80,7 @@ import no.nav.syfo.util.get
 import no.nav.syfo.util.getLocalDateTime
 import no.nav.syfo.util.getVedlegg
 import no.nav.syfo.util.handleEmottakSubscription
+import no.nav.syfo.util.hasVedleggType
 import no.nav.syfo.util.logUlikBehandler
 import no.nav.syfo.util.padHpr
 import no.nav.syfo.util.removeVedleggFromFellesformat
@@ -148,7 +150,8 @@ class BlockingApplicationRunner(
 
             val requestLatency = REQUEST_TIME.startTimer()
             val fellesformat = safeUnmarshal(inputMessageText)
-
+            val receiverBlock = fellesformat.get<XMLMottakenhetBlokk>()
+            val signeringsType = getSigneringsType(fellesformat, receiverBlock.ebService)
             val vedlegg = getVedlegg(fellesformat)
             if (vedlegg.isNotEmpty()) {
                 SYKMELDING_VEDLEGG_COUNTER.inc()
@@ -159,7 +162,6 @@ class BlockingApplicationRunner(
                     true -> fellesformatMarshaller.toString(fellesformat)
                     false -> inputMessageText
                 }
-            val receiverBlock = fellesformat.get<XMLMottakenhetBlokk>()
             val msgHead = fellesformat.get<XMLMsgHead>()
             val legekontorOrgNr =
                 extractOrganisationNumberFromSender(fellesformat)?.id?.replace(" ", "")?.trim()
@@ -171,7 +173,8 @@ class BlockingApplicationRunner(
                 )
             logger.info("Received message, {}", StructuredArguments.fields(loggingMeta))
 
-            val healthInformation = extractHelseOpplysningerArbeidsuforhet(fellesformat)
+            val (healthInformation, recursive) =
+                extractHelseOpplysningerArbeidsuforhet(fellesformat)
             val ediLoggId = receiverBlock.ediLoggId
             val sha256String = sha256hashstring(healthInformation)
             val msgId = msgHead.msgInfo.msgId
@@ -549,7 +552,11 @@ class BlockingApplicationRunner(
                         receivedSykmelding,
                         loggingMeta,
                     )
-
+                SYKMELDING_XML_SIGNERING.labels(
+                    receivedSykmelding.sykmelding.avsenderSystem.navn,
+                    signeringsType,
+                    recursive.toString()
+                )
                 when (validationResult.status) {
                     Status.OK ->
                         handleStatusOK(
@@ -639,6 +646,14 @@ class BlockingApplicationRunner(
         } finally {
             message.acknowledge()
         }
+    }
+
+    private fun getSigneringsType(fellesformat: XMLEIFellesformat, ebService: String): String {
+        val jwtType = hasVedleggType(fellesformat, "application/jwt")
+        if (jwtType?.first == true) {
+            return jwtType.second
+        }
+        return ebService
     }
 
     private suspend fun getIdenter(

@@ -15,7 +15,7 @@ internal class ExtractSykmeldingTest {
         val stringInput = getFileAsString("src/test/resources/sykemelding2013Regelsettversjon2.xml")
         val fellesformat =
             fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
-        val sykmelding2013 = extractHelseOpplysningerArbeidsuforhet(fellesformat)
+        val (sykmelding2013, _) = extractHelseOpplysningerArbeidsuforhet(fellesformat)
 
         Assertions.assertEquals("2", sykmelding2013.regelSettVersjon)
     }
@@ -25,7 +25,7 @@ internal class ExtractSykmeldingTest {
         val stringInput = getFileAsString("src/test/resources/sykemelding2013Regelsettversjon3.xml")
         val fellesformat =
             fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
-        val sykmelding2013 = extractHelseOpplysningerArbeidsuforhet(fellesformat)
+        val (sykmelding2013, _) = extractHelseOpplysningerArbeidsuforhet(fellesformat)
 
         Assertions.assertEquals("3", sykmelding2013.regelSettVersjon)
     }

@@ -3,6 +3,7 @@ package no.nav.syfo.util
 import java.io.StringReader
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class ExtractHelseOpplysningerArbeisuforehetTest {
@@ -12,7 +13,8 @@ internal class ExtractHelseOpplysningerArbeisuforehetTest {
         val stringInput = no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
         val fellesformat =
             fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
-        val kontaktInfo = extractHelseOpplysningerArbeidsuforhet(fellesformat).behandler.kontaktInfo
+        val kontaktInfo =
+            extractHelseOpplysningerArbeidsuforhet(fellesformat).first.behandler.kontaktInfo
 
         val tlfFraBehnandler = extractTlfFromKontaktInfo(kontaktInfo)
 
@@ -24,7 +26,8 @@ internal class ExtractHelseOpplysningerArbeisuforehetTest {
         val stringInput = no.nav.syfo.utils.getFileAsString("src/test/resources/fellesformat.xml")
         val fellesformat =
             fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
-        val kontaktInfo = extractHelseOpplysningerArbeidsuforhet(fellesformat).pasient.kontaktInfo
+        val kontaktInfo =
+            extractHelseOpplysningerArbeidsuforhet(fellesformat).first.pasient.kontaktInfo
 
         val tlfFraPasient = extractTlfFromKontaktInfo(kontaktInfo)
 

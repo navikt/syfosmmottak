@@ -6,40 +6,45 @@ import no.nav.helse.msgHead.XMLIdent
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
 import no.nav.helse.sm2013.TeleCom
+import no.nav.syfo.logger
 
 fun extractHelseOpplysningerArbeidsuforhet(
     fellesformat: XMLEIFellesformat
-): HelseOpplysningerArbeidsuforhet {
+): Pair<HelseOpplysningerArbeidsuforhet, Boolean> {
 
-    val helseOpplysningerArbeidsuforhet =
+    val (helseOpplysningerArbeidsuforhet, recursive) =
         tryGetHelseOpplysningerArbeidsuforhet(fellesformat.get<XMLMsgHead>())
+
     requireNotNull(helseOpplysningerArbeidsuforhet) {
         RuntimeException("Chould not find HelseOpplysningerArbeidsuforhet in message")
     }
-    return helseOpplysningerArbeidsuforhet
+    return helseOpplysningerArbeidsuforhet to recursive
 }
 
 fun tryGetHelseOpplysningerArbeidsuforhet(
     XMLMsgHead: XMLMsgHead
-): HelseOpplysningerArbeidsuforhet? {
+): Pair<HelseOpplysningerArbeidsuforhet?, Boolean> {
     XMLMsgHead.document.forEach {
         val helseOpplysningerArbeidsuforhet = tryGetHelseOpplysningerArbeidsuforhet(it)
-        if (helseOpplysningerArbeidsuforhet != null) {
+        if (helseOpplysningerArbeidsuforhet.first != null) {
             return helseOpplysningerArbeidsuforhet
         }
     }
-    return null
+    return null to false
 }
 
-fun tryGetHelseOpplysningerArbeidsuforhet(document: XMLDocument): HelseOpplysningerArbeidsuforhet? {
+fun tryGetHelseOpplysningerArbeidsuforhet(
+    document: XMLDocument
+): Pair<HelseOpplysningerArbeidsuforhet?, Boolean> {
     document.refDoc.content.any.forEach {
         if (it is HelseOpplysningerArbeidsuforhet) {
-            return it as HelseOpplysningerArbeidsuforhet
+            return it as HelseOpplysningerArbeidsuforhet to false
         } else if (it is XMLMsgHead) {
-            return tryGetHelseOpplysningerArbeidsuforhet(it)
+            logger.warn("Bad xml format, trying recursion")
+            return tryGetHelseOpplysningerArbeidsuforhet(it).first to true
         }
     }
-    return null
+    return null to false
 }
 
 fun extractOrganisationNumberFromSender(fellesformat: XMLEIFellesformat): XMLIdent? =

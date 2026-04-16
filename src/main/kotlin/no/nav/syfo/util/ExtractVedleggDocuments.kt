@@ -8,7 +8,17 @@ import no.nav.syfo.vedlegg.model.Vedlegg
 import org.w3c.dom.Element
 
 fun removeVedleggFromFellesformat(fellesformat: XMLEIFellesformat) {
-    fellesformat.get<XMLMsgHead>().document.removeIf { it.documentConnection?.v == "V" }
+    fellesformat.get<XMLMsgHead>().document.removeIf {
+        it.documentConnection?.v == "V" || it.refDoc.mimeType == "application/jwt"
+    }
+}
+
+fun hasVedleggType(fellesforamt: XMLEIFellesformat, mimeType: String): Pair<Boolean, String>? {
+    return fellesforamt
+        .get<XMLMsgHead>()
+        .document
+        .firstOrNull { it.refDoc.mimeType == mimeType }
+        ?.let { true to it.refDoc.description }
 }
 
 @WithSpan
