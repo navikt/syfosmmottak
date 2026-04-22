@@ -78,6 +78,23 @@ fun DatabaseInterface.extractDuplicateCheckByMottakId(mottakId: String): List<Du
     }
 }
 
+fun DatabaseInterface.deleteDuplicateCheckByMsgId(msgId: String): Int {
+    connection.use { connection ->
+        connection
+            .prepareStatement(
+                """
+                 delete  
+                 from duplicatecheck 
+                 where msg_id=?;
+                """,
+            )
+            .use { preparedStatement ->
+                preparedStatement.setString(1, msgId)
+                return preparedStatement.executeUpdate()
+            }
+    }
+}
+
 fun DatabaseInterface.persistDuplicateMessage(duplicate: Duplicate) {
     connection.use { connection ->
         connection
