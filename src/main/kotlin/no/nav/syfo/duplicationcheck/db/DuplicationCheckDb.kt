@@ -80,18 +80,20 @@ fun DatabaseInterface.extractDuplicateCheckByMottakId(mottakId: String): List<Du
 
 fun DatabaseInterface.deleteDuplicateCheckByMsgId(msgId: String): Int {
     connection.use { connection ->
-        connection
+        val deleted = connection
             .prepareStatement(
                 """
                  delete  
                  from duplicatecheck 
-                 where msg_id=?;
+                 where mottak_id=?;
                 """,
             )
             .use { preparedStatement ->
                 preparedStatement.setString(1, msgId)
-                return preparedStatement.executeUpdate()
+                preparedStatement.executeUpdate()
             }
+        connection.commit()
+        return deleted
     }
 }
 
