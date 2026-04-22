@@ -7,9 +7,12 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.google.cloud.storage.Storage
 import com.google.cloud.storage.StorageOptions
+import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.Application
+import io.ktor.server.application.install
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.ktor.server.routing.routing
 import io.prometheus.client.hotspot.DefaultExports
 import jakarta.jms.Session
 import kotlinx.coroutines.CoroutineScope
@@ -37,6 +40,7 @@ import no.nav.syfo.mq.producerForQueue
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.plugins.configureLifecycleHooks
 import no.nav.syfo.plugins.configureRouting
+import no.nav.syfo.rerun.registerRerunApi
 import no.nav.syfo.service.DuplicationService
 import no.nav.syfo.service.UploadSykmeldingService
 import no.nav.syfo.service.VirusScanService
@@ -100,6 +104,9 @@ fun Application.module() {
     val virusScanService = VirusScanService(httpClients.clamAvClient)
 
     val duplicationService = DuplicationService(database)
+
+
+    routing { registerRerunApi(applicationServiceUser, environmentVariables, database) }
 
     launchListeners(
         environmentVariables,

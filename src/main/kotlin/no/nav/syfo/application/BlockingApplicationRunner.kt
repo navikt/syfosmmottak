@@ -553,10 +553,11 @@ class BlockingApplicationRunner(
                         loggingMeta,
                     )
                 SYKMELDING_XML_SIGNERING.labels(
-                    receivedSykmelding.sykmelding.avsenderSystem.navn,
-                    signeringsType,
-                    recursive.toString()
-                ).inc()
+                        receivedSykmelding.sykmelding.avsenderSystem.navn,
+                        signeringsType,
+                        recursive.toString()
+                    )
+                    .inc()
                 when (validationResult.status) {
                     Status.OK ->
                         handleStatusOK(
