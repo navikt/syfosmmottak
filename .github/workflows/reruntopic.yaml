@@ -6,6 +6,11 @@ on:
     paths:
       - '.nais/reruntopic.yaml'
       - '.github/workflows/reruntopic.yaml'
+
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   deploy:
     name: Deploy topic
@@ -21,10 +26,10 @@ jobs:
         env:
           CLUSTER: dev-gcp
           VAR: kafka-pool=nav-dev
-          RESOURCE: ./nais/reruntopic.yaml
+          RESOURCE: .nais/reruntopic.yaml
       - name: Deploy topics to prod
         uses: nais/deploy/actions/deploy@v2
         env:
           CLUSTER: prod-gcp
           VAR: kafka-pool=nav-prod
-          RESOURCE: ./nais/reruntopic.yaml
+          RESOURCE: .nais/reruntopic.yaml
