@@ -1,0 +1,21 @@
+apiVersion: kafka.nais.io/v1
+kind: Topic
+metadata:
+  labels:
+    team: teamsykmelding
+  name: syfosmmottak-rerun
+  namespace: teamsykmelding
+spec:
+  acl:
+    - team: teamsykmelding
+      application: macgyver
+      access: readwrite
+    - team: teamsykmelding
+      application: syfosmmottak
+      access: readwrite
+  config:
+    cleanupPolicy: delete
+    partitions: 1
+    replication: 2
+    retentionHours: 24
+  pool: {{kafka-pool}}

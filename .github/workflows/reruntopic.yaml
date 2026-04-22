@@ -1,0 +1,30 @@
+name: deploy-topics-dev
+on:
+  push:
+    branches:
+      'main'
+    paths:
+      - '.nais/reruntopic.yaml'
+      - '.github/workflows/reruntopic.yaml'
+jobs:
+  deploy:
+    name: Deploy topic
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Deploy topics to dev
+        uses: nais/deploy/actions/deploy@v2
+        env:
+          CLUSTER: dev-gcp
+          VAR: kafka-pool=nav-dev
+          RESOURCE: ./nais/reruntopic.yaml
+      - name: Deploy topics to prod
+        uses: nais/deploy/actions/deploy@v2
+        env:
+          CLUSTER: prod-gcp
+          VAR: kafka-pool=nav-prod
+          RESOURCE: ./nais/reruntopic.yaml
