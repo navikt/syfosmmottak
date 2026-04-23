@@ -43,7 +43,8 @@ fun DatabaseInterface.persistDuplicateCheck(duplicateCheck: DuplicateCheck) {
 }
 
 fun DatabaseInterface.extractDuplicateCheckBySha256HealthInformation(
-    sha256HealthInformation: String
+    sha256HealthInformation: String,
+    sha256WithSigner: String,
 ): DuplicateCheck? {
     connection.use { connection ->
         connection
@@ -51,11 +52,12 @@ fun DatabaseInterface.extractDuplicateCheckBySha256HealthInformation(
                 """
                  select * 
                  from duplicatecheck 
-                 where sha256_health_information=?;
+                 where sha256_health_information = ? or sha256_health_information =? ;
                 """,
             )
             .use { preparedStatement ->
                 preparedStatement.setString(1, sha256HealthInformation)
+                preparedStatement.setString(2, sha256WithSigner)
                 return preparedStatement.executeQuery().toList { toDuplicateCheck() }.firstOrNull()
             }
     }
@@ -80,18 +82,19 @@ fun DatabaseInterface.extractDuplicateCheckByMottakId(mottakId: String): List<Du
 
 fun DatabaseInterface.deleteDuplicateCheckByMsgId(msgId: String): Int {
     connection.use { connection ->
-        val deleted = connection
-            .prepareStatement(
-                """
+        val deleted =
+            connection
+                .prepareStatement(
+                    """
                  delete  
                  from duplicatecheck 
                  where mottak_id=?;
                 """,
-            )
-            .use { preparedStatement ->
-                preparedStatement.setString(1, msgId)
-                preparedStatement.executeUpdate()
-            }
+                )
+                .use { preparedStatement ->
+                    preparedStatement.setString(1, msgId)
+                    preparedStatement.executeUpdate()
+                }
         connection.commit()
         return deleted
     }

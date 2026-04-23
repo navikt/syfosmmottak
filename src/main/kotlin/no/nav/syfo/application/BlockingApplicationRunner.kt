@@ -176,7 +176,7 @@ class BlockingApplicationRunner(
             val (healthInformation, recursive) =
                 extractHelseOpplysningerArbeidsuforhet(fellesformat)
             val ediLoggId = receiverBlock.ediLoggId
-            val sha256String = sha256hashstring(healthInformation)
+
             val msgId = msgHead.msgInfo.msgId
 
             val legekontorHerId = extractOrganisationHerNumberFromSender(fellesformat)?.id
@@ -208,19 +208,6 @@ class BlockingApplicationRunner(
             val currentSpan = Span.current()
             currentSpan.setAttribute("sykmeldingId", sykmeldingId)
 
-            val duplicateCheck =
-                DuplicateCheck(
-                    sykmeldingId,
-                    sha256String,
-                    ediLoggId,
-                    msgId,
-                    mottatDato,
-                    avsenderSystem.navn,
-                    avsenderSystem.versjon,
-                    legekontorOrgNr,
-                    rulesetVersion,
-                )
-
             logger.info(
                 "Extracted data, ready to make sync calls to get more data, {}",
                 StructuredArguments.fields(loggingMeta),
@@ -238,7 +225,6 @@ class BlockingApplicationRunner(
                     StructuredArguments.fields(loggingMeta),
                 )
             }
-
             val (signerendeBehandler: Behandler?, identer: Map<String, PdlPerson?>) =
                 if (erVirksomhetSykmelding) {
                     logger.info(
@@ -257,7 +243,6 @@ class BlockingApplicationRunner(
                             env,
                             kafkaproducerApprec,
                             duplicationService,
-                            duplicateCheck,
                         )
                         return
                     }
@@ -279,7 +264,6 @@ class BlockingApplicationRunner(
                             env,
                             kafkaproducerApprec,
                             duplicationService,
-                            duplicateCheck,
                         )
                         return
                     } else {
@@ -301,8 +285,9 @@ class BlockingApplicationRunner(
                         ?.copy(fnr = receiverBlock.avsenderFnrFraDigSignatur) to identer
                 }
 
+            val sha256Result = sha256hashstring(healthInformation, signerendeBehandler?.hprNummer)
             val duplicationCheckSha256String =
-                duplicationService.getDuplicationCheck(sha256String, ediLoggId)
+                duplicationService.getDuplicationCheck(sha256Result, ediLoggId)
 
             if (duplicationCheckSha256String != null) {
                 val duplicate =
@@ -331,6 +316,18 @@ class BlockingApplicationRunner(
                 )
                 return
             } else {
+                val duplicateCheck =
+                    DuplicateCheck(
+                        sykmeldingId,
+                        sha256Result.sha256WithSigner,
+                        ediLoggId,
+                        msgId,
+                        mottatDato,
+                        avsenderSystem.navn,
+                        avsenderSystem.versjon,
+                        legekontorOrgNr,
+                        rulesetVersion,
+                    )
                 val pasient = identer[originaltPasientFnr]
                 val signerendeFnr = signerendeBehandler?.fnr
                 val signerendeAktorId = signerendeFnr?.let { identer[it] }?.aktorId

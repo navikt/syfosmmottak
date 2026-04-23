@@ -32,6 +32,7 @@ class DuplicationService(private val database: DatabaseInterface) {
     fun persistDuplicationCheck(
         duplicateCheck: DuplicateCheck,
     ) {
+
         database.persistDuplicateCheck(duplicateCheck)
     }
 
@@ -41,9 +42,12 @@ class DuplicationService(private val database: DatabaseInterface) {
         database.persistDuplicateMessage(duplicate)
     }
 
-    fun getDuplicationCheck(sha256HealthInformation: String, mottakId: String): DuplicateCheck? {
+    fun getDuplicationCheck(sha256Result: Sha256Result, mottakId: String): DuplicateCheck? {
         val duplicationCheckSha256HealthInformation =
-            database.extractDuplicateCheckBySha256HealthInformation(sha256HealthInformation)
+            database.extractDuplicateCheckBySha256HealthInformation(
+                sha256Result.sha256HealthInformation,
+                sha256Result.sha256WithSigner,
+            )
 
         if (duplicationCheckSha256HealthInformation != null) {
             return duplicationCheckSha256HealthInformation
@@ -68,7 +72,28 @@ fun getLatestDuplicationCheck(duplicationChecks: List<DuplicateCheck>): Duplicat
     }
 }
 
-fun sha256hashstring(helseOpplysningerArbeidsuforhet: HelseOpplysningerArbeidsuforhet): String =
-    MessageDigest.getInstance("SHA-256")
-        .digest(sha256ObjectMapper.writeValueAsBytes(helseOpplysningerArbeidsuforhet))
-        .fold("") { str, it -> str + "%02x".format(it) }
+data class Sha256Result(
+    val sha256HealthInformation: String,
+    val sha256WithSigner: String,
+)
+
+fun sha256hashstring(
+    helseOpplysningerArbeidsuforhet: HelseOpplysningerArbeidsuforhet,
+    signerHpr: String?,
+): Sha256Result {
+    val healthInfoBytes = sha256ObjectMapper.writeValueAsBytes(helseOpplysningerArbeidsuforhet)
+
+    val sha256HealthInformation =
+        MessageDigest.getInstance("SHA-256").digest(healthInfoBytes).toHexString()
+
+    val sha256WithSigner =
+        when (signerHpr) {
+            null -> sha256HealthInformation
+            else ->
+                MessageDigest.getInstance("SHA-256")
+                    .digest(healthInfoBytes + sha256ObjectMapper.writeValueAsBytes(signerHpr))
+                    .toHexString()
+        }
+
+    return Sha256Result(sha256HealthInformation, sha256WithSigner)
+}

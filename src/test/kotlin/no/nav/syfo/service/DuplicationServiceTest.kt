@@ -3,6 +3,7 @@ package no.nav.syfo.service
 import io.mockk.clearAllMocks
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.UUID
 import no.nav.helse.sm2013.Address
 import no.nav.helse.sm2013.ArsakType
 import no.nav.helse.sm2013.CS
@@ -30,17 +31,86 @@ internal class DuplicationServiceTest {
 
     @Test
     fun `Should not include strekkode`() {
-        val sha256 = sha256hashstring(getHelseOpplysinginArbeidsuforhet("strekkode"))
-        val sha256New = sha256hashstring(getHelseOpplysinginArbeidsuforhet("strekkode2"))
-        assertEquals(sha256, sha256New)
+        val sha256 = sha256hashstring(getHelseOpplysinginArbeidsuforhet("strekkode"), null)
+        val sha256New = sha256hashstring(getHelseOpplysinginArbeidsuforhet("strekkode2"), null)
+        assertEquals(sha256.sha256HealthInformation, sha256New.sha256HealthInformation)
     }
 
     @Test
     fun `Should not be same with differnt arbeidsgiver`() {
         val sha256 =
-            sha256hashstring(getHelseOpplysinginArbeidsuforhet("strekkode", "arbeidsgiver"))
-        val sha256New = sha256hashstring(getHelseOpplysinginArbeidsuforhet("strekkode"))
-        assertNotEquals(sha256, sha256New)
+            sha256hashstring(getHelseOpplysinginArbeidsuforhet("strekkode", "arbeidsgiver"), null)
+        val sha256New = sha256hashstring(getHelseOpplysinginArbeidsuforhet("strekkode"), null)
+        assertNotEquals(sha256.sha256HealthInformation, sha256New.sha256HealthInformation)
+    }
+
+    @Test
+    fun `Should produce different hash with and without signerHpr`() {
+        val helseOpplysninger = getHelseOpplysinginArbeidsuforhet("strekkode")
+        val resultWithoutHpr = sha256hashstring(helseOpplysninger, null)
+        val resultWithHpr = sha256hashstring(helseOpplysninger, "1234567")
+        assertEquals(
+            resultWithoutHpr.sha256HealthInformation,
+            resultWithHpr.sha256HealthInformation
+        )
+        assertNotEquals(resultWithHpr.sha256HealthInformation, resultWithHpr.sha256WithSigner)
+    }
+
+    @Test
+    fun `Should produce same hash for same signerHpr`() {
+        val helseOpplysninger = getHelseOpplysinginArbeidsuforhet("strekkode")
+        val result1 = sha256hashstring(helseOpplysninger, "1234567")
+        val result2 = sha256hashstring(helseOpplysninger, "1234567")
+        assertEquals(result1.sha256WithSigner, result2.sha256WithSigner)
+        assertEquals(result1.sha256HealthInformation, result2.sha256HealthInformation)
+    }
+
+    @Test
+    fun `Should produce different hash for different signerHpr`() {
+        val helseOpplysninger = getHelseOpplysinginArbeidsuforhet("strekkode")
+        val result1 = sha256hashstring(helseOpplysninger, "1234567")
+        val result2 = sha256hashstring(helseOpplysninger, "7654321")
+        assertNotEquals(result1.sha256WithSigner, result2.sha256WithSigner)
+    }
+
+    @Test
+    fun `sha256HealthInformation should be same regardless of signerHpr`() {
+        val helseOpplysninger = getHelseOpplysinginArbeidsuforhet("strekkode")
+        val result1 = sha256hashstring(helseOpplysninger, null)
+        val resultWithHpr = sha256hashstring(helseOpplysninger, "1234567")
+        assertEquals(result1.sha256HealthInformation, resultWithHpr.sha256HealthInformation)
+    }
+
+    @Test
+    fun `should return duplicate if it has been added without signer first`() {
+        val sykmeldingID = UUID.randomUUID().toString()
+        val helseOpplysninger = getHelseOpplysinginArbeidsuforhet("strekkode")
+        val sha256Result = sha256hashstring(helseOpplysninger, null)
+        val mottakId = "1231-213"
+        val epjSystem = "Kul EPJ"
+        val epjVersion = "1.3.4"
+        val orgNumber = "992312355"
+
+        val duplicationCheck =
+            DuplicateCheck(
+                sykmeldingID,
+                sha256Result.sha256HealthInformation,
+                mottakId,
+                "12-33",
+                LocalDateTime.now(),
+                epjSystem,
+                epjVersion,
+                orgNumber,
+                null,
+            )
+        duplicationService.persistDuplicationCheck(duplicationCheck)
+
+        val withSigner = sha256hashstring(helseOpplysninger, "signer")
+
+        val duplicate = duplicationService.getDuplicationCheck(withSigner, "other mottakId")
+
+        assertEquals(duplicate?.mottakId, "1231-213")
+        assertEquals(duplicate?.sha256HealthInformation, sha256Result.sha256HealthInformation)
     }
 
     @Test
@@ -67,7 +137,11 @@ internal class DuplicationServiceTest {
             )
 
         duplicationService.persistDuplicationCheck(duplicationCheck)
-        val isDuplicat = duplicationService.getDuplicationCheck(sha256HealthInformation, mottakId)
+        val isDuplicat =
+            duplicationService.getDuplicationCheck(
+                Sha256Result(sha256HealthInformation, sha256HealthInformation),
+                mottakId
+            )
 
         assertEquals(duplicationCheck.sha256HealthInformation, isDuplicat?.sha256HealthInformation)
         assertEquals(duplicationCheck.mottakId, isDuplicat?.mottakId)
@@ -104,7 +178,8 @@ internal class DuplicationServiceTest {
             )
 
         duplicationService.persistDuplicationCheck(duplicationCheck)
-        val isDuplicat = duplicationService.getDuplicationCheck("1231", "1334")
+        val isDuplicat =
+            duplicationService.getDuplicationCheck(Sha256Result("1231", "1231"), "1334")
 
         assertEquals(null, isDuplicat)
     }
@@ -132,7 +207,8 @@ internal class DuplicationServiceTest {
             )
 
         duplicationService.persistDuplicationCheck(duplicationCheck)
-        val isDuplicat = duplicationService.getDuplicationCheck("1231", mottakId)
+        val isDuplicat =
+            duplicationService.getDuplicationCheck(Sha256Result("1231", "1231"), mottakId)
 
         assertEquals(mottakId, isDuplicat?.mottakId)
     }
@@ -157,7 +233,8 @@ internal class DuplicationServiceTest {
             )
 
         duplicationService.persistDuplicationCheck(duplicationCheck)
-        val isDuplicat = duplicationService.getDuplicationCheck("1231", mottakId)
+        val isDuplicat =
+            duplicationService.getDuplicationCheck(Sha256Result("1231", "1231"), mottakId)
 
         assertEquals(duplicationCheck.sha256HealthInformation, isDuplicat?.sha256HealthInformation)
         assertEquals(duplicationCheck.mottakId, isDuplicat?.mottakId)
@@ -197,7 +274,8 @@ internal class DuplicationServiceTest {
 
         duplicationService.persistDuplicationCheck(duplicationCheck)
 
-        val isDuplicat = duplicationService.getDuplicationCheck("1231", mottakId)!!
+        val isDuplicat =
+            duplicationService.getDuplicationCheck(Sha256Result("1231", "1231"), mottakId)!!
 
         val duplication =
             Duplicate(

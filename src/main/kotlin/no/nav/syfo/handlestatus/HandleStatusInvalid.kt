@@ -608,7 +608,6 @@ fun handleVirksomhetssykmeldingOgHprMangler(
     env: EnvironmentVariables,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
-    duplicateCheck: DuplicateCheck,
 ) {
     logger.warn(
         "Virksomhetsykmeldingen er avvist fordi den mangler HPR-nummer for behandler {} {}",
@@ -627,7 +626,7 @@ fun handleVirksomhetssykmeldingOgHprMangler(
             msgHead,
         )
 
-    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, null)
 }
 
 fun handleVirksomhetssykmeldingOgFnrManglerIHPR(
@@ -639,7 +638,6 @@ fun handleVirksomhetssykmeldingOgFnrManglerIHPR(
     env: EnvironmentVariables,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     duplicationService: DuplicationService,
-    duplicateCheck: DuplicateCheck,
 ) {
     logger.warn(
         "Virksomhetsykmeldingen er avvist fordi fødselsnummer mangler i HPR for behandler {} {}",
@@ -664,7 +662,7 @@ fun handleVirksomhetssykmeldingOgFnrManglerIHPR(
         kafkaproducerApprec,
         loggingMeta,
         duplicationService,
-        duplicateCheck,
+        null,
     )
 }
 
@@ -847,12 +845,14 @@ private fun sendApprec(
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     loggingMeta: LoggingMeta,
     duplicationService: DuplicationService,
-    duplicateCheck: DuplicateCheck,
+    duplicateCheck: DuplicateCheck?,
 ) {
     sendReceipt(apprec, env.apprecTopic, kafkaproducerApprec, loggingMeta)
     logger.info("Apprec receipt sent to kafka topic {}, {}", env.apprecTopic, fields(loggingMeta))
     INVALID_MESSAGE_NO_NOTICE.inc()
-    duplicationService.persistDuplicationCheck(duplicateCheck)
+    if (duplicateCheck != null) {
+        duplicationService.persistDuplicationCheck(duplicateCheck)
+    }
 }
 
 fun fellesformatToAppprec(
