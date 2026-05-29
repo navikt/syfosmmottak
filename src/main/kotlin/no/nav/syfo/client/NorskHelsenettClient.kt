@@ -150,11 +150,21 @@ data class Kode(
 
 fun getHelsepersonellKategori(godkjenninger: List<Godkjenning>): String? =
     when {
-        godkjenninger.find { it.helsepersonellkategori?.verdi == "LE" && it.helsepersonellkategori.aktiv } != null -> "LE"
-        godkjenninger.find { it.helsepersonellkategori?.verdi == "TL" && it.helsepersonellkategori.aktiv } != null -> "TL"
-        godkjenninger.find { it.helsepersonellkategori?.verdi == "MT" && it.helsepersonellkategori.aktiv } != null -> "MT"
-        godkjenninger.find { it.helsepersonellkategori?.verdi == "KI" && it.helsepersonellkategori.aktiv } != null -> "KI"
-        godkjenninger.find { it.helsepersonellkategori?.verdi == "FT" && it.helsepersonellkategori.aktiv } != null -> "FT"
+        godkjenninger.find {
+            it.helsepersonellkategori?.verdi == "LE" && it.helsepersonellkategori.aktiv
+        } != null -> "LE"
+        godkjenninger.find {
+            it.helsepersonellkategori?.verdi == "TL" && it.helsepersonellkategori.aktiv
+        } != null -> "TL"
+        godkjenninger.find {
+            it.helsepersonellkategori?.verdi == "MT" && it.helsepersonellkategori.aktiv
+        } != null -> "MT"
+        godkjenninger.find {
+            it.helsepersonellkategori?.verdi == "KI" && it.helsepersonellkategori.aktiv
+        } != null -> "KI"
+        godkjenninger.find {
+            it.helsepersonellkategori?.verdi == "FT" && it.helsepersonellkategori.aktiv
+        } != null -> "FT"
         else -> {
             val verdi = godkjenninger.firstOrNull()?.helsepersonellkategori?.verdi
             logger.warn(

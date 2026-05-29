@@ -182,10 +182,9 @@ class BlockingApplicationRunner(
             val legekontorHerId = extractOrganisationHerNumberFromSender(fellesformat)?.id
             val legekontorReshId = extractOrganisationRashNumberFromSender(fellesformat)?.id
             val legekontorOrgName =
-                msgHead.msgInfo.sender.organisation.organisationName.replace(
-                    "[^\\p{ASCII}]".toRegex(),
-                    "",
-                )
+                msgHead.msgInfo.sender.organisation.organisationName.filter {
+                    it.category != CharCategory.CONTROL
+                }
 
             val partnerReferanse = receiverBlock.partnerReferanse
 
