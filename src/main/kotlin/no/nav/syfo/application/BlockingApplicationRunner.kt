@@ -554,8 +554,11 @@ class BlockingApplicationRunner(
                         recursive.toString()
                     )
                     .inc()
-                when (validationResult.status) {
-                    Status.OK ->
+                val isBehandlingsdager =
+                    receivedSykmelding.sykmelding.perioder.any { it.behandlingsdager != null }
+                val status = validationResult.status
+                when {
+                    status == Status.OK && !isBehandlingsdager ->
                         handleStatusOK(
                             fellesformat = fellesformat,
                             ediLoggId = ediLoggId,
@@ -568,7 +571,21 @@ class BlockingApplicationRunner(
                             receivedSykmelding = receivedSykmelding,
                             kafkaproducerreceivedSykmelding = kafkaproducerreceivedSykmelding,
                         )
-                    Status.MANUAL_PROCESSING ->
+                    status == Status.INVALID ->
+                        handleStatusINVALID(
+                            validationResult = validationResult,
+                            kafkaproducerreceivedSykmelding = kafkaproducerreceivedSykmelding,
+                            avvistSykmeldingTopic = env.avvistSykmeldingTopic,
+                            receivedSykmelding = receivedSykmelding,
+                            loggingMeta = loggingMeta,
+                            fellesformat = fellesformat,
+                            apprecTopic = env.apprecTopic,
+                            kafkaproducerApprec = kafkaproducerApprec,
+                            ediLoggId = ediLoggId,
+                            msgId = msgId,
+                            msgHead = msgHead,
+                        )
+                    status == Status.MANUAL_PROCESSING || isBehandlingsdager ->
                         handleStatusMANUALPROCESSING(
                             receivedSykmelding = receivedSykmelding,
                             loggingMeta = loggingMeta,
@@ -586,19 +603,9 @@ class BlockingApplicationRunner(
                             syfoSmManuellTopic = env.syfoSmManuellTopic,
                             produserOppgaveTopic = env.produserOppgaveTopic,
                         )
-                    Status.INVALID ->
-                        handleStatusINVALID(
-                            validationResult = validationResult,
-                            kafkaproducerreceivedSykmelding = kafkaproducerreceivedSykmelding,
-                            avvistSykmeldingTopic = env.avvistSykmeldingTopic,
-                            receivedSykmelding = receivedSykmelding,
-                            loggingMeta = loggingMeta,
-                            fellesformat = fellesformat,
-                            apprecTopic = env.apprecTopic,
-                            kafkaproducerApprec = kafkaproducerApprec,
-                            ediLoggId = ediLoggId,
-                            msgId = msgId,
-                            msgHead = msgHead,
+                    else ->
+                        throw RuntimeException(
+                            "Unhandled ${validationResult.status} for ${receivedSykmelding.sykmelding.id}"
                         )
                 }
 

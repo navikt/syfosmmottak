@@ -220,7 +220,8 @@ fun sendManuellTask(
 }
 
 fun sendToSyfosmManuell(ruleHits: List<RuleInfo>): Boolean {
-    return ruleHits.find { it.ruleName == "SYKMELDING_MED_BEHANDLINGSDAGER" } == null
+    return ruleHits.find { it.ruleName == "SYKMELDING_MED_BEHANDLINGSDAGER" } == null ||
+        ruleHits.isEmpty()
 }
 
 fun finnFristForFerdigstillingAvOppgave(ferdistilleDato: LocalDate): LocalDate {
