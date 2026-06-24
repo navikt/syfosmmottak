@@ -33,26 +33,14 @@ internal class HandleStatusManualProcessingTest {
                     ),
             )
 
-        Assertions.assertEquals(true, sendToSyfosmManuell(validationResult.ruleHits))
+        Assertions.assertEquals(true, sendToSyfosmManuell(validationResult))
     }
 
     @Test
     internal fun `Should return false when rulehits contain SYKMELDING_MED_BEHANDLINGSDAGER`() {
-        val validationResult =
-            ValidationResult(
-                status = Status.MANUAL_PROCESSING,
-                ruleHits =
-                    listOf(
-                        RuleInfo(
-                            ruleName = "SYKMELDING_MED_BEHANDLINGSDAGER",
-                            messageForUser = "Sykmelding inneholder behandlingsdager.",
-                            messageForSender = "Sykmelding inneholder behandlingsdager.",
-                            ruleStatus = Status.MANUAL_PROCESSING,
-                        ),
-                    ),
-            )
+        val validationResult = ValidationResult(status = Status.OK, emptyList())
 
-        Assertions.assertEquals(false, sendToSyfosmManuell(validationResult.ruleHits))
+        Assertions.assertEquals(false, sendToSyfosmManuell(validationResult))
     }
 
     @Test
@@ -60,15 +48,8 @@ internal class HandleStatusManualProcessingTest {
         val receivedSykmelding = mockk<ReceivedSykmelding>(relaxed = true)
         val validationResults =
             ValidationResult(
-                Status.MANUAL_PROCESSING,
-                listOf(
-                    RuleInfo(
-                        "SYKMELDING_MED_BEHANDLINGSDAGER",
-                        "Sykmelding inneholder behandlingsdager.",
-                        "Sykmelding inneholder behandlingsdager.",
-                        Status.MANUAL_PROCESSING,
-                    ),
-                ),
+                Status.OK,
+                emptyList(),
             )
 
         val oppgave =

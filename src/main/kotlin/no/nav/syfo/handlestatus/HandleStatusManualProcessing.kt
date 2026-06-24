@@ -20,7 +20,7 @@ import no.nav.syfo.model.OpprettOppgaveKafkaMessage
 import no.nav.syfo.model.PrioritetType
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ReceivedSykmeldingWithValidation
-import no.nav.syfo.model.RuleInfo
+import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.model.toReceivedSykmeldingWithValidation
 import no.nav.syfo.sendReceipt
@@ -47,7 +47,7 @@ fun handleStatusMANUALPROCESSING(
     syfoSmManuellTopic: String,
     produserOppgaveTopic: String,
 ) {
-    val sendToSyfosmManuell = sendToSyfosmManuell(ruleHits = validationResult.ruleHits)
+    val sendToSyfosmManuell = sendToSyfosmManuell(validationResult)
 
     if (sendToSyfosmManuell) {
         logger.info(
@@ -162,20 +162,7 @@ fun opprettOpprettOppgaveKafkaMessage(
                 "Manuell behandling av sykmelding grunnet følgende regler: ${validationResult.ruleHits.joinToString(", ", "(", ")") { it.messageForSender }}",
             temagruppe = "ANY",
             tema = "SYM",
-            behandlingstema =
-                if (
-                    validationResult.ruleHits.find {
-                        it.ruleName == "SYKMELDING_MED_BEHANDLINGSDAGER"
-                    } != null
-                ) {
-                    logger.info(
-                        "Sykmelding inneholder behandlingsdager, {}",
-                        StructuredArguments.fields(loggingMeta)
-                    )
-                    "ab0351"
-                } else {
-                    "ANY"
-                },
+            behandlingstema = "ab0351",
             oppgavetype = "BEH_EL_SYM",
             behandlingstype = "ANY",
             mappeId = 1,
@@ -219,9 +206,8 @@ fun sendManuellTask(
     }
 }
 
-fun sendToSyfosmManuell(ruleHits: List<RuleInfo>): Boolean {
-    return ruleHits.find { it.ruleName == "SYKMELDING_MED_BEHANDLINGSDAGER" } == null ||
-        ruleHits.isEmpty()
+fun sendToSyfosmManuell(validation: ValidationResult): Boolean {
+    return validation.status == Status.MANUAL_PROCESSING && validation.ruleHits.isNotEmpty()
 }
 
 fun finnFristForFerdigstillingAvOppgave(ferdistilleDato: LocalDate): LocalDate {

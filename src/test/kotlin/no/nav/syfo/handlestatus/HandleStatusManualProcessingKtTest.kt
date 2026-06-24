@@ -35,19 +35,20 @@ internal class HandleStatusManualProcessingKtTest {
         mockk<KafkaProducer<String, ReceivedSykmeldingWithValidation>>(relaxed = true)
     val kafkaManualTaskProducer = mockk<KafkaProducer<String, OpprettOppgaveKafkaMessage>>()
     val manuellOppgaveProducer = mockk<KafkaProducer<String, ManuellOppgave>>()
-    val validationResult = ValidationResult(Status.MANUAL_PROCESSING, emptyList())
-    val validationResultIkkeManuell =
+    val validationResult =
         ValidationResult(
             Status.MANUAL_PROCESSING,
             listOf(
                 RuleInfo(
-                    ruleName = "SYKMELDING_MED_BEHANDLINGSDAGER",
-                    messageForUser = "Sykmelding inneholder behandlingsdager.",
-                    messageForSender = "Sykmelding inneholder behandlingsdager.",
+                    ruleName = "MINDRE_ENN_1_MAANED",
+                    messageForUser = "Tilbakedatert.",
+                    messageForSender = "Tilbakedatert.",
                     ruleStatus = Status.MANUAL_PROCESSING,
                 ),
-            ),
+            )
         )
+    val validationResultIkkeManuell = ValidationResult(Status.OK, emptyList())
+
     val stringInput = getFileAsString("src/test/resources/sykemelding2013Regelsettversjon2.xml")
     val fellesformat =
         fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat
