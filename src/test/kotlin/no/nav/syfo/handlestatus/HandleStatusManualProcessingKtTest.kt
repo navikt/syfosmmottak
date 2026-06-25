@@ -89,6 +89,7 @@ internal class HandleStatusManualProcessingKtTest {
             kafkaManualTaskProducer,
             kafkaProducerReceviedSykmelding,
             manuellOppgaveProducer,
+            false
         )
 
         verify(exactly = 0) { kafkaApprecProducer.send(any()) }
@@ -113,6 +114,7 @@ internal class HandleStatusManualProcessingKtTest {
                     kafkaManualTaskProducer,
                     kafkaProducerReceviedSykmelding,
                     manuellOppgaveProducer,
+                    false,
                 )
             }
         }
@@ -134,6 +136,7 @@ internal class HandleStatusManualProcessingKtTest {
                     kafkaManualTaskProducer,
                     kafkaProducerReceviedSykmelding,
                     manuellOppgaveProducer,
+                    true
                 )
             }
         }
@@ -155,6 +158,7 @@ internal class HandleStatusManualProcessingKtTest {
                     kafkaManualTaskProducer,
                     kafkaProducerReceviedSykmelding,
                     manuellOppgaveProducer,
+                    true,
                 )
             }
         }
@@ -176,6 +180,7 @@ internal class HandleStatusManualProcessingKtTest {
                     kafkaManualTaskProducer,
                     kafkaProducerReceviedSykmelding,
                     manuellOppgaveProducer,
+                    true,
                 )
             }
         }
@@ -199,6 +204,7 @@ private fun handleManualProcessing(
     kafkaManualTaskProducer: KafkaProducer<String, OpprettOppgaveKafkaMessage>,
     kafkaProducerReceviedSykmelding: KafkaProducer<String, ReceivedSykmeldingWithValidation>,
     manuellOppgaveProducer: KafkaProducer<String, ManuellOppgave>,
+    isBehandlingsdager: Boolean
 ) {
     handleStatusMANUALPROCESSING(
         receivedSykmelding,
@@ -216,5 +222,6 @@ private fun handleManualProcessing(
         manuellOppgaveProducer,
         "",
         "",
+        isBehandlingsdager,
     )
 }

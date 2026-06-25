@@ -46,10 +46,10 @@ fun handleStatusMANUALPROCESSING(
     kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
     syfoSmManuellTopic: String,
     produserOppgaveTopic: String,
+    isBehandlingsdager: Boolean,
 ) {
-    val sendToSyfosmManuell = sendToSyfosmManuell(validationResult)
 
-    if (sendToSyfosmManuell) {
+    if (!isBehandlingsdager) {
         logger.info(
             "Sending manuell oppgave to syfosmmanuell-backend {}",
             StructuredArguments.fields(loggingMeta)

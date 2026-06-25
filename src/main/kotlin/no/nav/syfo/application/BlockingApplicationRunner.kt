@@ -602,6 +602,7 @@ class BlockingApplicationRunner(
                             kafkaproducerManuellOppgave = kafkaproducerManuellOppgave,
                             syfoSmManuellTopic = env.syfoSmManuellTopic,
                             produserOppgaveTopic = env.produserOppgaveTopic,
+                            isBehandlingsdager = isBehandlingsdager,
                         )
                     else ->
                         throw RuntimeException(

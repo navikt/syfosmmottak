@@ -21,6 +21,7 @@ import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.OpprettOppgaveKafkaMessage
 import no.nav.syfo.model.ReceivedSykmeldingWithValidation
+import no.nav.syfo.model.RuleInfo
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.pdl.client.model.PdlIdent
@@ -216,6 +217,29 @@ internal class BlockingApplicationRunnerTest {
                     "Incoming message needs to be a byte message or text message",
                     exception.message,
                 )
+            }
+        }
+    }
+
+    @Test
+    internal fun `Tilbakedatert behandlingsdager skal ikke til manuell`() {
+        every { applicationState.ready } returns true andThen false
+        val stringInput = getFileAsString("src/test/resources/fellesformat-behandlingsdager.xml")
+        val textMessage = mockk<TextMessage>(relaxed = true)
+        every { textMessage.text } returns stringInput
+        every { inputconsumer.receive(1000) } returns textMessage
+        coEvery { syfoSykemeldingRuleClient.executeRuleValidation(any(), any()) } returns
+            ValidationResult(
+                Status.MANUAL_PROCESSING,
+                listOf(
+                    RuleInfo("UNDER_1_MND", "aadf", "adf", ruleStatus = Status.MANUAL_PROCESSING)
+                ),
+            )
+        runBlocking {
+            blockingApplicationRunner.run()
+
+            coVerify {
+                kafkaproducerApprec.send(match { it.value().apprecStatus == ApprecStatus.OK })
             }
         }
     }
