@@ -558,7 +558,7 @@ class BlockingApplicationRunner(
                     receivedSykmelding.sykmelding.perioder.any { it.behandlingsdager != null }
                 val status = validationResult.status
                 when {
-                    status == Status.OK && !isBehandlingsdager ->
+                    status == Status.OK || isBehandlingsdager ->
                         handleStatusOK(
                             fellesformat = fellesformat,
                             ediLoggId = ediLoggId,
@@ -585,7 +585,7 @@ class BlockingApplicationRunner(
                             msgId = msgId,
                             msgHead = msgHead,
                         )
-                    status == Status.MANUAL_PROCESSING || isBehandlingsdager ->
+                    status == Status.MANUAL_PROCESSING ->
                         handleStatusMANUALPROCESSING(
                             receivedSykmelding = receivedSykmelding,
                             loggingMeta = loggingMeta,
@@ -593,16 +593,9 @@ class BlockingApplicationRunner(
                             ediLoggId = ediLoggId,
                             msgId = msgId,
                             msgHead = msgHead,
-                            apprecTopic = env.apprecTopic,
-                            kafkaproducerApprec = kafkaproducerApprec,
                             validationResult = validationResult,
-                            kafkaManuelTaskProducer = kafkaManuelTaskProducer,
-                            kafkaproducerreceivedSykmelding = kafkaproducerreceivedSykmelding,
-                            manuellBehandlingSykmeldingTopic = env.manuellBehandlingSykmeldingTopic,
                             kafkaproducerManuellOppgave = kafkaproducerManuellOppgave,
                             syfoSmManuellTopic = env.syfoSmManuellTopic,
-                            produserOppgaveTopic = env.produserOppgaveTopic,
-                            isBehandlingsdager = isBehandlingsdager,
                         )
                     else ->
                         throw RuntimeException(

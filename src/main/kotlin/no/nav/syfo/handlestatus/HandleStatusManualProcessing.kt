@@ -19,12 +19,8 @@ import no.nav.syfo.model.ManuellOppgave
 import no.nav.syfo.model.OpprettOppgaveKafkaMessage
 import no.nav.syfo.model.PrioritetType
 import no.nav.syfo.model.ReceivedSykmelding
-import no.nav.syfo.model.ReceivedSykmeldingWithValidation
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
-import no.nav.syfo.model.toReceivedSykmeldingWithValidation
-import no.nav.syfo.sendReceipt
-import no.nav.syfo.sendReceivedSykmelding
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.get
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -37,112 +33,35 @@ fun handleStatusMANUALPROCESSING(
     ediLoggId: String,
     msgId: String,
     msgHead: XMLMsgHead,
-    apprecTopic: String,
-    kafkaproducerApprec: KafkaProducer<String, Apprec>,
     validationResult: ValidationResult,
-    kafkaManuelTaskProducer: KafkaProducer<String, OpprettOppgaveKafkaMessage>,
-    kafkaproducerreceivedSykmelding: KafkaProducer<String, ReceivedSykmeldingWithValidation>,
-    manuellBehandlingSykmeldingTopic: String,
     kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
     syfoSmManuellTopic: String,
-    produserOppgaveTopic: String,
-    isBehandlingsdager: Boolean,
 ) {
 
-    if (!isBehandlingsdager) {
-        logger.info(
-            "Sending manuell oppgave to syfosmmanuell-backend {}",
-            StructuredArguments.fields(loggingMeta)
+    logger.info(
+        "Sending manuell oppgave to syfosmmanuell-backend {}",
+        StructuredArguments.fields(loggingMeta)
+    )
+    val apprec =
+        fellesformat.toApprec(
+            ediLoggId,
+            msgId,
+            msgHead,
+            ApprecStatus.OK,
+            null,
+            msgHead.msgInfo.receiver.organisation,
+            msgHead.msgInfo.sender.organisation,
+            msgHead.msgInfo.genDate,
+            null,
+            fellesformat.get<XMLMottakenhetBlokk>().ebService,
         )
-        val apprec =
-            fellesformat.toApprec(
-                ediLoggId,
-                msgId,
-                msgHead,
-                ApprecStatus.OK,
-                null,
-                msgHead.msgInfo.receiver.organisation,
-                msgHead.msgInfo.sender.organisation,
-                msgHead.msgInfo.genDate,
-                null,
-                fellesformat.get<XMLMottakenhetBlokk>().ebService,
-            )
-        sendManuellTask(
-            receivedSykmelding,
-            validationResult,
-            apprec,
-            syfoSmManuellTopic,
-            kafkaproducerManuellOppgave
-        )
-    } else {
-        logger.info(
-            "Sending manuell oppgave to syfosmoppgave {}",
-            StructuredArguments.fields(loggingMeta)
-        )
-        opprettOppgave(
-            kafkaManuelTaskProducer,
-            receivedSykmelding,
-            validationResult,
-            produserOppgaveTopic,
-            loggingMeta
-        )
-
-        sendReceivedSykmelding(
-            manuellBehandlingSykmeldingTopic,
-            receivedSykmelding.toReceivedSykmeldingWithValidation(validationResult),
-            kafkaproducerreceivedSykmelding,
-        )
-
-        val apprec =
-            fellesformat.toApprec(
-                ediLoggId,
-                msgId,
-                msgHead,
-                ApprecStatus.OK,
-                null,
-                msgHead.msgInfo.receiver.organisation,
-                msgHead.msgInfo.sender.organisation,
-                msgHead.msgInfo.genDate,
-                null,
-                fellesformat.get<XMLMottakenhetBlokk>().ebService,
-            )
-        sendReceipt(apprec, apprecTopic, kafkaproducerApprec, loggingMeta)
-        logger.info(
-            "Apprec receipt sent to kafka topic {}, {}",
-            apprecTopic,
-            StructuredArguments.fields(loggingMeta)
-        )
-    }
-}
-
-fun opprettOppgave(
-    kafkaProducer: KafkaProducer<String, OpprettOppgaveKafkaMessage>,
-    receivedSykmelding: ReceivedSykmelding,
-    results: ValidationResult,
-    produserOppgaveTopic: String,
-    loggingMeta: LoggingMeta,
-) {
-    try {
-        kafkaProducer
-            .send(
-                ProducerRecord(
-                    produserOppgaveTopic,
-                    receivedSykmelding.sykmelding.id,
-                    opprettOpprettOppgaveKafkaMessage(receivedSykmelding, results, loggingMeta),
-                ),
-            )
-            .get()
-        logger.info(
-            "Message sendt to topic: $produserOppgaveTopic {}",
-            StructuredArguments.fields(loggingMeta)
-        )
-    } catch (ex: Exception) {
-        logger.error(
-            "Failed to send producer task for sykmelding {} to kafka",
-            receivedSykmelding.sykmelding.id
-        )
-        throw ex
-    }
+    sendManuellTask(
+        receivedSykmelding,
+        validationResult,
+        apprec,
+        syfoSmManuellTopic,
+        kafkaproducerManuellOppgave
+    )
 }
 
 fun opprettOpprettOppgaveKafkaMessage(

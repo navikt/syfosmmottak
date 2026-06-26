@@ -84,12 +84,8 @@ internal class HandleStatusManualProcessingKtTest {
             loggingMeta,
             fellesformat,
             msgHead,
-            kafkaApprecProducer,
             validationResult,
-            kafkaManualTaskProducer,
-            kafkaProducerReceviedSykmelding,
             manuellOppgaveProducer,
-            false
         )
 
         verify(exactly = 0) { kafkaApprecProducer.send(any()) }
@@ -109,12 +105,8 @@ internal class HandleStatusManualProcessingKtTest {
                     loggingMeta,
                     fellesformat,
                     msgHead,
-                    kafkaApprecProducer,
                     validationResult,
-                    kafkaManualTaskProducer,
-                    kafkaProducerReceviedSykmelding,
                     manuellOppgaveProducer,
-                    false,
                 )
             }
         }
@@ -123,7 +115,7 @@ internal class HandleStatusManualProcessingKtTest {
     @Test
     internal fun `Should throw exeption when sending ReceivedSykmelding fails`() {
         setUpMocks()
-        every { kafkaProducerReceviedSykmelding.send(any()) } returns getFailingFuture()
+        every { manuellOppgaveProducer.send(any()) } returns getFailingFuture()
         assertThrows<ExecutionException> {
             runBlocking {
                 handleManualProcessing(
@@ -131,56 +123,8 @@ internal class HandleStatusManualProcessingKtTest {
                     loggingMeta,
                     fellesformat,
                     msgHead,
-                    kafkaApprecProducer,
-                    validationResultIkkeManuell,
-                    kafkaManualTaskProducer,
-                    kafkaProducerReceviedSykmelding,
+                    validationResult,
                     manuellOppgaveProducer,
-                    true
-                )
-            }
-        }
-    }
-
-    @Test
-    internal fun `Should throw exeption when sending apprec fails`() {
-        setUpMocks()
-        every { kafkaApprecProducer.send(any()) } returns getFailingFuture()
-        assertThrows<ExecutionException> {
-            runBlocking {
-                handleManualProcessing(
-                    receivedSykmelding,
-                    loggingMeta,
-                    fellesformat,
-                    msgHead,
-                    kafkaApprecProducer,
-                    validationResultIkkeManuell,
-                    kafkaManualTaskProducer,
-                    kafkaProducerReceviedSykmelding,
-                    manuellOppgaveProducer,
-                    true,
-                )
-            }
-        }
-    }
-
-    @Test
-    internal fun `Should throw exception when kafkaManualTaskProducer fails`() {
-        setUpMocks()
-        every { kafkaManualTaskProducer.send(any()) } returns getFailingFuture()
-        assertThrows<ExecutionException> {
-            runBlocking {
-                handleManualProcessing(
-                    receivedSykmelding,
-                    loggingMeta,
-                    fellesformat,
-                    msgHead,
-                    kafkaApprecProducer,
-                    validationResultIkkeManuell,
-                    kafkaManualTaskProducer,
-                    kafkaProducerReceviedSykmelding,
-                    manuellOppgaveProducer,
-                    true,
                 )
             }
         }
@@ -199,12 +143,8 @@ private fun handleManualProcessing(
     loggingMeta: LoggingMeta,
     fellesformat: XMLEIFellesformat,
     msgHead: XMLMsgHead,
-    kafkaApprecProducer: KafkaProducer<String, Apprec>,
     validationResutl: ValidationResult,
-    kafkaManualTaskProducer: KafkaProducer<String, OpprettOppgaveKafkaMessage>,
-    kafkaProducerReceviedSykmelding: KafkaProducer<String, ReceivedSykmeldingWithValidation>,
     manuellOppgaveProducer: KafkaProducer<String, ManuellOppgave>,
-    isBehandlingsdager: Boolean
 ) {
     handleStatusMANUALPROCESSING(
         receivedSykmelding,
@@ -213,15 +153,8 @@ private fun handleManualProcessing(
         "",
         "",
         msgHead,
-        "",
-        kafkaApprecProducer,
         validationResutl,
-        kafkaManualTaskProducer,
-        kafkaProducerReceviedSykmelding,
-        "",
         manuellOppgaveProducer,
         "",
-        "",
-        isBehandlingsdager,
     )
 }
