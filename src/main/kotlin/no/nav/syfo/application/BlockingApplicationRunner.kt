@@ -558,19 +558,6 @@ class BlockingApplicationRunner(
                     receivedSykmelding.sykmelding.perioder.any { it.behandlingsdager != null }
                 val status = validationResult.status
                 when {
-                    status == Status.OK || isBehandlingsdager ->
-                        handleStatusOK(
-                            fellesformat = fellesformat,
-                            ediLoggId = ediLoggId,
-                            msgId = msgId,
-                            msgHead = msgHead,
-                            apprecTopic = env.apprecTopic,
-                            kafkaproducerApprec = kafkaproducerApprec,
-                            loggingMeta = loggingMeta,
-                            okSykmeldingTopic = env.okSykmeldingTopic,
-                            receivedSykmelding = receivedSykmelding,
-                            kafkaproducerreceivedSykmelding = kafkaproducerreceivedSykmelding,
-                        )
                     status == Status.INVALID ->
                         handleStatusINVALID(
                             validationResult = validationResult,
@@ -584,6 +571,19 @@ class BlockingApplicationRunner(
                             ediLoggId = ediLoggId,
                             msgId = msgId,
                             msgHead = msgHead,
+                        )
+                    status == Status.OK || isBehandlingsdager ->
+                        handleStatusOK(
+                            fellesformat = fellesformat,
+                            ediLoggId = ediLoggId,
+                            msgId = msgId,
+                            msgHead = msgHead,
+                            apprecTopic = env.apprecTopic,
+                            kafkaproducerApprec = kafkaproducerApprec,
+                            loggingMeta = loggingMeta,
+                            okSykmeldingTopic = env.okSykmeldingTopic,
+                            receivedSykmelding = receivedSykmelding,
+                            kafkaproducerreceivedSykmelding = kafkaproducerreceivedSykmelding,
                         )
                     status == Status.MANUAL_PROCESSING ->
                         handleStatusMANUALPROCESSING(
