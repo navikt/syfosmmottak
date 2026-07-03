@@ -19,7 +19,6 @@ import no.nav.syfo.client.NorskHelsenettClient
 import no.nav.syfo.client.SmtssClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.model.ManuellOppgave
-import no.nav.syfo.model.OpprettOppgaveKafkaMessage
 import no.nav.syfo.model.ReceivedSykmeldingWithValidation
 import no.nav.syfo.model.RuleInfo
 import no.nav.syfo.model.Status
@@ -49,8 +48,6 @@ internal class BlockingApplicationRunnerTest {
     val bucketUploadService = mockk<BucketUploadService>(relaxed = true)
     val kafkaproducerreceivedSykmelding =
         mockk<KafkaProducer<String, ReceivedSykmeldingWithValidation>>(relaxed = true)
-    val kafkaManuelTaskProducer =
-        mockk<KafkaProducer<String, OpprettOppgaveKafkaMessage>>(relaxed = true)
     val kafkaproducerApprec = mockk<KafkaProducer<String, Apprec>>(relaxed = true)
     val kafkaproducerManuellOppgave = mockk<KafkaProducer<String, ManuellOppgave>>(relaxed = true)
     val virusScanService = mockk<VirusScanService>(relaxed = true)
@@ -67,7 +64,6 @@ internal class BlockingApplicationRunnerTest {
             pdlPersonService,
             bucketUploadService,
             kafkaproducerreceivedSykmelding,
-            kafkaManuelTaskProducer,
             kafkaproducerApprec,
             kafkaproducerManuellOppgave,
             virusScanService,
@@ -222,7 +218,7 @@ internal class BlockingApplicationRunnerTest {
     }
 
     @Test
-    internal fun `Tilbakedatert behandlingsdager skal ikke til manuell`() {
+    internal fun `Tilbakedatert behandlingsdager skal til manuell`() {
         every { applicationState.ready } returns true andThen false
         val stringInput = getFileAsString("src/test/resources/fellesformat-behandlingsdager.xml")
         val textMessage = mockk<TextMessage>(relaxed = true)
@@ -238,9 +234,10 @@ internal class BlockingApplicationRunnerTest {
         runBlocking {
             blockingApplicationRunner.run()
 
-            coVerify {
+            coVerify(exactly = 0) {
                 kafkaproducerApprec.send(match { it.value().apprecStatus == ApprecStatus.OK })
             }
+            coVerify(exactly = 1) { kafkaproducerManuellOppgave.send(any()) }
         }
     }
 

@@ -2,7 +2,6 @@ package no.nav.syfo.handlestatus
 
 import java.time.DayOfWeek
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.eiFellesformat.XMLMottakenhetBlokk
@@ -16,8 +15,6 @@ import no.nav.syfo.apprec.ApprecStatus
 import no.nav.syfo.apprec.toApprec
 import no.nav.syfo.logger
 import no.nav.syfo.model.ManuellOppgave
-import no.nav.syfo.model.OpprettOppgaveKafkaMessage
-import no.nav.syfo.model.PrioritetType
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
@@ -62,39 +59,6 @@ fun handleStatusMANUALPROCESSING(
         syfoSmManuellTopic,
         kafkaproducerManuellOppgave
     )
-}
-
-fun opprettOpprettOppgaveKafkaMessage(
-    receivedSykmelding: ReceivedSykmelding,
-    validationResult: ValidationResult,
-    loggingMeta: LoggingMeta
-): OpprettOppgaveKafkaMessage {
-    val oppgave =
-        OpprettOppgaveKafkaMessage(
-            messageId = receivedSykmelding.msgId,
-            aktoerId = receivedSykmelding.sykmelding.pasientAktoerId,
-            tildeltEnhetsnr = "",
-            opprettetAvEnhetsnr = "9999",
-            behandlesAvApplikasjon = "FS22", // Gosys
-            orgnr = receivedSykmelding.legekontorOrgNr ?: "",
-            beskrivelse =
-                "Manuell behandling av sykmelding grunnet følgende regler: ${validationResult.ruleHits.joinToString(", ", "(", ")") { it.messageForSender }}",
-            temagruppe = "ANY",
-            tema = "SYM",
-            behandlingstema = "ab0351",
-            oppgavetype = "BEH_EL_SYM",
-            behandlingstype = "ANY",
-            mappeId = 1,
-            aktivDato = DateTimeFormatter.ISO_DATE.format(LocalDate.now()),
-            fristFerdigstillelse =
-                DateTimeFormatter.ISO_DATE.format(
-                    finnFristForFerdigstillingAvOppgave(LocalDate.now().plusDays(4))
-                ),
-            prioritet = PrioritetType.NORM,
-            metadata = mapOf(),
-        )
-
-    return oppgave
 }
 
 fun sendManuellTask(

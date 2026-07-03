@@ -1,9 +1,6 @@
 package no.nav.syfo
 
-import io.mockk.mockk
-import no.nav.syfo.handlestatus.opprettOpprettOppgaveKafkaMessage
 import no.nav.syfo.handlestatus.sendToSyfosmManuell
-import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.RuleInfo
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
@@ -41,20 +38,5 @@ internal class HandleStatusManualProcessingTest {
         val validationResult = ValidationResult(status = Status.OK, emptyList())
 
         Assertions.assertEquals(false, sendToSyfosmManuell(validationResult))
-    }
-
-    @Test
-    internal fun `Behandlingstema er ab0351 hvis sykmelding har behandlingsdager`() {
-        val receivedSykmelding = mockk<ReceivedSykmelding>(relaxed = true)
-        val validationResults =
-            ValidationResult(
-                Status.OK,
-                emptyList(),
-            )
-
-        val oppgave =
-            opprettOpprettOppgaveKafkaMessage(receivedSykmelding, validationResults, loggingMeta)
-
-        Assertions.assertEquals("ab0351", oppgave.behandlingstema)
     }
 }

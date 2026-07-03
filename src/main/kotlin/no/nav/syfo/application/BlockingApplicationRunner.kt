@@ -51,7 +51,7 @@ import no.nav.syfo.metrics.SYKMELDING_VEDLEGG_COUNTER
 import no.nav.syfo.metrics.SYKMELDING_XML_SIGNERING
 import no.nav.syfo.metrics.VIRKSOMHETSYKMELDING
 import no.nav.syfo.model.ManuellOppgave
-import no.nav.syfo.model.OpprettOppgaveKafkaMessage
+import no.nav.syfo.model.Periode
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ReceivedSykmeldingWithValidation
 import no.nav.syfo.model.Status
@@ -103,7 +103,6 @@ class BlockingApplicationRunner(
     private val bucketUploadService: BucketUploadService,
     private val kafkaproducerreceivedSykmelding:
         KafkaProducer<String, ReceivedSykmeldingWithValidation>,
-    private val kafkaManuelTaskProducer: KafkaProducer<String, OpprettOppgaveKafkaMessage>,
     private val kafkaproducerApprec: KafkaProducer<String, Apprec>,
     private val kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
     private val virusScanService: VirusScanService,
@@ -539,7 +538,7 @@ class BlockingApplicationRunner(
                 }
 
                 logger.info(
-                    "Validating against rules, sykmeldingId {},  {}",
+                    "Validating against rules, sykmelding ${getSykmeldignType(sykmelding.perioder)} {},  {}",
                     StructuredArguments.keyValue("sykmeldingId", sykmelding.id),
                     StructuredArguments.fields(loggingMeta),
                 )
@@ -551,13 +550,25 @@ class BlockingApplicationRunner(
                 SYKMELDING_XML_SIGNERING.labels(
                         receivedSykmelding.sykmelding.avsenderSystem.navn,
                         signeringsType,
-                        recursive.toString()
+                        recursive.toString(),
                     )
                     .inc()
-                val isBehandlingsdager =
-                    receivedSykmelding.sykmelding.perioder.any { it.behandlingsdager != null }
+
                 val status = validationResult.status
                 when {
+                    status == Status.OK ->
+                        handleStatusOK(
+                            fellesformat = fellesformat,
+                            ediLoggId = ediLoggId,
+                            msgId = msgId,
+                            msgHead = msgHead,
+                            apprecTopic = env.apprecTopic,
+                            kafkaproducerApprec = kafkaproducerApprec,
+                            loggingMeta = loggingMeta,
+                            okSykmeldingTopic = env.okSykmeldingTopic,
+                            receivedSykmelding = receivedSykmelding,
+                            kafkaproducerreceivedSykmelding = kafkaproducerreceivedSykmelding,
+                        )
                     status == Status.INVALID ->
                         handleStatusINVALID(
                             validationResult = validationResult,
@@ -571,19 +582,6 @@ class BlockingApplicationRunner(
                             ediLoggId = ediLoggId,
                             msgId = msgId,
                             msgHead = msgHead,
-                        )
-                    status == Status.OK || isBehandlingsdager ->
-                        handleStatusOK(
-                            fellesformat = fellesformat,
-                            ediLoggId = ediLoggId,
-                            msgId = msgId,
-                            msgHead = msgHead,
-                            apprecTopic = env.apprecTopic,
-                            kafkaproducerApprec = kafkaproducerApprec,
-                            loggingMeta = loggingMeta,
-                            okSykmeldingTopic = env.okSykmeldingTopic,
-                            receivedSykmelding = receivedSykmelding,
-                            kafkaproducerreceivedSykmelding = kafkaproducerreceivedSykmelding,
                         )
                     status == Status.MANUAL_PROCESSING ->
                         handleStatusMANUALPROCESSING(
@@ -599,7 +597,7 @@ class BlockingApplicationRunner(
                         )
                     else ->
                         throw RuntimeException(
-                            "Unhandled ${validationResult.status} for ${receivedSykmelding.sykmelding.id}"
+                            "Unhandled ${validationResult.status} for ${receivedSykmelding.sykmelding.id}",
                         )
                 }
 
@@ -627,13 +625,13 @@ class BlockingApplicationRunner(
             logger.error(
                 "Exception caught while handling message, sending to backout ${
                     StructuredArguments.fields(
-                            loggingMeta,
+                        loggingMeta,
                     )
                 }",
                 e,
             )
             logger.error(
-                "Message is bad, ${message.jmsTimestamp}, ${message.jmsType}, ${message.jmsMessageID}, see teamlogs for more info"
+                "Message is bad, ${message.jmsTimestamp}, ${message.jmsType}, ${message.jmsMessageID}, see teamlogs for more info",
             )
             if (message is TextMessage) {
                 sikkerlogg.error("The bad message is TextMessage, text: ${message.text}")
@@ -644,6 +642,19 @@ class BlockingApplicationRunner(
         } finally {
             message.acknowledge()
         }
+    }
+
+    private fun getSykmeldignType(perioder: List<Periode>): String {
+        if (perioder.any { it.behandlingsdager != null }) {
+            return "behandlingsdager"
+        } else if (perioder.any { it.gradert != null }) {
+            return "gradert"
+        } else if (perioder.any { it.avventendeInnspillTilArbeidsgiver != null }) {
+            return "avventende"
+        } else if (perioder.any { it.aktivitetIkkeMulig != null }) {
+            return "100%"
+        }
+        return ""
     }
 
     private fun getSigneringsType(fellesformat: XMLEIFellesformat, ebService: String): String {
