@@ -12,7 +12,6 @@ import no.nav.helse.eiFellesformat.XMLEIFellesformat
 import no.nav.helse.msgHead.XMLMsgHead
 import no.nav.syfo.apprec.Apprec
 import no.nav.syfo.model.ManuellOppgave
-import no.nav.syfo.model.OpprettOppgaveKafkaMessage
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ReceivedSykmeldingWithValidation
 import no.nav.syfo.model.RuleInfo
@@ -33,7 +32,6 @@ internal class HandleStatusManualProcessingKtTest {
     val receivedSykmelding = mockk<ReceivedSykmelding>(relaxed = true)
     val kafkaProducerReceviedSykmelding =
         mockk<KafkaProducer<String, ReceivedSykmeldingWithValidation>>(relaxed = true)
-    val kafkaManualTaskProducer = mockk<KafkaProducer<String, OpprettOppgaveKafkaMessage>>()
     val manuellOppgaveProducer = mockk<KafkaProducer<String, ManuellOppgave>>()
     val validationResult =
         ValidationResult(
@@ -57,8 +55,6 @@ internal class HandleStatusManualProcessingKtTest {
 
     fun setUpMocks() {
         every { kafkaApprecProducer.send(any()) } returns
-            CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
-        every { kafkaManualTaskProducer.send(any()) } returns
             CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
         every { manuellOppgaveProducer.send(any()) } returns
             CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
@@ -89,7 +85,6 @@ internal class HandleStatusManualProcessingKtTest {
         )
 
         verify(exactly = 0) { kafkaApprecProducer.send(any()) }
-        verify(exactly = 0) { kafkaManualTaskProducer.send(any()) }
         verify(exactly = 1) { manuellOppgaveProducer.send(any()) }
         verify(exactly = 0) { kafkaProducerReceviedSykmelding.send(any()) }
     }

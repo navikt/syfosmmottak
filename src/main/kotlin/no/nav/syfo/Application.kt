@@ -7,10 +7,10 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.google.cloud.storage.Storage
 import com.google.cloud.storage.StorageOptions
-import io.ktor.server.application.Application
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.netty.Netty
-import io.ktor.server.routing.routing
+import io.ktor.server.application.*
+import io.ktor.server.engine.*
+import io.ktor.server.netty.*
+import io.ktor.server.routing.*
 import io.prometheus.client.hotspot.DefaultExports
 import jakarta.jms.Session
 import kotlinx.coroutines.CoroutineScope
@@ -29,7 +29,6 @@ import no.nav.syfo.client.SmtssClient
 import no.nav.syfo.client.SyfoSykemeldingRuleClient
 import no.nav.syfo.db.Database
 import no.nav.syfo.model.ManuellOppgave
-import no.nav.syfo.model.OpprettOppgaveKafkaMessage
 import no.nav.syfo.model.ReceivedSykmeldingWithValidation
 import no.nav.syfo.mq.MqTlsUtils
 import no.nav.syfo.mq.connectionFactory
@@ -113,7 +112,6 @@ fun Application.module() {
         httpClients.syfoSykemeldingRuleClient,
         httpClients.pdlPersonService,
         applicationServiceUser,
-        kafkaClients.manualValidationKafkaProducer,
         kafkaClients.kafkaProducerApprec,
         kafkaClients.kafkaproducerManuellOppgave,
         httpClients.norskHelsenettClient,
@@ -154,7 +152,6 @@ fun launchListeners(
     syfoSykemeldingRuleClient: SyfoSykemeldingRuleClient,
     pdlPersonService: PdlPersonService,
     serviceUser: ApplicationServiceUser,
-    kafkaManuelTaskProducer: KafkaProducer<String, OpprettOppgaveKafkaMessage>,
     kafkaproducerApprec: KafkaProducer<String, Apprec>,
     kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
     norskHelsenettClient: NorskHelsenettClient,
@@ -185,7 +182,6 @@ fun launchListeners(
                         pdlPersonService,
                         bucketUploadService,
                         kafkaproducerreceivedSykmelding,
-                        kafkaManuelTaskProducer,
                         kafkaproducerApprec,
                         kafkaproducerManuellOppgave,
                         virusScanService,
