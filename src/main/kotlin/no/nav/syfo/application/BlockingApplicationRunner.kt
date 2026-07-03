@@ -538,7 +538,7 @@ class BlockingApplicationRunner(
                 }
 
                 logger.info(
-                    "Validating against rules, sykmelding ${getSykmeldignType(sykmelding.perioder)} {},  {}",
+                    "Validating against rules, sykmelding {},  {}",
                     StructuredArguments.keyValue("sykmeldingId", sykmelding.id),
                     StructuredArguments.fields(loggingMeta),
                 )
@@ -606,7 +606,7 @@ class BlockingApplicationRunner(
                 duplicationService.persistDuplicationCheck(duplicateCheck)
 
                 logger.info(
-                    "Message got outcome {}, {}, processing took {}s, {}, {}",
+                    "Sykmelding ${getSykmeldignType(sykmelding.perioder)}, validation {}, {}, processing took {}s, {}, {}",
                     StructuredArguments.keyValue("status", validationResult.status),
                     StructuredArguments.keyValue(
                         "ruleHits",
