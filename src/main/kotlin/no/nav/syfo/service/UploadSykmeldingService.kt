@@ -25,6 +25,9 @@ class UploadSykmeldingService(val tsmSykmeldingBucket: String, val storage: Stor
                         .build()
                 val compressedData = gzip(originalMessage)
                 storage.create(blob, compressedData)
+                logger.info("Uploaded original message for sykmelding $sykmeldingId")
+            } else {
+                logger.info("Upload skipped for sykmelding $sykmeldingId")
             }
         } catch (ex: Exception) {
             logger.error(
