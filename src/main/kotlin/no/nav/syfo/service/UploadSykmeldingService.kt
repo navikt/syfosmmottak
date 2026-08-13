@@ -14,7 +14,7 @@ class UploadSykmeldingService(val tsmSykmeldingBucket: String, val storage: Stor
 
     fun uploadOriginalMessage(sykmeldingId: String, originalMessage: String) {
         try {
-            val sykmeldingInBucket = storage.get(tsmSykmeldingBucket, sykmeldingId)
+            val sykmeldingInBucket = storage.get(tsmSykmeldingBucket, "$sykmeldingId/sykmelding.xml")
             if (sykmeldingInBucket == null) {
                 val blob =
                     BlobInfo.newBuilder(

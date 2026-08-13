@@ -554,6 +554,8 @@ class BlockingApplicationRunner(
                     )
                     .inc()
 
+                UploadSykmeldingService.uploadOriginalMessage(sykmeldingId, inputMessageText)
+
                 val status = validationResult.status
                 when {
                     status == Status.OK ->
@@ -602,7 +604,6 @@ class BlockingApplicationRunner(
                 }
 
                 val currentRequestLatency = requestLatency.observeDuration()
-                UploadSykmeldingService.uploadOriginalMessage(sykmeldingId, inputMessageText)
                 duplicationService.persistDuplicationCheck(duplicateCheck)
 
                 logger.info(
