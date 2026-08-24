@@ -44,7 +44,7 @@ class EmottakSubscriptionClient(
                     StartSubscriptionRequest(
                         tssIdent = tssIdent,
                         sender = convertSenderToBase64(msgHead.msgInfo.sender),
-                        partnerreferanse = partnerreferanse.toInt(),
+                        partnerreferanse = partnerreferanse,
                     ),
                 )
             }
@@ -73,5 +73,5 @@ class EmottakSubscriptionClient(
 data class StartSubscriptionRequest(
     val tssIdent: String,
     val sender: ByteArray,
-    val partnerreferanse: Int,
+    val partnerreferanse: String? = null,
 )
