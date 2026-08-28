@@ -8,11 +8,11 @@ val javaVersion = JvmTarget.JVM_25
 
 val coroutinesVersion = "1.10.2"
 val syfoXmlCodegenVersion = "2.0.1"
-val ibmMqVersion = "9.4.4.0"
+val ibmMqVersion = "10.0.0.0"
 val javaxActivationVersion = "1.1.1"
 val jacksonVersion = "3.2.2"
 val jaxbApiVersion = "2.4.0-b180830.0359"
-val kafkaVersion = "3.9.1"
+val kafkaVersion = "4.3.1"
 val ktorVersion = "3.5.2"
 val logbackVersion = "1.6.3"
 val logstashEncoderVersion = "9.0"
@@ -21,16 +21,16 @@ val commonsTextVersion = "1.14.0"
 val javaxAnnotationApiVersion = "1.3.2"
 val jaxbRuntimeVersion = "2.4.0-b180830.0438"
 val javaTimeAdapterVersion = "1.1.3"
-val mockkVersion = "1.14.6"
-val googleCloudStorageVersion = "2.62.1"
-val junitJupiterVersion = "6.0.1"
-val flywayVersion = "11.15.0"
-val hikariVersion = "7.0.2"
+val mockkVersion = "1.14.11"
+val googleCloudStorageVersion = "2.72.0"
+val junitJupiterVersion = "6.1.3"
+val flywayVersion = "13.3.0"
+val hikariVersion = "7.1.0"
 val postgresVersion = "42.7.8"
 val ktfmtVersion = "0.56"
 val opentelemetryVersion = "2.21.0"
-val diagnosekoderVersion = "1.2025.0"
-val testcontainerVersio = "2.0.3"
+val diagnosekoderVersion = "1.2026.0"
+val testcontainerVersion = "2.0.3"
 
 plugins {
     id("application")
@@ -98,7 +98,7 @@ dependencies {
     implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
     implementation("no.nav.helse:diagnosekoder:$diagnosekoderVersion")
 
-    testImplementation("org.testcontainers:testcontainers-postgresql:$testcontainerVersio")
+    testImplementation("org.testcontainers:testcontainers-postgresql:$testcontainerVersion")
     testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 

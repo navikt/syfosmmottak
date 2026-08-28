@@ -1,7 +1,6 @@
 package no.nav.syfo.nais.prometheus
 
 import io.ktor.http.ContentType
-import io.ktor.server.application.call
 import io.ktor.server.response.respondTextWriter
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
