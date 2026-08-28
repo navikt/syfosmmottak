@@ -41,6 +41,7 @@ import no.nav.syfo.handlestatus.handleVedleggContainsVirus
 import no.nav.syfo.handlestatus.handleVedleggOver300MB
 import no.nav.syfo.handlestatus.handleVirksomhetssykmeldingOgFnrManglerIHPR
 import no.nav.syfo.handlestatus.handleVirksomhetssykmeldingOgHprMangler
+import no.nav.syfo.jsonMapper
 import no.nav.syfo.logger
 import no.nav.syfo.metrics.INCOMING_MESSAGE_COUNTER
 import no.nav.syfo.metrics.INCOMING_MESSAGE_DELAY
@@ -56,7 +57,6 @@ import no.nav.syfo.model.ReceivedSykmeldingWithValidation
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.toAvsenderSystem
 import no.nav.syfo.model.toSykmelding
-import no.nav.syfo.objectMapper
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.service.DuplicationService
@@ -166,7 +166,7 @@ class BlockingApplicationRunner(
 
             if (inputMessageText != rawMessageText) {
                 logger.warn(
-                    "Incoming message was double-encoded (UTF-8 bytes decoded as ISO-8859-1), repaired before parsing",
+                    "Incoming message was double-encoded (UTF-8 bytes decoded as ISO-8859-1), repaired before parsing"
                 )
                 sikkerlogg.info("message is incorrect encoded $rawMessageText")
             }
@@ -189,7 +189,7 @@ class BlockingApplicationRunner(
                 }
 
                 sikkerlogg.info(
-                    "$msgId has properties ${objectMapper.writeValueAsString(properties)}"
+                    "$msgId has properties ${jsonMapper.writeValueAsString(properties)}"
                 )
             } catch (ex: Exception) {
                 logger.info("Could not read properties from message", ex)
