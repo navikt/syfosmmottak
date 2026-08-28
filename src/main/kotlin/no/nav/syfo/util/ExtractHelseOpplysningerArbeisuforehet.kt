@@ -80,11 +80,8 @@ fun extractTlfFromKontaktInfo(kontaktInfo: List<TeleCom>): String? {
         kontaktInfo
             .find {
                 it.teleAddress?.v?.contains("tel:") == true &&
-                    (it.typeTelecom
-                        ?.v
-                        ?.contains(
-                            "HP",
-                        ) == true || it?.typeTelecom?.dn?.contains("Hovedtelefon") == true)
+                    (it.typeTelecom?.v?.contains("HP") == true ||
+                        it?.typeTelecom?.dn?.contains("Hovedtelefon") == true)
             }
             ?.teleAddress
             ?.v

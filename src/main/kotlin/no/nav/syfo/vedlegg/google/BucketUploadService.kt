@@ -4,17 +4,14 @@ import com.google.cloud.storage.BlobInfo
 import com.google.cloud.storage.Storage
 import java.util.UUID
 import net.logstash.logback.argument.StructuredArguments
+import no.nav.syfo.jsonMapper
 import no.nav.syfo.logger
-import no.nav.syfo.objectMapper
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.vedlegg.model.BehandlerInfo
 import no.nav.syfo.vedlegg.model.Vedlegg
 import no.nav.syfo.vedlegg.model.VedleggMessage
 
-class BucketUploadService(
-    private val bucketName: String,
-    private val storage: Storage,
-) {
+class BucketUploadService(private val bucketName: String, private val storage: Storage) {
     fun lastOppVedlegg(
         vedlegg: List<Vedlegg>,
         msgId: String,
@@ -41,16 +38,16 @@ class BucketUploadService(
     private fun create(
         sykmeldingId: String,
         vedleggMessage: VedleggMessage,
-        loggingMeta: LoggingMeta
+        loggingMeta: LoggingMeta,
     ): String {
         val vedleggId = "$sykmeldingId/${UUID.randomUUID()}"
         storage.create(
             BlobInfo.newBuilder(bucketName, vedleggId).build(),
-            objectMapper.writeValueAsBytes(vedleggMessage)
+            jsonMapper.writeValueAsBytes(vedleggMessage),
         )
         logger.info(
             "Lastet opp vedlegg med id $vedleggId {}",
-            StructuredArguments.fields(loggingMeta)
+            StructuredArguments.fields(loggingMeta),
         )
         return vedleggId
     }

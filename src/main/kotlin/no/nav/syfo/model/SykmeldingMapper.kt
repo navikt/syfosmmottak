@@ -56,10 +56,7 @@ fun HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.toPeriode() =
     )
 
 fun HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.GradertSykmelding.toGradert() =
-    Gradert(
-        reisetilskudd = isReisetilskudd == true,
-        grad = sykmeldingsgrad,
-    )
+    Gradert(reisetilskudd = isReisetilskudd == true, grad = sykmeldingsgrad)
 
 fun HelseOpplysningerArbeidsuforhet.Arbeidsgiver.toArbeidsgiver() =
     Arbeidsgiver(
@@ -184,8 +181,7 @@ fun HelseOpplysningerArbeidsuforhet.UtdypendeOpplysninger.toMap() =
                                 restriksjoner =
                                     svar.restriksjon
                                         ?.restriksjonskode
-                                        ?.mapNotNull(CS::toSvarRestriksjon)
-                                        ?: listOf()
+                                        ?.mapNotNull(CS::toSvarRestriksjon) ?: listOf(),
                             )
                     }
                     .toMap()
@@ -218,10 +214,7 @@ fun ArsakType.toArbeidsrelatertArsak() =
 
 // TODO: Remove mapNotNull whenever the EPJ systems stops sending garbage data
 fun ArsakType.toMedisinskArsak() =
-    MedisinskArsak(
-        beskrivelse = beskriv,
-        arsak = arsakskode.mapNotNull(CS::toMedisinskArsakType),
-    )
+    MedisinskArsak(beskrivelse = beskriv, arsak = arsakskode.mapNotNull(CS::toMedisinskArsakType))
 
 fun HelseOpplysningerArbeidsuforhet.MeldingTilNav.toMeldingTilNAV(rulesetVersion: String?) =
     MeldingTilNAV(
@@ -230,21 +223,17 @@ fun HelseOpplysningerArbeidsuforhet.MeldingTilNav.toMeldingTilNAV(rulesetVersion
                 true
             } else {
                 isBistandNAVUmiddelbart
-            }
-                ?: false,
+            } ?: false,
         beskrivBistand = beskrivBistandNAV,
     )
 
 fun HelseOpplysningerArbeidsuforhet.KontaktMedPasient.toKontaktMedPasient() =
-    KontaktMedPasient(
-        kontaktDato = kontaktDato,
-        begrunnelseIkkeKontakt = begrunnIkkeKontakt,
-    )
+    KontaktMedPasient(kontaktDato = kontaktDato, begrunnelseIkkeKontakt = begrunnIkkeKontakt)
 
 fun HelseOpplysningerArbeidsuforhet.Behandler.toBehandler(
     aktoerId: String,
     behandlerFnr: String,
-    behandlerHprNr: String?
+    behandlerHprNr: String?,
 ) =
     Behandler(
         fornavn = navn.fornavn,
@@ -259,7 +248,4 @@ fun HelseOpplysningerArbeidsuforhet.Behandler.toBehandler(
     )
 
 fun HelseOpplysningerArbeidsuforhet.AvsenderSystem.toAvsenderSystem() =
-    AvsenderSystem(
-        navn = systemNavn,
-        versjon = systemVersjon,
-    )
+    AvsenderSystem(navn = systemNavn, versjon = systemVersjon)

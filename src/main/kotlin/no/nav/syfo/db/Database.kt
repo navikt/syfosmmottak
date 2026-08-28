@@ -14,7 +14,7 @@ import org.flywaydb.core.Flyway
 class Database(
     private val env: EnvironmentVariables,
     private val retries: Long = 30,
-    private val sleepTime: Long = 1_000
+    private val sleepTime: Long = 1_000,
 ) : DatabaseInterface {
     private val dataSource: HikariDataSource
 
@@ -41,7 +41,7 @@ class Database(
                             isAutoCommit = false
                             transactionIsolation = "TRANSACTION_REPEATABLE_READ"
                             validate()
-                        },
+                        }
                     )
                 connected = true
             } catch (ex: HikariPool.PoolInitializationException) {

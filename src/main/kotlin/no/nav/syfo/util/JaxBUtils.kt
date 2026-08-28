@@ -17,7 +17,7 @@ val fellesformatJaxBContext: JAXBContext =
     JAXBContext.newInstance(
         XMLEIFellesformat::class.java,
         XMLMsgHead::class.java,
-        HelseOpplysningerArbeidsuforhet::class.java
+        HelseOpplysningerArbeidsuforhet::class.java,
     )
 val fellesformatUnmarshaller: Unmarshaller =
     fellesformatJaxBContext.createUnmarshaller().apply {

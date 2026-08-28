@@ -1,11 +1,6 @@
 package no.nav.syfo.rerun
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import io.ktor.serialization.jackson.jackson
-import io.ktor.server.application.install
+import io.ktor.serialization.jackson3.jackson
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import jakarta.jms.Session
@@ -18,24 +13,14 @@ import no.nav.syfo.logger
 import no.nav.syfo.mq.connectionFactory
 import no.nav.syfo.mq.producerForQueue
 
-data class RerunRequest(
-    val message: String,
-    val duplicationMottakId: String?,
-)
+data class RerunRequest(val message: String, val duplicationMottakId: String?)
 
 fun Route.registerRerunApi(
     serviceUser: ApplicationServiceUser,
     environmentVariables: EnvironmentVariables,
-    database: DatabaseInterface
+    database: DatabaseInterface,
 ) {
-    install(io.ktor.server.plugins.contentnegotiation.ContentNegotiation) {
-        jackson {
-            registerKotlinModule()
-            registerModule(JavaTimeModule())
-            configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-            configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-        }
-    }
+    install(io.ktor.server.plugins.contentnegotiation.ContentNegotiation) { jackson {} }
     post("/internal/rerun") {
         try {
             logger.info("trying to rerun message")

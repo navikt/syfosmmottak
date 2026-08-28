@@ -42,8 +42,8 @@ internal class HandleStatusManualProcessingKtTest {
                     messageForUser = "Tilbakedatert.",
                     messageForSender = "Tilbakedatert.",
                     ruleStatus = Status.MANUAL_PROCESSING,
-                ),
-            )
+                )
+            ),
         )
     val validationResultIkkeManuell = ValidationResult(Status.OK, emptyList())
 
@@ -59,11 +59,7 @@ internal class HandleStatusManualProcessingKtTest {
         every { manuellOppgaveProducer.send(any()) } returns
             CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
         every { kafkaProducerReceviedSykmelding.send(any()) } returns
-            CompletableFuture<RecordMetadata>().apply {
-                complete(
-                    mockk(),
-                )
-            }
+            CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
     }
 
     @BeforeEach

@@ -52,7 +52,7 @@ internal class PdlPersonServiceTest {
                                 ),
                                 "ok",
                             ),
-                        ),
+                        )
                 ),
                 errors = null,
             )
@@ -89,7 +89,7 @@ internal class PdlPersonServiceTest {
                                 ),
                                 "ok",
                             ),
-                        ),
+                        )
                 ),
                 errors = null,
             )
@@ -118,7 +118,7 @@ internal class PdlPersonServiceTest {
                                 ),
                                 "ok",
                             ),
-                        ),
+                        )
                 ),
                 errors = null,
             )
@@ -132,12 +132,8 @@ internal class PdlPersonServiceTest {
 
     @Test
     internal fun `Skal feile naar ingen identer finnes`() {
-        coEvery {
-            pdlClient.getIdenter(
-                any(),
-                any(),
-            )
-        } returns GetPersonResponse(ResponseData(hentIdenterBolk = emptyList()), errors = null)
+        coEvery { pdlClient.getIdenter(any(), any()) } returns
+            GetPersonResponse(ResponseData(hentIdenterBolk = emptyList()), errors = null)
 
         assertThrows<IllegalStateException> {
             runBlocking {

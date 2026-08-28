@@ -138,7 +138,7 @@ class BlockingApplicationRunner(
                     is TextMessage -> message.text
                     else ->
                         throw RuntimeException(
-                            "Incoming message needs to be a byte message or text message",
+                            "Incoming message needs to be a byte message or text message"
                         )
                 }
 
@@ -412,8 +412,8 @@ class BlockingApplicationRunner(
                         msgId = msgId,
                         signaturDato = getLocalDateTime(msgHead.msgInfo.genDate),
                         behandlerFnr = behandlenedeBehandler?.fnr ?: signerendeBehandler.fnr,
-                        behandlerHprNr = behandlenedeBehandler?.hprNummer
-                                ?: signerendeBehandler.hprNummer,
+                        behandlerHprNr =
+                            behandlenedeBehandler?.hprNummer ?: signerendeBehandler.hprNummer,
                     )
                 if (originaltPasientFnr != pasient.fnr) {
                     logger.info(
@@ -433,7 +433,7 @@ class BlockingApplicationRunner(
                     val vedleggOver300MegaByte =
                         vedlegg.filter {
                             fileSizeLagerThan300MegaBytes(
-                                Base64.getMimeDecoder().decode(it.content.content),
+                                Base64.getMimeDecoder().decode(it.content.content)
                             )
                         }
 
@@ -508,17 +508,13 @@ class BlockingApplicationRunner(
                         sykmelding = sykmelding,
                         personNrPasient = pasient.fnr,
                         tlfPasient =
-                            extractTlfFromKontaktInfo(
-                                healthInformation.pasient.kontaktInfo,
-                            ),
+                            extractTlfFromKontaktInfo(healthInformation.pasient.kontaktInfo),
                         personNrLege = signerendeBehandler.fnr,
                         navLogId = ediLoggId,
                         msgId = msgId,
                         legeHprNr = signerendeBehandler.hprNummer,
                         legeHelsepersonellkategori =
-                            getHelsepersonellKategori(
-                                signerendeBehandler.godkjenninger,
-                            ),
+                            getHelsepersonellKategori(signerendeBehandler.godkjenninger),
                         legekontorOrgNr = legekontorOrgNr,
                         legekontorOrgName = legekontorOrgName,
                         legekontorHerId = legekontorHerId,
@@ -543,10 +539,7 @@ class BlockingApplicationRunner(
                     StructuredArguments.fields(loggingMeta),
                 )
                 val validationResult =
-                    syfoSykemeldingRuleClient.executeRuleValidation(
-                        receivedSykmelding,
-                        loggingMeta,
-                    )
+                    syfoSykemeldingRuleClient.executeRuleValidation(receivedSykmelding, loggingMeta)
                 SYKMELDING_XML_SIGNERING.labels(
                         receivedSykmelding.sykmelding.avsenderSystem.navn,
                         signeringsType,
@@ -599,7 +592,7 @@ class BlockingApplicationRunner(
                         )
                     else ->
                         throw RuntimeException(
-                            "Unhandled ${validationResult.status} for ${receivedSykmelding.sykmelding.id}",
+                            "Unhandled ${validationResult.status} for ${receivedSykmelding.sykmelding.id}"
                         )
                 }
 
@@ -626,13 +619,13 @@ class BlockingApplicationRunner(
             logger.error(
                 "Exception caught while handling message, sending to backout ${
                     StructuredArguments.fields(
-                        loggingMeta,
+                        loggingMeta
                     )
                 }",
                 e,
             )
             logger.error(
-                "Message is bad, ${message.jmsTimestamp}, ${message.jmsType}, ${message.jmsMessageID}, see teamlogs for more info",
+                "Message is bad, ${message.jmsTimestamp}, ${message.jmsType}, ${message.jmsMessageID}, see teamlogs for more info"
             )
             if (message is TextMessage) {
                 sikkerlogg.error("The bad message is TextMessage, text: ${message.text}")
@@ -668,12 +661,8 @@ class BlockingApplicationRunner(
 
     private suspend fun getIdenter(
         identer: List<String>,
-        loggingMeta: LoggingMeta
-    ): Map<String, PdlPerson?> =
-        pdlPersonService.getIdenter(
-            identer,
-            loggingMeta,
-        )
+        loggingMeta: LoggingMeta,
+    ): Map<String, PdlPerson?> = pdlPersonService.getIdenter(identer, loggingMeta)
 
     private suspend fun getBehandlenedeBehandler(
         healthInformation: HelseOpplysningerArbeidsuforhet,
@@ -709,10 +698,7 @@ class BlockingApplicationRunner(
         spf.isNamespaceAware = true
 
         val xmlSource: Source =
-            SAXSource(
-                spf.newSAXParser().xmlReader,
-                InputSource(StringReader(inputMessageText)),
-            )
+            SAXSource(spf.newSAXParser().xmlReader, InputSource(StringReader(inputMessageText)))
         return fellesformatUnmarshaller.unmarshal(xmlSource) as XMLEIFellesformat
     }
 }

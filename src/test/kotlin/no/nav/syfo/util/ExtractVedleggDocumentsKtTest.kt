@@ -31,11 +31,7 @@ internal class ExtractVedleggDocumentsKtTest {
 
         Assertions.assertEquals(1, vedlegg.size)
         Assertions.assertEquals(
-            Vedlegg(
-                Content("Base64Container", "base64"),
-                "application/pdf",
-                "vedlegg.pdf",
-            ),
+            Vedlegg(Content("Base64Container", "base64"), "application/pdf", "vedlegg.pdf"),
             vedlegg.first(),
         )
     }
@@ -50,11 +46,7 @@ internal class ExtractVedleggDocumentsKtTest {
 
         Assertions.assertEquals(2, vedlegg.size)
         Assertions.assertEquals(
-            Vedlegg(
-                Content("Base64Container", "base64"),
-                "application/pdf",
-                "vedlegg.pdf",
-            ),
+            Vedlegg(Content("Base64Container", "base64"), "application/pdf", "vedlegg.pdf"),
             vedlegg.first(),
         )
 

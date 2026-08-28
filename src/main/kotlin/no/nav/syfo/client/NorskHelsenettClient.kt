@@ -101,7 +101,7 @@ class NorskHelsenettClient(
                     fields(loggingMeta),
                 )
                 throw IOException(
-                    "Syfohelsenettproxy kastet feilmelding og svarte status ${httpResponse.status} ved søk på fnr",
+                    "Syfohelsenettproxy kastet feilmelding og svarte status ${httpResponse.status} ved søk på fnr"
                 )
             }
             NotFound -> {
@@ -111,7 +111,7 @@ class NorskHelsenettClient(
             Unauthorized -> {
                 logger.error("Norsk helsenett returnerte Unauthorized for henting av behandler")
                 throw RuntimeException(
-                    "Norsk helsenett returnerte Unauthorized ved henting av behandler",
+                    "Norsk helsenett returnerte Unauthorized ved henting av behandler"
                 )
             }
             OK -> {
@@ -121,7 +121,7 @@ class NorskHelsenettClient(
             else -> {
                 logger.error("Feil ved henting av behandler. Statuskode: ${httpResponse.status}")
                 throw RuntimeException(
-                    "En ukjent feil oppsto ved ved henting av behandler. Statuskode: ${httpResponse.status}",
+                    "En ukjent feil oppsto ved ved henting av behandler. Statuskode: ${httpResponse.status}"
                 )
             }
         }
@@ -137,16 +137,9 @@ data class Behandler(
     val etternavn: String?,
 )
 
-data class Godkjenning(
-    val helsepersonellkategori: Kode? = null,
-    val autorisasjon: Kode? = null,
-)
+data class Godkjenning(val helsepersonellkategori: Kode? = null, val autorisasjon: Kode? = null)
 
-data class Kode(
-    val aktiv: Boolean,
-    val oid: Int,
-    val verdi: String?,
-)
+data class Kode(val aktiv: Boolean, val oid: Int, val verdi: String?)
 
 fun getHelsepersonellKategori(godkjenninger: List<Godkjenning>): String? =
     when {

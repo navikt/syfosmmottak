@@ -51,7 +51,7 @@ internal class DuplicationServiceTest {
         val resultWithHpr = sha256hashstring(helseOpplysninger, "1234567")
         assertEquals(
             resultWithoutHpr.sha256HealthInformation,
-            resultWithHpr.sha256HealthInformation
+            resultWithHpr.sha256HealthInformation,
         )
         assertNotEquals(resultWithHpr.sha256HealthInformation, resultWithHpr.sha256WithSigner)
     }
@@ -140,7 +140,7 @@ internal class DuplicationServiceTest {
         val isDuplicat =
             duplicationService.getDuplicationCheck(
                 Sha256Result(sha256HealthInformation, sha256HealthInformation),
-                mottakId
+                mottakId,
             )
 
         assertEquals(duplicationCheck.sha256HealthInformation, isDuplicat?.sha256HealthInformation)
@@ -148,7 +148,7 @@ internal class DuplicationServiceTest {
         assertEquals(duplicationCheck.msgId, isDuplicat?.msgId)
         assertEquals(
             duplicationCheck.mottattDate.toLocalDate(),
-            isDuplicat?.mottattDate?.toLocalDate()
+            isDuplicat?.mottattDate?.toLocalDate(),
         )
         assertEquals(duplicationCheck.epjSystem, isDuplicat?.epjSystem)
         assertEquals(duplicationCheck.epjVersion, isDuplicat?.epjVersion)
@@ -241,7 +241,7 @@ internal class DuplicationServiceTest {
         assertEquals(duplicationCheck.msgId, isDuplicat?.msgId)
         assertEquals(
             duplicationCheck.mottattDate.toLocalDate(),
-            isDuplicat?.mottattDate?.toLocalDate()
+            isDuplicat?.mottattDate?.toLocalDate(),
         )
         assertEquals(duplicationCheck.epjSystem, isDuplicat?.epjSystem)
         assertEquals(duplicationCheck.epjVersion, isDuplicat?.epjVersion)

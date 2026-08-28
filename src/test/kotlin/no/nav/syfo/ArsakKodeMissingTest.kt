@@ -49,7 +49,7 @@ internal class ArsakKodeMissingTest {
 
         Assertions.assertEquals(
             false,
-            aktivitetIkkeMuligMedisinskeArsakskodeMangler(aktivitetIkkeMulig)
+            aktivitetIkkeMuligMedisinskeArsakskodeMangler(aktivitetIkkeMulig),
         )
     }
 
@@ -60,7 +60,7 @@ internal class ArsakKodeMissingTest {
 
         Assertions.assertEquals(
             false,
-            aktivitetIkkeMuligArbeidsplassenArsakskodeMangler(aktivitetIkkeMulig)
+            aktivitetIkkeMuligArbeidsplassenArsakskodeMangler(aktivitetIkkeMulig),
         )
     }
 

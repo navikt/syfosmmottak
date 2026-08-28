@@ -17,7 +17,7 @@ import org.apache.kafka.common.serialization.StringSerializer
 fun Properties.toProducerConfig(
     groupId: String,
     valueSerializer: KClass<out Serializer<out Any>>,
-    keySerializer: KClass<out Serializer<out Any>> = StringSerializer::class
+    keySerializer: KClass<out Serializer<out Any>> = StringSerializer::class,
 ): Properties =
     Properties().also {
         it.putAll(this)
@@ -44,7 +44,4 @@ class KafkaClients(environmentVariables: EnvironmentVariables) {
 
 private fun getkafkaProducerConfig(producerId: String, env: EnvironmentVariables) =
     KafkaUtils.getAivenKafkaConfig(producerId)
-        .toProducerConfig(
-            env.applicationName,
-            valueSerializer = JacksonKafkaSerializer::class,
-        )
+        .toProducerConfig(env.applicationName, valueSerializer = JacksonKafkaSerializer::class)

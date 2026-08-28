@@ -36,7 +36,7 @@ internal class HandleEmottakSubscriptionTest {
                     signaturFnr,
                     legekontorName,
                     loggingMeta,
-                    sykmeldingsId
+                    sykmeldingsId,
                 )
 
             handleEmottakSubscription(
@@ -78,7 +78,7 @@ internal class HandleEmottakSubscriptionTest {
                     signaturFnr,
                     legekontorName,
                     loggingMeta,
-                    sykmeldingsId
+                    sykmeldingsId,
                 )
 
             handleEmottakSubscription(
@@ -120,7 +120,7 @@ internal class HandleEmottakSubscriptionTest {
                     signaturFnr,
                     legekontorName,
                     loggingMeta,
-                    sykmeldingsId
+                    sykmeldingsId,
                 )
             handleEmottakSubscription(
                 tssId,

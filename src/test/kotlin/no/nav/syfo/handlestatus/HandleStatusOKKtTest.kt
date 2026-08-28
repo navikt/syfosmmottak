@@ -92,11 +92,7 @@ internal class HandleStatusOKKtTest {
         ff.completeAsync { throw RuntimeException() }
 
         every { kafkaProducerReceviedSykmelding.send(any()) } returns
-            CompletableFuture<RecordMetadata>().apply {
-                complete(
-                    mockk(),
-                )
-            }
+            CompletableFuture<RecordMetadata>().apply { complete(mockk()) }
         every { kafkaApprecProducer.send(any()) } returns ff
         val exception =
             assertThrows<ExecutionException> {

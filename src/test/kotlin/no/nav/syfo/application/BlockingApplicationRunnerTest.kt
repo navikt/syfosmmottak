@@ -84,14 +84,14 @@ internal class BlockingApplicationRunnerTest {
                         listOf(
                             PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
                             PdlIdent("aktorId", false, "AKTORID"),
-                        ),
+                        )
                     ),
                 "12345678912" to
                     PdlPerson(
                         listOf(
                             PdlIdent("12345678912", false, "FOLKEREGISTERIDENT"),
                             PdlIdent("aktorId2", false, "AKTORID"),
-                        ),
+                        )
                     ),
             )
         coEvery { norskHelsenettClient.getByFnr(any(), any()) } coAnswers
@@ -106,19 +106,9 @@ internal class BlockingApplicationRunnerTest {
                 )
             }
         coEvery { norskHelsenettClient.getByHpr(any(), any()) } returns
-            Behandler(
-                emptyList(),
-                "12345678912",
-                "HPR",
-                null,
-                null,
-                null,
-            )
+            Behandler(emptyList(), "12345678912", "HPR", null, null, null)
         coEvery { syfoSykemeldingRuleClient.executeRuleValidation(any(), any()) } returns
-            ValidationResult(
-                Status.OK,
-                emptyList(),
-            )
+            ValidationResult(Status.OK, emptyList())
         coEvery { duplicationService.getDuplicationCheck(any(), any()) } returns null
         coEvery { smtssClient.findBestTssIdEmottak(any(), any(), any(), any()) } returns null
         coEvery { smtssClient.findBestTssInfotrygdId(any(), any(), any(), any()) } returns null
@@ -149,14 +139,7 @@ internal class BlockingApplicationRunnerTest {
         every { textMessage.text } returns stringInput
         every { inputconsumer.receive(1000) } returns textMessage
         coEvery { norskHelsenettClient.getByHpr(any(), any()) } returns
-            Behandler(
-                emptyList(),
-                "12345678912",
-                "HPR",
-                null,
-                null,
-                null,
-            )
+            Behandler(emptyList(), "12345678912", "HPR", null, null, null)
 
         runBlocking {
             blockingApplicationRunner.run()
@@ -166,7 +149,7 @@ internal class BlockingApplicationRunnerTest {
                     match {
                         it.value().apprecStatus == ApprecStatus.OK &&
                             it.value().mottakerOrganisasjon.navn == "Helseforetak 1"
-                    },
+                    }
                 )
             }
             coVerify {
@@ -176,7 +159,7 @@ internal class BlockingApplicationRunnerTest {
                             it.value().legeHprNr == "HPR" &&
                             it.value().sykmelding.behandler.fnr == "behandlerfnr" &&
                             it.value().legekontorOrgNr == "123456789"
-                    },
+                    }
                 )
             }
         }
@@ -246,7 +229,7 @@ internal class BlockingApplicationRunnerTest {
         every { applicationState.ready } returns true andThen false
         val stringInput =
             getFileAsString(
-                "src/test/resources/sykemelding2013Regelsettversjon3gendatefremitid.xml",
+                "src/test/resources/sykemelding2013Regelsettversjon3gendatefremitid.xml"
             )
         val textMessage = mockk<TextMessage>(relaxed = true)
         every { textMessage.text } returns stringInput

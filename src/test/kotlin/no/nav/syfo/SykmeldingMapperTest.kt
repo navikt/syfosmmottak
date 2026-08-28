@@ -58,12 +58,10 @@ internal class SykmeldingMapperTest {
                                         s = "2.16.578.1.12.4.1.1.8116"
                                         v = "FNR"
                                     }
-                            },
+                            }
                         )
                         adresse = Address().apply {}
-                        kontaktInfo.add(
-                            TeleCom().apply {},
-                        )
+                        kontaktInfo.add(TeleCom().apply {})
                     }
                 aktivitet =
                     HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
@@ -82,12 +80,12 @@ internal class SykmeldingMapperTest {
                                                             v = medisinskeArsakerArsakskodeV
                                                             dn =
                                                                 "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                                        },
+                                                        }
                                                     )
                                                     beskriv = "Kan ikkje jobbe"
                                                 }
                                         }
-                            },
+                            }
                         )
                     }
                 pasient =
@@ -182,12 +180,10 @@ internal class SykmeldingMapperTest {
                                         s = "2.16.578.1.12.4.1.1.8116"
                                         v = "FNR"
                                     }
-                            },
+                            }
                         )
                         adresse = Address().apply {}
-                        kontaktInfo.add(
-                            TeleCom().apply {},
-                        )
+                        kontaktInfo.add(TeleCom().apply {})
                     }
                 aktivitet =
                     HelseOpplysningerArbeidsuforhet.Aktivitet().apply {
@@ -206,12 +202,12 @@ internal class SykmeldingMapperTest {
                                                             v = "1"
                                                             dn =
                                                                 "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                                        },
+                                                        }
                                                     )
                                                     beskriv = "Kan ikkje jobbe"
                                                 }
                                         }
-                            },
+                            }
                         )
                     }
                 pasient =
@@ -260,14 +256,12 @@ internal class SykmeldingMapperTest {
                                             spmTekst = "Hva er videre plan for behandling?"
                                             restriksjon =
                                                 DynaSvarType.Restriksjon().apply {
-                                                    restriksjonskode.add(
-                                                        CS().apply {},
-                                                    )
+                                                    restriksjonskode.add(CS().apply {})
                                                 }
                                             svarTekst = "-"
-                                        },
+                                        }
                                     )
-                                },
+                                }
                         )
                     }
             }
