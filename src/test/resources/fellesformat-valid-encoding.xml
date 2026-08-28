@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<EI_fellesformat xmlns="http://www.trygdeetaten.no/xml/eiff/1/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <MsgHead xmlns="http://www.kith.no/xmlstds/msghead/2006-05-24" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <MsgInfo>
+            <Type DN="Medisinsk vurdering av arbeidsmulighet ved sykdom, sykmelding" V="SYKMELD"/>
+            <MIGversion>v1.2 2006-05-24</MIGversion>
+            <GenDate>2020-06-22T18:02:19+00:00</GenDate>
+            <MsgId>12341234</MsgId>
+            <Ack DN="Ja" V="J"/>
+            <Sender xmlns="http://www.kith.no/xmlstds/msghead/2006-05-24" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                <ComMethod DN="EDI" V="EDI"/>
+                <Organisation>
+                    <OrganisationName>Lægesenteret på æøå</OrganisationName>
+                    <Ident>
+                        <Id>123</Id>
+                        <TypeId DN="HER-id" S="2.16.578.1.12.4.1.1.9051" V="HER"/>
+                    </Ident>
+                    <Ident>
+                        <Id>123456789</Id>
+                        <TypeId DN="Organisasjonsnummeret i Enhetsregister" S="2.16.578.1.12.4.1.1.9051" V="ENH"/>
+                    </Ident>
+                    <Address>
+                        <Type DN="Postadresse" V="PST"/>
+                        <StreetAdr>æøå 1</StreetAdr>
+                        <PostalCode>1337</PostalCode>
+                        <City>æøå</City>
+                    </Address>
+                    <TeleCom>
+                        <TypeTelecom DN="Arbeidsplass, direktenummer" V="WD"/>
+                        <TeleAddress V="tel:12345678"/>
+                    </TeleCom>
+                    <HealthcareProfessional>
+                        <FamilyName>æ-å</FamilyName>
+                        <GivenName>Ø Å</GivenName>
+                        <Ident>
+                            <Id>123456</Id>
+                            <TypeId DN="HER-id" S="2.16.578.1.12.4.1.1.8116" V="HER"/>
+                        </Ident>
+                        <Ident>
+                            <Id>123456789</Id>
+                            <TypeId DN="HPR-nummer" S="2.16.578.1.12.4.1.1.8116" V="HPR"/>
+                        </Ident>
+                    </HealthcareProfessional>
+                </Organisation>
+            </Sender>
+            <Receiver xmlns="http://www.kith.no/xmlstds/msghead/2006-05-24" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                <ComMethod DN="EDI" V="EDI"/>
+                <Organisation>
+                    <OrganisationName>NAV IKT</OrganisationName>
+                    <Ident>
+                        <Id>79768</Id>
+                        <TypeId DN="HER-id" S="2.16.578.1.12.4.1.1.9051" V="HER"/>
+                    </Ident>
+                    <Address>
+                        <Type DN="Postadresse" V="PST"/>
+                        <StreetAdr>Postboks 5 St Olavs plass</StreetAdr>
+                        <PostalCode>0130</PostalCode>
+                        <City>OSLO</City>
+                    </Address>
+                    <TeleCom>
+                        <TypeTelecom DN="Arbeidsplass, direktenummer" V="WD"/>
+                        <TeleAddress V="tel:22927000"/>
+                    </TeleCom>
+                </Organisation>
+            </Receiver>
+            <Patient xmlns="http://www.kith.no/xmlstds/msghead/2006-05-24" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                <FamilyName>æ</FamilyName>
+                <GivenName>Å</GivenName>
+                <Ident>
+                    <Id>10987654321</Id>
+                    <TypeId DN="Fødselsnummer" S="2.16.578.1.12.4.1.1.8116" V="FNR"/>
+                </Ident>
+                <Address>
+                    <Type DN="Postadresse" V="PST"/>
+                    <StreetAdr>æøåveien 3</StreetAdr>
+                    <PostalCode>1337</PostalCode>
+                    <City>TROMSØ</City>
+                    <Country DN="Norge" V="NO"/>
+                </Address>
+                <TeleCom>
+                    <TypeTelecom DN="Mobiltelefon" V="MC"/>
+                    <TeleAddress V="mob:12345678"/>
+                </TeleCom>
+            </Patient>
+        </MsgInfo>
+        <Document>
+            <RefDoc>
+                <MsgType DN="XML-instans" V="XML"/>
+                <Id>12344556789</Id>
+                <Content>
+                    <HelseOpplysningerArbeidsuforhet xmlns="http://www.kith.no/xmlstds/HelseOpplysningerArbeidsuforhet/2013-10-01" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                        <RegelSettVersjon>2</RegelSettVersjon>
+                        <SyketilfelleStartDato>2020-02-01</SyketilfelleStartDato>
+                        <Pasient>
+                            <Navn>
+                                <Etternavn>Æ</Etternavn>
+                                <Fornavn>Å</Fornavn>
+                            </Navn>
+                            <Fodselsnummer>
+                                <Id xmlns="http://www.kith.no/xmlstds/felleskomponent1">10987654321</Id>
+                                <TypeId xmlns="http://www.kith.no/xmlstds/felleskomponent1" DN="Fødselsnummer" S="2.16.578.1.12.4.1.1.8116" V="FNR"/>
+                            </Fodselsnummer>
+                            <KontaktInfo>
+                                <TypeTelecom xmlns="http://www.kith.no/xmlstds/felleskomponent1" DN="Mobiltelefon " V="MC "/>
+                                <TeleAddress xmlns="http://www.kith.no/xmlstds/felleskomponent1" V="mob:12345678"/>
+                            </KontaktInfo>
+                            <NavnFastlege>Øøø Æææ</NavnFastlege>
+                        </Pasient>
+                        <Arbeidsgiver>
+                            <HarArbeidsgiver DN="Én arbeidsgiver" V="1"/>
+                            <NavnArbeidsgiver>Bærum Sykehjem</NavnArbeidsgiver>
+                            <Yrkesbetegnelse>Ernæringsfysiolog</Yrkesbetegnelse>
+                        </Arbeidsgiver>
+                        <MedisinskVurdering>
+                            <HovedDiagnose>
+                                <Diagnosekode DN="Brudd i lårbein IKA" S="2.16.578.1.12.4.1.1.7170" V="L76"/>
+                            </HovedDiagnose>
+                        </MedisinskVurdering>
+                        <Aktivitet>
+                            <Periode>
+                                <PeriodeFOMDato>2020-06-10</PeriodeFOMDato>
+                                <PeriodeTOMDato>2020-07-20</PeriodeTOMDato>
+                                <AktivitetIkkeMulig>
+                                    <MedisinskeArsaker>
+                                        <Arsakskode DN="Helsetilstanden hindrer pasienten i å være i aktivitet" V="1"/>
+                                        <Beskriv>svært redusert</Beskriv>
+                                    </MedisinskeArsaker>
+                                    <Arbeidsplassen/>
+                                </AktivitetIkkeMulig>
+                            </Periode>
+                        </Aktivitet>
+                        <Prognose>
+                            <ErIArbeid/>
+                        </Prognose>
+                        <Tiltak/>
+                        <MeldingTilNav>
+                            <BistandNAVUmiddelbart>false</BistandNAVUmiddelbart>
+                        </MeldingTilNav>
+                        <KontaktMedPasient>
+                            <BehandletDato>2020-06-17T00:00:00</BehandletDato>
+                            <KontaktDato>2020-05-05</KontaktDato>
+                            <BegrunnIkkeKontakt>Tidligere sykemelding videreføres.</BegrunnIkkeKontakt>
+                        </KontaktMedPasient>
+                        <Behandler>
+                            <Navn>
+                                <Etternavn>Øya</Etternavn>
+                                <Fornavn>Æøå</Fornavn>
+                            </Navn>
+                            <Id>
+                                <Id xmlns="http://www.kith.no/xmlstds/felleskomponent1">12345678912</Id>
+                                <TypeId xmlns="http://www.kith.no/xmlstds/felleskomponent1" DN="Fødselsnummer" S="2.16.578.1.12.4.1.1.8116" V="FNR"/>
+                            </Id>
+                            <Id>
+                                <Id xmlns="http://www.kith.no/xmlstds/felleskomponent1">123456</Id>
+                                <TypeId xmlns="http://www.kith.no/xmlstds/felleskomponent1" DN="HER-id" S="2.16.578.1.12.4.1.1.8116" V="HER"/>
+                            </Id>
+                            <Adresse>
+                                <StreetAdr xmlns="http://www.kith.no/xmlstds/felleskomponent1">42B</StreetAdr>
+                                <PostalCode xmlns="http://www.kith.no/xmlstds/felleskomponent1">1337</PostalCode>
+                                <City xmlns="http://www.kith.no/xmlstds/felleskomponent1">Vadsø</City>
+                            </Adresse>
+                            <KontaktInfo>
+                                <TypeTelecom xmlns="http://www.kith.no/xmlstds/felleskomponent1" DN="Hovedtelefon" V="HP"/>
+                                <TeleAddress xmlns="http://www.kith.no/xmlstds/felleskomponent1" V="tel:12345678"/>
+                            </KontaktInfo>
+                        </Behandler>
+                        <AvsenderSystem>
+                            <SystemNavn>test EPJ Ørn</SystemNavn>
+                            <SystemVersjon>1.0.0</SystemVersjon>
+                        </AvsenderSystem>
+                        <Strekkode>123</Strekkode>
+                    </HelseOpplysningerArbeidsuforhet>
+                </Content>
+            </RefDoc>
+        </Document>
+    </MsgHead>
+    <MottakenhetBlokk avsender="123" avsenderFnrFraDigSignatur="12345678912" avsenderRef="SERIALNUMBER=123456789, CN=LÆGESENTERET, O=LÆGESENTERET AS, C=NO" ebAction="Registrering" ebRole="Sykmelder" ebService="Sykmelding" ebXMLSamtaleId="1234" ediLoggId="ediloggid" herIdentifikator="" meldingsType="xml" mottattDatotid="2020-06-23T04:38:57" partnerReferanse="12345"/>
+</EI_fellesformat>
