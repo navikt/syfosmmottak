@@ -15,7 +15,7 @@ class PdlPersonService(
 
     suspend fun getIdenter(
         identer: List<String>,
-        loggingMeta: LoggingMeta
+        loggingMeta: LoggingMeta,
     ): Map<String, PdlPerson?> {
         val stsToken = accessTokenClientV2.getAccessTokenV2(pdlScope)
         val pdlResponse = pdlClient.getIdenter(identer, stsToken)
@@ -25,7 +25,7 @@ class PdlPersonService(
                 logger.error(
                     "PDL returnerte error {}, {}",
                     it,
-                    StructuredArguments.fields(loggingMeta)
+                    StructuredArguments.fields(loggingMeta),
                 )
             }
         }
@@ -40,7 +40,7 @@ class PdlPersonService(
             if (it.code != "ok") {
                 logger.warn(
                     "Mottok feilkode ${it.code} fra PDL for en eller flere identer, {}",
-                    StructuredArguments.fields(loggingMeta)
+                    StructuredArguments.fields(loggingMeta),
                 )
             }
         }

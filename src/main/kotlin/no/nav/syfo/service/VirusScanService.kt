@@ -7,9 +7,7 @@ import no.nav.syfo.logger
 import no.nav.syfo.metrics.VEDLEGG_OVER_300_MEGABYTE_COUNTER
 import no.nav.syfo.vedlegg.model.Vedlegg
 
-class VirusScanService(
-    private val clamAvClient: ClamAvClient,
-) {
+class VirusScanService(private val clamAvClient: ClamAvClient) {
 
     suspend fun vedleggContainsVirus(vedlegg: List<Vedlegg>): Boolean {
         val vedleggOver300MegaByte =

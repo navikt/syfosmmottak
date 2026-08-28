@@ -20,11 +20,11 @@ internal class UnmarshalTest {
 
         Assertions.assertEquals(
             expectedFomDate,
-            healthInformation.aktivitet.periode.first().periodeFOMDato
+            healthInformation.aktivitet.periode.first().periodeFOMDato,
         )
         Assertions.assertEquals(
             expectedTomDate,
-            healthInformation.aktivitet.periode.first().periodeTOMDato
+            healthInformation.aktivitet.periode.first().periodeTOMDato,
         )
     }
 
@@ -39,11 +39,11 @@ internal class UnmarshalTest {
 
         Assertions.assertEquals(
             expectedFomDate,
-            healthInformation.aktivitet.periode.first().periodeFOMDato
+            healthInformation.aktivitet.periode.first().periodeFOMDato,
         )
         Assertions.assertEquals(
             expectedTomDate,
-            healthInformation.aktivitet.periode.first().periodeTOMDato
+            healthInformation.aktivitet.periode.first().periodeTOMDato,
         )
     }
 
@@ -58,11 +58,11 @@ internal class UnmarshalTest {
 
         Assertions.assertEquals(
             expectedFomDate,
-            healthInformation.aktivitet.periode.first().periodeFOMDato
+            healthInformation.aktivitet.periode.first().periodeFOMDato,
         )
         Assertions.assertEquals(
             expectedTomDate,
-            healthInformation.aktivitet.periode.first().periodeTOMDato
+            healthInformation.aktivitet.periode.first().periodeTOMDato,
         )
     }
 
@@ -77,11 +77,11 @@ internal class UnmarshalTest {
 
         Assertions.assertEquals(
             expectedFomDate,
-            healthInformation.aktivitet.periode.first().periodeFOMDato
+            healthInformation.aktivitet.periode.first().periodeFOMDato,
         )
         Assertions.assertEquals(
             expectedTomDate,
-            healthInformation.aktivitet.periode.first().periodeTOMDato
+            healthInformation.aktivitet.periode.first().periodeTOMDato,
         )
     }
 
@@ -96,11 +96,11 @@ internal class UnmarshalTest {
 
         Assertions.assertEquals(
             expectedFomDate,
-            healthInformation.aktivitet.periode.first().periodeFOMDato
+            healthInformation.aktivitet.periode.first().periodeFOMDato,
         )
         Assertions.assertEquals(
             expectedTomDate,
-            healthInformation.aktivitet.periode.first().periodeTOMDato
+            healthInformation.aktivitet.periode.first().periodeTOMDato,
         )
     }
 
@@ -115,11 +115,11 @@ internal class UnmarshalTest {
 
         Assertions.assertEquals(
             expectedFomDate,
-            healthInformation.aktivitet.periode.first().periodeFOMDato
+            healthInformation.aktivitet.periode.first().periodeFOMDato,
         )
         Assertions.assertEquals(
             expectedTomDate,
-            healthInformation.aktivitet.periode.first().periodeTOMDato
+            healthInformation.aktivitet.periode.first().periodeTOMDato,
         )
     }
 }

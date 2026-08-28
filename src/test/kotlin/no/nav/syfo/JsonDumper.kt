@@ -1,9 +1,5 @@
 package no.nav.syfo
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import java.io.StringReader
 import java.time.LocalDateTime
 import no.nav.helse.eiFellesformat.XMLEIFellesformat
@@ -12,20 +8,18 @@ import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.toSykmelding
 import no.nav.syfo.util.fellesformatUnmarshaller
 import no.nav.syfo.utils.getFileAsString
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.jacksonMapperBuilder
 
 fun main() {
-    val objectMapper: ObjectMapper =
-        ObjectMapper()
-            .registerModule(JavaTimeModule())
-            .registerKotlinModule()
-            .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+    val jsonMapper: JsonMapper = jacksonMapperBuilder().build()
 
     val sm =
         fellesformatUnmarshaller.unmarshal(
             StringReader(getFileAsString("src/test/resources/generated_sm.xml"))
         ) as HelseOpplysningerArbeidsuforhet
     println(
-        objectMapper.writeValueAsString(
+        jsonMapper.writeValueAsString(
             sm.toSykmelding(
                 "detteerensykmeldingid",
                 "41234123",
@@ -33,7 +27,7 @@ fun main() {
                 "123124334",
                 LocalDateTime.now(),
                 "1213415151",
-                "1213415151"
+                "1213415151",
             )
         )
     )
@@ -52,7 +46,7 @@ fun main() {
                     "123124334",
                     LocalDateTime.now(),
                     "1213415151",
-                    "1213415151"
+                    "1213415151",
                 ),
             personNrPasient = "1231231",
             tlfPasient = "1323423424",
@@ -67,7 +61,7 @@ fun main() {
             legekontorReshId = "1313",
             mottattDato = LocalDateTime.now(),
             rulesetVersion = "2",
-            fellesformat = objectMapper.writeValueAsString(inputMessageText),
+            fellesformat = jsonMapper.writeValueAsString(inputMessageText),
             tssid = "13415",
             merknader = null,
             partnerreferanse = "16524",
@@ -75,5 +69,5 @@ fun main() {
             utenlandskSykmelding = null,
         )
 
-    println(objectMapper.writeValueAsString(receivedSykmelding))
+    println(jsonMapper.writeValueAsString(receivedSykmelding))
 }

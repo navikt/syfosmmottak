@@ -45,7 +45,7 @@ class EmottakSubscriptionClient(
                         tssIdent = tssIdent,
                         sender = convertSenderToBase64(msgHead.msgInfo.sender),
                         partnerreferanse = partnerreferanse,
-                    ),
+                    )
                 )
             }
             logger.info(

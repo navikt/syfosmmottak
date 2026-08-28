@@ -656,14 +656,7 @@ fun handleVirksomhetssykmeldingOgFnrManglerIHPR(
             msgHead,
         )
 
-    sendApprec(
-        apprec,
-        env,
-        kafkaproducerApprec,
-        loggingMeta,
-        duplicationService,
-        null,
-    )
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, null)
 }
 
 fun handleBehandletDatoMangler(
@@ -694,14 +687,7 @@ fun handleBehandletDatoMangler(
             msgHead,
         )
 
-    sendApprec(
-        apprec,
-        env,
-        kafkaproducerApprec,
-        loggingMeta,
-        duplicationService,
-        duplicateCheck,
-    )
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
 }
 
 fun handleArbeidsgiverUgyldigVerdi(
@@ -732,14 +718,7 @@ fun handleArbeidsgiverUgyldigVerdi(
             msgHead,
         )
 
-    sendApprec(
-        apprec,
-        env,
-        kafkaproducerApprec,
-        loggingMeta,
-        duplicationService,
-        duplicateCheck,
-    )
+    sendApprec(apprec, env, kafkaproducerApprec, loggingMeta, duplicationService, duplicateCheck)
 }
 
 fun handleVedleggOver300MB(

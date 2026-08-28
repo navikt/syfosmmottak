@@ -24,7 +24,7 @@ fun DatabaseInterface.persistDuplicateCheck(duplicateCheck: DuplicateCheck) {
                 ruleset_version
                 )
             values (?, ?, ?, ?, ?, ?, ?, ?, ?);
-            """,
+            """
             )
             .use { preparedStatement ->
                 preparedStatement.setString(1, duplicateCheck.sykmeldingId)
@@ -53,7 +53,7 @@ fun DatabaseInterface.extractDuplicateCheckBySha256HealthInformation(
                  select * 
                  from duplicatecheck 
                  where sha256_health_information = ? or sha256_health_information =? ;
-                """,
+                """
             )
             .use { preparedStatement ->
                 preparedStatement.setString(1, sha256HealthInformation)
@@ -71,7 +71,7 @@ fun DatabaseInterface.extractDuplicateCheckByMottakId(mottakId: String): List<Du
                  select * 
                  from duplicatecheck 
                  where mottak_id=?;
-                """,
+                """
             )
             .use { preparedStatement ->
                 preparedStatement.setString(1, mottakId)
@@ -89,7 +89,7 @@ fun DatabaseInterface.deleteDuplicateCheckByMsgId(msgId: String): Int {
                  delete  
                  from duplicatecheck 
                  where mottak_id=?;
-                """,
+                """
                 )
                 .use { preparedStatement ->
                     preparedStatement.setString(1, msgId)
@@ -116,7 +116,7 @@ fun DatabaseInterface.persistDuplicateMessage(duplicate: Duplicate) {
                 org_number
                 )
             values (?, ?, ?, ?, ?, ?, ?, ?);
-            """,
+            """
             )
             .use { preparedStatement ->
                 preparedStatement.setString(1, duplicate.sykmeldingId)

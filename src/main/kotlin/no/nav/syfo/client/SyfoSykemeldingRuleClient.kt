@@ -24,7 +24,7 @@ class SyfoSykemeldingRuleClient(
 ) {
     suspend fun executeRuleValidation(
         payload: ReceivedSykmelding,
-        loggingMeta: LoggingMeta
+        loggingMeta: LoggingMeta,
     ): ValidationResult {
         val accessToken = accessTokenClientV2.getAccessTokenV2(resourceId)
         val httpResponse =
@@ -40,7 +40,7 @@ class SyfoSykemeldingRuleClient(
             logger.error(
                 "Syfosmregler svarte med feilkode {} for {}",
                 httpResponse.status,
-                fields(loggingMeta)
+                fields(loggingMeta),
             )
             throw IOException("Syfosmregler svarte med feilkode ${httpResponse.status}")
         }

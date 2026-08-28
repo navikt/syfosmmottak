@@ -1,18 +1,14 @@
 package no.nav.syfo.bootstrap
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
-import io.ktor.client.engine.apache.Apache
-import io.ktor.client.engine.apache.ApacheEngineConfig
+import io.ktor.client.engine.apache5.Apache5
+import io.ktor.client.engine.apache5.Apache5EngineConfig
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpResponseValidator
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.network.sockets.SocketTimeoutException
-import io.ktor.serialization.jackson.jackson
+import io.ktor.serialization.jackson3.jackson
 import no.nav.syfo.EnvironmentVariables
 import no.nav.syfo.ServiceUnavailableException
 import no.nav.syfo.client.AccessTokenClientV2
@@ -25,15 +21,8 @@ import no.nav.syfo.logger
 import no.nav.syfo.pdl.PdlFactory
 
 class HttpClients(environmentVariables: EnvironmentVariables) {
-    private val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
-        install(ContentNegotiation) {
-            jackson {
-                registerKotlinModule()
-                registerModule(JavaTimeModule())
-                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-            }
-        }
+    private val config: HttpClientConfig<Apache5EngineConfig>.() -> Unit = {
+        install(ContentNegotiation) { jackson {} }
         HttpResponseValidator {
             handleResponseExceptionWithRequest { exception, _ ->
                 when (exception) {
@@ -62,7 +51,7 @@ class HttpClients(environmentVariables: EnvironmentVariables) {
         expectSuccess = false
     }
 
-    private val httpClient = HttpClient(Apache, config)
+    private val httpClient = HttpClient(Apache5, config)
 
     private val accessTokenClientV2 =
         AccessTokenClientV2(
@@ -85,7 +74,7 @@ class HttpClients(environmentVariables: EnvironmentVariables) {
             environmentVariables.smgcpProxyUrl,
             accessTokenClientV2,
             environmentVariables.smgcpProxyScope,
-            httpClient
+            httpClient,
         )
 
     val norskHelsenettClient =
@@ -93,7 +82,7 @@ class HttpClients(environmentVariables: EnvironmentVariables) {
             environmentVariables.norskHelsenettEndpointURL,
             accessTokenClientV2,
             environmentVariables.helsenettproxyScope,
-            httpClient
+            httpClient,
         )
 
     val pdlPersonService =
@@ -101,7 +90,7 @@ class HttpClients(environmentVariables: EnvironmentVariables) {
             environmentVariables,
             httpClient,
             accessTokenClientV2,
-            environmentVariables.pdlScope
+            environmentVariables.pdlScope,
         )
 
     val clamAvClient = ClamAvClient(httpClient, environmentVariables.clamAvEndpointUrl)
@@ -111,6 +100,6 @@ class HttpClients(environmentVariables: EnvironmentVariables) {
             environmentVariables.smtssApiUrl,
             accessTokenClientV2,
             environmentVariables.smtssApiScope,
-            httpClient
+            httpClient,
         )
 }

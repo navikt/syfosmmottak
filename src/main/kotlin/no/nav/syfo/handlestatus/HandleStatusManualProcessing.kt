@@ -37,7 +37,7 @@ fun handleStatusMANUALPROCESSING(
 
     logger.info(
         "Sending manuell oppgave to syfosmmanuell-backend {}",
-        StructuredArguments.fields(loggingMeta)
+        StructuredArguments.fields(loggingMeta),
     )
     val apprec =
         fellesformat.toApprec(
@@ -57,7 +57,7 @@ fun handleStatusMANUALPROCESSING(
         validationResult,
         apprec,
         syfoSmManuellTopic,
-        kafkaproducerManuellOppgave
+        kafkaproducerManuellOppgave,
     )
 }
 
@@ -69,12 +69,7 @@ fun sendManuellTask(
     kafkaproducerManuellOppgave: KafkaProducer<String, ManuellOppgave>,
 ) {
     try {
-        val manuellOppgave =
-            ManuellOppgave(
-                receivedSykmelding,
-                validationResult,
-                apprec,
-            )
+        val manuellOppgave = ManuellOppgave(receivedSykmelding, validationResult, apprec)
         val record =
             ProducerRecord(syfoSmManuellTopic, receivedSykmelding.sykmelding.id, manuellOppgave)
         record.headers().add(SOURCE_NAMESPACE_HEADER, SOURCE_NAMESPACE.toByteArray())
@@ -83,7 +78,7 @@ fun sendManuellTask(
     } catch (ex: Exception) {
         logger.error(
             "Failed to send manuell oppgave for sykmelding {} to kafka",
-            receivedSykmelding.sykmelding.id
+            receivedSykmelding.sykmelding.id,
         )
         throw ex
     }

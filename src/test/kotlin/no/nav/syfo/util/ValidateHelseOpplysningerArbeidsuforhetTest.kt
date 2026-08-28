@@ -17,7 +17,7 @@ class ValidateHelseOpplysningerArbeidsuforhetTest {
                     HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
                         periodeFOMDato = LocalDate.now()
                         periodeTOMDato = LocalDate.now().plusDays(4)
-                    },
+                    }
                 )
             }
 
@@ -42,18 +42,18 @@ class ValidateHelseOpplysningerArbeidsuforhetTest {
                                                     v = "1"
                                                     dn =
                                                         "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                                },
+                                                }
                                             )
                                             beskriv = "Er syk"
                                         }
                                 }
-                    },
+                    }
                 )
                 periode.add(
                     HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
                         periodeFOMDato = LocalDate.now().plusDays(5)
                         periodeTOMDato = LocalDate.now().plusDays(10)
-                    },
+                    }
                 )
             }
 
@@ -78,12 +78,12 @@ class ValidateHelseOpplysningerArbeidsuforhetTest {
                                                     v = "1"
                                                     dn =
                                                         "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                                },
+                                                }
                                             )
                                             beskriv = "Er syk"
                                         }
                                 }
-                    },
+                    }
                 )
             }
 

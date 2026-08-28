@@ -91,7 +91,7 @@ internal class ApprecMapperTest {
     internal fun `Duplicate AppRec has same msgGenDate`() {
         Assertions.assertEquals(
             fellesformat.get<XMLMsgHead>().msgInfo.genDate,
-            apprecAvvist.msgGenDate
+            apprecAvvist.msgGenDate,
         )
     }
 
@@ -99,7 +99,7 @@ internal class ApprecMapperTest {
     internal fun `Duplicate AppRec has the same ediLoggId as the source`() {
         Assertions.assertEquals(
             fellesformat.get<XMLMottakenhetBlokk>().ediLoggId,
-            apprecAvvist.ediloggid
+            apprecAvvist.ediloggid,
         )
     }
 
@@ -112,7 +112,7 @@ internal class ApprecMapperTest {
     internal fun `Duplicate AppRec has the same genDate as the source`() {
         Assertions.assertEquals(
             getLocalDateTime(fellesformat.get<XMLMsgHead>().msgInfo.genDate),
-            apprecAvvist.genDate
+            apprecAvvist.genDate,
         )
     }
 
@@ -120,7 +120,7 @@ internal class ApprecMapperTest {
     internal fun `Duplicate AppRec has the same msgTypeVerdi as the source`() {
         Assertions.assertEquals(
             fellesformat.get<XMLMsgHead>().msgInfo.type.v,
-            apprecAvvist.msgTypeVerdi
+            apprecAvvist.msgTypeVerdi,
         )
     }
 
@@ -128,7 +128,7 @@ internal class ApprecMapperTest {
     internal fun `Duplicate AppRec has the same msgTypeBeskrivelse as the source`() {
         Assertions.assertEquals(
             fellesformat.get<XMLMsgHead>().msgInfo.type.dn,
-            apprecAvvist.msgTypeBeskrivelse
+            apprecAvvist.msgTypeBeskrivelse,
         )
     }
 
@@ -207,7 +207,7 @@ internal class ApprecMapperTest {
     internal fun `Duplicate AppRec has the same healthcareProfessional name on the sender organisation`() {
         Assertions.assertEquals(
             "Frost Frida Perma",
-            apprecAvvist.mottakerOrganisasjon.helsepersonell?.navn
+            apprecAvvist.mottakerOrganisasjon.helsepersonell?.navn,
         )
     }
 
@@ -284,7 +284,7 @@ internal class ApprecMapperTest {
     internal fun `Duplicate AppRec has the same healthcareProfessional ident on the receiver organisation`() {
         Assertions.assertEquals(
             null,
-            apprecAvvist.senderOrganisasjon.helsepersonell?.hovedIdent?.id
+            apprecAvvist.senderOrganisasjon.helsepersonell?.hovedIdent?.id,
         )
     }
 
@@ -298,10 +298,7 @@ internal class ApprecMapperTest {
 
     @Test
     internal fun `OK AppRec has the same msgId as the source`() {
-        Assertions.assertEquals(
-            fellesformat.get<XMLMsgHead>().msgInfo.msgId,
-            apprecOK.msgId,
-        )
+        Assertions.assertEquals(fellesformat.get<XMLMsgHead>().msgInfo.msgId, apprecOK.msgId)
     }
 
     @Test
@@ -316,7 +313,7 @@ internal class ApprecMapperTest {
     internal fun `OK AppRec has the same msgTypeVerdi as the source`() {
         Assertions.assertEquals(
             fellesformat.get<XMLMsgHead>().msgInfo.type.v,
-            apprecOK.msgTypeVerdi
+            apprecOK.msgTypeVerdi,
         )
     }
 
@@ -403,7 +400,7 @@ internal class ApprecMapperTest {
     internal fun `OK AppRec has the same healthcareProfessional name on the sender organisation`() {
         Assertions.assertEquals(
             "Frost Frida Perma",
-            apprecOK.mottakerOrganisasjon.helsepersonell?.navn
+            apprecOK.mottakerOrganisasjon.helsepersonell?.navn,
         )
     }
 
@@ -500,7 +497,7 @@ internal class ApprecMapperTest {
     internal fun `Avisst AppRec with validationResult has the same genDate as the source`() {
         Assertions.assertEquals(
             getLocalDateTime(fellesformat.get<XMLMsgHead>().msgInfo.genDate),
-            apprec.genDate
+            apprec.genDate,
         )
     }
 
@@ -513,7 +510,7 @@ internal class ApprecMapperTest {
     internal fun `Avisst AppRec with validationResult has the same msgTypeBeskrivelse as the source`() {
         Assertions.assertEquals(
             fellesformat.get<XMLMsgHead>().msgInfo.type.dn,
-            apprec.msgTypeBeskrivelse
+            apprec.msgTypeBeskrivelse,
         )
     }
 

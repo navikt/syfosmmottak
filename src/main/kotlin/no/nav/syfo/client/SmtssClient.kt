@@ -30,7 +30,7 @@ class SmtssClient(
 
         sikkerlogg.info(
             "Henter TSS-id fra smtss sykmeldingId: $sykmeldingId, samhandlerFnr: $samhandlerFnr, samhandlerOrgName: $samhandlerOrgName loggingMeta: {}",
-            StructuredArguments.fields(loggingMeta)
+            StructuredArguments.fields(loggingMeta),
         )
         val httpResponse =
             httpClient.get("$endpointUrl/api/v1/samhandler/emottak") {
@@ -64,7 +64,7 @@ class SmtssClient(
 
     private suspend fun getResponse(
         httpResponse: io.ktor.client.statement.HttpResponse,
-        loggingMeta: LoggingMeta
+        loggingMeta: LoggingMeta,
     ): String? {
         return when (httpResponse.status) {
             HttpStatusCode.OK -> {
@@ -88,6 +88,4 @@ class SmtssClient(
     }
 }
 
-data class TSSident(
-    val tssid: String,
-)
+data class TSSident(val tssid: String)

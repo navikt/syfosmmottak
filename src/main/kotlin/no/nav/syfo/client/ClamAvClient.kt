@@ -9,10 +9,7 @@ import io.ktor.http.HttpHeaders
 import java.util.Base64
 import no.nav.syfo.vedlegg.model.Vedlegg
 
-class ClamAvClient(
-    private val httpClient: HttpClient,
-    private val endpointUrl: String,
-) {
+class ClamAvClient(private val httpClient: HttpClient, private val endpointUrl: String) {
     suspend fun virusScanVedlegg(vedleggList: List<Vedlegg>): List<ScanResult> {
         val httpResponse =
             httpClient.submitFormWithBinaryData(
@@ -27,7 +24,7 @@ class ClamAvClient(
                                     append(HttpHeaders.ContentType, vedlegg.content.contentType)
                                     append(
                                         HttpHeaders.ContentDisposition,
-                                        "filename=\"${vedlegg.description}\""
+                                        "filename=\"${vedlegg.description}\"",
                                     )
                                 },
                             )
@@ -38,13 +35,10 @@ class ClamAvClient(
     }
 }
 
-data class ScanResult(
-    val Filename: String,
-    val Result: Status,
-)
+data class ScanResult(val Filename: String, val Result: Status)
 
 enum class Status {
     FOUND,
     OK,
-    ERROR
+    ERROR,
 }

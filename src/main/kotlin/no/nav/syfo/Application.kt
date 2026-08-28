@@ -1,10 +1,5 @@
 package no.nav.syfo
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.google.cloud.storage.Storage
 import com.google.cloud.storage.StorageOptions
 import io.ktor.server.application.*
@@ -47,18 +42,15 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.jacksonMapperBuilder
 
 const val SOURCE_NAMESPACE_HEADER = "source-namespace"
 const val SOURCE_APP_HEADER = "source-app"
 const val SOURCE_APP = "syfosmmottak"
 const val SOURCE_NAMESPACE = "teamsykmelding"
 
-val objectMapper: ObjectMapper =
-    ObjectMapper()
-        .registerModule(JavaTimeModule())
-        .registerKotlinModule()
-        .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+val jsonMapper: JsonMapper = jacksonMapperBuilder().build()
 
 val logger: Logger = LoggerFactory.getLogger("no.nav.syfo.syfosmmottak")
 
@@ -94,10 +86,7 @@ fun Application.module() {
 
     val storage: Storage = StorageOptions.newBuilder().build().service
     val bucketUploadService =
-        BucketUploadService(
-            environmentVariables.sykmeldingVedleggBucketName,
-            storage,
-        )
+        BucketUploadService(environmentVariables.sykmeldingVedleggBucketName, storage)
     val virusScanService = VirusScanService(httpClients.clamAvClient)
 
     val duplicationService = DuplicationService(database)
@@ -122,15 +111,15 @@ fun Application.module() {
         uploadSykmeldingService =
             UploadSykmeldingService(
                 tsmSykmeldingBucket = environmentVariables.tsmSykmeldingBucket,
-                storage = storage
-            )
+                storage = storage,
+            ),
     )
 }
 
 @DelicateCoroutinesApi
 fun createListener(
     applicationState: ApplicationState,
-    action: suspend CoroutineScope.() -> Unit
+    action: suspend CoroutineScope.() -> Unit,
 ): Job =
     GlobalScope.launch {
         try {
@@ -238,19 +227,16 @@ fun sendReceivedSykmelding(
 
         kafkaproducerreceivedSykmelding.send(record).get()
         logger.info(
-            "Sykmelding sendt to kafka topic $receivedSykmeldingTopic sykmelding id ${receivedSykmelding.sykmelding.id}",
+            "Sykmelding sendt to kafka topic $receivedSykmeldingTopic sykmelding id ${receivedSykmelding.sykmelding.id}"
         )
     } catch (ex: Exception) {
         logger.error(
-            "failed to send sykmelding to kafka result for sykmelding ${receivedSykmelding.sykmelding.id}",
+            "failed to send sykmelding to kafka result for sykmelding ${receivedSykmelding.sykmelding.id}"
         )
         throw ex
     }
 }
 
-data class ApplicationState(
-    var alive: Boolean = false,
-    var ready: Boolean = false,
-)
+data class ApplicationState(var alive: Boolean = false, var ready: Boolean = false)
 
 class ServiceUnavailableException(message: String?) : Exception(message)

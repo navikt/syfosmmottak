@@ -13,18 +13,18 @@ class PdlFactory private constructor() {
             environmentVariables: EnvironmentVariables,
             httpClient: HttpClient,
             accessTokenClientV2: AccessTokenClientV2,
-            pdlScope: String
+            pdlScope: String,
         ): PdlPersonService {
             return PdlPersonService(
                 getPdlClient(httpClient, environmentVariables),
                 accessTokenClientV2,
-                pdlScope
+                pdlScope,
             )
         }
 
         private fun getPdlClient(
             httpClient: HttpClient,
-            environmentVariables: EnvironmentVariables
+            environmentVariables: EnvironmentVariables,
         ): PdlClient {
             return PdlClient(
                 httpClient,

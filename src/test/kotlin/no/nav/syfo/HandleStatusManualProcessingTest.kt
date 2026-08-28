@@ -26,7 +26,7 @@ internal class HandleStatusManualProcessingTest {
                             messageForSender =
                                 "Første sykmelding er tilbakedatert og felt 11.2 (begrunnelseIkkeKontakt) er utfylt",
                             ruleStatus = Status.MANUAL_PROCESSING,
-                        ),
+                        )
                     ),
             )
 

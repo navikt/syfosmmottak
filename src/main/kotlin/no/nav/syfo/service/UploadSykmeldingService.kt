@@ -33,7 +33,7 @@ class UploadSykmeldingService(val tsmSykmeldingBucket: String, val storage: Stor
         } catch (ex: Exception) {
             logger.error(
                 "Error uploading xml for sykmeldingId $sykmeldingId ${ex.message} ${ex.stackTrace}",
-                ex
+                ex,
             )
         }
     }
