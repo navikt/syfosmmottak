@@ -10,7 +10,6 @@ import jakarta.jms.TextMessage
 import java.io.StringReader
 import java.time.Instant
 import java.time.LocalDateTime
-import java.time.OffsetTime
 import java.time.ZoneOffset
 import java.util.*
 import javax.xml.parsers.SAXParserFactory
@@ -57,6 +56,7 @@ import no.nav.syfo.model.ReceivedSykmeldingWithValidation
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.toAvsenderSystem
 import no.nav.syfo.model.toSykmelding
+import no.nav.syfo.objectMapper
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.service.DuplicationService
@@ -76,6 +76,7 @@ import no.nav.syfo.util.extractOrganisationRashNumberFromSender
 import no.nav.syfo.util.extractTlfFromKontaktInfo
 import no.nav.syfo.util.fellesformatMarshaller
 import no.nav.syfo.util.fellesformatUnmarshaller
+import no.nav.syfo.util.fixDoubleEncodedUtf8
 import no.nav.syfo.util.get
 import no.nav.syfo.util.getLocalDateTime
 import no.nav.syfo.util.getVedlegg
@@ -121,10 +122,7 @@ class BlockingApplicationRunner(
                 delay(100)
                 continue
             }
-            val messageTimestamp =
-                OffsetTime.ofInstant(Instant.ofEpochMilli(message.jmsTimestamp), ZoneOffset.UTC)
 
-            logger.info("Received message with timestamp {}", messageTimestamp)
             processMqMessage(message)
         }
     }
@@ -133,7 +131,8 @@ class BlockingApplicationRunner(
     private suspend fun processMqMessage(message: Message) {
         var loggingMeta: LoggingMeta? = null
         try {
-            val inputMessageText =
+
+            val rawMessageText =
                 when (message) {
                     is TextMessage -> message.text
                     else ->
@@ -141,6 +140,7 @@ class BlockingApplicationRunner(
                             "Incoming message needs to be a byte message or text message"
                         )
                 }
+            val inputMessageText = fixDoubleEncodedUtf8(rawMessageText)
 
             INCOMING_MESSAGE_COUNTER.inc()
             val now = Instant.now().toEpochMilli()
@@ -162,21 +162,42 @@ class BlockingApplicationRunner(
                     false -> inputMessageText
                 }
             val msgHead = fellesformat.get<XMLMsgHead>()
+            val msgId = msgHead.msgInfo.msgId
+
+            if (inputMessageText != rawMessageText) {
+                logger.warn(
+                    "Incoming message was double-encoded (UTF-8 bytes decoded as ISO-8859-1), repaired before parsing",
+                )
+                sikkerlogg.info("message is incorrect encoded $rawMessageText")
+            }
             val legekontorOrgNr =
                 extractOrganisationNumberFromSender(fellesformat)?.id?.replace(" ", "")?.trim()
             loggingMeta =
                 LoggingMeta(
                     mottakId = receiverBlock.ediLoggId,
                     orgNr = legekontorOrgNr,
-                    msgId = msgHead.msgInfo.msgId,
+                    msgId = msgId,
                 )
             logger.info("Received message, {}", StructuredArguments.fields(loggingMeta))
+            try {
+
+                val properties = mutableMapOf<String, Any>()
+                message.propertyNames.asIterator().forEach {
+                    val prop = it as String
+                    val value = message.getObjectProperty(prop)
+                    properties[prop] = value
+                }
+
+                sikkerlogg.info(
+                    "$msgId has properties ${objectMapper.writeValueAsString(properties)}"
+                )
+            } catch (ex: Exception) {
+                logger.info("Could not read properties from message", ex)
+            }
 
             val (healthInformation, recursive) =
                 extractHelseOpplysningerArbeidsuforhet(fellesformat)
             val ediLoggId = receiverBlock.ediLoggId
-
-            val msgId = msgHead.msgInfo.msgId
 
             val legekontorHerId = extractOrganisationHerNumberFromSender(fellesformat)?.id
             val legekontorReshId = extractOrganisationRashNumberFromSender(fellesformat)?.id
