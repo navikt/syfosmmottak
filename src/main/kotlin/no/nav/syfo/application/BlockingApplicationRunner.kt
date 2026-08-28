@@ -168,7 +168,7 @@ class BlockingApplicationRunner(
                 logger.warn(
                     "Incoming message was double-encoded (UTF-8 bytes decoded as ISO-8859-1), repaired before parsing"
                 )
-                sikkerlogg.info("message is incorrect encoded $rawMessageText")
+                sikkerlogg.info("message is incorrect encoded for $msgId, message: $rawMessageText")
             }
             val legekontorOrgNr =
                 extractOrganisationNumberFromSender(fellesformat)?.id?.replace(" ", "")?.trim()
