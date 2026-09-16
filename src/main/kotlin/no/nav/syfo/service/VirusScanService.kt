@@ -35,7 +35,9 @@ class VirusScanService(private val clamAvClient: ClamAvClient) {
                     it.result != Status.OK || it.virus != "" || it.error != ""
                 }
             scanResultMayContainVirus.map {
-                log.warn("Vedlegg may contain virus, filename: ${it.filename}, and virus type: ${it.virus} and error: ${it.error}")
+                logger.warn(
+                    "Vedlegg may contain virus, filename: ${it.filename}, and virus type: ${it.virus} and error: ${it.error}"
+                )
             }
             scanResultMayContainVirus.isNotEmpty()
         }

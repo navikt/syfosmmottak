@@ -39,7 +39,7 @@ data class ScanResult(
     val filename: String,
     val result: Status,
     val virus: String?,
-    val error: String?
+    val error: String?,
 )
 
 enum class Status {
