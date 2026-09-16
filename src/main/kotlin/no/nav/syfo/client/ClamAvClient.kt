@@ -13,7 +13,7 @@ class ClamAvClient(private val httpClient: HttpClient, private val endpointUrl: 
     suspend fun virusScanVedlegg(vedleggList: List<Vedlegg>): List<ScanResult> {
         val httpResponse =
             httpClient.submitFormWithBinaryData(
-                url = "$endpointUrl/scan",
+                url = "$endpointUrl/api/v2/scan",
                 formData =
                     formData {
                         vedleggList.forEachIndexed { index, vedlegg ->
@@ -35,7 +35,12 @@ class ClamAvClient(private val httpClient: HttpClient, private val endpointUrl: 
     }
 }
 
-data class ScanResult(val Filename: String, val Result: Status)
+data class ScanResult(
+    val filename: String,
+    val result: Status,
+    val virus: String?,
+    val error: String?
+)
 
 enum class Status {
     FOUND,
