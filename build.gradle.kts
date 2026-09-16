@@ -6,7 +6,7 @@ version = "1.0.0"
 val javaVersion = JvmTarget.JVM_25
 
 
-val coroutinesVersion = "1.10.2"
+val coroutinesVersion = "1.11.0"
 val syfoXmlCodegenVersion = "2.0.1"
 val ibmMqVersion = "10.0.0.0"
 val javaxActivationVersion = "1.1.1"
@@ -22,15 +22,19 @@ val javaxAnnotationApiVersion = "1.3.2"
 val jaxbRuntimeVersion = "2.4.0-b180830.0438"
 val javaTimeAdapterVersion = "1.1.3"
 val mockkVersion = "1.14.11"
-val googleCloudStorageVersion = "2.72.0"
+val googleCloudStorageVersion = "2.73.0"
 val junitJupiterVersion = "6.1.3"
-val flywayVersion = "13.3.0"
+val flywayVersion = "13.6.0"
 val hikariVersion = "7.1.0"
-val postgresVersion = "42.7.8"
+val postgresVersion = "42.7.11"
 val ktfmtVersion = "0.56"
 val opentelemetryVersion = "2.21.0"
 val diagnosekoderVersion = "1.2026.0"
-val testcontainerVersion = "2.0.3"
+val testcontainerVersion = "2.0.5"
+
+// Included due vulnerabilities in this transitive dependency
+val nettyVersion = "4.2.17.Final"
+
 
 plugins {
     id("application")
@@ -83,8 +87,10 @@ dependencies {
     implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:$opentelemetryVersion")
 
     implementation("com.google.cloud:google-cloud-storage:$googleCloudStorageVersion")
+    {
+        exclude(group = "com.fasterxml.jackson.core", module = "jackson-core")
+    }
 
-    implementation("org.apache.commons:commons-text:$commonsTextVersion")
 
     implementation("com.migesok:jaxb-java-time-adapters:$javaTimeAdapterVersion")
 
