@@ -8,12 +8,12 @@ val javaVersion = JvmTarget.JVM_25
 
 val coroutinesVersion = "1.11.0"
 val syfoXmlCodegenVersion = "2.0.1"
-val ibmMqVersion = "10.0.0.0"
+val ibmMqVersion = "10.0.0.5"
 val javaxActivationVersion = "1.1.1"
 val jacksonVersion = "3.2.2"
 val jaxbApiVersion = "2.4.0-b180830.0359"
 val kafkaVersion = "4.3.1"
-val ktorVersion = "3.5.2"
+val ktorVersion = "3.6.0"
 val logbackVersion = "1.6.3"
 val logstashEncoderVersion = "9.0"
 val prometheusVersion = "0.16.0"
@@ -32,14 +32,12 @@ val opentelemetryVersion = "2.21.0"
 val diagnosekoderVersion = "1.2026.0"
 val testcontainerVersion = "2.0.5"
 
-// Included due vulnerabilities in this transitive dependency
-val nettyVersion = "4.2.17.Final"
 
 
 plugins {
     id("application")
     kotlin("jvm") version "2.4.10"
-    id("com.diffplug.spotless") version "8.9.0"
+    id("com.diffplug.spotless") version "8.10.2"
 }
 
 application {
@@ -64,11 +62,6 @@ dependencies {
 
     implementation("io.ktor:ktor-server-core:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
-    constraints {
-        implementation("io.netty:netty-handler:$nettyVersion") {
-            because("Due to this transitive dependency vulnerabilities")
-        }
-    }
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-apache5:$ktorVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
