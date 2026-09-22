@@ -13,7 +13,7 @@ class TestDB private constructor() {
     companion object {
         var database: DatabaseInterface
         var postgres =
-            PostgreSQLContainer(DockerImageName.parse("postgres:14"))
+            PostgreSQLContainer(DockerImageName.parse("postgres:16"))
                 .withPassword("password")
                 .withUsername("postgres")
                 .withDatabaseName("postgres")
