@@ -17,7 +17,6 @@ val ktorVersion = "3.6.0"
 val logbackVersion = "1.6.3"
 val logstashEncoderVersion = "9.0"
 val prometheusVersion = "0.16.0"
-val commonsTextVersion = "1.14.0"
 val javaxAnnotationApiVersion = "1.3.2"
 val jaxbRuntimeVersion = "2.4.0-b180830.0438"
 val javaTimeAdapterVersion = "1.1.3"
@@ -36,7 +35,7 @@ val testcontainerVersion = "2.0.5"
 
 plugins {
     id("application")
-    kotlin("jvm") version "2.4.10"
+    kotlin("jvm") version "2.4.20"
     id("com.diffplug.spotless") version "8.10.2"
 }
 
@@ -84,8 +83,7 @@ dependencies {
     implementation("com.ibm.mq:com.ibm.mq.jakarta.client:$ibmMqVersion")
     implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:$opentelemetryVersion")
 
-    implementation("com.google.cloud:google-cloud-storage:$googleCloudStorageVersion")
-    {
+    implementation("com.google.cloud:google-cloud-storage:$googleCloudStorageVersion") {
         exclude(group = "com.fasterxml.jackson.core", module = "jackson-core")
     }
 
