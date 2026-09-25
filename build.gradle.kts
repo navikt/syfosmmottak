@@ -32,6 +32,8 @@ val diagnosekoderVersion = "1.2026.0"
 val testcontainerVersion = "2.0.5"
 
 
+// Included due vulnerabilities in this transitive dependency
+val bcprovJdk18onVersion = "1.86"
 
 plugins {
     id("application")
@@ -81,6 +83,11 @@ dependencies {
     implementation("no.nav.helse.xml:kith-hodemelding:$syfoXmlCodegenVersion")
     implementation("no.nav.helse.xml:kith-apprec:$syfoXmlCodegenVersion")
     implementation("com.ibm.mq:com.ibm.mq.jakarta.client:$ibmMqVersion")
+    constraints {
+        implementation("org.bouncycastle:bcprov-jdk18on:$bcprovJdk18onVersion") {
+            because("Due to this transitive dependency vulnerability inside of com.ibm.mq:com.ibm.mq.jakarta.client")
+        }
+    }
     implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:$opentelemetryVersion")
 
     implementation("com.google.cloud:google-cloud-storage:$googleCloudStorageVersion") {
