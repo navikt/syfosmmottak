@@ -48,7 +48,7 @@ internal class ExtractHelseOpplysningerArbeisuforehetTest {
     internal fun `Testing extracting data from HelseOpplysningerArbeidsuforhet extract hpr when over 9 digits`() {
         val stringInput =
             no.nav.syfo.utils.getFileAsString(
-                "src/test/resources/fellesformatHprNumber10Digits.xml"
+                "src/test/resources/fellesformatHprNumber10Digits.xml",
             )
         val fellesformat =
             fellesformatUnmarshaller.unmarshal(StringReader(stringInput)) as XMLEIFellesformat

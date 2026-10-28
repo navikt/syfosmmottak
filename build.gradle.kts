@@ -3,14 +3,14 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val javaVersion = JvmTarget.JVM_25
+val javaVersion = "25"
 
 
 val coroutinesVersion = "1.11.0"
 val syfoXmlCodegenVersion = "2.0.1"
-val ibmMqVersion = "10.0.0.5"
+val ibmMqVersion = "10.0.1.0"
 val javaxActivationVersion = "1.1.1"
-val jacksonVersion = "3.2.2"
+val jacksonVersion = "3.2.4"
 val jaxbApiVersion = "2.4.0-b180830.0359"
 val kafkaVersion = "4.3.1"
 val ktorVersion = "3.6.0"
@@ -21,12 +21,12 @@ val javaxAnnotationApiVersion = "1.3.2"
 val jaxbRuntimeVersion = "2.4.0-b180830.0438"
 val javaTimeAdapterVersion = "1.1.3"
 val mockkVersion = "1.14.11"
-val googleCloudStorageVersion = "2.73.0"
+val googleCloudStorageVersion = "2.75.0"
 val junitJupiterVersion = "6.1.3"
-val flywayVersion = "13.6.0"
+val flywayVersion = "13.11.1"
 val hikariVersion = "7.1.0"
-val postgresVersion = "42.7.11"
-val ktfmtVersion = "0.56"
+val postgresVersion = "42.7.14"
+val ktfmtVersion = "0.65"
 val opentelemetryVersion = "2.21.0"
 val diagnosekoderVersion = "1.2026.0"
 val testcontainerVersion = "2.0.5"
@@ -38,7 +38,7 @@ val bcprovJdk18onVersion = "1.86"
 plugins {
     id("application")
     kotlin("jvm") version "2.4.20"
-    id("com.diffplug.spotless") version "8.10.2"
+    id("com.diffplug.spotless") version "8.10.4"
 }
 
 application {
@@ -117,9 +117,14 @@ dependencies {
     }
 }
 
+
 kotlin {
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of(javaVersion))
+    }
+
     compilerOptions {
-        jvmTarget.set(javaVersion)
+        jvmTarget.set(JvmTarget.fromTarget(javaVersion))
     }
 }
 

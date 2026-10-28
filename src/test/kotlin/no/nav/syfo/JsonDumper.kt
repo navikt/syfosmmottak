@@ -16,7 +16,7 @@ fun main() {
 
     val sm =
         fellesformatUnmarshaller.unmarshal(
-            StringReader(getFileAsString("src/test/resources/generated_sm.xml"))
+            StringReader(getFileAsString("src/test/resources/generated_sm.xml")),
         ) as HelseOpplysningerArbeidsuforhet
     println(
         jsonMapper.writeValueAsString(
@@ -28,8 +28,8 @@ fun main() {
                 LocalDateTime.now(),
                 "1213415151",
                 "1213415151",
-            )
-        )
+            ),
+        ),
     )
 
     val stringInput = getFileAsString("src/test/resources/sykemelding2013Regelsettversjon2.xml")

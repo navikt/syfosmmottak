@@ -32,7 +32,7 @@ val INVALID_MESSAGE_NO_NOTICE: Counter =
         .namespace(METRICS_NS)
         .name("invalid_message_no_notice_count")
         .help(
-            "Counts the number of messages, that has not enough information to be sendt to the rule engine "
+            "Counts the number of messages, that has not enough information to be sendt to the rule engine ",
         )
         .register()
 

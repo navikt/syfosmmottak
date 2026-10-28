@@ -9,7 +9,7 @@ import no.nav.helse.sm2013.TeleCom
 import no.nav.syfo.logger
 
 fun extractHelseOpplysningerArbeidsuforhet(
-    fellesformat: XMLEIFellesformat
+    fellesformat: XMLEIFellesformat,
 ): Pair<HelseOpplysningerArbeidsuforhet, Boolean> {
 
     val (helseOpplysningerArbeidsuforhet, recursive) =
@@ -22,7 +22,7 @@ fun extractHelseOpplysningerArbeidsuforhet(
 }
 
 fun tryGetHelseOpplysningerArbeidsuforhet(
-    XMLMsgHead: XMLMsgHead
+    XMLMsgHead: XMLMsgHead,
 ): Pair<HelseOpplysningerArbeidsuforhet?, Boolean> {
     XMLMsgHead.document.forEach {
         val helseOpplysningerArbeidsuforhet = tryGetHelseOpplysningerArbeidsuforhet(it)
@@ -34,11 +34,11 @@ fun tryGetHelseOpplysningerArbeidsuforhet(
 }
 
 fun tryGetHelseOpplysningerArbeidsuforhet(
-    document: XMLDocument
+    document: XMLDocument,
 ): Pair<HelseOpplysningerArbeidsuforhet?, Boolean> {
     document.refDoc.content.any.forEach {
         if (it is HelseOpplysningerArbeidsuforhet) {
-            return it as HelseOpplysningerArbeidsuforhet to false
+            return it to false
         } else if (it is XMLMsgHead) {
             logger.warn("Bad xml format, trying recursion")
             return tryGetHelseOpplysningerArbeidsuforhet(it).first to true
@@ -81,7 +81,7 @@ fun extractTlfFromKontaktInfo(kontaktInfo: List<TeleCom>): String? {
             .find {
                 it.teleAddress?.v?.contains("tel:") == true &&
                     (it.typeTelecom?.v?.contains("HP") == true ||
-                        it?.typeTelecom?.dn?.contains("Hovedtelefon") == true)
+                        it.typeTelecom?.dn?.contains("Hovedtelefon") == true)
             }
             ?.teleAddress
             ?.v

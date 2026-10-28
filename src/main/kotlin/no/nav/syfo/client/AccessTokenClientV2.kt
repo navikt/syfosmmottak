@@ -43,8 +43,8 @@ class AccessTokenClientV2(
                                                 append("scope", resource)
                                                 append("grant_type", "client_credentials")
                                                 append("client_secret", clientSecret)
-                                            }
-                                        )
+                                            },
+                                        ),
                                     )
                                 }
                                 .body()

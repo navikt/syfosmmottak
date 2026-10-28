@@ -58,7 +58,7 @@ internal class SykmeldingMapperTest {
                                         s = "2.16.578.1.12.4.1.1.8116"
                                         v = "FNR"
                                     }
-                            }
+                            },
                         )
                         adresse = Address().apply {}
                         kontaktInfo.add(TeleCom().apply {})
@@ -80,12 +80,12 @@ internal class SykmeldingMapperTest {
                                                             v = medisinskeArsakerArsakskodeV
                                                             dn =
                                                                 "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                                        }
+                                                        },
                                                     )
                                                     beskriv = "Kan ikkje jobbe"
                                                 }
                                         }
-                            }
+                            },
                         )
                     }
                 pasient =
@@ -180,7 +180,7 @@ internal class SykmeldingMapperTest {
                                         s = "2.16.578.1.12.4.1.1.8116"
                                         v = "FNR"
                                     }
-                            }
+                            },
                         )
                         adresse = Address().apply {}
                         kontaktInfo.add(TeleCom().apply {})
@@ -202,12 +202,12 @@ internal class SykmeldingMapperTest {
                                                             v = "1"
                                                             dn =
                                                                 "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                                        }
+                                                        },
                                                     )
                                                     beskriv = "Kan ikkje jobbe"
                                                 }
                                         }
-                            }
+                            },
                         )
                     }
                 pasient =
@@ -259,9 +259,9 @@ internal class SykmeldingMapperTest {
                                                     restriksjonskode.add(CS().apply {})
                                                 }
                                             svarTekst = "-"
-                                        }
+                                        },
                                     )
-                                }
+                                },
                         )
                     }
             }

@@ -32,7 +32,7 @@ fun handleStatusOK(
     sendReceivedSykmelding(
         okSykmeldingTopic,
         receivedSykmelding.toReceivedSykmeldingWithValidation(
-            ValidationResult(status = Status.OK, ruleHits = emptyList())
+            ValidationResult(status = Status.OK, ruleHits = emptyList()),
         ),
         kafkaproducerreceivedSykmelding,
     )

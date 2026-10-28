@@ -40,7 +40,7 @@ class HttpClients(environmentVariables: EnvironmentVariables) {
             retryIf(maxRetries) { request, response ->
                 if (response.status.value.let { it in 500..599 }) {
                     logger.warn(
-                        "Retrying for statuscode ${response.status.value}, for url ${request.url}"
+                        "Retrying for statuscode ${response.status.value}, for url ${request.url}",
                     )
                     true
                 } else {

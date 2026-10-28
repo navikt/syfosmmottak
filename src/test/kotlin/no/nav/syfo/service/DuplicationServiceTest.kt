@@ -329,7 +329,7 @@ fun getHelseOpplysinginArbeidsuforhet(nyStrekkode: String, nyArbeidsgiver: Strin
                                 s = "2.16.578.1.12.4.1.1.8116"
                                 v = "FNR"
                             }
-                    }
+                    },
                 )
                 adresse = Address().apply {}
                 kontaktInfo.add(TeleCom().apply {})
@@ -350,12 +350,12 @@ fun getHelseOpplysinginArbeidsuforhet(nyStrekkode: String, nyArbeidsgiver: Strin
                                                     v = "1"
                                                     dn =
                                                         "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                                }
+                                                },
                                             )
                                             beskriv = "Kan ikkje jobbe"
                                         }
                                 }
-                    }
+                    },
                 )
             }
         pasient =

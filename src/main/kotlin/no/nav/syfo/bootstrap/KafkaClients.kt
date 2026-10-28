@@ -30,15 +30,15 @@ class KafkaClients(environmentVariables: EnvironmentVariables) {
 
     val kafkaProducerReceivedSykmelding =
         KafkaProducer<String, ReceivedSykmeldingWithValidation>(
-            getkafkaProducerConfig("received-sykmelding-producer", environmentVariables)
+            getkafkaProducerConfig("received-sykmelding-producer", environmentVariables),
         )
     val kafkaProducerApprec =
         KafkaProducer<String, Apprec>(
-            getkafkaProducerConfig("apprec-producer", environmentVariables)
+            getkafkaProducerConfig("apprec-producer", environmentVariables),
         )
     val kafkaproducerManuellOppgave =
         KafkaProducer<String, ManuellOppgave>(
-            getkafkaProducerConfig("manuell-oppgave-producer", environmentVariables)
+            getkafkaProducerConfig("manuell-oppgave-producer", environmentVariables),
         )
 }
 

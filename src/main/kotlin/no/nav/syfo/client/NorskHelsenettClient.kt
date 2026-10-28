@@ -41,7 +41,7 @@ class NorskHelsenettClient(
                     fields(loggingMeta),
                 )
                 throw IOException(
-                    "Syfohelsenettproxy kastet feilmelding og svarte status ${httpResponse.status} ved søk på hprNummer"
+                    "Syfohelsenettproxy kastet feilmelding og svarte status ${httpResponse.status} ved søk på hprNummer",
                 )
             }
             NotFound -> {
@@ -50,10 +50,10 @@ class NorskHelsenettClient(
             }
             Unauthorized -> {
                 logger.error(
-                    "Norsk helsenett returnerte Unauthorized for henting av behandler for hprNummer"
+                    "Norsk helsenett returnerte Unauthorized for henting av behandler for hprNummer",
                 )
                 throw RuntimeException(
-                    "Norsk helsenett returnerte Unauthorized ved henting av behandler for hprNummer"
+                    "Norsk helsenett returnerte Unauthorized ved henting av behandler for hprNummer",
                 )
             }
             OK -> {
@@ -63,7 +63,7 @@ class NorskHelsenettClient(
             else -> {
                 logger.error("Feil ved henting av behandler. Statuskode: ${httpResponse.status}")
                 throw RuntimeException(
-                    "En ukjent feil oppsto ved ved henting av behandler ved søk på hprNummer. Statuskode: ${httpResponse.status}"
+                    "En ukjent feil oppsto ved ved henting av behandler ved søk på hprNummer. Statuskode: ${httpResponse.status}",
                 )
             }
         }
@@ -101,7 +101,7 @@ class NorskHelsenettClient(
                     fields(loggingMeta),
                 )
                 throw IOException(
-                    "Syfohelsenettproxy kastet feilmelding og svarte status ${httpResponse.status} ved søk på fnr"
+                    "Syfohelsenettproxy kastet feilmelding og svarte status ${httpResponse.status} ved søk på fnr",
                 )
             }
             NotFound -> {
@@ -111,7 +111,7 @@ class NorskHelsenettClient(
             Unauthorized -> {
                 logger.error("Norsk helsenett returnerte Unauthorized for henting av behandler")
                 throw RuntimeException(
-                    "Norsk helsenett returnerte Unauthorized ved henting av behandler"
+                    "Norsk helsenett returnerte Unauthorized ved henting av behandler",
                 )
             }
             OK -> {
@@ -121,7 +121,7 @@ class NorskHelsenettClient(
             else -> {
                 logger.error("Feil ved henting av behandler. Statuskode: ${httpResponse.status}")
                 throw RuntimeException(
-                    "En ukjent feil oppsto ved ved henting av behandler. Statuskode: ${httpResponse.status}"
+                    "En ukjent feil oppsto ved ved henting av behandler. Statuskode: ${httpResponse.status}",
                 )
             }
         }
@@ -161,7 +161,7 @@ fun getHelsepersonellKategori(godkjenninger: List<Godkjenning>): String? =
         else -> {
             val verdi = godkjenninger.firstOrNull()?.helsepersonellkategori?.verdi
             logger.warn(
-                "Signerende behandler har ikke en helsepersonellkategori($verdi) vi kjenner igjen"
+                "Signerende behandler har ikke en helsepersonellkategori($verdi) vi kjenner igjen",
             )
             verdi
         }

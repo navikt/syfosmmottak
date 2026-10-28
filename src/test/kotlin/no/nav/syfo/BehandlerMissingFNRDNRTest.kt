@@ -13,7 +13,7 @@ internal class BehandlerMissingFNRDNRTest {
     internal fun `Should check find if fnr or dnr is missing FNR is Not missing`() {
         val healthInformation =
             fellesformatUnmarshaller.unmarshal(
-                StringReader(getFileAsString("src/test/resources/generated_sm.xml"))
+                StringReader(getFileAsString("src/test/resources/generated_sm.xml")),
             ) as HelseOpplysningerArbeidsuforhet
 
         Assertions.assertEquals(false, fnrOgDnrMangler(healthInformation))
@@ -23,7 +23,7 @@ internal class BehandlerMissingFNRDNRTest {
     internal fun `Should check find if fnr or dnr is missing FNR AND DNR is missing`() {
         val healthInformation =
             fellesformatUnmarshaller.unmarshal(
-                StringReader(getFileAsString("src/test/resources/generated_sm_6.xml"))
+                StringReader(getFileAsString("src/test/resources/generated_sm_6.xml")),
             ) as HelseOpplysningerArbeidsuforhet
 
         Assertions.assertEquals(true, fnrOgDnrMangler(healthInformation))
@@ -33,7 +33,7 @@ internal class BehandlerMissingFNRDNRTest {
     internal fun `Should check find if fnr or dnr is missing FNR is empty string`() {
         val healthInformation =
             fellesformatUnmarshaller.unmarshal(
-                StringReader(getFileAsString("src/test/resources/generated_sm_7.xml"))
+                StringReader(getFileAsString("src/test/resources/generated_sm_7.xml")),
             ) as HelseOpplysningerArbeidsuforhet
 
         Assertions.assertEquals(true, fnrOgDnrMangler(healthInformation))

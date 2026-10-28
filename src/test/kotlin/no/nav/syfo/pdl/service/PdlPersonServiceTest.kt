@@ -52,7 +52,7 @@ internal class PdlPersonServiceTest {
                                 ),
                                 "ok",
                             ),
-                        )
+                        ),
                 ),
                 errors = null,
             )
@@ -89,7 +89,7 @@ internal class PdlPersonServiceTest {
                                 ),
                                 "ok",
                             ),
-                        )
+                        ),
                 ),
                 errors = null,
             )
@@ -118,7 +118,7 @@ internal class PdlPersonServiceTest {
                                 ),
                                 "ok",
                             ),
-                        )
+                        ),
                 ),
                 errors = null,
             )

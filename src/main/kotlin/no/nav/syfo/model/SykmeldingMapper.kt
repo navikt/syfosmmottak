@@ -107,7 +107,7 @@ fun toDiagnoseCode(system: String, code: String, dn: String?): Diagnose {
     val codeUppercase = codes.entries.firstOrNull { it.key.uppercase() == code.uppercase() }
     if (codeUppercase != null) {
         logger.info(
-            "found diagnose code with uppercase check code: $code, uppercase: $codeUppercase"
+            "found diagnose code with uppercase check code: $code, uppercase: $codeUppercase",
         )
         return Diagnose(system, codeUppercase.key, dn)
     }

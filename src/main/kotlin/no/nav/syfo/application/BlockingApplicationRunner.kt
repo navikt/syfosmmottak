@@ -137,7 +137,7 @@ class BlockingApplicationRunner(
                     is TextMessage -> message.text
                     else ->
                         throw RuntimeException(
-                            "Incoming message needs to be a byte message or text message"
+                            "Incoming message needs to be a byte message or text message",
                         )
                 }
             val inputMessageText = fixDoubleEncodedUtf8(rawMessageText)
@@ -166,7 +166,7 @@ class BlockingApplicationRunner(
 
             if (inputMessageText != rawMessageText) {
                 logger.warn(
-                    "Incoming message was double-encoded (UTF-8 bytes decoded as ISO-8859-1), repaired before parsing"
+                    "Incoming message was double-encoded (UTF-8 bytes decoded as ISO-8859-1), repaired before parsing",
                 )
                 sikkerlogg.info("message is incorrect encoded for $msgId, message: $rawMessageText")
             }
@@ -189,7 +189,7 @@ class BlockingApplicationRunner(
                 }
 
                 sikkerlogg.info(
-                    "$msgId has properties ${jsonMapper.writeValueAsString(properties)}"
+                    "$msgId has properties ${jsonMapper.writeValueAsString(properties)}",
                 )
             } catch (ex: Exception) {
                 logger.info("Could not read properties from message", ex)
@@ -451,12 +451,11 @@ class BlockingApplicationRunner(
                 }
 
                 if (vedlegg.isNotEmpty()) {
-                    val vedleggOver300MegaByte =
-                        vedlegg.filter {
-                            fileSizeLagerThan300MegaBytes(
-                                Base64.getMimeDecoder().decode(it.content.content)
-                            )
-                        }
+                    val vedleggOver300MegaByte = vedlegg.filter {
+                        fileSizeLagerThan300MegaBytes(
+                            Base64.getMimeDecoder().decode(it.content.content),
+                        )
+                    }
 
                     if (vedleggOver300MegaByte.isNotEmpty()) {
                         handleVedleggOver300MB(
@@ -613,7 +612,7 @@ class BlockingApplicationRunner(
                         )
                     else ->
                         throw RuntimeException(
-                            "Unhandled ${validationResult.status} for ${receivedSykmelding.sykmelding.id}"
+                            "Unhandled ${validationResult.status} for ${receivedSykmelding.sykmelding.id}",
                         )
                 }
 
@@ -640,13 +639,13 @@ class BlockingApplicationRunner(
             logger.error(
                 "Exception caught while handling message, sending to backout ${
                     StructuredArguments.fields(
-                        loggingMeta
+                        loggingMeta,
                     )
                 }",
                 e,
             )
             logger.error(
-                "Message is bad, ${message.jmsTimestamp}, ${message.jmsType}, ${message.jmsMessageID}, see teamlogs for more info"
+                "Message is bad, ${message.jmsTimestamp}, ${message.jmsType}, ${message.jmsMessageID}, see teamlogs for more info",
             )
             if (message is TextMessage) {
                 sikkerlogg.error("The bad message is TextMessage, text: ${message.text}")
