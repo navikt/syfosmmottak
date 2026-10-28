@@ -84,21 +84,21 @@ internal class BlockingApplicationRunnerTest {
                         listOf(
                             PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
                             PdlIdent("aktorId", false, "AKTORID"),
-                        )
+                        ),
                     ),
                 "12345678912" to
                     PdlPerson(
                         listOf(
                             PdlIdent("12345678912", false, "FOLKEREGISTERIDENT"),
                             PdlIdent("aktorId2", false, "AKTORID"),
-                        )
+                        ),
                     ),
             )
         coEvery { norskHelsenettClient.getByFnr(any(), any()) } coAnswers
             {
                 Behandler(
                     emptyList(),
-                    (this.args[0] as List<String>).first(),
+                    (this.args[0] as List<*>).first() as String?,
                     "HPR",
                     null,
                     null,
@@ -149,7 +149,7 @@ internal class BlockingApplicationRunnerTest {
                     match {
                         it.value().apprecStatus == ApprecStatus.OK &&
                             it.value().mottakerOrganisasjon.navn == "Helseforetak 1"
-                    }
+                    },
                 )
             }
             coVerify {
@@ -159,7 +159,7 @@ internal class BlockingApplicationRunnerTest {
                             it.value().legeHprNr == "HPR" &&
                             it.value().sykmelding.behandler.fnr == "behandlerfnr" &&
                             it.value().legekontorOrgNr == "123456789"
-                    }
+                    },
                 )
             }
         }
@@ -211,7 +211,7 @@ internal class BlockingApplicationRunnerTest {
             ValidationResult(
                 Status.MANUAL_PROCESSING,
                 listOf(
-                    RuleInfo("UNDER_1_MND", "aadf", "adf", ruleStatus = Status.MANUAL_PROCESSING)
+                    RuleInfo("UNDER_1_MND", "aadf", "adf", ruleStatus = Status.MANUAL_PROCESSING),
                 ),
             )
         runBlocking {
@@ -229,7 +229,7 @@ internal class BlockingApplicationRunnerTest {
         every { applicationState.ready } returns true andThen false
         val stringInput =
             getFileAsString(
-                "src/test/resources/sykemelding2013Regelsettversjon3gendatefremitid.xml"
+                "src/test/resources/sykemelding2013Regelsettversjon3gendatefremitid.xml",
             )
         val textMessage = mockk<TextMessage>(relaxed = true)
         every { textMessage.text } returns stringInput

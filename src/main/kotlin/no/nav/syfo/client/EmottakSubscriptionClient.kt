@@ -45,18 +45,18 @@ class EmottakSubscriptionClient(
                         tssIdent = tssIdent,
                         sender = convertSenderToBase64(msgHead.msgInfo.sender),
                         partnerreferanse = partnerreferanse,
-                    )
+                    ),
                 )
             }
             logger.info(
-                "Started subscription for tss: $tssIdent and partnerRef: $partnerreferanse, msgId: $msgId"
+                "Started subscription for tss: $tssIdent and partnerRef: $partnerreferanse, msgId: $msgId",
             )
         } catch (exception: Exception) {
             logger.error(
-                "Couldn't update emottak subscription due to error: ${exception}, msgId: $msgId"
+                "Couldn't update emottak subscription due to error: ${exception}, msgId: $msgId",
             )
             throw IOException(
-                "Vi fikk en uventet feil fra smgcp, prøver på nytt! ${exception.message}, msgId: $msgId"
+                "Vi fikk en uventet feil fra smgcp, prøver på nytt! ${exception.message}, msgId: $msgId",
             )
         }
     }

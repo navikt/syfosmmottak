@@ -42,7 +42,7 @@ internal class HandleStatusManualProcessingKtTest {
                     messageForUser = "Tilbakedatert.",
                     messageForSender = "Tilbakedatert.",
                     ruleStatus = Status.MANUAL_PROCESSING,
-                )
+                ),
             ),
         )
     val validationResultIkkeManuell = ValidationResult(Status.OK, emptyList())

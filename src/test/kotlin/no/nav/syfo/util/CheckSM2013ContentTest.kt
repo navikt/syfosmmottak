@@ -89,7 +89,7 @@ internal class CheckSM2013ContentTest {
                 listOf(
                     PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
                     PdlIdent("aktorId", false, "AKTORID"),
-                )
+                ),
             )
         val behandler = null
         val (healthInformation, _) = extractHelseOpplysningerArbeidsuforhet(fellesformat)
@@ -145,7 +145,7 @@ internal class CheckSM2013ContentTest {
                 listOf(
                     PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
                     PdlIdent("aktorId", false, "AKTORID"),
-                )
+                ),
             )
         val behandler = null
         val (healthInformation, _) = extractHelseOpplysningerArbeidsuforhet(fellesformat)
@@ -203,7 +203,7 @@ internal class CheckSM2013ContentTest {
                 listOf(
                     PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
                     PdlIdent("aktorId", false, "AKTORID"),
-                )
+                ),
             )
 
         val behandlerPdl =
@@ -211,7 +211,7 @@ internal class CheckSM2013ContentTest {
                 listOf(
                     PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
                     PdlIdent("aktorId", false, "AKTORID"),
-                )
+                ),
             )
         val healthInformation =
             HelseOpplysningerArbeidsuforhet().apply {
@@ -247,7 +247,7 @@ internal class CheckSM2013ContentTest {
                                         s = "2.16.578.1.12.4.1.1.8116"
                                         v = "FNR"
                                     }
-                            }
+                            },
                         )
                         adresse = Address().apply {}
                         kontaktInfo.add(TeleCom().apply {})
@@ -269,12 +269,12 @@ internal class CheckSM2013ContentTest {
                                                             v = "1"
                                                             dn =
                                                                 "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                                        }
+                                                        },
                                                     )
                                                     beskriv = "Kan ikkje jobbe"
                                                 }
                                         }
-                            }
+                            },
                         )
                     }
                 pasient =
@@ -364,7 +364,7 @@ internal class CheckSM2013ContentTest {
                 listOf(
                     PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
                     PdlIdent("aktorId", false, "AKTORID"),
-                )
+                ),
             )
 
         val behandlerNull = null
@@ -402,7 +402,7 @@ internal class CheckSM2013ContentTest {
                                         s = "2.16.578.1.12.4.1.1.8116"
                                         v = "FNR"
                                     }
-                            }
+                            },
                         )
                         adresse = Address().apply {}
                         kontaktInfo.add(TeleCom().apply {})
@@ -494,7 +494,7 @@ internal class CheckSM2013ContentTest {
                 listOf(
                     PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
                     PdlIdent("aktorId", false, "AKTORID"),
-                )
+                ),
             )
 
         val behandlerNull = null
@@ -532,7 +532,7 @@ internal class CheckSM2013ContentTest {
                                         s = "2.16.578.1.12.4.1.1.8116"
                                         v = "FNR"
                                     }
-                            }
+                            },
                         )
                         adresse = Address().apply {}
                         kontaktInfo.add(TeleCom().apply {})
@@ -543,7 +543,7 @@ internal class CheckSM2013ContentTest {
                             HelseOpplysningerArbeidsuforhet.Aktivitet.Periode().apply {
                                 periodeFOMDato = LocalDate.now()
                                 periodeTOMDato = LocalDate.now().plusDays(4)
-                            }
+                            },
                         )
                     }
                 pasient =
@@ -632,7 +632,7 @@ internal class CheckSM2013ContentTest {
                 listOf(
                     PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
                     PdlIdent("aktorId", false, "AKTORID"),
-                )
+                ),
             )
 
         val behandlerNull = null
@@ -670,7 +670,7 @@ internal class CheckSM2013ContentTest {
                                         s = "2.16.578.1.12.4.1.1.8116"
                                         v = "FNR"
                                     }
-                            }
+                            },
                         )
                         adresse = Address().apply {}
                         kontaktInfo.add(TeleCom().apply {})
@@ -692,12 +692,12 @@ internal class CheckSM2013ContentTest {
                                                             v = "1"
                                                             dn =
                                                                 "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                                        }
+                                                        },
                                                     )
                                                     beskriv = "Kan ikkje jobbe"
                                                 }
                                         }
-                            }
+                            },
                         )
                     }
                 pasient =
@@ -733,7 +733,7 @@ internal class CheckSM2013ContentTest {
                                         dn = "Problem med jus/politi"
                                         s = "2.16.578.1.12.4.1.1.7110"
                                         v = null
-                                    }
+                                    },
                                 )
                             }
                     }
@@ -796,7 +796,7 @@ internal class CheckSM2013ContentTest {
                 listOf(
                     PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
                     PdlIdent("aktorId", false, "AKTORID"),
-                )
+                ),
             )
 
         val behandlerNull = null
@@ -834,7 +834,7 @@ internal class CheckSM2013ContentTest {
                                         s = "2.16.578.1.12.4.1.1.8116"
                                         v = "FNR"
                                     }
-                            }
+                            },
                         )
                         adresse = Address().apply {}
                         kontaktInfo.add(TeleCom().apply {})
@@ -856,12 +856,12 @@ internal class CheckSM2013ContentTest {
                                                             v = "1"
                                                             dn =
                                                                 "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                                        }
+                                                        },
                                                     )
                                                     beskriv = "Kan ikkje jobbe"
                                                 }
                                         }
-                            }
+                            },
                         )
                     }
                 pasient =
@@ -897,7 +897,7 @@ internal class CheckSM2013ContentTest {
                                         dn = "Problem med jus/politi"
                                         s = "2.16.578.1.12.4.1.1.7110"
                                         v = "Z09"
-                                    }
+                                    },
                                 )
                             }
                     }
@@ -960,7 +960,7 @@ internal class CheckSM2013ContentTest {
                 listOf(
                     PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
                     PdlIdent("aktorId", false, "AKTORID"),
-                )
+                ),
             )
 
         val behandlerPdl =
@@ -968,7 +968,7 @@ internal class CheckSM2013ContentTest {
                 listOf(
                     PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
                     PdlIdent("aktorId", false, "AKTORID"),
-                )
+                ),
             )
 
         val healthInformation =
@@ -1005,7 +1005,7 @@ internal class CheckSM2013ContentTest {
                                         s = "2.16.578.1.12.4.1.1.8116"
                                         v = "FRRR"
                                     }
-                            }
+                            },
                         )
                         adresse = Address().apply {}
                         kontaktInfo.add(TeleCom().apply {})
@@ -1027,12 +1027,12 @@ internal class CheckSM2013ContentTest {
                                                             v = "1"
                                                             dn =
                                                                 "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                                        }
+                                                        },
                                                     )
                                                     beskriv = "Kan ikkje jobbe"
                                                 }
                                         }
-                            }
+                            },
                         )
                     }
                 pasient =
@@ -1068,7 +1068,7 @@ internal class CheckSM2013ContentTest {
                                         dn = "Problem med jus/politi"
                                         s = "2.16.578.1.12.4.1.1.7110"
                                         v = "Z09"
-                                    }
+                                    },
                                 )
                             }
                     }
@@ -1131,7 +1131,7 @@ internal class CheckSM2013ContentTest {
                 listOf(
                     PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
                     PdlIdent("aktorId", false, "AKTORID"),
-                )
+                ),
             )
 
         val behandlerPdl =
@@ -1139,7 +1139,7 @@ internal class CheckSM2013ContentTest {
                 listOf(
                     PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
                     PdlIdent("aktorId", false, "AKTORID"),
-                )
+                ),
             )
 
         val healthInformation =
@@ -1176,7 +1176,7 @@ internal class CheckSM2013ContentTest {
                                         s = "2.16.578.1.12.4.1.1.8116"
                                         v = "FNR"
                                     }
-                            }
+                            },
                         )
                         adresse = Address().apply {}
                         kontaktInfo.add(TeleCom().apply {})
@@ -1198,12 +1198,12 @@ internal class CheckSM2013ContentTest {
                                                             v = "1"
                                                             dn =
                                                                 "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                                        }
+                                                        },
                                                     )
                                                     beskriv = "Kan ikkje jobbe"
                                                 }
                                         }
-                            }
+                            },
                         )
                     }
                 pasient =
@@ -1239,7 +1239,7 @@ internal class CheckSM2013ContentTest {
                                         dn = "Problem med jus/politi"
                                         s = "2.16.578.1.12.4.1.1.7110"
                                         v = "Z09"
-                                    }
+                                    },
                                 )
                             }
                     }
@@ -1302,7 +1302,7 @@ internal class CheckSM2013ContentTest {
                 listOf(
                     PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
                     PdlIdent("aktorId", false, "AKTORID"),
-                )
+                ),
             )
 
         val behandlerPdl =
@@ -1310,7 +1310,7 @@ internal class CheckSM2013ContentTest {
                 listOf(
                     PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
                     PdlIdent("aktorId", false, "AKTORID"),
-                )
+                ),
             )
 
         val healthInformation =
@@ -1347,7 +1347,7 @@ internal class CheckSM2013ContentTest {
                                         s = "2.16.578.1.12.4.1.1.8116"
                                         v = "FNR"
                                     }
-                            }
+                            },
                         )
                         adresse = Address().apply {}
                         kontaktInfo.add(TeleCom().apply {})
@@ -1369,12 +1369,12 @@ internal class CheckSM2013ContentTest {
                                                             v = "1"
                                                             dn =
                                                                 "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                                        }
+                                                        },
                                                     )
                                                     beskriv = "Kan ikkje jobbe"
                                                 }
                                         }
-                            }
+                            },
                         )
                     }
                 pasient =
@@ -1410,7 +1410,7 @@ internal class CheckSM2013ContentTest {
                                         dn = "Problem med jus/politi"
                                         s = "2.16.578.1.12.4.1.1.7110"
                                         v = "Z09"
-                                    }
+                                    },
                                 )
                             }
                     }
@@ -1473,7 +1473,7 @@ internal class CheckSM2013ContentTest {
                 listOf(
                     PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
                     PdlIdent("aktorId", false, "AKTORID"),
-                )
+                ),
             )
 
         val behandlerPdl =
@@ -1481,7 +1481,7 @@ internal class CheckSM2013ContentTest {
                 listOf(
                     PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
                     PdlIdent("aktorId", false, "AKTORID"),
-                )
+                ),
             )
 
         val healthInformation =
@@ -1518,7 +1518,7 @@ internal class CheckSM2013ContentTest {
                                         s = "2.16.578.1.12.4.1.1.8116"
                                         v = "FNR"
                                     }
-                            }
+                            },
                         )
                         adresse = Address().apply {}
                         kontaktInfo.add(TeleCom().apply {})
@@ -1539,12 +1539,12 @@ internal class CheckSM2013ContentTest {
                                                         CS().apply {
                                                             dn =
                                                                 "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                                        }
+                                                        },
                                                     )
                                                     beskriv = "Kan ikkje jobbe"
                                                 }
                                         }
-                            }
+                            },
                         )
                     }
                 pasient =
@@ -1580,7 +1580,7 @@ internal class CheckSM2013ContentTest {
                                         dn = "Problem med jus/politi"
                                         s = "2.16.578.1.12.4.1.1.7110"
                                         v = "Z09"
-                                    }
+                                    },
                                 )
                             }
                     }
@@ -1643,7 +1643,7 @@ internal class CheckSM2013ContentTest {
                 listOf(
                     PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
                     PdlIdent("aktorId", false, "AKTORID"),
-                )
+                ),
             )
 
         val behandlerPdl =
@@ -1651,7 +1651,7 @@ internal class CheckSM2013ContentTest {
                 listOf(
                     PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
                     PdlIdent("aktorId", false, "AKTORID"),
-                )
+                ),
             )
 
         val healthInformation =
@@ -1688,7 +1688,7 @@ internal class CheckSM2013ContentTest {
                                         s = "2.16.578.1.12.4.1.1.8116"
                                         v = "FNR"
                                     }
-                            }
+                            },
                         )
                         adresse = Address().apply {}
                         kontaktInfo.add(TeleCom().apply {})
@@ -1710,12 +1710,12 @@ internal class CheckSM2013ContentTest {
                                                             v = "4"
                                                             dn =
                                                                 "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                                        }
+                                                        },
                                                     )
                                                     beskriv = "Kan ikkje jobbe"
                                                 }
                                         }
-                            }
+                            },
                         )
                     }
                 pasient =
@@ -1751,7 +1751,7 @@ internal class CheckSM2013ContentTest {
                                         dn = "Problem med jus/politi"
                                         s = "2.16.578.1.12.4.1.1.7110"
                                         v = "Z09"
-                                    }
+                                    },
                                 )
                             }
                     }
@@ -1814,7 +1814,7 @@ internal class CheckSM2013ContentTest {
                 listOf(
                     PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
                     PdlIdent("aktorId", false, "AKTORID"),
-                )
+                ),
             )
 
         val behandlerPdl =
@@ -1822,7 +1822,7 @@ internal class CheckSM2013ContentTest {
                 listOf(
                     PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
                     PdlIdent("aktorId", false, "AKTORID"),
-                )
+                ),
             )
 
         val healthInformation =
@@ -1859,7 +1859,7 @@ internal class CheckSM2013ContentTest {
                                         s = "2.16.578.1.12.4.1.1.8116"
                                         v = "FNR"
                                     }
-                            }
+                            },
                         )
                         adresse = Address().apply {}
                         kontaktInfo.add(TeleCom().apply {})
@@ -1881,12 +1881,12 @@ internal class CheckSM2013ContentTest {
                                                             v = null
                                                             dn =
                                                                 "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                                        }
+                                                        },
                                                     )
                                                     beskriv = "Kan ikkje jobbe"
                                                 }
                                         }
-                            }
+                            },
                         )
                     }
                 pasient =
@@ -1922,7 +1922,7 @@ internal class CheckSM2013ContentTest {
                                         dn = "Problem med jus/politi"
                                         s = "2.16.578.1.12.4.1.1.7110"
                                         v = "Z09"
-                                    }
+                                    },
                                 )
                             }
                     }
@@ -1985,7 +1985,7 @@ internal class CheckSM2013ContentTest {
                 listOf(
                     PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
                     PdlIdent("aktorId", false, "AKTORID"),
-                )
+                ),
             )
 
         val behandlerPdl =
@@ -1993,7 +1993,7 @@ internal class CheckSM2013ContentTest {
                 listOf(
                     PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
                     PdlIdent("aktorId", false, "AKTORID"),
-                )
+                ),
             )
 
         val healthInformation =
@@ -2030,7 +2030,7 @@ internal class CheckSM2013ContentTest {
                                         s = "2.16.578.1.12.4.1.1.8116"
                                         v = "FNR"
                                     }
-                            }
+                            },
                         )
                         adresse = Address().apply {}
                         kontaktInfo.add(TeleCom().apply {})
@@ -2052,12 +2052,12 @@ internal class CheckSM2013ContentTest {
                                                             v = "99"
                                                             dn =
                                                                 "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                                        }
+                                                        },
                                                     )
                                                     beskriv = "Kan ikkje jobbe"
                                                 }
                                         }
-                            }
+                            },
                         )
                     }
                 pasient =
@@ -2093,7 +2093,7 @@ internal class CheckSM2013ContentTest {
                                         dn = "Problem med jus/politi"
                                         s = "2.16.578.1.12.4.1.1.7110"
                                         v = "Z09"
-                                    }
+                                    },
                                 )
                             }
                     }
@@ -2156,7 +2156,7 @@ internal class CheckSM2013ContentTest {
                 listOf(
                     PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
                     PdlIdent("aktorId", false, "AKTORID"),
-                )
+                ),
             )
 
         val behandlerPdl =
@@ -2164,7 +2164,7 @@ internal class CheckSM2013ContentTest {
                 listOf(
                     PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
                     PdlIdent("aktorId", false, "AKTORID"),
-                )
+                ),
             )
 
         val healthInformation =
@@ -2201,7 +2201,7 @@ internal class CheckSM2013ContentTest {
                                         s = "2.16.578.1.12.4.1.1.8116"
                                         v = "FNR"
                                     }
-                            }
+                            },
                         )
                         adresse = Address().apply {}
                         kontaktInfo.add(TeleCom().apply {})
@@ -2223,12 +2223,12 @@ internal class CheckSM2013ContentTest {
                                                             v = "1"
                                                             dn =
                                                                 "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                                        }
+                                                        },
                                                     )
                                                     beskriv = "Kan ikkje jobbe"
                                                 }
                                         }
-                            }
+                            },
                         )
                     }
                 pasient =
@@ -2264,7 +2264,7 @@ internal class CheckSM2013ContentTest {
                                         dn = "Problem med jus/politi"
                                         s = "2.16.578.1.12.4.1.1.7110"
                                         v = "Z09"
-                                    }
+                                    },
                                 )
                             }
                     }
@@ -2329,7 +2329,7 @@ internal class CheckSM2013ContentTest {
                 listOf(
                     PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
                     PdlIdent("aktorId", false, "AKTORID"),
-                )
+                ),
             )
 
         val behandlerPdl =
@@ -2337,7 +2337,7 @@ internal class CheckSM2013ContentTest {
                 listOf(
                     PdlIdent("10987654321", false, "FOLKEREGISTERIDENT"),
                     PdlIdent("aktorId", false, "AKTORID"),
-                )
+                ),
             )
 
         val healthInformation =
@@ -2374,7 +2374,7 @@ internal class CheckSM2013ContentTest {
                                         s = "2.16.578.1.12.4.1.1.8116"
                                         v = "FNR"
                                     }
-                            }
+                            },
                         )
                         adresse = Address().apply {}
                         kontaktInfo.add(TeleCom().apply {})
@@ -2396,12 +2396,12 @@ internal class CheckSM2013ContentTest {
                                                             v = "1"
                                                             dn =
                                                                 "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                                        }
+                                                        },
                                                     )
                                                     beskriv = "Kan ikkje jobbe"
                                                 }
                                         }
-                            }
+                            },
                         )
                     }
                 pasient =
@@ -2436,7 +2436,7 @@ internal class CheckSM2013ContentTest {
                                     CS().apply {
                                         dn =
                                             "Helsetilstanden hindrer pasienten i å være i aktivitet"
-                                    }
+                                    },
                                 )
                                 beskriv = "Kan ikkje jobbe"
                             }
@@ -2447,7 +2447,7 @@ internal class CheckSM2013ContentTest {
                                         dn = "Problem med jus/politi"
                                         s = "2.16.578.1.12.4.1.1.7110"
                                         v = "Z09"
-                                    }
+                                    },
                                 )
                             }
                     }

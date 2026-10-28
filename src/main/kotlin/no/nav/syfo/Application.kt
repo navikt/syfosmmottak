@@ -120,17 +120,16 @@ fun Application.module() {
 fun createListener(
     applicationState: ApplicationState,
     action: suspend CoroutineScope.() -> Unit,
-): Job =
-    GlobalScope.launch {
-        try {
-            action()
-        } catch (e: Exception) {
-            logger.error("En uhåndtert feil oppstod, applikasjonen restarter", e)
-        } finally {
-            applicationState.ready = false
-            applicationState.alive = false
-        }
+): Job = GlobalScope.launch {
+    try {
+        action()
+    } catch (e: Exception) {
+        logger.error("En uhåndtert feil oppstod, applikasjonen restarter", e)
+    } finally {
+        applicationState.ready = false
+        applicationState.alive = false
     }
+}
 
 @DelicateCoroutinesApi
 fun launchListeners(
@@ -227,11 +226,11 @@ fun sendReceivedSykmelding(
 
         kafkaproducerreceivedSykmelding.send(record).get()
         logger.info(
-            "Sykmelding sendt to kafka topic $receivedSykmeldingTopic sykmelding id ${receivedSykmelding.sykmelding.id}"
+            "Sykmelding sendt to kafka topic $receivedSykmeldingTopic sykmelding id ${receivedSykmelding.sykmelding.id}",
         )
     } catch (ex: Exception) {
         logger.error(
-            "failed to send sykmelding to kafka result for sykmelding ${receivedSykmelding.sykmelding.id}"
+            "failed to send sykmelding to kafka result for sykmelding ${receivedSykmelding.sykmelding.id}",
         )
         throw ex
     }

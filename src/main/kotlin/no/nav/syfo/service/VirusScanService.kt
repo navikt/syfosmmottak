@@ -10,25 +10,23 @@ import no.nav.syfo.vedlegg.model.Vedlegg
 class VirusScanService(private val clamAvClient: ClamAvClient) {
 
     suspend fun vedleggContainsVirus(vedlegg: List<Vedlegg>): Boolean {
-        val vedleggOver300MegaByte =
-            vedlegg.filter {
-                fileSizeLagerThan300MegaBytes(Base64.getMimeDecoder().decode(it.content.content))
-            }
+        val vedleggOver300MegaByte = vedlegg.filter {
+            fileSizeLagerThan300MegaBytes(Base64.getMimeDecoder().decode(it.content.content))
+        }
 
         if (vedleggOver300MegaByte.isNotEmpty()) {
             logVedleggOver300MegaByteMetric(vedleggOver300MegaByte)
         }
 
-        val vedleggUnder300MegaByte =
-            vedlegg.filter {
-                !fileSizeLagerThan300MegaBytes(Base64.getMimeDecoder().decode(it.content.content))
-            }
+        val vedleggUnder300MegaByte = vedlegg.filter {
+            !fileSizeLagerThan300MegaBytes(Base64.getMimeDecoder().decode(it.content.content))
+        }
 
         return if (vedleggUnder300MegaByte.isEmpty()) {
             false
         } else {
             logger.info(
-                "Scanning vedlegg for virus, numbers of vedlegg: " + vedleggUnder300MegaByte.size
+                "Scanning vedlegg for virus, numbers of vedlegg: " + vedleggUnder300MegaByte.size,
             )
             val scanResultMayContainVirus =
                 clamAvClient.virusScanVedlegg(vedleggUnder300MegaByte).filter {
@@ -36,7 +34,7 @@ class VirusScanService(private val clamAvClient: ClamAvClient) {
                 }
             scanResultMayContainVirus.map {
                 logger.warn(
-                    "Vedlegg may contain virus, filename: ${it.filename}, and virus type: ${it.virus} and error: ${it.error}"
+                    "Vedlegg may contain virus, filename: ${it.filename}, and virus type: ${it.virus} and error: ${it.error}",
                 )
             }
             scanResultMayContainVirus.isNotEmpty()

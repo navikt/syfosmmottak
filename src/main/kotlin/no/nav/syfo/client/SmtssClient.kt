@@ -80,7 +80,7 @@ class SmtssClient(
             }
             else -> {
                 logger.error(
-                    "Error getting TSS-id ${httpResponse.status} : ${httpResponse.bodyAsText()}"
+                    "Error getting TSS-id ${httpResponse.status} : ${httpResponse.bodyAsText()}",
                 )
                 throw RuntimeException("Error getting TSS-id")
             }

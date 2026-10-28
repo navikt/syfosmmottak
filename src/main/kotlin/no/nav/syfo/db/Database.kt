@@ -41,7 +41,7 @@ class Database(
                             isAutoCommit = false
                             transactionIsolation = "TRANSACTION_REPEATABLE_READ"
                             validate()
-                        }
+                        },
                     )
                 connected = true
             } catch (ex: HikariPool.PoolInitializationException) {

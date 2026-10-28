@@ -63,11 +63,9 @@ To build locally and run the integration tests you can simply run
  or on windows 
 `gradlew.bat installDist`
 
-### Upgrading the gradle wrapper
-Find the newest version of gradle here: https://gradle.org/releases/ Then run this command:
-
+### Upgrading the Gradle wrapper version to latest
 ``` bash
-./gradlew wrapper --gradle-version $gradleVersjon
+./gradlew :wrapper --gradle-version latest
 ```
 
 ### Contact

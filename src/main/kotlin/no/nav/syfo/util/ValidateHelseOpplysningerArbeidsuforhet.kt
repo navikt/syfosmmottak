@@ -17,7 +17,7 @@ fun medisinskeArsakskodeMangler(healthInformation: HelseOpplysningerArbeidsuforh
     }
 
 fun medisinskeArsakskodeHarUgyldigVerdi(
-    healthInformation: HelseOpplysningerArbeidsuforhet
+    healthInformation: HelseOpplysningerArbeidsuforhet,
 ): Boolean =
     healthInformation.aktivitet.periode.any { periode ->
         aktivitetIkkeMuligMedisinskeArsakskodeHarUgyldigVerdi(periode.aktivitetIkkeMulig)
@@ -29,14 +29,14 @@ fun arbeidsplassenArsakskodeMangler(healthInformation: HelseOpplysningerArbeidsu
     }
 
 fun arbeidsplassenArsakskodeHarUgyldigVerdi(
-    healthInformation: HelseOpplysningerArbeidsuforhet
+    healthInformation: HelseOpplysningerArbeidsuforhet,
 ): Boolean =
     healthInformation.aktivitet.periode.any { periode ->
         aktivitetIkkeMuligArbeidsplassenArsakskodeHarUgyldigVerdi(periode.aktivitetIkkeMulig)
     }
 
 fun aktivitetIkkeMuligMedisinskeArsakskodeMangler(
-    aktivitetIkkeMulig: HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig?
+    aktivitetIkkeMulig: HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig?,
 ): Boolean {
     return if (aktivitetIkkeMulig == null) {
         false
@@ -52,7 +52,7 @@ fun aktivitetIkkeMuligMedisinskeArsakskodeMangler(
 }
 
 fun aktivitetIkkeMuligMedisinskeArsakskodeHarUgyldigVerdi(
-    aktivitetIkkeMulig: HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig?
+    aktivitetIkkeMulig: HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig?,
 ): Boolean {
     return if (aktivitetIkkeMulig == null) {
         false
@@ -65,7 +65,7 @@ fun aktivitetIkkeMuligMedisinskeArsakskodeHarUgyldigVerdi(
 }
 
 fun aktivitetIkkeMuligArbeidsplassenArsakskodeMangler(
-    aktivitetIkkeMulig: HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig?
+    aktivitetIkkeMulig: HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig?,
 ): Boolean {
     return if (aktivitetIkkeMulig == null) {
         false
@@ -81,7 +81,7 @@ fun aktivitetIkkeMuligArbeidsplassenArsakskodeMangler(
 }
 
 fun aktivitetIkkeMuligArbeidsplassenArsakskodeHarUgyldigVerdi(
-    aktivitetIkkeMulig: HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig?
+    aktivitetIkkeMulig: HelseOpplysningerArbeidsuforhet.Aktivitet.Periode.AktivitetIkkeMulig?,
 ): Boolean {
     return if (aktivitetIkkeMulig == null) {
         false

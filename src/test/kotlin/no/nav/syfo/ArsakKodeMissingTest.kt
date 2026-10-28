@@ -16,7 +16,7 @@ internal class ArsakKodeMissingTest {
     internal fun `Validate Medisinske Arsaker Arsakskode is mapped`() {
         val healthInformation =
             fellesformatUnmarshaller.unmarshal(
-                StringReader(getFileAsString("src/test/resources/generated_sm_8.xml"))
+                StringReader(getFileAsString("src/test/resources/generated_sm_8.xml")),
             ) as HelseOpplysningerArbeidsuforhet
 
         Assertions.assertEquals(false, medisinskeArsakskodeMangler(healthInformation))
@@ -26,7 +26,7 @@ internal class ArsakKodeMissingTest {
     internal fun `Validate arsakskodeIsmissing is false`() {
         val healthInformation =
             fellesformatUnmarshaller.unmarshal(
-                StringReader(getFileAsString("src/test/resources/generated_sm.xml"))
+                StringReader(getFileAsString("src/test/resources/generated_sm.xml")),
             ) as HelseOpplysningerArbeidsuforhet
 
         Assertions.assertEquals(false, medisinskeArsakskodeMangler(healthInformation))
@@ -36,7 +36,7 @@ internal class ArsakKodeMissingTest {
     internal fun `Validate arsakskodeIsmissing is true`() {
         val healthInformation =
             fellesformatUnmarshaller.unmarshal(
-                StringReader(getFileAsString("src/test/resources/generated_sm_9.xml"))
+                StringReader(getFileAsString("src/test/resources/generated_sm_9.xml")),
             ) as HelseOpplysningerArbeidsuforhet
 
         Assertions.assertEquals(true, medisinskeArsakskodeMangler(healthInformation))
@@ -68,7 +68,7 @@ internal class ArsakKodeMissingTest {
     internal fun `medisinskeArsakskodeHarUgyldigVerdi er false hvis V=1`() {
         val healthInformation =
             fellesformatUnmarshaller.unmarshal(
-                StringReader(getFileAsString("src/test/resources/generated_sm_8.xml"))
+                StringReader(getFileAsString("src/test/resources/generated_sm_8.xml")),
             ) as HelseOpplysningerArbeidsuforhet
 
         Assertions.assertEquals(false, medisinskeArsakskodeHarUgyldigVerdi(healthInformation))
@@ -78,7 +78,7 @@ internal class ArsakKodeMissingTest {
     internal fun `medisinskeArsakskodeHarUgyldigVerdi er true hvis V=A`() {
         val healthInformation =
             fellesformatUnmarshaller.unmarshal(
-                StringReader(getFileAsString("src/test/resources/generated_sm_10.xml"))
+                StringReader(getFileAsString("src/test/resources/generated_sm_10.xml")),
             ) as HelseOpplysningerArbeidsuforhet
 
         Assertions.assertEquals(true, medisinskeArsakskodeHarUgyldigVerdi(healthInformation))

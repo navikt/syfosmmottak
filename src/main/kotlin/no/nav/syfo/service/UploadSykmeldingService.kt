@@ -19,7 +19,7 @@ class UploadSykmeldingService(val tsmSykmeldingBucket: String, val storage: Stor
             if (sykmeldingInBucket == null) {
                 val blob =
                     BlobInfo.newBuilder(
-                            BlobId.of(tsmSykmeldingBucket, "$sykmeldingId/sykmelding.xml")
+                            BlobId.of(tsmSykmeldingBucket, "$sykmeldingId/sykmelding.xml"),
                         )
                         .setContentType("application/xml")
                         .setContentEncoding("gzip")

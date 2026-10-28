@@ -31,7 +31,7 @@ data class ReceivedSykmelding(
 )
 
 fun ReceivedSykmelding.toReceivedSykmeldingWithValidation(
-    validationResult: ValidationResult
+    validationResult: ValidationResult,
 ): ReceivedSykmeldingWithValidation {
     return ReceivedSykmeldingWithValidation(
         sykmelding = this.sykmelding,
