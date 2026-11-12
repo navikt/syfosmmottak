@@ -13,6 +13,7 @@ class MqTlsUtils {
                 it["com.ibm.mq.cfg.TCP.ClntSndBuffSize"] = "32768"
                 it["com.ibm.mq.cfg.TCP.ClntRcvBuffSize"] = "32768"
                 it["com.ibm.msg.client.commonservices.log.outputName"] = "System.out"
+                it["jdk.tls.namedGroups"] = "secp256r1,secp384r1,x25519"
             }
         }
     }
